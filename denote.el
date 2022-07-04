@@ -94,6 +94,9 @@
 
 ;;; Code:
 
+(require 'seq)
+(eval-when-compile (require 'cl-lib))
+
 (defgroup denote ()
   "Simple notes with an efficient file-naming scheme."
   :group 'files)
@@ -225,6 +228,10 @@ are described in the doc string of `format-time-string'."
   (concat denote--file-title-regexp "\\([0-9A-Za-z_-]*\\)\\(\\.?.*\\)")
   "Regular expression to match the entire file name'.")
 
+(defconst denote--file-only-note-regexp
+  (concat denote--file-regexp "\\.\\(org\\|md\\|txt\\)")
+  "Regular expression to match the entire file name of a note file.")
+
 (defconst denote--punctuation-regexp "[][{}!@#$%^&*()_=+'\"?,.\|;:~`‘’“”/]*"
   "Regular expression of punctionation that should be removed.
 We consider those characters illigal for our purposes.")
@@ -244,8 +251,6 @@ We consider those characters illigal for our purposes.")
         `(metadata (category . ,category))
       (complete-with-action action candidates string pred))))
 
-(defvar org-id-extra-files)
-
 (defun denote-directory ()
   "Return path of variable `denote-directory' as a proper directory."
   (let* ((val (or (buffer-local-value 'denote-directory (current-buffer))
@@ -253,8 +258,6 @@ We consider those characters illigal for our purposes.")
          (path (if (or (eq val 'default-directory) (eq val 'local)) default-directory val)))
     (unless (file-directory-p path)
       (make-directory path t))
-    (when (require 'org-id nil :noerror)
-      (setq org-id-extra-files (directory-files path nil "\.org$")))
     (file-name-as-directory path)))
 
 (defun denote--extract (regexp str &optional group)
@@ -305,26 +308,55 @@ trailing hyphen."
 FILE is relative to the variable `denote-directory'."
   (and (not (file-directory-p file))
        (file-regular-p file)
-       (string-match-p (concat "\\b" denote--id-regexp) file)
+       (string-match-p denote--file-only-note-regexp file)
        (not (string-match-p "[#~]\\'" file))))
+
+(defun denote--file-name-relative-to-denote-directory (file)
+  "Return file name of FILE relative to the variable `denote-directory'.
+FILE must be an absolute path."
+  (if-let* ((dir (denote-directory))
+            ((file-name-absolute-p file))
+            ((string-prefix-p dir file)))
+      (substring-no-properties file (length dir))
+    file))
 
 (defun denote--current-file-is-note-p ()
   "Return non-nil if current file likely is a Denote note."
   (and (or (string-match-p denote--id-regexp (buffer-file-name))
            (string-match-p denote--id-regexp (buffer-name)))
-       (string= (expand-file-name default-directory) (denote-directory))))
+       (string-prefix-p (denote-directory) (expand-file-name default-directory))))
 
 ;;;; Keywords
 
+(defun denote--directory-files-recursively (directory)
+  "Return expanded files in DIRECTORY recursively."
+  (mapcar
+   (lambda (s) (expand-file-name s))
+   (seq-remove
+    (lambda (f)
+      (not (denote--only-note-p f)))
+    (directory-files-recursively directory directory-files-no-dot-files-regexp t))))
+
 (defun denote--directory-files (&optional absolute)
-  "List note files, assuming flat directory.
+  "List note files.
 If optional ABSOLUTE, show full paths, else only show base file
 names that are relative to the variable `denote-directory'."
-  (let ((default-directory (denote-directory)))
-    (seq-remove
-     (lambda (f)
-       (not (denote--only-note-p f)))
-     (directory-files default-directory absolute directory-files-no-dot-files-regexp t))))
+  (let* ((default-directory (denote-directory))
+         (files (denote--directory-files-recursively default-directory)))
+    (if absolute
+        files
+      (mapcar
+       (lambda (s) (denote--file-name-relative-to-denote-directory s))
+       files))))
+
+(declare-function cl-find-if "cl-seq" (cl-pred cl-list &rest cl-keys))
+
+(defun denote--get-note-path-by-id (id)
+  "Return the absolute path of ID note in variable `denote-directory'."
+  (cl-find-if
+   (lambda (f)
+     (string-prefix-p id (file-name-nondirectory f)))
+   (denote--directory-files :absolute)))
 
 (defun denote--directory-files-matching-regexp (regexp &optional no-check-current)
   "Return list of files matching REGEXP.
@@ -346,6 +378,11 @@ part of the list."
   (delq nil (mapcar
              (lambda (x)
                (denote--extract denote--file-regexp x 6))
+             ;; REVIEW 2022-07-03: I tested this with ~3000 files.  It
+             ;; has about 2 seconds of delay on my end.  After I placed
+             ;; the list of those files in a variable instead of calling
+             ;; `denote--directory-files', there was no noticeable
+             ;; performance penalty.
              (denote--directory-files))))
 
 (defun denote--inferred-keywords ()
@@ -356,8 +393,14 @@ part of the list."
             sequence)))
 
 (defun denote-keywords ()
-  "Combine `denote--inferred-keywords' with `denote-known-keywords'."
-  (delete-dups (append (denote--inferred-keywords) denote-known-keywords)))
+  "Return appropriate list of keyword candidates.
+If `denote-infer-keywords' is non-nil, infer keywords from
+existing notes and combine them into a list with
+`denote-known-keywords'.  Else use only the latter."
+  (delete-dups
+   (if denote-infer-keywords
+       (append (denote--inferred-keywords) denote-known-keywords)
+     denote-known-keywords)))
 
 (defvar denote--keyword-history nil
   "Minibuffer history of inputted keywords.")
@@ -406,6 +449,8 @@ output is sorted with `string-lessp'."
 
 ;;;; New note
 
+;;;;; Common helpers for new notes
+
 (defun denote--file-extension ()
   "Return file type extension based on `denote-file-type'."
   (pcase denote-file-type
@@ -421,9 +466,7 @@ or equivalent: they will all be converted into a single string.
 EXTENSION is the file type extension, either a string which
 include the starting dot or the return value of
 `denote--file-extension'."
-  (let ((kws (if denote-infer-keywords
-                 (denote--keywords-combine keywords)
-               keywords))
+  (let ((kws (denote--keywords-combine keywords))
         (ext (or extension (denote--file-extension))))
     (format "%s%s--%s__%s%s" path id slug kws ext)))
 
@@ -489,12 +532,10 @@ is specific to this variable: it expect a delimiter such as
   "Final delimiter for plain text front matter.")
 
 (defvar denote-org-front-matter
-  ":PROPERTIES:
-:ID:          %4$s
-:END:
-#+title:      %1$s
-#+date:       %2$s
-#+filetags:   %3$s
+  "#+title:      %s
+#+date:       %s
+#+filetags:   %s
+#+identifier: %s
 \n"
   "Org front matter value for `format'.
 The order of the arguments is TITLE, DATE, KEYWORDS, ID.  If you
@@ -596,10 +637,17 @@ used to construct the path's identifier."
 (defvar denote--title-history nil
   "Minibuffer history of `denote--title-prompt'.")
 
-(defun denote--title-prompt ()
-  "Read file title for `denote'."
-  (setq denote-last-title
-        (read-string "File title: " nil 'denote--title-history)))
+(defun denote--title-prompt (&optional default-title)
+  "Read file title for `denote'.
+
+Optional DEFAULT-TITLE is used as the default value."
+  (let ((format (if default-title
+                    (format "File title [%s]: " default-title)
+                  "File title: ")))
+    (setq denote-last-title
+          (read-string format nil 'denote--title-history default-title))))
+
+;;;;; The `denote' command
 
 ;;;###autoload
 (defun denote (title keywords)
@@ -624,6 +672,8 @@ alphabetically in both the file name and file contents."
   (denote--keywords-add-to-history keywords))
 
 (defalias 'denote-create-note (symbol-function 'denote))
+
+;;;;; The `denote-type' command
 
 (defvar denote--file-type-history nil
   "Minibuffer history of `denote--file-type-prompt'.")
@@ -658,6 +708,8 @@ When called from Lisp the FILETYPE must be a symbol."
     (call-interactively #'denote)))
 
 (defalias 'denote-create-note-using-type (symbol-function 'denote-type))
+
+;;;;; The `denote-date' command
 
 (defvar denote--date-history nil
   "Minibuffer history of `denote--date-prompt'.")
