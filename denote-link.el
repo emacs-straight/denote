@@ -5,7 +5,8 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
-;; Version: 0.1.0
+;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -487,7 +488,7 @@ inserts links with just the identifier."
 
 ;;;; Register `denote:' custom Org hyperlink
 
-(declare-function org-link-set-parameters "ol.el" (type &rest parameters))
+(autoload 'org-link-set-parameters "ol.el")
 
 (org-link-set-parameters
  "denote"

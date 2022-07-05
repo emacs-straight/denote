@@ -5,7 +5,8 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
-;; Version: 0.1.0
+;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -53,8 +54,7 @@
     (error "Cannot find `%s' as a file" file)))
 
 (defun denote-retrieve--search (file key-regexp &optional key)
-  "Return the value associated with the KEY-REGEXP key in the
-current buffer from FILE.
+  "Return value of KEY-REGEXP key in current buffer from FILE.
 If optional KEY is non-nil, return the key instead."
   (with-temp-buffer
     (insert-file-contents file)

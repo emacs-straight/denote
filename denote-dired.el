@@ -5,7 +5,8 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
-;; Version: 0.1.0
+;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -129,7 +130,7 @@
 (defcustom denote-dired-directories
   ;; We use different ways to specify a path for demo purposes.
   (list denote-directory
-        (thread-last denote-directory (expand-file-name "attachments"))
+        ;; (thread-last denote-directory (expand-file-name "attachments"))
         (expand-file-name "~/Documents/vlog"))
   "List of directories where `denote-dired-mode' should apply to."
   :type '(repeat directory)
