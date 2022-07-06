@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -66,7 +66,7 @@
   "String with format specifiers for `org-capture-templates'.
 Check that variable's documentation for the details.
 
-This string is append to new notes in the `denote-org-capture'
+This string is appended to new notes in the `denote-org-capture'
 function.  Every new note has the standard front matter we
 define."
   :type 'string
