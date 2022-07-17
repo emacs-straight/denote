@@ -413,6 +413,51 @@ For per-file-type front matter, refer to the variables:
         (goto-char (point-min))
         (insert new-front-matter)))))
 
+;;;; Batch-renaming facility
+
+;; REVIEW 2022-07-16: This is a proof-of-concept
+;;;###autoload
+(defun denote-dired-batch-rename ()
+  "DEV NOTE 2022-07-16: proof of concept---help flesh it out.
+
+Rename marked files in Dired using the following pattern:
+
+- the file's existing file name is retained and becomes the TITLE
+  field, per Denote's file-naming scheme;
+
+- the TITLE is sluggified and downcased, per our conventions;
+
+- an identifier is prepended to the TITLE;
+
+- the file's contents are not touched (no insertion of front
+  matter, no other changes);
+
+- the file's extension is retained;
+
+- a prompt is asked once for the KEYWORDS field and the input is
+  applied to all files.
+
+Batch renaming ignores files that comply with Denote's
+file-naming scheme."
+  (interactive nil dired-mode)
+  (if-let ((marks (dired-get-marked-files)))
+      (progn
+        (dolist (file marks)
+          (let* ((keywords (denote--keywords-prompt))
+                 (dir (file-name-directory file))
+                 (title (file-name-sans-extension (file-name-nondirectory file)))
+                 (extension (file-name-extension file t))
+                 (new-name (denote--format-file
+                            dir
+                            (denote-dired--file-name-id file)
+                            keywords
+                            (denote--sluggify title)
+                            extension)))
+            (unless (denote--only-note-p file)
+              (rename-file (file-name-nondirectory file) new-name))))
+        (revert-buffer))
+    (user-error "No marked files; aborting")))
+
 ;;;; Extra fontification
 
 (require 'denote-faces)

@@ -161,7 +161,7 @@ default).
 
 #+vindex: denote-sort-keywords
 Multiple keywords can be inserted by separating them with a comma (or
-whatever the value of the ~crm-indicator~ is---which should be a comma).
+whatever the value of the ~crm-separator~ is---which should be a comma).
 When the user option ~denote-sort-keywords~ is non-nil (the default),
 keywords are sorted alphabetically (technically, the sorting is done
 with ~string-lessp~).
@@ -329,12 +329,13 @@ for a title followed by a prompt for keywords ([[#h:6a92a8b5-d766-42cc-8e5b-8dc2
 Users may prefer to leverage ~org-capture~ in order to extend file
 creation with the specifiers described in the ~org-capture-templates~
 documentation (such as to capture the active region and/or create a
-hyperlink pointing to the given context).  Due to the particular
-file-naming scheme of Denote, which is derived dynamically, such
-specifiers cannot be written directly in the template.  Instead, they
-have to be assigned to the user option ~denote-org-capture-specifiers~,
-which is interpreted by the function ~denote-org-capture~.  Example with
-our default value:
+hyperlink pointing to the given context).
+
+IMPORTANT.  Due to the particular file-naming scheme of Denote, which is
+derived dynamically, such specifiers or other arbitrary text cannot be
+written directly in the template.  Instead, they have to be assigned to
+the user option ~denote-org-capture-specifiers~, which is interpreted by
+the function ~denote-org-capture~.  Example with our default value:
 
 #+begin_src emacs-lisp
 (setq denote-org-capture-specifiers "%l\n%i\n%?")
@@ -1828,7 +1829,7 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
   Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Frank Ehmsen,
   Jack Baty, Kaushal Modi, M. Hadi Timachi, Peter Prevos, Shreyas
-  Ragavan, Summer Emacs, Sven Seebeck, Ypot, pRot0ta1p.
+  Ragavan, Summer Emacs, Sven Seebeck, Taoufik, Ypot, pRot0ta1p.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
