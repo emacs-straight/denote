@@ -181,7 +181,7 @@ The value is a list of symbols, which includes any of the following:
   file names are included in the list of candidates.  The
   `keywords' prompt uses `completing-read-multiple', meaning that
   it can accept multiple keywords separated by a comma (or
-  whatever the value of `crm-sepator' is).
+  whatever the value of `crm-separator' is).
 
 - `file-type': Prompts with completion for the file type of the
   new note.  Available candidates are those specified in the user
@@ -571,7 +571,7 @@ be `toml' or, in the future, some other spec that needss special
 treatment)."
   (let ((kw (denote--sluggify-keywords keywords)))
     (pcase type
-      ('toml (format "[%s]" (denote--map-quote-downcase kw)))
+      ('markdown-toml (format "[%s]" (denote--map-quote-downcase kw)))
       (_ (mapconcat #'downcase kw "  ")))))
 
 (defvar denote-toml-front-matter
@@ -640,7 +640,7 @@ TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
 Optional FILETYPE is one of the values of `denote-file-type',
 else that variable is used."
   (let ((kw-space (denote--file-meta-keywords keywords))
-        (kw-toml (denote--file-meta-keywords keywords 'toml)))
+        (kw-toml (denote--file-meta-keywords keywords 'markdown-toml)))
     (pcase (or filetype denote-file-type)
       ('markdown-toml (format denote-toml-front-matter title date kw-toml id))
       ('markdown-yaml (format denote-yaml-front-matter title date kw-space id))
@@ -699,6 +699,7 @@ With optional DATE, use it else use the current one."
 Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, and FILE-TYPE
 should be valid for note creation."
   (let* ((default-directory directory)
+         (denote-file-type file-type)
          (path (denote--path title keywords default-directory id))
          (buffer (find-file path))
          (header (denote--file-meta-header
@@ -808,7 +809,7 @@ here for clarity."
   "Create note while prompting for a file type.
 
 This is the equivalent to calling `denote' when `denote-prompts'
-is set to \\'(file-type title keywords)."
+is set to \\='(file-type title keywords)."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(file-type title keywords)))
@@ -828,7 +829,7 @@ is set to \\'(file-type title keywords)."
    nil 'denote--date-history))
 
 (defun denote--date-add-current-time (date)
-  "Add current time to date, if necessary.
+  "Add current time to DATE, if necessary.
 The idea is to turn 2020-01-15 into 2020-01-15 16:19 so that the
 hour and minute component is not left to 00:00.
 
@@ -890,7 +891,7 @@ The date can be in YEAR-MONTH-DAY notation like 2022-06-30 or
 that plus the time: 2022-06-16 14:30
 
 This is the equivalent to calling `denote' when `denote-prompts'
-is set to \\'(date title keywords)."
+is set to \\='(date title keywords)."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(date title keywords)))
@@ -940,7 +941,7 @@ Available candidates include the value of the variable
 `denote-directory' and any subdirectory thereof.
 
 This is equivalent to calling `denote' when `denote-prompts' is set to
-\\'(subdirectory title keywords)."
+\\='(subdirectory title keywords)."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(subdirectory title keywords)))
