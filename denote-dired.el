@@ -66,18 +66,22 @@
 ;; Renaming only occurs relative to the current directory.  Files are not
 ;; moved between directories.
 ;;
-;; If the `FILE' has Denote-style front matter, the command asks to rewrite
-;; it in order to reflect the new values of `TITLE' and/or `KEYWORDS' (this
+;; If the FILE has Denote-style front matter for the TITLE and KEYWORDS,
+;; ask to rewrite their values in order to reflect the new input (this
 ;; step always requires confirmation and the underlying buffer is not
-;; saved, so consider invoking `diff-buffer-with-file' to double-check the
-;; effect).  If the file doesn't have front matter, the command skips this
-;; step (see manual's "Rename file and add front matter").
+;; saved, so consider invoking `diff-buffer-with-file' to double-check
+;; the effect).  The rewrite of the FILE and KEYWORDS in the front
+;; matter should not affect the rest of the block.
+;;
+;; If the file doesn't have front matter, skip this step (see the
+;; command `denote-dired-rename-file-and-add-front-matter').
 ;;
 ;; The `denote-dired-rename-file' command is intended to (i) rename
-;; existing Denote notes while updating their front matter, (ii) rename
-;; files that can benefit from Denote's file-naming scheme.  The latter is
-;; a convenience we provide, since we already have all the requisite
-;; mechanisms in place (Denote does not manage such files though).
+;; existing Denote notes while updating their title and keywords in the
+;; front matter, (ii) rename files that can benefit from Denote's
+;; file-naming scheme.  The latter is a convenience we provide, since we
+;; already have all the requisite mechanisms in place (though Denote
+;; does not---and will not---manage such files).
 ;;
 ;;
 ;; The command `denote-dired-rename-file-and-add-front-matter' has the
@@ -210,7 +214,7 @@ old name followed by the new one.  This applies to the command
 
 (defun denote-dired--rename-buffer (old-name new-name)
   "Rename OLD-NAME buffer to NEW-NAME, when appropriate."
-  (when-let* ((buffer (find-buffer-visiting old-name)))
+  (when-let ((buffer (find-buffer-visiting old-name)))
     (with-current-buffer buffer
       (set-visited-file-name new-name nil t))))
 
@@ -255,19 +259,6 @@ Return t if the file is renamed, nil otherwise."
          (revert-buffer))))
    (buffer-list)))
 
-(defun denote-dired--file-meta-header (title date keywords id filetype)
-  "Front matter for renamed notes.
-
-TITLE, DATE, KEYWORDS, FILENAME, ID, and FILETYPE are all strings
- which are provided by `denote-dired--rewrite-front-matter'."
-  (let ((kw-space (denote--file-meta-keywords keywords))
-        (kw-toml (denote--file-meta-keywords keywords 'markdown-toml)))
-    (pcase filetype
-      ('markdown-toml (format denote-toml-front-matter title date kw-toml id))
-      ('markdown-yaml (format denote-yaml-front-matter title date kw-space id))
-      ('text (format denote-text-front-matter title date kw-space id denote-text-front-matter-delimiter))
-      (_ (format denote-org-front-matter title date kw-space id)))))
-
 (defun denote-dired--filetype-heuristics (file)
   "Return likely file type of FILE.
 The return value is for `denote--file-meta-header'."
@@ -277,20 +268,6 @@ The return value is for `denote--file-meta-header'."
             'markdown-yaml))
     ("txt" 'text)
     (_ 'org)))
-
-(defun denote-dired--front-matter-search-delimiter (filetype)
-  "Return likely front matter delimiter search for FILETYPE."
-  (pcase filetype
-    ('markdown-toml (re-search-forward "^\\+\\+\\+$" nil t 2))
-    ('markdown-yaml (re-search-forward "^---$" nil t 2))
-    ;; 2 at most, as the user might prepend it to the block as well.
-    ;; Though this might give us false positives, it ultimately is the
-    ;; user's fault.
-    ('text (or (re-search-forward denote-text-front-matter-delimiter nil t 2)
-               (re-search-forward denote-text-front-matter-delimiter nil t 1)
-               (re-search-forward "^[\s\t]*$" nil t 1)))
-    ;; Org does not have a real delimiter.  This is the trickiest one.
-    (_ (re-search-forward "^[\s\t]*$" nil t 1))))
 
 (defun denote-dired--edit-front-matter-p (file)
   "Test if FILE should be subject to front matter rewrite.
@@ -312,33 +289,26 @@ command and are used to construct a new front matter block if
 appropriate."
   (when-let* ((denote-dired--edit-front-matter-p file)
               (id (denote-retrieve--filename-identifier file))
-              (date (denote-retrieve--value-date file))
-              (filetype (denote-dired--filetype-heuristics file))
-              (new-front-matter (denote--file-meta-header title date keywords id filetype)))
-    (let (old-front-matter front-matter-delimiter)
+              (date (denote-retrieve--value-date file)))
+    (let ((old-title (denote-retrieve--value-title file))
+          (old-keywords (denote-retrieve--value-keywords file))
+          (new-title title)
+          (new-keywords (denote--file-meta-keywords
+                         keywords (denote-dired--filetype-heuristics file))))
       (with-current-buffer (find-file-noselect file)
-        (save-excursion
-          (save-restriction
-            (widen)
+        (when (y-or-n-p (format
+                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s"
+                         (propertize old-title 'face 'error)
+                         (propertize new-title 'face 'success)
+                         (propertize old-keywords 'face 'error)
+                         (propertize new-keywords 'face 'success)))
+          (save-excursion
             (goto-char (point-min))
-            (setq front-matter-delimiter (denote-dired--front-matter-search-delimiter filetype))
-            (when front-matter-delimiter
-              (setq old-front-matter
-                    (buffer-substring-no-properties
-                     (point-min)
-                     (progn front-matter-delimiter (point)))))))
-        (when (and old-front-matter
-                   (y-or-n-p
-                    (format "%s\n%s\nReplace front matter?"
-                            (propertize old-front-matter 'face 'error)
-                            (propertize new-front-matter 'face 'success))))
-          (delete-region (point-min) front-matter-delimiter)
-          (goto-char (point-min))
-          (insert new-front-matter)
-          ;; FIXME 2022-06-16: Instead of `delete-blank-lines', we
-          ;; should check if we added any new lines and delete only
-          ;; those.
-          (delete-blank-lines))))))
+            (search-forward old-title nil t 1)
+            (replace-match (concat "\\1" new-title) t)
+            (goto-char (point-min))
+            (search-forward old-keywords nil t 1)
+            (replace-match (concat "\\1" new-keywords) t)))))))
 
 (defun denote-dired--add-front-matter (file title keywords id)
   "Add front matter to the beginning of FILE.
@@ -385,18 +355,23 @@ have no extension are simply left without one.
 Renaming only occurs relative to the current directory.  Files
 are not moved between directories.
 
-If the FILE has Denote-style front matter, ask to rewrite it in
-order to reflect the new values of TITLE and/or KEYWORDS (this
-step always requires confirmation and the underlying buffer is
-not saved, so consider invoking `diff-buffer-with-file' to
-double-check the effect).  If the file doesn't have front matter,
-skip this step (see `denote-dired-rename-file-and-add-front-matter').
+If the FILE has Denote-style front matter for the TITLE and
+KEYWORDS, ask to rewrite their values in order to reflect the new
+input (this step always requires confirmation and the underlying
+buffer is not saved, so consider invoking `diff-buffer-with-file'
+to double-check the effect).  The rewrite of the FILE and
+KEYWORDS in the front matter should not affect the rest of the
+block.
+
+If the file doesn't have front matter, skip this step (see the
+command `denote-dired-rename-file-and-add-front-matter').
 
 This command is intended to (i) rename existing Denote notes
-while updating their front matter, (ii) rename files that can
-benefit from Denote's file-naming scheme.  The latter is a
-convenience we provide, since we already have all the requisite
-mechanisms in place (Denote does not manage such files though)."
+while updating their title and keywords in the front matter, (ii)
+rename files that can benefit from Denote's file-naming scheme.
+The latter is a convenience we provide, since we already have all
+the requisite mechanisms in place (though Denote does not---and
+will not---manage such files)."
   (interactive
    (let ((file (denote-dired--rename-dired-file-or-prompt)))
      (list
