@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.3.1
+;; Version: 0.4.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -101,23 +101,25 @@
 ;; Dired to conform with our file-naming scheme.  The operation does the
 ;; following:
 ;;
-;; - the file's existing file name is retained and becomes the `TITLE'
-;;   field, per our file-naming scheme;
+;; - the file's existing file name is retained and becomes the TITLE
+;;   field, per Denote's file-naming scheme;
 ;;
-;; - the `TITLE' is sluggified and downcased, per our conventions;
+;; - the TITLE is sluggified and downcased, per our conventions;
 ;;
-;; - an identifier is prepended to the `TITLE';
-;;
-;; - the file's contents are not touched (no insertion of front
-;;   matter, no other changes);
+;; - an identifier is prepended to the TITLE;
 ;;
 ;; - the file's extension is retained;
 ;;
-;; - a prompt is asked once for the `KEYWORDS' field and the input is
-;;   applied to all files.
+;; - a prompt is asked once for the KEYWORDS field and the input is
+;;   applied to all file names;
 ;;
-;; This command ignores files that comply with Denote's file-naming
-;; scheme.
+;; - if the file is recognized as a Denote note, rewrite its front
+;;   matter to include the new keywords.  A confirmation to carry out
+;;   this step is performed once at the outset.  Note that the affected
+;;   buffers are not saved.  The user can thus check them to confirm
+;;   that the new front matter does not cause any problems (e.g. with
+;;   the command `diff-buffer-with-file').  Multiple buffers can be
+;;   saved with `save-some-buffers' (read its doc string).
 ;;
 ;; The command `denote-dired-rename-marked-files-and-add-front-matters' is
 ;; like `denote-dired-rename-marked-files' but also adds front matter.  The
@@ -263,7 +265,8 @@ Return t if the file is renamed, nil otherwise."
   "Return likely file type of FILE.
 The return value is for `denote--file-meta-header'."
   (pcase (file-name-extension file)
-    ("md" (if (string-match-p "title\\s-*=" (denote-retrieve--value-title file t))
+    ("md" (if-let ((title-key (denote-retrieve--value-title file t))
+                   ((string-match-p "title\\s-*=" title-key)))
               'markdown-toml
             'markdown-yaml))
     ("txt" 'text)
@@ -282,40 +285,67 @@ replace what isn't there."
          ;; Heuristic to check if this is one of our notes
          (string= (expand-file-name default-directory) (denote-directory)))))
 
+;; FIXME 2022-07-25: We should make the underlying regular expressions
+;; that `denote-retrieve--value-title' targets more refined, so that we
+;; capture eveyrhing at once.
 (defun denote-dired--rewrite-front-matter (file title keywords)
   "Rewrite front matter of note after `denote-dired-rename-file'.
 The FILE, TITLE, and KEYWORDS are passed from the renaming
-command and are used to construct a new front matter block if
+command and are used to construct new front matter values if
 appropriate."
-  (when-let* ((denote-dired--edit-front-matter-p file)
-              (id (denote-retrieve--filename-identifier file))
-              (date (denote-retrieve--value-date file)))
-    (let ((old-title (denote-retrieve--value-title file))
-          (old-keywords (denote-retrieve--value-keywords file))
-          (new-title title)
-          (new-keywords (denote--file-meta-keywords
-                         keywords (denote-dired--filetype-heuristics file))))
+  (when-let ((denote-dired--edit-front-matter-p file)
+             (old-title (denote-retrieve--value-title file))
+             (old-keywords (denote-retrieve--value-keywords file))
+             (new-title title)
+             (new-keywords (denote--file-meta-keywords
+                            keywords (denote-dired--filetype-heuristics file))))
       (with-current-buffer (find-file-noselect file)
         (when (y-or-n-p (format
-                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s"
+                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
                          (propertize old-title 'face 'error)
                          (propertize new-title 'face 'success)
                          (propertize old-keywords 'face 'error)
                          (propertize new-keywords 'face 'success)))
           (save-excursion
-            (goto-char (point-min))
-            (search-forward old-title nil t 1)
-            (replace-match (concat "\\1" new-title) t)
-            (goto-char (point-min))
-            (search-forward old-keywords nil t 1)
-            (replace-match (concat "\\1" new-keywords) t)))))))
+            (save-restriction
+              (widen)
+              (goto-char (point-min))
+              (re-search-forward denote-retrieve--title-front-matter-key-regexp nil t 1)
+              (search-forward old-title nil t 1)
+              (replace-match (concat "\\1" new-title) t)
+              (goto-char (point-min))
+              (re-search-forward denote-retrieve--keywords-front-matter-key-regexp nil t 1)
+              (search-forward old-keywords nil t 1)
+              (replace-match (concat "\\1" new-keywords) t)))))))
+
+(defun denote-dired--rewrite-keywords-no-question (file keywords)
+  "Rewrite KEYWORDS in FILE outright.
+
+Do the same as `denote-dired--rewrite-front-matter' for keywords,
+but do not for confirmation.
+
+This is for use in `denote-dired-rename-marked-files' or related.
+Those commands ask for confirmation once before performing an
+operation on multiple files."
+  (when-let ((denote-dired--edit-front-matter-p file)
+             (old-keywords (denote-retrieve--value-keywords file))
+             (new-keywords (denote--file-meta-keywords
+                            keywords (denote-dired--filetype-heuristics file))))
+    (with-current-buffer (find-file-noselect file)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (goto-char (point-min))
+          (re-search-forward denote-retrieve--keywords-front-matter-key-regexp nil t 1)
+          (search-forward old-keywords nil t 1)
+          (replace-match (concat "\\1" new-keywords) t))))))
 
 (defun denote-dired--add-front-matter (file title keywords id)
-  "Add front matter to the beginning of FILE.
+  "Prepend front matter to FILE if `denote--only-note-p'.
 The TITLE, KEYWORDS and ID are passed from the renaming
 command and are used to construct a new front matter block if
 appropriate."
-  (when-let* ((denote--only-note-p file)
+  (when-let* (((denote--only-note-p file))
               (filetype (denote-dired--filetype-heuristics file))
               (date (denote--date (date-to-time id)))
               (new-front-matter (denote--file-meta-header title date keywords id filetype)))
@@ -444,32 +474,38 @@ The operation does the following:
 
 - an identifier is prepended to the TITLE;
 
-- the file's contents are not touched (no insertion of front
-  matter, no other changes);
-
 - the file's extension is retained;
 
 - a prompt is asked once for the KEYWORDS field and the input is
-  applied to all files.
+  applied to all file names;
 
-This command ignores files that comply with Denote's file-naming
-scheme."
+- if the file is recognized as a Denote note, rewrite its front
+  matter to include the new keywords.  A confirmation to carry
+  out this step is performed once at the outset.  Note that the
+  affected buffers are not saved.  The user can thus check them
+  to confirm that the new front matter does not cause any
+  problems (e.g. with the command `diff-buffer-with-file').
+  Multiple buffers can be saved with `save-some-buffers' (read
+  its doc string)."
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files))
            (keywords (denote--keywords-prompt)))
-      (progn
-        (dolist (file marks)
-          (let* ((dir (file-name-directory file))
-                 (id (denote-dired--file-name-id file))
-                 (title (or (denote-retrieve--value-title file)
-                            (file-name-sans-extension
-                             (file-name-nondirectory file))))
-                 (extension (file-name-extension file t))
-                 (new-name (denote--format-file
-                            dir id keywords (denote--sluggify title) extension)))
-            (rename-file file new-name)
-            (denote-dired--rename-buffer file new-name)))
-        (revert-buffer))
+      (let ((rewrite (yes-or-no-p "Rewrite front matter of keywords, if relevant (buffers are not saved)?")))
+        (progn
+          (dolist (file marks)
+            (let* ((dir (file-name-directory file))
+                   (id (denote-dired--file-name-id file))
+                   (title (or (denote-retrieve--value-title file)
+                              (file-name-sans-extension
+                               (file-name-nondirectory file))))
+                   (extension (file-name-extension file t))
+                   (new-name (denote--format-file
+                              dir id keywords (denote--sluggify title) extension)))
+              (rename-file file new-name)
+              (denote-dired--rename-buffer file new-name)
+              (when rewrite
+                (denote-dired--rewrite-keywords-no-question new-name keywords))))
+          (revert-buffer)))
     (user-error "No marked files; aborting")))
 
 ;;;###autoload
@@ -489,7 +525,7 @@ doc string)."
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files))
            (keywords (denote--keywords-prompt))
-           ((y-or-n-p "Add front matter to all FILES (buffers are not saved)?")))
+           ((yes-or-no-p "Add front matter to all relevant files (buffers are not saved)?")))
       (progn
         (dolist (file marks)
           (let* ((dir (file-name-directory file))

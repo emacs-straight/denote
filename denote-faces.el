@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.3.1
+;; Version: 0.4.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -85,8 +85,8 @@ and seconds."
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
 (defvar denote-faces--file-name-regexp
   (concat "\\(?1:[0-9]\\{8\\}\\)\\(?2:T[0-9]\\{6\\}\\)"
-          "\\(?:\\(?3:--\\)\\(?4:[[:alnum:]-]*\\)\\)?"
-          "\\(?:\\(?5:__\\)\\(?6:[[:alnum:]_-]*\\)\\)?"
+          "\\(?:\\(?3:--\\)\\(?4:[[:alnum:][:nonascii:]-]*\\)\\)?"
+          "\\(?:\\(?5:__\\)\\(?6:[[:alnum:][:nonascii:]_-]*\\)\\)?"
           "\\(?7:\\..*\\)?$")
   "Regexp of file names for fontification.")
 

@@ -4,9 +4,9 @@
 #+language:              en
 #+options:               ':t toc:nil author:t email:t num:t
 #+startup:               content
-#+macro:                 stable-version 0.3.0
-#+macro:                 release-date 2022-07-11
-#+macro:                 development-version 0.4.0-dev
+#+macro:                 stable-version 0.4.0
+#+macro:                 release-date 2022-07-25
+#+macro:                 development-version 0.5.0-dev
 #+export_file_name:      denote.texi
 #+texinfo_filename:      denote.info
 #+texinfo_dir_category:  Emacs misc features
@@ -460,10 +460,6 @@ extension are simply left without one.
 Renaming only occurs relative to the current directory.  Files are not
 moved between directories.
 
-[ The front matter rewrite has been refined as part of
-  {{{development-version}}}.  Before it would replace the whole block.
-  Only it only touches the relevant values. ]
-
 If the =FILE= has Denote-style front matter for the =TITLE= and
 =KEYWORDS=, this command asks to rewrite their values in order to
 reflect the new input (this step always requires confirmation and the
@@ -494,8 +490,6 @@ files).
 :CUSTOM_ID: h:322fefee-6412-487d-bdad-9bd862f0423a
 :END:
 
-[ ~denote-dired-rename-file-and-add-front-matter~ is part of {{{development-version}}} ]
-
 #+findex: denote-dired-rename-file-and-add-front-matter
 The command ~denote-dired-rename-file-and-add-front-matter~ has the same
 modalities of interaction as the ~denote-dired-rename-file~ command
@@ -514,30 +508,30 @@ supported ones (per ~denote-file-type~).
 :CUSTOM_ID: h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde
 :END:
 
-[ Everything in this section is part of {{{development-version}}}. ]
-
 #+findex: denote-dired-rename-marked-files
 The ~denote-dired-rename-marked-files~ command renames marked files in
 Dired to conform with our file-naming scheme.  The operation does the
 following:
 
 - the file's existing file name is retained and becomes the =TITLE=
-  field, per our file-naming scheme;
+  field, per Denote's file-naming scheme;
 
 - the =TITLE= is sluggified and downcased, per our conventions;
 
 - an identifier is prepended to the =TITLE=;
 
-- the file's contents are not touched (no insertion of front
-  matter, no other changes);
-
 - the file's extension is retained;
 
 - a prompt is asked once for the =KEYWORDS= field and the input is
-  applied to all files.
+  applied to all file names;
 
-This command ignores files that comply with Denote's file-naming
-scheme.
+- if the file is recognized as a Denote note, its front matter is
+  rewritten to include the new keywords.  A confirmation to carry out
+  this step is performed once at the outset.  Note that the affected
+  buffers are not saved.  The user can thus check them to confirm that
+  the new front matter does not cause any problems (e.g. with the
+  command ~diff-buffer-with-file~).  Multiple buffers can be saved with
+  ~save-some-buffers~ (read its doc string).
 
 #+findex: denote-dired-rename-marked-files-and-add-front-matters
 The command ~denote-dired-rename-marked-files-and-add-front-matters~ is
@@ -791,7 +785,7 @@ Org):
 #+end_src
 
 The ~denote-link-buttonize-buffer~ is also an interactive function in
-case the user needs it [ this is part of {{{development-version}}} ].
+case the user needs it.
 
 Links are created only for files which qualify as a "note" for our
 purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
@@ -862,8 +856,6 @@ purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
 :PROPERTIES:
 :CUSTOM_ID: h:9cbb692e-5d8a-44a6-9193-899a07872a07
 :END:
-
-[ The ~denote-link-dired-marked-notes~ is part of {{{development-version}}} ]
 
 #+findex: denote-link-dired-marked-notes
 The command ~denote-link-dired-marked-notes~ is similar to
@@ -1531,9 +1523,9 @@ Everything is in place to set up the package.
 
 ;; Key bindings specifically for Dired.
 (let ((map dired-mode-map))
-  (define-key map (kbd "C-c C-d i") #'denote-link-dired-marked-notes)
-  (define-key map (kbd "C-c C-d r") #'denote-dired-rename-marked-files)
-  (define-key map (kbd "C-c C-d R") #'denote-dired-rename-marked-files-and-add-front-matters))
+  (define-key map (kbd "C-c C-d C-i") #'denote-link-dired-marked-notes)
+  (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-marked-files)
+  (define-key map (kbd "C-c C-d C-R") #'denote-dired-rename-marked-files-and-add-front-matters))
 
 (with-eval-after-load 'org-capture
   (require 'denote-org-capture)
@@ -1970,7 +1962,7 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 
 + Contributions to code or the manual :: Benjamin Kästner, Damien
   Cassou, Jack Baty, Jean-Philippe Gagné Guay, Kaushal Modi, Kyle Meyer,
-  Philip Kaludercic, Stefan Monnier.
+  Peter Prevos, Philip Kaludercic, Stefan Monnier.
 
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
   Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Frank Ehmsen,

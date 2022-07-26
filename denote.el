@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.3.1
+;; Version: 0.4.0
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -315,10 +315,10 @@ are described in the doc string of `format-time-string'."
 (defconst denote--id-regexp "\\([0-9]\\{8\\}\\)\\(T[0-9]\\{6\\}\\)"
   "Regular expression to match `denote--id-format'.")
 
-(defconst denote--title-regexp "--\\([[:alnum:]-]*\\)"
+(defconst denote--title-regexp "--\\([[:alnum:][:nonascii:]-]*\\)"
   "Regular expression to match the title field.")
 
-(defconst denote--keywords-regexp "__\\([[:alnum:]_-]*\\)"
+(defconst denote--keywords-regexp "__\\([[:alnum:][:nonascii:]_-]*\\)"
   "Regular expression to match keywords.")
 
 (defconst denote--extension-regexp "\\.\\(org\\|md\\|txt\\)"
