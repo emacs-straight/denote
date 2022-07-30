@@ -1875,16 +1875,39 @@ some ~org-capture~ template to append a new entry to one mega file (I do
 that for my Org agenda, by the way, as I explained before about using
 the right tool for the job).
 
+** Does Denote perform well at scale?
+:PROPERTIES:
+:CUSTOM_ID: h:863f812a-aac7-42ea-83b3-fbbdb58e08d7
+:END:
+
+Denote does not do anything fancy and has no special requirements: it
+uses standard tools to accomplish ordinary tasks.  If Emacs can cope
+with lots of files, then that is all you need to know: Denote will work.
+
+To put this to the test, Peter Prevos is running simulations with R that
+generate large volumes of notes.  You can read the technicalities here:
+<https://lucidmanager.org/productivity/testing-denote-package/>.
+Excerpt:
+
+#+begin_quote
+Using this code I generated ten thousands notes and used this to test
+the Denote package to see it if works at a large scale. This tests shows
+that Prot's approach is perfectly capable of working with thousands of
+notes.
+#+end_quote
+
+Of course, we are always prepared to make refinements to the code, where
+necessary, without compromising on the project's principles.
+
 ** I add TODOs to my files; will the many files slow down the Org agenda?
 :PROPERTIES:
 :CUSTOM_ID: h:63c2f8d4-79ed-4c55-b3ef-e048a05802c0
 :END:
 
 I have not tested it, but assume that yes, many files will slow down the
-agenda.  Consider looking into one of Denote's alternatives, with
-=org-roam= being the obvious choice ([[#h:dbb51a1b-90b8-48e8-953c-e2fb3e36981e][Alternatives to Denote]]).
+agenda due to how that works.
 
-Or, if you want my opinion, decouple your longer-term storage from your
+If you want my opinion though, decouple your knowledge base from your
 ephemeral to-do list: Denote (and others) can be used for the former,
 while you let standard Org work splendidly for the latter---that is what
 I do, anyway.
