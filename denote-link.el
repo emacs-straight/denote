@@ -148,7 +148,8 @@
 
 ;;; Code:
 
-(require 'denote-retrieve)
+(require 'denote)
+(require 'denote-faces)
 
 (defgroup denote-link ()
   "Link facility for Denote."
@@ -230,9 +231,9 @@ title."
 
 (defun denote-link--format-link (file pattern)
   "Prepare link to FILE using PATTERN."
-  (let ((file-id (denote-retrieve--filename-identifier file))
+  (let ((file-id (denote--retrieve-filename-identifier file))
         (file-title (unless (string= pattern denote-link--format-id-only)
-                      (denote-retrieve--value-title file))))
+                      (denote--retrieve-value-title file))))
     (format pattern file-id file-title)))
 
 ;;;###autoload
@@ -242,7 +243,7 @@ With optional ID-ONLY, such as a universal prefix
 argument (\\[universal-argument]), insert links with just the
 identifier and no further description.  In this case, the link
 format is always [[denote:IDENTIFIER]]."
-  (interactive (list (denote-retrieve--read-file-prompt) current-prefix-arg))
+  (interactive (list (denote--retrieve-read-file-prompt) current-prefix-arg))
   (let ((beg (point)))
     (insert
      (denote-link--format-link
@@ -385,8 +386,6 @@ Expand `denote-link-backlinks-display-buffer-action'."
    buf
    `(,@denote-link-backlinks-display-buffer-action)))
 
-(require 'denote-faces)
-
 (defun denote-link--prepare-backlinks (id files &optional title)
   "Create backlinks' buffer for ID including FILES.
 Use optional TITLE for a prettier heading."
@@ -423,9 +422,9 @@ default, it will show up below the current window."
   (interactive)
   (let* ((default-directory (denote-directory))
          (file (buffer-file-name))
-         (id (denote-retrieve--filename-identifier file))
-         (title (denote-retrieve--value-title file)))
-    (if-let ((files (denote-retrieve--proces-grep id)))
+         (id (denote--retrieve-filename-identifier file))
+         (title (denote--retrieve-value-title file)))
+    (if-let ((files (denote--retrieve-proces-grep id)))
         (denote-link--prepare-backlinks id files title)
       (user-error "No links to the current note"))))
 
@@ -590,7 +589,7 @@ This lets the user complete a link through the `org-insert-link'
 interface by first selecting the `denote:' hyperlink type."
   (concat
    "denote:"
-   (denote-retrieve--filename-identifier (denote-retrieve--read-file-prompt))))
+   (denote--retrieve-filename-identifier (denote--retrieve-read-file-prompt))))
 
 (defun denote-link-ol-export (link description format)
   "Export a `denote:' link from Org files.

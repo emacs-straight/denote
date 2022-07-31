@@ -96,6 +96,7 @@
 ;;; Code:
 
 (require 'seq)
+(require 'xref)
 (eval-when-compile (require 'subr-x))
 
 (defgroup denote ()
@@ -522,6 +523,102 @@ output is sorted with `string-lessp'."
           (add-to-history 'denote--keyword-history kw))
         (delete-dups keywords)))
 
+;;;; Front matter or content retrieval functions
+
+(defconst denote--retrieve-id-front-matter-key-regexp
+  "^.?.?\\b\\(?:identifier\\)\\s-*[:=]"
+  "Regular expression for identifier key.")
+
+(defconst denote--retrieve-title-front-matter-key-regexp
+  "^\\(?:#\\+\\)?\\(?:title\\)\\s-*[:=]"
+  "Regular expression for title key.")
+
+(defconst denote--retrieve-date-front-matter-key-regexp
+  "^\\(?:#\\+\\)?\\(?:date\\)\\s-*[:=]"
+  "Regular expression for date key.")
+
+(defconst denote--retrieve-keywords-front-matter-key-regexp
+  "^\\(?:#\\+\\)?\\(?:tags\\|filetags\\)\\s-*[:=]"
+  "Regular expression for keywords key.")
+
+(defun denote--retrieve-filename-identifier (file)
+  "Extract identifier from FILE name."
+  (if (file-exists-p file)
+      (progn
+        (string-match denote--id-regexp file)
+        (match-string 0 file))
+    (error "Cannot find `%s' as a file" file)))
+
+(defun denote--retrieve-search (file key-regexp &optional key)
+  "Return value of KEY-REGEXP key in current buffer from FILE.
+If optional KEY is non-nil, return the key instead."
+  (when (denote--only-note-p file)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (goto-char (point-min))
+          (when (re-search-forward key-regexp nil t 1)
+            (if key
+                (match-string-no-properties 0)
+              (let ((trims "[ \t\n\r\"']+"))
+                (string-trim
+                 (buffer-substring-no-properties (point) (point-at-eol))
+                 trims trims)))))))))
+
+(defun denote--retrieve-value-title (file &optional key)
+  "Return title value from FILE.
+If optional KEY is non-nil, return the key instead."
+  (denote--retrieve-search file denote--retrieve-title-front-matter-key-regexp key))
+
+(defun denote--retrieve-value-date (file &optional key)
+  "Return date value from FILE.
+If optional KEY is non-nil, return the key instead."
+  (denote--retrieve-search file denote--retrieve-date-front-matter-key-regexp key))
+
+(defun denote--retrieve-value-keywords (file &optional key)
+  "Return keywords value from FILE.
+If optional KEY is non-nil, return the key instead."
+  (denote--retrieve-search file denote--retrieve-keywords-front-matter-key-regexp key))
+
+(defun denote--retrieve-read-file-prompt ()
+  "Prompt for regular file in variable `denote-directory'."
+  (read-file-name "Select note: " (denote-directory) nil nil nil
+                  (lambda (f) (or (denote--only-note-p f) (file-directory-p f)))))
+
+(defun denote--retrieve-files-in-output (files)
+  "Return list of FILES from `find' output."
+  (delq nil (mapcar (lambda (f)
+                      (when (denote--only-note-p f) f))
+                    files)))
+
+(defun denote--retrieve-xrefs (identifier)
+  "Return xrefs of IDENTIFIER in variable `denote-directory'.
+The xrefs are returned as an alist."
+  (xref--alistify
+   (xref-matches-in-files identifier (denote--directory-files :absolute))
+   (lambda (x)
+     (xref-location-group (xref-item-location x)))))
+
+(defun denote--retrieve-files-in-xrefs (xrefs)
+  "Return sorted file names sans directory from XREFS.
+Parse `denote--retrieve-xrefs'."
+  (sort
+   (delete-dups
+    (mapcar (lambda (x)
+              (denote--file-name-relative-to-denote-directory (car x)))
+            xrefs))
+   #'string-lessp))
+
+(defun denote--retrieve-proces-grep (identifier)
+  "Process lines matching IDENTIFIER and return list of files."
+  (let* ((default-directory (denote-directory))
+         (file (denote--file-name-relative-to-denote-directory (buffer-file-name))))
+    (denote--retrieve-files-in-output
+     (delete file (denote--retrieve-files-in-xrefs
+                   (denote--retrieve-xrefs identifier))))))
+
 ;;;; New note
 
 ;;;;; Common helpers for new notes
@@ -573,6 +670,20 @@ treatment)."
     (if (or (eq type 'markdown-toml) (eq type 'markdown-yaml) (eq type 'md))
         (denote--format-markdown-keywords kw)
       (mapconcat #'downcase kw "  "))))
+
+;; TODO 2022-07-29: For now, for Org files, this functions only supports
+;; keywords separated with 2 spaces (as created by
+;; `denote--file-meta-keywords'), but we should try to handle all valid
+;; Org syntaxes.
+(defun denote--extract-keywords-from-front-matter (file &optional type)
+  "Extract keywords from front matter of FILE with TYPE.
+This is the reverse operation of `denote--file-meta-keywords'."
+  (let ((fm-keywords (denote--retrieve-value-keywords file)))
+    (if (or (eq type 'markdown-toml) (eq type 'markdown-yaml) (eq type 'md))
+        (split-string
+         (string-trim-right (string-trim-left fm-keywords "\\[") "\\]")
+         ", " t "\s*\"\s*")
+      (split-string fm-keywords "  " t " "))))
 
 (defvar denote-toml-front-matter
   "+++
@@ -944,6 +1055,108 @@ This is equivalent to calling `denote' when `denote-prompts' is set to
     (call-interactively #'denote)))
 
 (defalias 'denote-create-note-in-subdirectory (symbol-function 'denote-subdirectory))
+
+;;;; Note modification
+
+;;;;; Common helpers for note modifications
+
+(defun denote--filetype-heuristics (file)
+  "Return likely file type of FILE.
+The return value is for `denote--file-meta-header'."
+  (pcase (file-name-extension file)
+    ("md" (if-let ((title-key (denote--retrieve-value-title file t))
+                   ((string-match-p "title\\s-*=" title-key)))
+              'markdown-toml
+            'markdown-yaml))
+    ("txt" 'text)
+    (_ 'org)))
+
+(defun denote--file-attributes-time (file)
+  "Return `file-attribute-modification-time' of FILE as identifier."
+  (format-time-string
+   denote--id-format
+   (file-attribute-modification-time (file-attributes file))))
+
+(defun denote--file-name-id (file)
+  "Return FILE identifier, else generate one."
+  (cond
+   ((string-match denote--id-regexp file)
+    (substring file (match-beginning 0) (match-end 0)))
+   ((denote--file-attributes-time file))
+   (t (format-time-string denote--id-format))))
+
+(defun denote-update-dired-buffers ()
+  "Update Dired buffers of variable `denote-directory'."
+  (mapc
+   (lambda (buf)
+     (with-current-buffer buf
+       (when (and (eq major-mode 'dired-mode)
+                  (string-prefix-p (denote-directory)
+                                   (expand-file-name default-directory)))
+         (revert-buffer))))
+   (buffer-list)))
+
+(defun denote--rename-buffer (old-name new-name)
+  "Rename OLD-NAME buffer to NEW-NAME, when appropriate."
+  (when-let ((buffer (find-buffer-visiting old-name)))
+    (with-current-buffer buffer
+      (set-visited-file-name new-name nil t))))
+
+(defun denote--rename-file (old-name new-name)
+  "Rename file named OLD-NAME to NEW-NAME.
+Update Dired buffers if the file is renamed.
+Return non-nil if the file is renamed, nil otherwise."
+  (unless (string= (expand-file-name old-name) (expand-file-name new-name))
+    (rename-file old-name new-name nil)
+    (denote--rename-buffer old-name new-name)))
+
+(defun denote--add-front-matter (file title keywords id)
+  "Prepend front matter to FILE if `denote--only-note-p'.
+The TITLE, KEYWORDS and ID are passed from the renaming
+command and are used to construct a new front matter block if
+appropriate."
+  (when-let* (((denote--only-note-p file))
+              (filetype (denote--filetype-heuristics file))
+              (date (denote--date (date-to-time id)))
+              (new-front-matter (denote--file-meta-header title date keywords id filetype)))
+    (with-current-buffer (find-file-noselect file)
+      (goto-char (point-min))
+      (insert new-front-matter))))
+
+(defun denote--edit-front-matter-p (file)
+  "Test if FILE should be subject to front matter rewrite.
+This is relevant for `denote-dired--rewrite-front-matter': if FILE
+has no front matter, then we abort early instead of trying to
+replace what isn't there."
+  (when-let ((ext (file-name-extension file)))
+    (and (file-regular-p file)
+         (file-writable-p file)
+         (not (denote--file-empty-p file))
+         (string-match-p "\\(md\\|org\\|txt\\)\\'" ext)
+         ;; Heuristic to check if this is one of our notes
+         (string= (expand-file-name default-directory) (denote-directory)))))
+
+(defun denote--rewrite-keywords (file keywords)
+  "Rewrite KEYWORDS in FILE outright.
+
+Do the same as `denote-dired--rewrite-front-matter' for keywords,
+but do not ask for confirmation.
+
+This is for use in `denote-dired-rename-marked-files' or related.
+Those commands ask for confirmation once before performing an
+operation on multiple files."
+  (when-let ((denote--edit-front-matter-p file)
+             (old-keywords (denote--retrieve-value-keywords file))
+             (new-keywords (denote--file-meta-keywords
+                            keywords (denote--filetype-heuristics file))))
+    (with-current-buffer (find-file-noselect file)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (goto-char (point-min))
+          (re-search-forward denote--retrieve-keywords-front-matter-key-regexp nil t 1)
+          (search-forward old-keywords nil t 1)
+          (replace-match (concat "\\1" new-keywords) t))))))
 
 (provide 'denote)
 ;;; denote.el ends here
