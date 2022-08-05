@@ -750,15 +750,15 @@ TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
 
 Optional FILETYPE is one of the values of `denote-file-type',
 else that variable is used."
-  (let ((kw-space (denote--file-meta-keywords keywords))
-        (kw-md (denote--file-meta-keywords keywords 'md)))
-    ;; TODO 2022-07-27: Rewrite this (and/or related) to avoid
-    ;; duplication with the markdown flavours.
+  (let ((kw-space (denote--file-meta-keywords keywords 'text))
+        (kw-md (denote--file-meta-keywords keywords 'md))
+        (kw-colon (denote--file-meta-keywords keywords)))
+    ;; TODO 2022-08-04: Rewrite this.
     (pcase (or filetype denote-file-type)
       ('markdown-toml (format denote-toml-front-matter title date kw-md id))
       ('markdown-yaml (format denote-yaml-front-matter title date kw-md id))
       ('text (format denote-text-front-matter title date kw-space id denote-text-front-matter-delimiter))
-      (_ (format denote-org-front-matter title date kw-space id)))))
+      (_ (format denote-org-front-matter title date kw-colon id)))))
 
 (defun denote--path (title keywords &optional dir id)
   "Return path to new file with TITLE and KEYWORDS.
@@ -1132,7 +1132,7 @@ appropriate."
 
 (defun denote--edit-front-matter-p (file)
   "Test if FILE should be subject to front matter rewrite.
-This is relevant for `denote--rewrite-front-matter'. We can edit
+This is relevant for `denote--rewrite-front-matter'.  We can edit
 the front matter if it contains a \"title\" line and a \"tags\"
 line (the exact syntax depending on the file type)."
   (when-let ((ext (file-name-extension file)))
@@ -1343,13 +1343,13 @@ The operation does the following:
   applied to all file names;
 
 - if the file is recognized as a Denote note, add a front matter
-  or rewrite it to include the new keywords. A confirmation to
-  carry out this step is performed once at the outset. Note that
-  the affected buffers are not saved. The user can thus check
+  or rewrite it to include the new keywords.  A confirmation to
+  carry out this step is performed once at the outset.  Note that
+  the affected buffers are not saved.  The user can thus check
   them to confirm that the new front matter does not cause any
   problems (e.g. with the command `diff-buffer-with-file').
   Multiple buffers can be saved with `save-some-buffers' (read
-  its doc string). The addition of front matter takes place only
+  its doc string).  The addition of front matter takes place only
   if the given file has the appropriate file type extension (per
   the user option `denote-file-type')."
   (interactive nil dired-mode)
@@ -1382,6 +1382,10 @@ The operation does the following:
 (defgroup denote-faces ()
   "Faces for Denote."
   :group 'denote)
+
+(defface denote-faces-link '((t :inherit link))
+  "Face used to style Denote links in the buffer."
+  :group 'denote-faces)
 
 (defface denote-faces-subdirectory
   '((t :inherit bold))
@@ -1657,6 +1661,7 @@ format is always [[denote:IDENTIFIER]]."
 ;; not need it.
 (define-button-type 'denote-link-button
   'follow-link t
+  'face 'denote-faces-link
   'action #'denote-link--find-file-at-button)
 
 (autoload 'thing-at-point-looking-at "thingatpt")
@@ -1971,6 +1976,7 @@ backend."
           (org-link-set-parameters
            "denote"
            :follow #'denote-link-ol-follow
+           :face 'denote-faces-link
            :complete #'denote-link-ol-complete
            :export #'denote-link-ol-export)))))
 
