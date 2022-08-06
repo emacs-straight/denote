@@ -653,7 +653,7 @@ which include the starting dot or the return value of
                               (downcase k))
                             keywords ":")))
 
-(defun denote--file-meta-keywords (keywords &optional type)
+(defun denote--format-front-matter-keywords (keywords &optional type)
   "Prepare KEYWORDS for inclusion in the file's front matter.
 Parse the output of `denote--keywords-prompt', using `downcase'
 on the keywords and separating them by two spaces.  A single
@@ -671,19 +671,11 @@ treatment)."
      (t
       (denote--format-org-keywords kw)))))
 
-(defun denote--extract-keywords-from-front-matter (file &optional type)
-  "Extract keywords from front matter of FILE with TYPE.
-This is the reverse operation of `denote--file-meta-keywords'."
-  (let ((fm-keywords (denote--retrieve-value-keywords file)))
-    (cond
-     ((or (eq type 'markdown-toml) (eq type 'markdown-yaml) (eq type 'md))
-      (split-string
-       (string-trim-right (string-trim-left fm-keywords "\\[") "\\]")
-       ", " t "\s*\"\s*"))
-     ((eq type 'text)
-      (split-string fm-keywords "  " t " "))
-     (t
-      (split-string fm-keywords "\\([:]\\|\s\s\\)" t "\\([:]\\|\s\\)")))))
+(defun denote--front-matter-keywords-to-list (file)
+  "Return keywords from front matter of FILE as list of strings.
+This is the reverse operation of `denote--format-front-matter-keywords'."
+  (let ((keywords (denote--retrieve-value-keywords file)))
+    (split-string keywords "[:,\s]+" t "[][ \"']+")))
 
 (defvar denote-toml-front-matter
   "+++
@@ -742,7 +734,7 @@ and do not use any empty line before it.
 These help ensure consistency and might prove useful if we need
 to operate on the front matter as a whole.")
 
-(defun denote--file-meta-header (title date keywords id &optional filetype)
+(defun denote--format-front-matter (title date keywords id &optional filetype)
   "Front matter for new notes.
 
 TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
@@ -750,15 +742,15 @@ TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
 
 Optional FILETYPE is one of the values of `denote-file-type',
 else that variable is used."
-  (let ((kw-space (denote--file-meta-keywords keywords 'text))
-        (kw-md (denote--file-meta-keywords keywords 'md))
-        (kw-colon (denote--file-meta-keywords keywords)))
-    ;; TODO 2022-08-04: Rewrite this.
+  (let ((kw-md (denote--format-front-matter-keywords keywords 'md)))
     (pcase (or filetype denote-file-type)
       ('markdown-toml (format denote-toml-front-matter title date kw-md id))
       ('markdown-yaml (format denote-yaml-front-matter title date kw-md id))
-      ('text (format denote-text-front-matter title date kw-space id denote-text-front-matter-delimiter))
-      (_ (format denote-org-front-matter title date kw-colon id)))))
+      ('text (format denote-text-front-matter title date
+                     (denote--format-front-matter-keywords keywords 'text)
+                     id denote-text-front-matter-delimiter))
+      (_ (format denote-org-front-matter title date
+                 (denote--format-front-matter-keywords keywords) id)))))
 
 (defun denote--path (title keywords &optional dir id)
   "Return path to new file with TITLE and KEYWORDS.
@@ -815,7 +807,7 @@ should be valid for note creation."
          (denote-file-type file-type)
          (path (denote--path title keywords default-directory id))
          (buffer (find-file path))
-         (header (denote--file-meta-header
+         (header (denote--format-front-matter
                   title (denote--date date) keywords
                   (format-time-string denote--id-format date)
                   file-type)))
@@ -1006,7 +998,7 @@ here for clarity."
          (dirs (push root subdirs)))
     (denote--subdirs-completion-table dirs)))
 
-;;;;; Convenience functions
+;;;;; Convenience commands as `denote' variants
 
 (defalias 'denote-create-note (symbol-function 'denote))
 
@@ -1061,7 +1053,7 @@ This is equivalent to calling `denote' when `denote-prompts' is set to
 
 (defun denote--filetype-heuristics (file)
   "Return likely file type of FILE.
-The return value is for `denote--file-meta-header'."
+The return value is for `denote--format-front-matter'."
   (pcase (file-name-extension file)
     ("md" (if-let ((title-key (denote--retrieve-value-title file t))
                    ((string-match-p "title\\s-*=" title-key)))
@@ -1116,7 +1108,7 @@ appropriate."
   (when-let* (((denote--only-note-p file))
               (filetype (denote--filetype-heuristics file))
               (date (denote--date (date-to-time id)))
-              (new-front-matter (denote--file-meta-header title date keywords id filetype)))
+              (new-front-matter (denote--format-front-matter title date keywords id filetype)))
     (with-current-buffer (find-file-noselect file)
       (goto-char (point-min))
       (insert new-front-matter))))
@@ -1155,7 +1147,7 @@ This is for use in `denote-dired-rename-marked-files' or related.
 Those commands ask for confirmation once before performing an
 operation on multiple files."
   (when-let ((old-keywords (denote--retrieve-value-keywords file))
-             (new-keywords (denote--file-meta-keywords
+             (new-keywords (denote--format-front-matter-keywords
                             keywords (denote--filetype-heuristics file))))
     (with-current-buffer (find-file-noselect file)
       (save-excursion
@@ -1166,14 +1158,39 @@ operation on multiple files."
           (search-forward old-keywords nil t 1)
           (replace-match (concat "\\1" new-keywords) t))))))
 
-(defcustom denote-dired-rename-expert nil
-  "If t, renaming a file doesn't ask for confirmation.
-The confiration is asked via a `y-or-n-p' prompt which shows the
-old name followed by the new one.  This applies to the command
-`denote-dired-rename-file'."
-  :type 'boolean
-  :group 'denote-dired)
+;; FIXME 2022-07-25: We should make the underlying regular expressions
+;; that `denote--retrieve-value-title' targets more refined, so that we
+;; capture eveyrhing at once.
+(defun denote--rewrite-front-matter (file title keywords)
+  "Rewrite front matter of note after `denote-dired-rename-file'.
+The FILE, TITLE, and KEYWORDS are passed from the renaming
+command and are used to construct new front matter values if
+appropriate."
+  (when-let ((old-title (denote--retrieve-value-title file))
+             (old-keywords (denote--retrieve-value-keywords file))
+             (new-title title)
+             (new-keywords (denote--format-front-matter-keywords
+                            keywords (denote--filetype-heuristics file))))
+      (with-current-buffer (find-file-noselect file)
+        (when (y-or-n-p (format
+                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
+                         (propertize old-title 'face 'error)
+                         (propertize new-title 'face 'success)
+                         (propertize old-keywords 'face 'error)
+                         (propertize new-keywords 'face 'success)))
+          (save-excursion
+            (save-restriction
+              (widen)
+              (goto-char (point-min))
+              (re-search-forward denote--retrieve-title-front-matter-key-regexp nil t 1)
+              (search-forward old-title nil t 1)
+              (replace-match (concat "\\1" new-title) t)
+              (goto-char (point-min))
+              (re-search-forward denote--retrieve-keywords-front-matter-key-regexp nil t 1)
+              (search-forward old-keywords nil t 1)
+              (replace-match (concat "\\1" new-keywords) t)))))))
 
+(make-obsolete 'denote-dired-rename-expert nil "0.5.0")
 (make-obsolete 'denote-dired-post-rename-functions nil "0.4.0")
 
 ;;;;; The renaming commands and their prompts
@@ -1201,38 +1218,6 @@ Throw error is FILE is not regular, else return FILE."
              (propertize (file-name-nondirectory old-name) 'face 'error)
              (propertize (file-name-nondirectory new-name) 'face 'success)))))
 
-;; FIXME 2022-07-25: We should make the underlying regular expressions
-;; that `denote--retrieve-value-title' targets more refined, so that we
-;; capture eveyrhing at once.
-(defun denote--rewrite-front-matter (file title keywords)
-  "Rewrite front matter of note after `denote-dired-rename-file'.
-The FILE, TITLE, and KEYWORDS are passed from the renaming
-command and are used to construct new front matter values if
-appropriate."
-  (when-let ((old-title (denote--retrieve-value-title file))
-             (old-keywords (denote--retrieve-value-keywords file))
-             (new-title title)
-             (new-keywords (denote--file-meta-keywords
-                            keywords (denote--filetype-heuristics file))))
-      (with-current-buffer (find-file-noselect file)
-        (when (y-or-n-p (format
-                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
-                         (propertize old-title 'face 'error)
-                         (propertize new-title 'face 'success)
-                         (propertize old-keywords 'face 'error)
-                         (propertize new-keywords 'face 'success)))
-          (save-excursion
-            (save-restriction
-              (widen)
-              (goto-char (point-min))
-              (re-search-forward denote--retrieve-title-front-matter-key-regexp nil t 1)
-              (search-forward old-title nil t 1)
-              (replace-match (concat "\\1" new-title) t)
-              (goto-char (point-min))
-              (re-search-forward denote--retrieve-keywords-front-matter-key-regexp nil t 1)
-              (search-forward old-keywords nil t 1)
-              (replace-match (concat "\\1" new-keywords) t)))))))
-
 ;;;###autoload
 (defun denote-rename-file (file title keywords)
   "Rename file and update existing front matter if appropriate.
@@ -1247,16 +1232,15 @@ modification time.  If such attribute cannot be found, the
 identifier falls back to the `current-time'.
 
 The default TITLE is retrieved from a line starting with a title
-field in the file's contents, depending on the given file type.
-Else, the file name is used as a default value at the minibuffer
-prompt.
+field in the file's contents, depending on the given file
+type (e.g. #+title for Org).  Else, the file name is used as a
+default value at the minibuffer prompt.
 
 As a final step after the FILE, TITLE, and KEYWORDS prompts, ask
 for confirmation, showing the difference between old and new file
-names.  If `denote-dired-rename-expert' is non-nil, conduct the
-renaming operation outright---no question asked!
+names.
 
-The file type extension (e.g. .pdf) is read from the underlying
+The file type extension (like .txt) is read from the underlying
 file and is preserved through the renaming process.  Files that
 have no extension are simply left without one.
 
@@ -1271,12 +1255,11 @@ to double-check the effect).  The rewrite of the FILE and
 KEYWORDS in the front matter should not affect the rest of the
 block.
 
-If the file doesn't have front matter, add one at the top of the
-file without asking.
+If the file doesn't have front matter but is among the supported
+file types (per `denote-file-type'), add front matter at the top
+of it and leave the buffer unsaved for further inspection.
 
-Front matter is added only when the file is one of the supported
-file types (per `denote-file-type').  For per-file-type front
-matter, refer to the variables:
+For per-file-type front matter, refer to the variables:
 
 - `denote-org-front-matter'
 - `denote-text-front-matter'
@@ -1285,10 +1268,12 @@ matter, refer to the variables:
 
 This command is intended to (i) rename existing Denote notes
 while updating their title and keywords in the front matter, (ii)
-rename files that can benefit from Denote's file-naming scheme.
-The latter is a convenience we provide, since we already have all
-the requisite mechanisms in place (though Denote does not---and
-will not---manage such files)."
+convert existing supported file types to Denote notes, and (ii)
+rename non-note files (e.g. PDF) that can benefit from Denote's
+file-naming scheme.  The latter is a convenience we provide,
+since we already have all the requisite mechanisms in
+place (though Denote does not---and will not---manage such
+files)."
   (interactive
    (let ((file (denote--rename-dired-file-or-prompt)))
      (list
@@ -1377,6 +1362,84 @@ The operation does the following:
   'denote-dired-rename-marked-files
   "0.5.0")
 
+;;;###autoload
+(defun denote-rename-file-using-front-matter (file)
+  "Rename FILE using its front matter as input.
+When called interactively, FILE is the `buffer-file-name' which
+is subsequently inspected for the requisite front matter.  It is
+thus implied that the FILE has a file type that is supported by
+Denote, per `denote-file-type'.
+
+Ask for confirmation, showing the difference between the old and
+the new file names.  Refrain from performing the operation if the
+buffer has unsaved changes.
+
+Never modify the identifier of the FILE, if any, even if it is
+edited in the front matter.  Denote considers the file name to be
+the source of truth in this case to avoid potential breakage with
+typos and the like."
+  (interactive (list (buffer-file-name)))
+  (when (buffer-modified-p)
+    (user-error "Save buffer before proceeding"))
+  (if-let* ((title (denote--retrieve-value-title file))
+            (keywords (denote--front-matter-keywords-to-list file))
+            (extension (file-name-extension file t))
+            (id (denote--file-name-id file))
+            (dir (file-name-directory file))
+            (new-name (denote--format-file
+                       dir id keywords (denote--sluggify title) extension)))
+      (when (denote--rename-file-prompt file new-name)
+        (denote--rename-file file new-name)
+        (denote-update-dired-buffers))
+    (user-error "No front matter for title and/or keywords")))
+
+;;;###autoload
+(defun denote-dired-rename-marked-files-using-front-matter ()
+  "Rename marked files in Dired using their front matter as input.
+Marked files must count as notes for the purposes of Denote,
+which means that they at least have an identifier in their file
+name and use a supported file type, per `denote-file-type'.
+Files that do not meet this criterion are ignored.
+
+The operation does the following:
+
+- the title in the front matter becomes the TITLE component of
+  the file name, with hyphenation per Denote's file-naming
+  scheme;
+
+- the keywords in the front matter are used for the KEYWORDS
+  component of the file name and are processed accordingly, if
+  needed;
+
+- the identifier remains unchanged in the file name even if it is
+  modified in the front matter (this is done to avoid breakage
+  caused by typos and the like).
+
+NOTE that files must be saved, because Denote reads from the
+underlying file, not a modified buffer (this is done to avoid
+potential mistakes).  The return value of a modified buffer is
+the one prior to the modification, i.e. the one already written
+on disk.
+
+This command is useful for synchronizing multiple file names with
+their respective front matter."
+  (interactive nil dired-mode)
+  (if-let ((marks (seq-filter
+                   (lambda (file) (denote--only-note-p file))
+                   (dired-get-marked-files))))
+      (progn
+        (dolist (file marks)
+          (let* ((dir (file-name-directory file))
+                 (id (denote--file-name-id file))
+                 (title (denote--retrieve-value-title file))
+                 (keywords (denote--front-matter-keywords-to-list file))
+                 (extension (file-name-extension file t))
+                 (new-name (denote--format-file
+                            dir id keywords (denote--sluggify title) extension)))
+            (denote--rename-file file new-name)))
+        (revert-buffer))
+    (user-error "No marked files; aborting")))
+
 ;;;; The Denote faces
 
 (defgroup denote-faces ()
@@ -1385,6 +1448,12 @@ The operation does the following:
 
 (defface denote-faces-link '((t :inherit link))
   "Face used to style Denote links in the buffer."
+  :group 'denote-faces)
+
+(defface denote-faces-broken-link '((t :inherit (error link)))
+  "Face used to style Denote broken links in the buffer.
+This only works in Org files, as Emacs' generic buttons do not
+provide a facility that uses a face based on certain conditions."
   :group 'denote-faces)
 
 (defface denote-faces-subdirectory
@@ -1937,6 +2006,14 @@ file."
    (denote-link--ol-resolve-link-to-target link)
    nil))
 
+(defun denote-link-ol-face (link)
+  "Return appropriate face for LINK.
+If the LINK resolves to a note, use `denote-faces-link', else
+return `denote-faces-broken-link'."
+  (if (denote-link--ol-resolve-link-to-target link)
+      'denote-faces-link
+    'denote-faces-broken-link))
+
 (defun denote-link-ol-complete ()
   "Like `denote-link' but for Org integration.
 This lets the user complete a link through the `org-insert-link'
@@ -1976,7 +2053,7 @@ backend."
           (org-link-set-parameters
            "denote"
            :follow #'denote-link-ol-follow
-           :face 'denote-faces-link
+           :face #'denote-link-ol-face
            :complete #'denote-link-ol-complete
            :export #'denote-link-ol-export)))))
 
@@ -2015,7 +2092,7 @@ Consult the manual for template samples."
         (keywords (denote--keywords-prompt))
         (denote-file-type nil)) ; we enforce the .org extension for `org-capture'
     (denote--path title keywords)
-    (setq denote-last-front-matter (denote--file-meta-header
+    (setq denote-last-front-matter (denote--format-front-matter
                                     title (denote--date nil) keywords
                                     (format-time-string denote--id-format nil)))
     (denote--keywords-add-to-history denote-last-keywords)
