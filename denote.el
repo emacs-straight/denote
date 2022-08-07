@@ -720,19 +720,19 @@ is specific to this variable: it expect a delimiter such as
 \n"
   "Org front matter value for `format'.
 The order of the arguments is TITLE, DATE, KEYWORDS, ID.  If you
-are an avdanced user who wants to edit this variable to affect
+are an advanced user who wants to edit this variable to affect
 how front matter is produced, consider using something like %2$s
 to control where Nth argument is placed.
 
-Make sure to
+Make sure to:
 
 1. Not use empty lines inside the front matter block.
 
 2. Insert at least one empty line after the front matter block
-and do not use any empty line before it.
+   and do not use any empty line before it.
 
-These help ensure consistency and might prove useful if we need
-to operate on the front matter as a whole.")
+These help with consistency and might prove useful if we ever
+need to operate on the front matter as a whole.")
 
 (defun denote--format-front-matter (title date keywords id &optional filetype)
   "Front matter for new notes.
@@ -1124,9 +1124,13 @@ appropriate."
 
 (defun denote--edit-front-matter-p (file)
   "Test if FILE should be subject to front matter rewrite.
-This is relevant for `denote--rewrite-front-matter'.  We can edit
-the front matter if it contains a \"title\" line and a \"tags\"
-line (the exact syntax depending on the file type)."
+This is relevant for operations that insert or rewrite the front
+matter in a Denote note.
+
+For the purposes of this test, FILE is a Denote note when it (i)
+is a regular file, (ii) is writable, (iii) has a supported file
+type extension per `denote-file-type', and (iv) is stored in the
+variable `denote-directory'."
   (when-let ((ext (file-name-extension file)))
     (and (file-regular-p file)
          (file-writable-p file)
@@ -1171,24 +1175,24 @@ appropriate."
              (new-title title)
              (new-keywords (denote--format-front-matter-keywords
                             keywords (denote--filetype-heuristics file))))
-      (with-current-buffer (find-file-noselect file)
-        (when (y-or-n-p (format
-                         "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
-                         (propertize old-title 'face 'error)
-                         (propertize new-title 'face 'success)
-                         (propertize old-keywords 'face 'error)
-                         (propertize new-keywords 'face 'success)))
-          (save-excursion
-            (save-restriction
-              (widen)
-              (goto-char (point-min))
-              (re-search-forward denote--retrieve-title-front-matter-key-regexp nil t 1)
-              (search-forward old-title nil t 1)
-              (replace-match (concat "\\1" new-title) t)
-              (goto-char (point-min))
-              (re-search-forward denote--retrieve-keywords-front-matter-key-regexp nil t 1)
-              (search-forward old-keywords nil t 1)
-              (replace-match (concat "\\1" new-keywords) t)))))))
+    (with-current-buffer (find-file-noselect file)
+      (when (y-or-n-p (format
+                       "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
+                       (propertize old-title 'face 'error)
+                       (propertize new-title 'face 'success)
+                       (propertize old-keywords 'face 'error)
+                       (propertize new-keywords 'face 'success)))
+        (save-excursion
+          (save-restriction
+            (widen)
+            (goto-char (point-min))
+            (re-search-forward denote--retrieve-title-front-matter-key-regexp nil t 1)
+            (search-forward old-title nil t 1)
+            (replace-match (concat "\\1" new-title) t)
+            (goto-char (point-min))
+            (re-search-forward denote--retrieve-keywords-front-matter-key-regexp nil t 1)
+            (search-forward old-keywords nil t 1)
+            (replace-match (concat "\\1" new-keywords) t)))))))
 
 (make-obsolete 'denote-dired-rename-expert nil "0.5.0")
 (make-obsolete 'denote-dired-post-rename-functions nil "0.4.0")
@@ -1365,10 +1369,10 @@ The operation does the following:
 ;;;###autoload
 (defun denote-rename-file-using-front-matter (file)
   "Rename FILE using its front matter as input.
-When called interactively, FILE is the `buffer-file-name' which
-is subsequently inspected for the requisite front matter.  It is
-thus implied that the FILE has a file type that is supported by
-Denote, per `denote-file-type'.
+When called interactively, FILE is the return value of the
+function `buffer-file-name' which is subsequently inspected for
+the requisite front matter.  It is thus implied that the FILE has
+a file type that is supported by Denote, per `denote-file-type'.
 
 Ask for confirmation, showing the difference between the old and
 the new file names.  Refrain from performing the operation if the
@@ -1439,6 +1443,44 @@ their respective front matter."
             (denote--rename-file file new-name)))
         (revert-buffer))
     (user-error "No marked files; aborting")))
+
+;;;;; Creation of front matter
+
+;;;###autoload
+(defun denote-add-front-matter (file title keywords)
+  "Insert front matter at the top of FILE.
+
+When called interactively, FILE is the return value of the
+function `buffer-file-name'.  FILE is checked to determine
+whether it is a note for Denote's purposes.
+
+TITLE is a string.  Interactively, it is the user input at the
+minibuffer prompt.
+
+KEYWORDS is a list of strings.  Interactively, it is the user
+input at the minibuffer prompt.  This one supports completion for
+multiple entries, each separated by the `crm-separator' (normally
+a comma).
+
+The purpose of this command is to help the user generate new
+front matter for an existing note (perhaps because the user
+deleted the previous one and could not undo the change).
+
+This command does not rename the file (e.g. to update the
+keywords).  To rename a file by reading its front matter as
+input, use `denote-rename-file-using-front-matter'.
+
+Note that this command is useful only for existing Denote notes.
+If the user needs to convert a generic text file to a Denote
+note, they can use one of the command which first rename the file
+to make it comply with our file-naming scheme and then add the
+relevant front matter."
+  (interactive
+   (list
+    (buffer-file-name)
+    (denote--title-prompt)
+    (denote--keywords-prompt)))
+  (denote--add-front-matter file title keywords (denote--file-name-id file)))
 
 ;;;; The Denote faces
 

@@ -820,6 +820,130 @@ If the value is a string, ignore the above and use it instead.  The
 string must include format specifiers for the date.  These are described
 in the doc string of ~format-time-string~..
 
+** Change the front matter format
+:PROPERTIES:
+:CUSTOM_ID: h:7f918854-5ed4-4139-821f-8ee9ba06ad15
+:END:
+
+Per Denote's design principles, the code is hackable.  All front matter
+is stored in variables that are intended for public use.  We do not
+declare those as "user options" because (i) they expect the user to have
+some degree of knowledge in Emacs Lisp and (ii) implement custom code.
+
+[ NOTE for tinkerers: code intended for internal use includes double
+  hyphens in its symbol.  "Internal use" means that it can be changed
+  without warning and with no further reference in the change log.  Do
+  not use any of it without understanding the consequences. ]
+
+The variables which hold the front matter format are:
+
+#+vindex: denote-org-front-matter
+- ~denote-org-front-matter~
+
+#+vindex: denote-text-front-matter
+- ~denote-text-front-matter~
+
+#+vindex: denote-toml-front-matter
+- ~denote-toml-front-matter~
+
+#+vindex: denote-yaml-front-matter
+- ~denote-yaml-front-matter~
+
+These variables hold a string with specifiers that are used by the
+~format~ function.  The formatting operation passes four arguments (five
+in the case of ~denote-text-front-matter~ as noted in its doc string)
+which include the values of the given entries.  The doc string of
+~denote-org-front-matter~ describes the technicalities:
+
+#+begin_quote
+The order of the arguments is TITLE, DATE, KEYWORDS, ID.  If you are an
+advanced user who wants to edit this variable to affect how front matter
+is produced, consider using something like %2$s to control where Nth
+argument is placed.
+
+Make sure to:
+
+1. Not use empty lines inside the front matter block.
+
+2. Insert at least one empty line after the front matter block and do
+   not use any empty line before it.
+
+These help with consistency and might prove useful if we ever need to
+operate on the front matter as a whole.
+#+end_quote
+
+With those granted, below are some examples.  The approach is the same
+for all variables.
+
+#+begin_src emacs-lisp
+;; Like the default, but upcase the entries
+(setq denote-org-front-matter
+  "#+TITLE:      %s
+#+DATE:       %s
+#+FILETAGS:   %s
+#+IDENTIFIER: %s
+\n")
+
+;; Change the order (notice the %N$s notation)
+(setq denote-org-front-matter
+  "#+title:      %1$s
+#+filetags:   %3$s
+#+date:       %2$s
+#+identifier: %4$s
+\n")
+
+;; Remove the date
+(setq denote-org-front-matter
+  "#+title:      %1$s
+#+filetags:   %3$s
+#+identifier: %4$s
+\n")
+
+;; Remove the date and the identifier
+(setq denote-org-front-matter
+  "#+title:      %1$s
+#+filetags:   %3$s
+\n")
+#+end_src
+
+Note that ~setq~ has a global effect: it affects the creation of all new
+notes.  Depending on the workflow, it may be preferrable to have a
+custom command which ~let~ binds the different format.  We shall not
+provide examples at this point as this is a more advanced feature and we
+are not yet sure what the user's needs are.  Please provide feedback and
+we shall act accordingly.
+
+** Regenerate front matter
+:PROPERTIES:
+:CUSTOM_ID: h:54b48277-e0e5-4188-ad54-ef3db3b7e772
+:END:
+
+[ Part of {{{development-version}}} ]
+
+#+findex: denote-add-front-matter
+Sometimes the user needs to produce new front matter for an existing
+note.  Perhaps because they accidentally deleted a line and could not
+undo the operation.  The command ~denote-add-front-matter~ can be used
+for this very purpose.
+
+In interactive use, ~denote-add-front-matter~ must be invoked from a
+buffer that visits a Denote note.  It prompts for a title and then for
+keywords.  These are the standard prompts we already use for note
+creation, so the keywords' prompt allows minibuffer completion and the
+input of multiple entries, each separated by a comma ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]).
+
+The newly created front matter is added to the top of the file.
+
+This command does not rename the file (e.g. to update the keywords).  To
+rename a file by reading its front matter as input, the user can rely on
+~denote-rename-file-using-front-matter~ ([[#h:532e8e2a-9b7d-41c0-8f4b-3c5cbb7d4dca][Renaming files]]).
+
+Note that ~denote-add-front-matter~ is useful only for existing Denote
+notes.  If the user needs to convert a generic text file to a Denote
+note, they can use one of the command which first rename the file to
+make it comply with our file-naming scheme and then add the relevant
+front matter.
+
 * Linking notes
 :PROPERTIES:
 :CUSTOM_ID: h:fc913d54-26c8-4c41-be86-999839e8ad31
