@@ -130,6 +130,7 @@ the function `denote-directory' instead: it returns the path as a
 directory and also checks if a safe local value should be used."
   :group 'denote
   :safe (lambda (val) (or (eq val 'local) (eq val 'default-directory)))
+  :package-version '(denote . "0.1.0")
   :link '(info-link "(denote) Maintain separate directories for notes")
   :type 'directory)
 
@@ -139,6 +140,7 @@ directory and also checks if a safe local value should be used."
 Also see user options: `denote-allow-multi-word-keywords',
 `denote-infer-keywords', `denote-sort-keywords'."
   :group 'denote
+  :package-version '(denote . "0.1.0")
   :type '(repeat string))
 
 (defcustom denote-infer-keywords t
@@ -163,6 +165,7 @@ are specific to the given silo.
 For advanced Lisp usage, the function `denote-keywords' returns
 the appropriate list of strings."
   :group 'denote
+  :package-version '(denote . "0.1.0")
   :type 'boolean)
 
 (defconst denote--prompt-symbols
@@ -201,6 +204,10 @@ The value is a list of symbols, which includes any of the following:
   Without the `date' prompt, the `denote' command uses the
   `current-time'.
 
+- `template': Prompts for a KEY among `denote-templates'.  The
+  value of that KEY is used to populate the new note with
+  content, which is added after the front matter.
+
 The prompts occur in the given order.
 
 If the value of this user option is nil, no prompts are used.
@@ -230,6 +237,7 @@ behaviour of the `denote' command, users can invoke these
 convenience commands: `denote-type', `denote-subdirectory',
 `denote-date'."
   :group 'denote
+  :package-version '(denote . "0.5.0")
   :link '(info-link "(denote) The denote-prompts option")
   :type '(radio (const :tag "Use no prompts" nil)
                 (set :tag "Available prompts" :greedy t
@@ -237,7 +245,8 @@ convenience commands: `denote-type', `denote-subdirectory',
                      (const :tag "Keywords" keywords)
                      (const :tag "Date" date)
                      (const :tag "File type extension" file-type)
-                     (const :tag "Subdirectory" subdirectory))))
+                     (const :tag "Subdirectory" subdirectory)
+                     (const :tag "Template" template))))
 
 (defcustom denote-sort-keywords t
   "Whether to sort keywords in new files.
@@ -248,6 +257,7 @@ minibuffer prompt.
 
 If nil, show the keywords in their given order."
   :group 'denote
+  :package-version '(denote . "0.1.0")
   :type 'boolean)
 
 (defcustom denote-allow-multi-word-keywords t
@@ -262,6 +272,7 @@ When nil, do not allow keywords to consist of multiple words.
 Reduce them to a single word, such as by turning <word1_word2> or
 <word1 word2> into <word1word2>."
   :group 'denote
+  :package-version '(denote . "0.1.0")
   :type 'boolean)
 
 (defcustom denote-file-type nil
@@ -282,6 +293,7 @@ Any other non-nil value is the same as the default."
           (const :tag "Markdown (YAML front matter)" markdown-yaml)
           (const :tag "Markdown (TOML front matter)" markdown-toml)
           (const :tag "Plain text" text))
+  :package-version '(denote . "0.1.0")
   :group 'denote)
 
 (defcustom denote-date-format nil
@@ -304,6 +316,30 @@ are described in the doc string of `format-time-string'."
   :type '(choice
           (const :tag "Use appropiate format for each file type" nil)
           (string :tag "Custom format for `format-time-string'"))
+  :package-version '(denote . "0.2.0")
+  :group 'denote)
+
+(defcustom denote-templates nil
+  "Alist of content templates for new notes.
+A template is arbitrary text that Denote will add to a newly
+created note right below the front matter.
+
+Templates are expressed as a (KEY . STRING) association.
+
+- The KEY is the name which identifies the template.  It is an
+  arbitrary symbol, such as `report', `memo', `statement'.
+
+- The STRING is ordinary text that Denote will insert as-is.  It
+  can contain newline characters to add spacing.  The manual of
+  Denote contains examples on how to use the `concat' function,
+  beside writing a generic string.
+
+The user can choose a template either by invoking the command
+`denote-template' or by changing the user option `denote-prompts'
+to always prompt for a template when calling the `denote'
+command."
+  :type '(alist :key-type symbol :value-type string)
+  :package-version '(denote . "0.5.0")
   :group 'denote)
 
 ;;;; Main variables
@@ -798,11 +834,11 @@ With optional DATE, use it else use the current one."
      (t
       (denote--date-org-timestamp date)))))
 
-(defun denote--prepare-note (title keywords date id directory file-type)
+(defun denote--prepare-note (title keywords date id directory file-type template)
   "Prepare a new note file.
 
-Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, and FILE-TYPE
-should be valid for note creation."
+Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
+and TEMPLATE should be valid for note creation."
   (let* ((default-directory directory)
          (denote-file-type file-type)
          (path (denote--path title keywords default-directory id))
@@ -811,7 +847,9 @@ should be valid for note creation."
                   title (denote--date date) keywords
                   (format-time-string denote--id-format date)
                   file-type)))
-    (with-current-buffer buffer (insert header))
+    (with-current-buffer buffer
+      (insert header)
+      (when template (insert template)))
     (setq denote-last-buffer buffer)
     (setq denote-last-front-matter header)))
 
@@ -899,7 +937,7 @@ where the former does not read dates without a time component."
 ;;;;; The `denote' command and its prompts
 
 ;;;###autoload
-(defun denote (&optional title keywords file-type subdirectory date)
+(defun denote (&optional title keywords file-type subdirectory date template)
   "Create a new note with the appropriate metadata and file name.
 
 When called interactively, the metadata and file name are prompted
@@ -922,16 +960,21 @@ When called from Lisp, all arguments are optional.
 
 - DATE is a string representing a date like 2022-06-30 or a date
   and time like 2022-06-16 14:30.  A nil value or an empty string
-  is interpreted as the `current-time'."
+  is interpreted as the `current-time'.
+
+- TEMPLATE is a symbol which represents the key of a cons cell in
+  the user option `denote-templates'.  The value of that key is
+  inserted to the newly created buffer after the front matter."
   (interactive
-   (let ((args (make-vector 5 nil)))
+   (let ((args (make-vector 6 nil)))
      (dolist (prompt denote-prompts)
        (pcase prompt
          ('title (aset args 0 (denote--title-prompt)))
          ('keywords (aset args 1 (denote--keywords-prompt)))
          ('file-type (aset args 2 (denote--file-type-prompt)))
          ('subdirectory (aset args 3 (denote--subdirs-prompt)))
-         ('date (aset args 4 (denote--date-prompt)))))
+         ('date (aset args 4 (denote--date-prompt)))
+         ('template (aset args 5 (denote--template-prompt)))))
      (append args nil)))
   (let* ((file-type (denote--file-type-symbol (or file-type denote-file-type)))
          (date (if (or (null date) (string-empty-p date))
@@ -940,9 +983,10 @@ When called from Lisp, all arguments are optional.
          (id (format-time-string denote--id-format date))
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
                         (file-name-as-directory subdirectory)
-                      (denote-directory))))
+                      (denote-directory)))
+         (template (if (stringp template) template (alist-get template denote-templates))))
     (denote--barf-duplicate-id id)
-    (denote--prepare-note (or title "") keywords date id directory file-type)
+    (denote--prepare-note (or title "") keywords date id directory file-type template)
     (denote--keywords-add-to-history keywords)))
 
 (defvar denote--title-history nil
@@ -980,7 +1024,7 @@ here for clarity."
    nil 'denote--date-history))
 
 (defvar denote--subdir-history nil
-  "Minibuffer history of `denote-subdirectory'.")
+  "Minibuffer history of `denote--subdirs-prompt'.")
 
 (defun denote--subdirs-completion-table (dirs)
   "Match DIRS as a completion table."
@@ -997,6 +1041,19 @@ here for clarity."
          (subdirs (denote--subdirs))
          (dirs (push root subdirs)))
     (denote--subdirs-completion-table dirs)))
+
+(defvar denote--template-history nil
+  "Minibuffer history of `denote--template-prompt'.")
+
+(defun denote--template-prompt ()
+  "Prompt for template KEY from `denote-templates'."
+  (let ((templates denote-templates))
+    (alist-get
+     (intern
+      (completing-read
+       "Select template KEY: " (mapcar #'car templates)
+       nil t nil 'denote--template-history))
+     templates)))
 
 ;;;;; Convenience commands as `denote' variants
 
@@ -1038,14 +1095,31 @@ is set to \\='(date title keywords)."
 Available candidates include the value of the variable
 `denote-directory' and any subdirectory thereof.
 
-This is equivalent to calling `denote' when `denote-prompts' is set to
-\\='(subdirectory title keywords)."
+This is equivalent to calling `denote' when `denote-prompts' is
+set to \\='(subdirectory title keywords)."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(subdirectory title keywords)))
     (call-interactively #'denote)))
 
 (defalias 'denote-create-note-in-subdirectory (symbol-function 'denote-subdirectory))
+
+;;;###autoload
+(defun denote-template ()
+  "Create note while prompting for a template.
+
+Available candidates include the keys in the `denote-templates'
+alist.  The value of the selected key is inserted in the newly
+created note after the front matter.
+
+This is equivalent to calling `denote' when `denote-prompts' is
+set to \\='(template title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(template title keywords)))
+    (call-interactively #'denote)))
+
+(defalias 'denote-create-note-with-template (symbol-function 'denote-template))
 
 ;;;; Note modification
 
@@ -1587,6 +1661,7 @@ and seconds."
         (expand-file-name "~/Documents/vlog"))
   "List of directories where `denote-dired-mode' should apply to."
   :type '(repeat directory)
+  :package-version '(denote . "0.1.0")
   :group 'denote-dired)
 
 ;;;###autoload
@@ -1626,6 +1701,7 @@ Add this function to `dired-mode-hook'."
 (defcustom denote-link-fontify-backlinks t
   "When non-nil, apply faces to files in the backlinks' buffer."
   :type 'boolean
+  :package-version '(denote . "0.1.0")
   :group 'denote-link)
 
 (defcustom denote-link-backlinks-display-buffer-action
@@ -1653,6 +1729,7 @@ and/or the documentation string of `display-buffer'."
   :type '(cons (choice (function :tag "Display Function")
                        (repeat :tag "Display Functions" function))
                alist)
+  :package-version '(denote . "0.1.0")
   :group 'denote-link)
 
 ;;;;; Link to note
@@ -2113,6 +2190,7 @@ The string can include arbitrary text.  It is appended to new
 notes via the `denote-org-capture' function.  Every new note has
 the standard front matter we define."
   :type 'string
+  :package-version '(denote . "0.1.0")
   :group 'denote-org-capture)
 
 ;;;###autoload
