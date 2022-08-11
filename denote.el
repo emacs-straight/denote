@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.4.0
+;; Version: 0.5.1
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -36,7 +36,7 @@
 ;;    (info "(denote) Top")
 ;;
 ;; What follows is a general overview of its core core design
-;; principles:
+;; principles (again: please read the manual for the technicalities):
 ;;
 ;; * Predictability :: File names must follow a consistent and
 ;;   descriptive naming convention (see the manual's "The file-naming
@@ -131,7 +131,7 @@ the function `denote-directory' instead: it returns the path as a
 directory and also checks if a safe local value should be used."
   :group 'denote
   :safe (lambda (val) (or (eq val 'local) (eq val 'default-directory)))
-  :package-version '(denote . "0.1.0")
+  :package-version '(denote . "0.5.0")
   :link '(info-link "(denote) Maintain separate directories for notes")
   :type 'directory)
 
@@ -168,10 +168,6 @@ the appropriate list of strings."
   :group 'denote
   :package-version '(denote . "0.1.0")
   :type 'boolean)
-
-(defconst denote--prompt-symbols
-  '(title keywords date file-type subdirectory)
-  "List of symbols representing `denote' prompts.")
 
 (defcustom denote-prompts '(title keywords)
   "Specify the prompts of the `denote' command for interactive use.
@@ -341,6 +337,7 @@ to always prompt for a template when calling the `denote'
 command."
   :type '(alist :key-type symbol :value-type string)
   :package-version '(denote . "0.5.0")
+  :link '(info-link "(denote) The denote-templates option")
   :group 'denote)
 
 ;;;; Main variables
@@ -449,11 +446,16 @@ FILE must be an absolute path."
               ((string-prefix-p dir file-name)))
     (substring-no-properties file-name (length dir))))
 
+(defun denote--default-dir-has-denote-prefix ()
+  "Test `default-directory' for variable `denote-directory' prefix."
+  (string-prefix-p (denote-directory)
+                   (expand-file-name default-directory)))
+
 (defun denote--current-file-is-note-p ()
   "Return non-nil if current file likely is a Denote note."
   (and (or (string-match-p denote--id-regexp (buffer-file-name))
            (string-match-p denote--id-regexp (buffer-name)))
-       (string-prefix-p (denote-directory) (expand-file-name default-directory))))
+       (denote--default-dir-has-denote-prefix)))
 
 (defun denote--directory-files ()
   "List expanded note files."
@@ -492,11 +494,12 @@ variable `denote-directory'."
       (split-string kws "_"))))
 
 (defun denote--inferred-keywords ()
-  "Extract keywords from `denote--directory-files'."
-  (delete-dups
-   (mapcan (lambda (p)
-             (denote--extract-keywords-from-path p))
-           (denote--directory-files))))
+  "Extract keywords from `denote--directory-files'.
+This function returns duplicates.  The `denote-keywords' is the
+one that doesn't."
+  (mapcan (lambda (p)
+            (denote--extract-keywords-from-path p))
+          (denote--directory-files)))
 
 (defun denote-keywords ()
   "Return appropriate list of keyword candidates.
@@ -585,26 +588,40 @@ If optional KEY is non-nil, return the key instead."
 (defun denote--retrieve-value-title (file &optional key)
   "Return title value from FILE.
 If optional KEY is non-nil, return the key instead."
-  (denote--retrieve-search file denote--retrieve-title-front-matter-key-regexp key))
+  (denote--retrieve-search
+   file
+   denote--retrieve-title-front-matter-key-regexp
+   key))
 
 (defun denote--retrieve-value-date (file &optional key)
   "Return date value from FILE.
 If optional KEY is non-nil, return the key instead."
-  (denote--retrieve-search file denote--retrieve-date-front-matter-key-regexp key))
+  (denote--retrieve-search
+   file
+   denote--retrieve-date-front-matter-key-regexp
+   key))
 
 (defun denote--retrieve-value-keywords (file &optional key)
   "Return keywords value from FILE.
 If optional KEY is non-nil, return the key instead."
-  (denote--retrieve-search file denote--retrieve-keywords-front-matter-key-regexp key))
+  (denote--retrieve-search
+   file
+   denote--retrieve-keywords-front-matter-key-regexp
+   key))
 
 (defun denote--retrieve-read-file-prompt ()
   "Prompt for regular file in variable `denote-directory'."
   (read-file-name "Select note: " (denote-directory) nil nil nil
-                  (lambda (f) (or (denote--only-note-p f) (file-directory-p f)))))
+                  (lambda (f)
+                    (or (denote--only-note-p f)
+                        (file-directory-p f)))))
 
 (defun denote--retrieve-files-in-output (files)
   "Return list of FILES from `find' output."
-  (seq-filter (lambda (f) (denote--only-note-p f)) files))
+  (seq-filter
+   (lambda (f)
+     (denote--only-note-p f))
+   files))
 
 (defun denote--retrieve-xrefs (identifier)
   "Return xrefs of IDENTIFIER in variable `denote-directory'.
@@ -621,7 +638,7 @@ Parse `denote--retrieve-xrefs'."
    (delete-dups (mapcar #'car xrefs))
    #'string-lessp))
 
-(defun denote--retrieve-proces-grep (identifier)
+(defun denote--retrieve-process-grep (identifier)
   "Process lines matching IDENTIFIER and return list of files."
   (denote--retrieve-files-in-output
    (delete (buffer-file-name) (denote--retrieve-files-in-xrefs
@@ -631,9 +648,9 @@ Parse `denote--retrieve-xrefs'."
 
 ;;;;; Common helpers for new notes
 
-(defun denote--file-extension ()
-  "Return file type extension based on `denote-file-type'."
-  (pcase denote-file-type
+(defun denote--file-extension (file-type)
+  "Return file type extension based on FILE-TYPE."
+  (pcase file-type
     ('markdown-toml ".md")
     ('markdown-yaml ".md")
     ('text ".txt")
@@ -647,7 +664,7 @@ string.  EXTENSION is the file type extension, either a string
 which include the starting dot or the return value of
 `denote--file-extension'."
   (let ((kws (denote--keywords-combine keywords))
-        (ext (or extension (denote--file-extension)))
+        (ext (or extension (denote--file-extension denote-file-type)))
         (file-name (concat path id)))
     (when (and title-slug (not (string-empty-p title-slug)))
       (setq file-name (concat file-name "--" title-slug)))
@@ -655,41 +672,27 @@ which include the starting dot or the return value of
       (setq file-name (concat file-name "__" kws)))
     (concat file-name ext)))
 
-(defun denote--format-markdown-keywords (keywords)
-  "Quote, downcase, and comma-separate elements in KEYWORDS."
-  (format "[%s]" (mapconcat (lambda (k)
-                              (format "%S" (downcase k)))
-                            keywords ", ")))
-
-(defun denote--format-org-keywords (keywords)
-  "Quote, downcase, and colon-separate elements in KEYWORDS."
-  (format ":%s:" (mapconcat (lambda (k)
-                              (downcase k))
-                            keywords ":")))
-
-(defun denote--format-front-matter-keywords (keywords &optional type)
-  "Prepare KEYWORDS for inclusion in the file's front matter.
-Parse the output of `denote--keywords-prompt', using `downcase'
-on the keywords and separating them by two spaces.  A single
-keyword is just downcased.
-
-With optional TYPE, format the keywords accordingly (this might
-be `toml' or, in the future, some other spec that needss special
-treatment)."
-  (let ((kw (denote--sluggify-keywords keywords)))
+(defun denote--format-front-matter-keywords (keywords type)
+  "Format KEYWORDS according to TYPE for the file's front matter.
+Apply `downcase' to KEYWORDS."
+  (let ((kw (mapcar #'downcase (denote--sluggify-keywords keywords))))
     (cond
      ((or (eq type 'markdown-toml) (eq type 'markdown-yaml) (eq type 'md))
-      (denote--format-markdown-keywords kw))
+      (format "[%s]" (mapconcat (lambda (k) (format "%S" k)) kw ", ")))
      ((eq type 'text)
-      (mapconcat #'downcase kw "  "))
-     (t
-      (denote--format-org-keywords kw)))))
+      (string-join kw "  "))
+     ((eq type 'org)
+      (format ":%s:" (string-join kw ":"))))))
 
 (defun denote--front-matter-keywords-to-list (file)
   "Return keywords from front matter of FILE as list of strings.
 This is the reverse operation of `denote--format-front-matter-keywords'."
-  (let ((keywords (denote--retrieve-value-keywords file)))
+  (when-let ((keywords (denote--retrieve-value-keywords file)))
     (split-string keywords "[:,\s]+" t "[][ \"']+")))
+
+;; TODO 2022-08-10: These are `defvar' and not `defcustom' because
+;; tweaks to them need to be done with care.  Though there is demand for
+;; modifying the front matter, so perhaps we should reconsider.
 
 (defvar denote-toml-front-matter
   "+++
@@ -748,65 +751,56 @@ Make sure to:
 These help with consistency and might prove useful if we ever
 need to operate on the front matter as a whole.")
 
-(defun denote--format-front-matter (title date keywords id &optional filetype)
+(defun denote--format-front-matter (title date keywords id filetype)
   "Front matter for new notes.
 
 TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
- provided by `denote'.
-
-Optional FILETYPE is one of the values of `denote-file-type',
-else that variable is used."
+provided by `denote'.  FILETYPE is one of the values of
+`denote-file-type'."
   (let ((kw-md (denote--format-front-matter-keywords keywords 'md)))
-    (pcase (or filetype denote-file-type)
+    (pcase filetype
       ('markdown-toml (format denote-toml-front-matter title date kw-md id))
       ('markdown-yaml (format denote-yaml-front-matter title date kw-md id))
       ('text (format denote-text-front-matter title date
                      (denote--format-front-matter-keywords keywords 'text)
                      id denote-text-front-matter-delimiter))
       (_ (format denote-org-front-matter title date
-                 (denote--format-front-matter-keywords keywords) id)))))
+                 (denote--format-front-matter-keywords keywords 'org) id)))))
 
-(defun denote--path (title keywords &optional dir id)
-  "Return path to new file with TITLE and KEYWORDS.
-With optional DIR, use it instead of variable `denote-directory'.
-With optional ID, use it else format the current time."
+(defun denote--path (title keywords dir id file-type)
+  "Return path to new file with ID, TITLE, KEYWORDS and FILE-TYPE in DIR."
   (denote--format-file
-   (or dir (file-name-as-directory (denote-directory)))
-   (or id (format-time-string denote--id-format))
+   dir id
    (denote--sluggify-keywords keywords)
    (denote--sluggify title)
-   (denote--file-extension)))
+   (denote--file-extension file-type)))
 
 ;; Adapted from `org-hugo--org-date-time-to-rfc3339' in the `ox-hugo'
 ;; package: <https://github.com/kaushalmodi/ox-hugo>.
-(defun denote--date-rfc3339 (&optional date)
-  "Format date using the RFC3339 specification.
-With optional DATE, use it else use the current one."
+(defun denote--date-rfc3339 (date)
+  "Format DATE using the RFC3339 specification."
   (replace-regexp-in-string
    "\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)\\'" "\\1:\\2"
    (format-time-string "%FT%T%z" date)))
 
-(defun denote--date-org-timestamp (&optional date)
-  "Format date using the Org inactive timestamp notation.
-With optional DATE, use it else use the current one."
+(defun denote--date-org-timestamp (date)
+  "Format DATE using the Org inactive timestamp notation."
   (format-time-string "[%F %a %R]" date))
 
-(defun denote--date-iso-8601 (&optional date)
-  "Format date according to ISO 8601 standard.
-With optional DATE, use it else use the current one."
+(defun denote--date-iso-8601 (date)
+  "Format DATE according to ISO 8601 standard."
   (format-time-string "%F" date))
 
-(defun denote--date (&optional date)
-  "Expand the date for a new note's front matter.
-With optional DATE, use it else use the current one."
+(defun denote--date (date file-type)
+  "Expand DATE in an appropriate format for FILE-TYPE."
   (let ((format denote-date-format))
     (cond
      ((stringp format)
       (format-time-string format date))
-     ((or (eq denote-file-type 'markdown-toml)
-          (eq denote-file-type 'markdown-yaml))
+     ((or (eq file-type 'markdown-toml)
+          (eq file-type 'markdown-yaml))
       (denote--date-rfc3339 date))
-     ((eq denote-file-type 'text)
+     ((eq file-type 'text)
       (denote--date-iso-8601 date))
      (t
       (denote--date-org-timestamp date)))))
@@ -816,11 +810,10 @@ With optional DATE, use it else use the current one."
 
 Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
 and TEMPLATE should be valid for note creation."
-  (let* ((denote-file-type file-type)
-         (path (denote--path title keywords directory id))
+  (let* ((path (denote--path title keywords directory id file-type))
          (buffer (find-file path))
          (header (denote--format-front-matter
-                  title (denote--date date) keywords
+                  title (denote--date date file-type) keywords
                   (format-time-string denote--id-format date)
                   file-type)))
     (with-current-buffer buffer
@@ -829,10 +822,10 @@ and TEMPLATE should be valid for note creation."
 
 (defun denote--dir-in-denote-directory-p (directory)
   "Return DIRECTORY if in variable `denote-directory', else nil."
-  (when-let* ((dir directory)
-              ((string-prefix-p (expand-file-name (denote-directory))
-                                (expand-file-name dir))))
-    dir))
+  (when (and directory
+             (string-prefix-p (denote-directory)
+                              (expand-file-name directory)))
+    directory))
 
 (defun denote--file-type-symbol (filetype)
   "Return FILETYPE as a symbol."
@@ -873,9 +866,10 @@ where the former does not read dates without a time component."
             (buffer-file-name buf))
           (buffer-list)))))
 
-;; This should only be relevant for `denote-date', otherwise the
-;; identifier is always unique (we trust that no-one writes multiple
-;; notes within fractions of a second).
+;; In normal usage, this should only be relevant for `denote-date',
+;; otherwise the identifier is always unique (we trust that no-one
+;; writes multiple notes within fractions of a second).  Though the
+;; `denote' command does call `denote--barf-duplicate-id'.
 (defun denote--id-exists-p (identifier)
   "Return non-nil if IDENTIFIER already exists."
   (seq-some (lambda (file)
@@ -957,8 +951,7 @@ When called from Lisp, all arguments are optional.
 
 (defun denote--title-prompt (&optional default-title)
   "Read file title for `denote'.
-
-Optional DEFAULT-TITLE is used as the default value."
+With optional DEFAULT-TITLE use it as the default value."
   (let ((format (if default-title
                     (format "File title [%s]: " default-title)
                   "File title: ")))
@@ -988,6 +981,8 @@ here for clarity."
 (defvar denote--subdir-history nil
   "Minibuffer history of `denote--subdirs-prompt'.")
 
+;; Making it a completion table is useful for packages that read the
+;; metadata, such as `marginalia' and `embark'.
 (defun denote--subdirs-completion-table (dirs)
   "Match DIRS as a completion table."
   (let* ((def (car denote--subdir-history))
@@ -1118,8 +1113,7 @@ The return value is for `denote--format-front-matter'."
    (lambda (buf)
      (with-current-buffer buf
        (when (and (eq major-mode 'dired-mode)
-                  (string-prefix-p (denote-directory)
-                                   (expand-file-name default-directory)))
+                  (denote--default-dir-has-denote-prefix))
          (revert-buffer))))
    (buffer-list)))
 
@@ -1143,13 +1137,13 @@ command and are used to construct a new front matter block if
 appropriate."
   (when-let* (((denote--only-note-p file))
               (filetype (denote--filetype-heuristics file))
-              (date (denote--date (date-to-time id)))
+              (date (denote--date (date-to-time id) filetype))
               (new-front-matter (denote--format-front-matter title date keywords id filetype)))
     (with-current-buffer (find-file-noselect file)
       (goto-char (point-min))
       (insert new-front-matter))))
 
-(defun denote--file-match-p (regexp file)
+(defun denote--regexp-in-file-p (regexp file)
   "Return t if REGEXP matches in the FILE."
   (with-current-buffer (find-file-noselect file)
     (save-excursion
@@ -1174,8 +1168,8 @@ variable `denote-directory'."
          (string-match-p "\\(md\\|org\\|txt\\)\\'" ext)
          ;; Heuristic to check if this is one of our notes
          (string-prefix-p (denote-directory) (expand-file-name file))
-         (denote--file-match-p denote--retrieve-title-front-matter-key-regexp file)
-         (denote--file-match-p denote--retrieve-keywords-front-matter-key-regexp file))))
+         (denote--regexp-in-file-p denote--retrieve-title-front-matter-key-regexp file)
+         (denote--regexp-in-file-p denote--retrieve-keywords-front-matter-key-regexp file))))
 
 (defun denote--rewrite-keywords (file keywords)
   "Rewrite KEYWORDS in FILE outright.
@@ -1237,7 +1231,6 @@ appropriate."
 
 (defun denote--rename-dired-file-or-prompt ()
   "Return Dired file at point, else prompt for one.
-
 Throw error is FILE is not regular, else return FILE."
   (or (dired-get-filename nil t)
       (let* ((file (buffer-file-name))
@@ -1526,49 +1519,53 @@ relevant front matter."
 
 (defface denote-faces-link '((t :inherit link))
   "Face used to style Denote links in the buffer."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.5.0"))
 
 (defface denote-faces-broken-link '((t :inherit (error link)))
   "Face used to style Denote broken links in the buffer.
 This only works in Org files, as Emacs' generic buttons do not
 provide a facility that uses a face based on certain conditions."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.5.0"))
 
-(defface denote-faces-subdirectory
-  '((t :inherit bold))
+(defface denote-faces-subdirectory '((t :inherit bold))
   "Face for subdirectory of file name.
 This should only ever needed in the backlinks' buffer (or
 equivalent), not in Dired."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.2.0"))
 
-(defface denote-faces-date
-  '((t :inherit font-lock-variable-name-face))
+(defface denote-faces-date '((t :inherit font-lock-variable-name-face))
   "Face for file name date in Dired buffers.
 This is the part of the identifier that covers the year, month,
 and day."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
-(defface denote-faces-time
-  '((t :inherit denote-faces-date))
+(defface denote-faces-time '((t :inherit denote-faces-date))
   "Face for file name time in Dired buffers.
 This is the part of the identifier that covers the hours, minutes,
 and seconds."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
-(defface denote-faces-title
-  '((t ))
+;; TODO 2022-08-10: I believe a nil value has the same effect, though
+;; there is no pressing need to test this.
+(defface denote-faces-title '((t ))
   "Face for file name title in Dired buffers."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
-(defface denote-faces-extension
-  '((t :inherit shadow))
+(defface denote-faces-extension '((t :inherit shadow))
   "Face for file extension type in Dired buffers."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
-(defface denote-faces-keywords
-  '((t :inherit font-lock-builtin-face))
+(defface denote-faces-keywords '((t :inherit font-lock-builtin-face))
   "Face for file name keywords in Dired buffers."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
 (defface denote-faces-delimiter
   '((((class color) (min-colors 88) (background light))
@@ -1577,7 +1574,8 @@ and seconds."
      :foreground "gray30")
     (t :inherit shadow))
   "Face for file name delimiters in Dired buffers."
-  :group 'denote-faces)
+  :group 'denote-faces
+  :package-version '(denote . "0.1.0"))
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
 (defvar denote-faces--file-name-regexp
@@ -1624,11 +1622,14 @@ and seconds."
   "List of directories where `denote-dired-mode' should apply to."
   :type '(repeat directory)
   :package-version '(denote . "0.1.0")
+  :link '(info-link "(denote) Fontification in Dired")
   :group 'denote-dired)
 
 ;;;###autoload
 (define-minor-mode denote-dired-mode
-  "Fontify all Denote-style file names in Dired."
+  "Fontify all Denote-style file names.
+Add this or `denote-dired-mode-in-directories' to
+`dired-mode-hook'."
   :global nil
   :group 'denote-dired
   (if denote-dired-mode
@@ -1664,6 +1665,7 @@ Add this function to `dired-mode-hook'."
   "When non-nil, apply faces to files in the backlinks' buffer."
   :type 'boolean
   :package-version '(denote . "0.1.0")
+  :link '(info-link "(denote) The backlinks' buffer")
   :group 'denote-link)
 
 (defcustom denote-link-backlinks-display-buffer-action
@@ -1700,6 +1702,7 @@ and/or the documentation string of `display-buffer'."
 (defconst denote-link--format-org "[[denote:%s][%s]]"
   "Format of Org link to note.")
 
+;; The %N$s notation is for `format'.
 (defconst denote-link--format-markdown "[%2$s](denote:%1$s)"
   "Format of Markdown link to note.")
 
@@ -1784,13 +1787,13 @@ format is always [[denote:IDENTIFIER]]."
 
 (defun denote-link--find-file-prompt (files)
   "Prompt for linked file among FILES."
-  (let ((file-names (mapcar
-                     (lambda (f) (denote--file-name-relative-to-denote-directory f))
-                     files)))
-    (completing-read "Find linked file "
-                     (denote--completion-table 'file file-names)
-                     nil t
-                     nil 'denote-link--find-file-history)))
+  (let ((file-names (mapcar (lambda (f)
+                              (denote--file-name-relative-to-denote-directory f))
+                            files)))
+    (completing-read
+     "Find linked file "
+     (denote--completion-table 'file file-names)
+     nil t nil 'denote-link--find-file-history)))
 
 ;; TODO 2022-06-14: Do we need to add any sort of extension to better
 ;; integrate with Embark?  For the minibuffer interaction it is not
@@ -1844,8 +1847,10 @@ format is always [[denote:IDENTIFIER]]."
 ;; NOTE 2022-06-15: I add this as a variable for advanced users who may
 ;; prefer something else.  If there is demand for it, we can make it a
 ;; defcustom, but I think it would be premature at this stage.
-(defvar denote-link-buton-action #'find-file-other-window
+(defvar denote-link-button-action #'find-file-other-window
   "Action for Denote buttons.")
+
+(make-obsolete-variable 'denote-link-buton-action 'denote-link-button-action "0.5.0")
 
 (defun denote-link--find-file-at-button (button)
   "Visit file referenced by BUTTON."
@@ -1854,7 +1859,7 @@ format is always [[denote:IDENTIFIER]]."
                (button-start button)
                (button-end button))))
          (file (denote--get-note-path-by-id id)))
-    (funcall denote-link-buton-action file)))
+    (funcall denote-link-button-action file)))
 
 ;;;###autoload
 (defun denote-link-buttonize-buffer (&optional beg end)
@@ -1886,7 +1891,7 @@ positions, limit the process to the region in-between."
 
 (defun denote-link--backlink-find-file (button)
   "Action for BUTTON to `find-file'."
-  (funcall denote-link-buton-action (buffer-substring (button-start button) (button-end button))))
+  (funcall denote-link-button-action (buffer-substring (button-start button) (button-end button))))
 
 (defun denote-link--display-buffer (buf)
   "Run `display-buffer' on BUF.
@@ -1902,6 +1907,8 @@ Expand `denote-link-backlinks-display-buffer-action'."
     m)
   "Keymap for `denote-backlink-mode'.")
 
+;; TODO 2022-08-10: In some places we have "backlink" and in others
+;; "backlinks".  We need to address this inconsistency.
 (define-derived-mode denote-backlink-mode special-mode "Backlinks"
   "Major mode for backlinks buffers.")
 
@@ -1943,7 +1950,7 @@ default, it will show up below the current window."
   (let* ((file (buffer-file-name))
          (id (denote--retrieve-filename-identifier file))
          (title (denote--retrieve-value-title file)))
-    (if-let ((files (denote--retrieve-proces-grep id)))
+    (if-let ((files (denote--retrieve-process-grep id)))
         (denote-link--prepare-backlinks id files title)
       (user-error "No links to the current note"))))
 
@@ -1957,7 +1964,7 @@ default, it will show up below the current window."
 ;; NOTE 2022-06-16: There is no need to overwhelm the user with options,
 ;; though I expect someone to want to change the sort order.
 (defvar denote-link-add-links-sort nil
-  "Add REVERSE to `sort-lines' of `denote-link-add-links' when t.")
+  "When t, add REVERSE to `sort-lines' of `denote-link-add-links'.")
 
 (defun denote-link--prepare-links (files current-file id-only)
   "Prepare links to FILES from CURRENT-FILE.
@@ -2007,14 +2014,13 @@ inserts links with just the identifier."
 (defun denote-link--buffer-prompt (buffers)
   "Select buffer from BUFFERS visiting Denote notes."
   (let ((buffer-file-names (mapcar
-                            (lambda (name) (file-name-nondirectory name))
+                            (lambda (name)
+                              (file-name-nondirectory name))
                             buffers)))
     (completing-read
      "Select note buffer: "
      (denote--completion-table 'buffer buffer-file-names)
      nil t)))
-
-(declare-function dired-get-marked-files "dired" (&optional localp arg filter distinguish-one-marked error))
 
 (defun denote-link--map-over-notes ()
   "Return list of `denote--only-note-p' from Dired marked items."
@@ -2189,11 +2195,13 @@ arbitrary text).
 Consult the manual for template samples."
   (let* ((title (denote--title-prompt))
          (keywords (denote--keywords-prompt))
-         (denote-file-type nil) ; we enforce the .org extension for `org-capture'
          (front-matter (denote--format-front-matter
-                        title (denote--date nil) keywords
-                        (format-time-string denote--id-format nil))))
-    (setq denote-last-path (denote--path title keywords))
+                        title (denote--date nil 'org) keywords
+                        (format-time-string denote--id-format nil) 'org)))
+    (setq denote-last-path
+          (denote--path title keywords
+                        (file-name-as-directory (denote-directory))
+                        (format-time-string denote--id-format) 'org))
     (denote--keywords-add-to-history keywords)
     (concat front-matter denote-org-capture-specifiers)))
 
@@ -2204,6 +2212,87 @@ Consult the manual for template samples."
     (delete-file denote-last-path)))
 
 (add-hook 'org-capture-after-finalize-hook #'denote-org-capture-delete-empty-file)
+
+;;;; For the migration of old Org filetags
+
+(defun denote--migrate-type-files (type)
+  "Return list of TYPE files in variable `denote-directory'.
+TYPE is a string which matches the `file-name-extension'."
+  (delq nil
+        (mapcar
+         (lambda (file)
+           (when-let* ((value (denote--retrieve-value-keywords file))
+                       ((string-match-p "\s\s" value)))
+             file))
+         (seq-remove
+          (lambda (file)
+            (not (string= (file-name-extension file) type)))
+          (denote--directory-files)))))
+
+;;;###autoload
+(defun denote-migrate-old-org-filetags ()
+  "Rewrite Org filetags' value as colon-separated.
+
+Change the filetags from:
+
+    #+filetags:   one  two
+
+To the standard format of:
+
+    #+filetags:  :one:two:
+
+A single tags chnages from TAG to :TAG:.
+
+Denote used to format filetags with two spaces between them, but
+this is not fully supported by Org.  The colon-separated entries
+are the rule.
+
+The rewrite DOES NOT SAVE BUFFERS.  The user is expected to
+review the changes, such as by using `diff-buffer-with-file'.
+Multiple buffers can be saved with `save-some-buffers' (check its
+doc string).
+
+This command is provided for the convenience of the user.  It
+shall be deprecated and eventually removed from future versions
+of Denote.  Written on 2022-08-10 for version 0.5.0."
+  (interactive)
+  (when-let (((yes-or-no-p "Rewrite filetags in Org files to use colons (buffers are NOT saved)?"))
+             (files (denote--migrate-type-files "org")))
+    (dolist (file files)
+      (when-let* ((kw (denote--front-matter-keywords-to-list file))
+                  ((denote--edit-front-matter-p file)))
+        (denote--rewrite-keywords file kw)))))
+
+;;;###autoload
+(defun denote-migrate-old-markdown-yaml-tags ()
+  "Rewrite Markdown YAML tags value as comma-separated strings.
+
+Change the tags from:
+
+    tags:   one  two
+
+To the standard format of:
+
+    tags:  [\"one\", \"two\"]
+
+Denote used to format filetags with two spaces between them, but
+this is not supported by YAML.
+
+The rewrite DOES NOT SAVE BUFFERS.  The user is expected to
+review the changes, such as by using `diff-buffer-with-file'.
+Multiple buffers can be saved with `save-some-buffers' (check its
+doc string).
+
+This command is provided for the convenience of the user.  It
+shall be deprecated and eventually removed from future versions
+of Denote.  Written on 2022-08-10 for version 0.5.0."
+  (interactive)
+  (when-let (((yes-or-no-p "Rewrite filetags in Org files to use colons (buffers are NOT saved)?"))
+             (files (denote--migrate-type-files "md")))
+    (dolist (file files)
+      (when-let* ((kw (denote--front-matter-keywords-to-list file))
+                  ((denote--edit-front-matter-p file)))
+        (denote--rewrite-keywords file kw)))))
 
 (provide 'denote)
 ;;; denote.el ends here
