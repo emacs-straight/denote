@@ -425,6 +425,9 @@ trailing hyphen."
   "Return non-nil if FILE is empty."
   (zerop (or (file-attribute-size (file-attributes file)) 0)))
 
+;; TODO 2022-08-11: In light of `denote--writable-and-supported-p', we
+;; should either harden `denote--only-note-p' to also check for a
+;; `denote-directory' or decide how to merge the two functions.
 (defun denote--only-note-p (file)
   "Make sure FILE is an actual Denote note."
   (let ((file-name (file-name-nondirectory file)))
@@ -435,7 +438,18 @@ trailing hyphen."
                                  "\\(.gpg\\)?"
                                  "\\'")
                          file-name)
+         ;; Can this ever be t given the above?
          (not (string-match-p "[#~]\\'" file)))))
+
+(defun denote--file-supported-extension-p (file)
+  "Return non-nil if FILE has supported extension."
+  (string-match-p (format "%s\\(.gpg\\)?\\'" denote--extension-regexp) file))
+
+(defun denote--writable-and-supported-p (file)
+  "Return non-nil if FILE is writable and has supported extension."
+  (and (file-regular-p file)
+       (file-writable-p file)
+       (denote--file-supported-extension-p file)))
 
 (defun denote--file-name-relative-to-denote-directory (file)
   "Return file name of FILE relative to the variable `denote-directory'.
@@ -570,7 +584,10 @@ output is sorted with `string-lessp'."
 (defun denote--retrieve-search (file key-regexp &optional key)
   "Return value of KEY-REGEXP key in current buffer from FILE.
 If optional KEY is non-nil, return the key instead."
-  (when (denote--only-note-p file)
+  ;; NOTE 2022-08-11: The `or' is superfluous, but I am keeping it as a
+  ;; reminder.  See TODO comment above `denote--only-note-p'
+  (when (or (denote--writable-and-supported-p file)
+            (denote--only-note-p file))
     (with-temp-buffer
       (insert-file-contents file)
       (save-excursion
@@ -654,23 +671,20 @@ Parse `denote--retrieve-xrefs'."
     ('markdown-toml ".md")
     ('markdown-yaml ".md")
     ('text ".txt")
-    (_ ".org")))
+    ('org ".org")))
 
 (defun denote--format-file (path id keywords title-slug extension)
   "Format file name.
 PATH, ID, KEYWORDS, TITLE-SLUG are expected to be supplied by
 `denote' or equivalent: they will all be converted into a single
-string.  EXTENSION is the file type extension, either a string
-which include the starting dot or the return value of
-`denote--file-extension'."
+string.  EXTENSION is the file type extension, as a string."
   (let ((kws (denote--keywords-combine keywords))
-        (ext (or extension (denote--file-extension denote-file-type)))
         (file-name (concat path id)))
     (when (and title-slug (not (string-empty-p title-slug)))
       (setq file-name (concat file-name "--" title-slug)))
     (when keywords
       (setq file-name (concat file-name "__" kws)))
-    (concat file-name ext)))
+    (concat file-name extension)))
 
 (defun denote--format-front-matter-keywords (keywords type)
   "Format KEYWORDS according to TYPE for the file's front matter.
@@ -764,7 +778,7 @@ provided by `denote'.  FILETYPE is one of the values of
       ('text (format denote-text-front-matter title date
                      (denote--format-front-matter-keywords keywords 'text)
                      id denote-text-front-matter-delimiter))
-      (_ (format denote-org-front-matter title date
+      ('org (format denote-org-front-matter title date
                  (denote--format-front-matter-keywords keywords 'org) id)))))
 
 (defun denote--path (title keywords dir id file-type)
@@ -818,7 +832,7 @@ and TEMPLATE should be valid for note creation."
                   file-type)))
     (with-current-buffer buffer
       (insert header)
-      (when template (insert template)))))
+      (insert template))))
 
 (defun denote--dir-in-denote-directory-p (directory)
   "Return DIRECTORY if in variable `denote-directory', else nil."
@@ -827,14 +841,15 @@ and TEMPLATE should be valid for note creation."
                               (expand-file-name directory)))
     directory))
 
-(defun denote--file-type-symbol (filetype)
-  "Return FILETYPE as a symbol."
-  (cond
-   ((stringp filetype)
-    (intern filetype))
-   ((symbolp filetype)
-    filetype)
-   (t (user-error "`%s' is not a symbol or string" filetype))))
+(defun denote--valid-file-type (filetype)
+  "Return a valid filetype given the argument FILETYPE."
+  (unless (or (symbolp filetype) (stringp filetype))
+    (user-error "`%s' is not a symbol or string" filetype))
+  (when (stringp filetype)
+    (setq filetype (intern filetype)))
+  (if (memq filetype '(text org markdown-toml markdown-yaml))
+      filetype
+    'org))
 
 (defun denote--date-add-current-time (date)
   "Add current time to DATE, if necessary.
@@ -933,7 +948,8 @@ When called from Lisp, all arguments are optional.
          ('date (aset args 4 (denote--date-prompt)))
          ('template (aset args 5 (denote--template-prompt)))))
      (append args nil)))
-  (let* ((file-type (denote--file-type-symbol (or file-type denote-file-type)))
+  (let* ((title (or title ""))
+         (file-type (denote--valid-file-type (or file-type denote-file-type)))
          (date (if (or (null date) (string-empty-p date))
                    (current-time)
                  (denote--valid-date date)))
@@ -941,9 +957,11 @@ When called from Lisp, all arguments are optional.
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
                         (file-name-as-directory subdirectory)
                       (denote-directory)))
-         (template (if (stringp template) template (alist-get template denote-templates))))
+         (template (if (stringp template)
+                       template
+                     (or (alist-get template denote-templates) ""))))
     (denote--barf-duplicate-id id)
-    (denote--prepare-note (or title "") keywords date id directory file-type template)
+    (denote--prepare-note title keywords date id directory file-type template)
     (denote--keywords-add-to-history keywords)))
 
 (defvar denote--title-history nil
@@ -1161,15 +1179,12 @@ For the purposes of this test, FILE is a Denote note when it (i)
 is a regular file, (ii) is writable, (iii) has a supported file
 type extension per `denote-file-type', and (iv) is stored in the
 variable `denote-directory'."
-  (when-let ((ext (file-name-extension file)))
-    (and (file-regular-p file)
-         (file-writable-p file)
-         (not (denote--file-empty-p file))
-         (string-match-p "\\(md\\|org\\|txt\\)\\'" ext)
-         ;; Heuristic to check if this is one of our notes
-         (string-prefix-p (denote-directory) (expand-file-name file))
-         (denote--regexp-in-file-p denote--retrieve-title-front-matter-key-regexp file)
-         (denote--regexp-in-file-p denote--retrieve-keywords-front-matter-key-regexp file))))
+  (and (denote--writable-and-supported-p file)
+       (not (denote--file-empty-p file))
+       ;; Heuristic to check if this is one of our notes
+       (string-prefix-p (denote-directory) (expand-file-name file)) ; FIXME 2022-08-11: Why do we need this?
+       (denote--regexp-in-file-p denote--retrieve-title-front-matter-key-regexp file)
+       (denote--regexp-in-file-p denote--retrieve-keywords-front-matter-key-regexp file)))
 
 (defun denote--rewrite-keywords (file keywords)
   "Rewrite KEYWORDS in FILE outright.
