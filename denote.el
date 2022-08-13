@@ -427,7 +427,12 @@ trailing hyphen."
 
 ;; TODO 2022-08-11: In light of `denote--writable-and-supported-p', we
 ;; should either harden `denote--only-note-p' to also check for a
-;; `denote-directory' or decide how to merge the two functions.
+;; `denote-directory' or decide how to merge the two functions.  I think
+;; hardening this one is more appropriate.
+;;
+;; There are two different needs:
+;; - When converting a file to Denote, we need relaxed conditionality.
+;; = When we truly need a  "note", we have to be more strict.
 (defun denote--only-note-p (file)
   "Make sure FILE is an actual Denote note."
   (let ((file-name (file-name-nondirectory file)))
@@ -1473,7 +1478,8 @@ This command is useful for synchronizing multiple file names with
 their respective front matter."
   (interactive nil dired-mode)
   (if-let ((marks (seq-filter
-                   (lambda (file) (denote--only-note-p file))
+                   (lambda (file)
+                     (denote--writable-and-supported-p file))
                    (dired-get-marked-files))))
       (progn
         (dolist (file marks)
@@ -1639,6 +1645,11 @@ and seconds."
   :package-version '(denote . "0.1.0")
   :link '(info-link "(denote) Fontification in Dired")
   :group 'denote-dired)
+
+;; FIXME 2022-08-12: Make `denote-dired-mode' actually apply to Dired.
+;; FIXME 2022-08-12: Make `denote-dired-mode' persist after WDired.
+;; FIXME 2022-08-12: Make `denote-dired-mode' work with diredfl.  This
+;; may prove challenging.
 
 ;;;###autoload
 (define-minor-mode denote-dired-mode
