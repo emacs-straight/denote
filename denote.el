@@ -199,7 +199,8 @@ The value is a list of symbols, which includes any of the following:
 - `date': Prompts for the date of the new note.  It will expect
   an input like 2022-06-16 or a date plus time: 2022-06-16 14:30.
   Without the `date' prompt, the `denote' command uses the
-  `current-time'.
+  `current-time'.  (To leverage the more sophisticated Org
+  method, see the `denote-date-prompt-use-org-read-date'.)
 
 - `template': Prompts for a KEY among `denote-templates'.  The
   value of that KEY is used to populate the new note with
@@ -316,6 +317,18 @@ are described in the doc string of `format-time-string'."
   :package-version '(denote . "0.2.0")
   :group 'denote)
 
+(defcustom denote-date-prompt-use-org-read-date nil
+  "Whether to use `org-read-date' in date prompts.
+
+If non-nil, use `org-read-date'.  If nil, input the date as a
+string, as described in `denote'.
+
+This option is relevant when `denote-prompts' includes a `date'
+and/or when the user invokes the command `denote-date'."
+  :group 'denote
+  :package-version '(denote . "0.6.0")
+  :type 'boolean)
+
 (defcustom denote-templates nil
   "Alist of content templates for new notes.
 A template is arbitrary text that Denote will add to a newly
@@ -393,9 +406,9 @@ things accordingly.")
 (defun denote--slug-hyphenate (str)
   "Replace spaces and underscores with hyphens in STR.
 Also replace multiple hyphens with a single one and remove any
-trailing hyphen."
+leading and trailing hyphen."
   (replace-regexp-in-string
-   "-$" ""
+   "^-\\|-$" ""
    (replace-regexp-in-string
     "-\\{2,\\}" "-"
     (replace-regexp-in-string "_\\|\s+" "-" str))))
@@ -482,7 +495,7 @@ FILE must be an absolute path."
 
 (defun denote--directory-files ()
   "List expanded files in variable `denote-directory'.
-The returned files only need to have an identifier. They may
+The returned files only need to have an identifier.  They may
 include files that are not of a valid file type as specified by
 `denote-file-types'."
   (mapcar
@@ -652,15 +665,6 @@ identifier: %s
      :keywords-key-regexp "^#\\+filetags\\s-*:"
      :keywords-value-function denote--format-keywords-for-org-front-matter
      :keywords-value-reverse-function denote--extract-keywords-from-front-matter)
-    (markdown-toml
-     :extension ".md"
-     :front-matter ,denote-toml-front-matter
-     :title-key-regexp "^title\\s-*="
-     :title-value-function denote--surround-with-quotes
-     :title-value-reverse-function denote--trim-whitespace-then-quotes
-     :keywords-key-regexp "^tags\\s-*="
-     :keywords-value-function denote--format-keywords-for-md-front-matter
-     :keywords-value-reverse-function denote--extract-keywords-from-front-matter)
     (markdown-yaml
      :extension ".md"
      :front-matter ,denote-yaml-front-matter
@@ -668,6 +672,15 @@ identifier: %s
      :title-value-function denote--surround-with-quotes
      :title-value-reverse-function denote--trim-whitespace-then-quotes
      :keywords-key-regexp "^tags\\s-*:"
+     :keywords-value-function denote--format-keywords-for-md-front-matter
+     :keywords-value-reverse-function denote--extract-keywords-from-front-matter)
+    (markdown-toml
+     :extension ".md"
+     :front-matter ,denote-toml-front-matter
+     :title-key-regexp "^title\\s-*="
+     :title-value-function denote--surround-with-quotes
+     :title-value-reverse-function denote--trim-whitespace-then-quotes
+     :keywords-key-regexp "^tags\\s-*="
      :keywords-value-function denote--format-keywords-for-md-front-matter
      :keywords-value-reverse-function denote--extract-keywords-from-front-matter)
     (text
@@ -689,7 +702,7 @@ TYPE-INFO is a list of 8 elements:
   front-matter: The type's front matter, as a string.
 
   title-key-regexp: The regexp used to retrieve the title line in
-    a file. The first line matching this regexp is considered the
+    a file.  The first line matching this regexp is considered the
     title line.
 
   title-value-function: The function used to format the raw title
@@ -699,7 +712,7 @@ TYPE-INFO is a list of 8 elements:
     string from the string in the front matter.
 
   keywords-key-regexp: The regexp used to retrieve the keywords
-    line in a file. The first line matching this regexp is
+    line in a file.  The first line matching this regexp is
     considered the keywords line.
 
   keywords-value-function: The function used to format the
@@ -757,7 +770,7 @@ Based on FILE-TYPE."
 
 (defun denote--get-title-line-from-front-matter (title file-type)
   "Retrieve title line from front matter based on FILE-TYPE.
-Format TITLE in the title line. The returned line does not
+Format TITLE in the title line.  The returned line does not
 contain the newline."
   (let ((front-matter (denote--format-front-matter title "" nil "" file-type))
         (key-regexp (denote--title-key-regexp file-type)))
@@ -769,7 +782,7 @@ contain the newline."
 
 (defun denote--get-keywords-line-from-front-matter (keywords file-type)
   "Retrieve keywords line from front matter based on FILE-TYPE.
-Format KEYWORDS in the keywords line. The returned line does not
+Format KEYWORDS in the keywords line.  The returned line does not
 contain the newline."
   (let ((front-matter (denote--format-front-matter "" "" keywords "" file-type))
         (key-regexp (denote--keywords-key-regexp file-type)))
@@ -1118,11 +1131,23 @@ here for clarity."
 (defvar denote--date-history nil
   "Minibuffer history of `denote--date-prompt'.")
 
+(declare-function org-read-date "org" (&optional with-time to-time from-string prompt default-time default-input inactive))
+
 (defun denote--date-prompt ()
   "Prompt for date."
-  (read-string
-   "DATE and TIME for note (e.g. 2022-06-16 14:30): "
-   nil 'denote--date-history))
+  (if (and denote-date-prompt-use-org-read-date
+           (require 'org nil :no-error))
+      (let* ((time (org-read-date nil t))
+             (org-time-seconds (format-time-string "%S" time))
+             (cur-time-seconds (format-time-string "%S" (current-time))))
+        ;; When the user does not input a time, org-read-date defaults to 00 for seconds.
+        ;; When the seconds are 00, we add the current seconds to avoid identifier collisions.
+        (when (string-equal "00" org-time-seconds)
+          (setq time (time-add time (string-to-number cur-time-seconds))))
+        (format-time-string "%Y-%m-%d %H:%M:%S" time))
+    (read-string
+     "DATE and TIME for note (e.g. 2022-06-16 14:30): "
+     nil 'denote--date-history)))
 
 (defvar denote--subdir-history nil
   "Minibuffer history of `denote--subdirs-prompt'.")
@@ -1238,23 +1263,29 @@ See the format of `denote-file-types'."
 (defun denote--filetype-heuristics (file)
   "Return likely file type of FILE.
 Use the file extension to detect the file type of the file.
-If more than one file type correspond to this file extension,
-use the first file type for which the key-title-kegexp matches
-in the file.
-Else, if nothing works, the file type is assumed to be the first
-in `denote-file-types'."
+
+If more than one file type correspond to this file extension, use
+the first file type for which the key-title-kegexp matches in the
+file or, if none matches, use the first type with this file
+extension in `denote-file-type'.
+
+If no file types in `denote-file-types' has the file extension,
+the file type is assumed to be the first of `denote-file-types'."
   (let* ((file-type)
          (extension (file-name-extension file t))
          (types (denote--file-types-with-extension extension)))
-    (if (= (length types) 1)
-        (setq file-type (caar types))
-      (when-let ((found-type (seq-find
-                              (lambda (type)
-                                (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
-                              types)))
-        (setq file-type (car found-type))))
-    (unless file-type
-      (setq file-type (caar denote-file-types)))
+    (cond ((not types)
+           (setq file-type (caar denote-file-types)))
+          ((= (length types) 1)
+           (setq file-type (caar types)))
+          (t
+           (if-let ((found-type
+                     (seq-find
+                      (lambda (type)
+                        (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
+                      types)))
+               (setq file-type (car found-type))
+             (setq file-type (caar types)))))
     file-type))
 
 (defun denote--file-attributes-time (file)
@@ -1314,7 +1345,7 @@ block if appropriate."
 
 (defun denote--edit-front-matter-p (file file-type)
   "Test if FILE should be subject to front matter rewrite.
-Use FILE-TYPE to look for the front matter lines. This is
+Use FILE-TYPE to look for the front matter lines.  This is
 relevant for operations that insert or rewrite the front matter
 in a Denote note.
 
