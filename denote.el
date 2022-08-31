@@ -459,7 +459,8 @@ leading and trailing hyphen."
   "Return non-nil if FILE has supported extension."
   (let* ((extensions (denote--extensions))
          (valid-extensions (append extensions
-                                   (mapcar (lambda (e) (concat e ".gpg"))
+                                   (mapcar (lambda (e)
+                                             (concat e ".gpg"))
                                            extensions))))
     (seq-some
      (lambda (e) (string-suffix-p e file))
@@ -476,7 +477,7 @@ leading and trailing hyphen."
        (denote--file-supported-extension-p file)))
 
 (defun denote--file-name-relative-to-denote-directory (file)
-  "Return file name of FILE relative to the variable `denote-directory'.
+  "Return name of FILE relative to the variable `denote-directory'.
 FILE must be an absolute path."
   (when-let* ((dir (denote-directory))
               ((file-name-absolute-p file))
@@ -496,10 +497,9 @@ FILE must be an absolute path."
        (denote--default-dir-has-denote-prefix)))
 
 (defun denote--directory-files ()
-  "List expanded files in variable `denote-directory'.
-The returned files only need to have an identifier.  They may
-include files that are not of a valid file type as specified by
-`denote-file-types'."
+  "List absolute file paths in variable `denote-directory'.
+The returned files only need to have an identifier.  This may
+include files that are not implied by `denote-file-types'."
   (mapcar
    #'expand-file-name
    (seq-remove
@@ -582,18 +582,16 @@ output is sorted with `string-lessp'."
 
 ;;;; File types
 
-;; TODO 2022-08-10: These are `defvar' and not `defcustom' because
-;; tweaks to them need to be done with care.  Though there is demand for
-;; modifying the front matter, so perhaps we should reconsider.
-
-(defvar denote-toml-front-matter
-  "+++
-title      = %s
-date       = %s
-tags       = %s
-identifier = %S
-+++\n\n"
-  "TOML front matter.")
+(defvar denote-org-front-matter
+  "#+title:      %s
+#+date:       %s
+#+filetags:   %s
+#+identifier: %s
+\n"
+  "Org front matter.
+It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
+ID.  Advanced users are advised to consult Info node `(denote)
+Change the front matter format'.")
 
 (defvar denote-yaml-front-matter
   "---
@@ -602,7 +600,22 @@ date:       %s
 tags:       %s
 identifier: %S
 ---\n\n"
-  "YAML front matter.")
+  "YAML front matter.
+It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
+ID.  Advanced users are advised to consult Info node `(denote)
+Change the front matter format'.")
+
+(defvar denote-toml-front-matter
+  "+++
+title      = %s
+date       = %s
+tags       = %s
+identifier = %S
++++\n\n"
+  "TOML front matter.
+It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
+ID.  Advanced users are advised to consult Info node `(denote)
+Change the front matter format'.")
 
 (defvar denote-text-front-matter
   "title:      %s
@@ -610,15 +623,10 @@ date:       %s
 tags:       %s
 identifier: %s
 ---------------------------\n\n"
-  "Plain text front matter.")
-
-(defvar denote-org-front-matter
-  "#+title:      %s
-#+date:       %s
-#+filetags:   %s
-#+identifier: %s
-\n"
-  "Org front matter.")
+  "Plain text front matter.
+It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
+ID.  Advanced users are advised to consult Info node `(denote)
+Change the front matter format'.")
 
 (defun denote-surround-with-quotes (s)
   "Surround string S with quotes.
@@ -752,39 +760,51 @@ PROPERTY-LIST is a plist that consists of 8 elements:
 
 (defun denote--file-extension (file-type)
   "Return file type extension based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :extension))
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :extension))
 
 (defun denote--front-matter (file-type)
   "Return front matter based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :front-matter))
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :front-matter))
 
 (defun denote--title-key-regexp (file-type)
   "Return the title key regexp associated to FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :title-key-regexp))
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :title-key-regexp))
 
 (defun denote--title-value-function (file-type)
-  "Function to convert the title string to a front matter title.
-Based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :title-value-function))
+  "Convert title string to a front matter title, per FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :title-value-function))
 
 (defun denote--title-value-reverse-function (file-type)
-  "Function to convert a front matter title to the title string.
-Based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :title-value-reverse-function))
+  "Convert front matter title to the title string, per FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :title-value-reverse-function))
 
 (defun denote--keywords-key-regexp (file-type)
   "Return the keywords key regexp associated to FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :keywords-key-regexp))
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :keywords-key-regexp))
 
 (defun denote--keywords-value-function (file-type)
-  "Function to convert the keywords string to a front matter keywords.
-Based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :keywords-value-function))
+  "Convert keywords' string to front matter keywords, per FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :keywords-value-function))
 
 (defun denote--keywords-value-reverse-function (file-type)
-  "Function to convert a front matter keywords to the keywords list.
-Based on FILE-TYPE."
-  (plist-get (alist-get file-type denote-file-types) :keywords-value-reverse-function))
+  "Convert front matter keywords to keywords' list, per FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :keywords-value-reverse-function))
 
 (defun denote--extensions ()
   "Return all extensions in `denote-file-type'."
@@ -1629,7 +1649,9 @@ the source of truth in this case to avoid potential breakage with
 typos and the like."
   (interactive (list (buffer-file-name)))
   (when (buffer-modified-p)
-    (user-error "Save buffer before proceeding"))
+    (if (y-or-n-p "Would you like to save the buffer?")
+        (save-buffer)
+      (user-error "Save buffer before proceeding")))
   (unless (denote--writable-and-supported-p file)
     (user-error "The file is not writable or does not have a supported file extension"))
   (if-let* ((file-type (denote--filetype-heuristics file))
