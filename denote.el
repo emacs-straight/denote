@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 0.6.0
+;; Version: 0.6.1
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -103,7 +103,8 @@
 
 (defgroup denote ()
   "Simple notes with an efficient file-naming scheme."
-  :group 'files)
+  :group 'files
+  :link '(info-link "(denote) Top"))
 
 ;;;; User options
 
@@ -492,7 +493,8 @@ FILE must be an absolute path."
 
 (defun denote--current-file-is-note-p ()
   "Return non-nil if current file likely is a Denote note."
-  (and (or (string-match-p denote--id-regexp (buffer-file-name))
+  (and (buffer-file-name)
+       (or (string-match-p denote--id-regexp (buffer-file-name))
            (string-match-p denote--id-regexp (buffer-name)))
        (denote--default-dir-has-denote-prefix)))
 
@@ -1164,10 +1166,11 @@ When called from Lisp, all arguments are optional.
 (defun denote--title-prompt (&optional default-title)
   "Read file title for `denote'.
 With optional DEFAULT-TITLE use it as the default value."
-  (let ((format (if (and default-title (not (string-empty-p default-title)))
-                    (format "File title [%s]: " default-title)
-                  "File title: ")))
-    (read-string format nil 'denote--title-history default-title)))
+  (let* ((def default-title)
+         (format (if (and def (not (string-empty-p def)))
+                     (format "File title [%s]: " def)
+                   "File title: ")))
+    (read-string format nil 'denote--title-history def)))
 
 (defvar denote--file-type-history nil
   "Minibuffer history of `denote--file-type-prompt'.")
