@@ -2058,7 +2058,10 @@ format is always [[denote:IDENTIFIER]]."
   (interactive)
   (if-let* ((regexp (denote-link--file-type-regexp (buffer-file-name)))
             (files (denote-link--expand-identifiers regexp)))
-      (find-file (denote-link--find-file-prompt files))
+      (find-file ; TODO 2022-09-05: Revise for possible refinement
+       (denote--get-note-path-by-id
+        (denote-link--id-from-string
+         (denote-link--find-file-prompt files))))
     (user-error "No links found in the current buffer")))
 
 ;;;;; Link buttons
@@ -2118,13 +2121,20 @@ format is always [[denote:IDENTIFIER]]."
   "Make denote: links actionable buttons in the current buffer.
 
 Add this to `find-file-hook'.  It will only work with Denote
-notes and will not do anything in `org-mode' buffers, as buttons
-already work there.  If you do not use Markdown or plain text,
-then you do not need this.
+notes inside the variable `denote-directory' and will not do
+anything in `org-mode' buffers, as buttons already work there.
+If you do not use Markdown or plain text, then you do not need
+this.
 
 When called from Lisp, with optional BEG and END as buffer
 positions, limit the process to the region in-between."
   (interactive)
+  ;; TODO 2022-09-05: Perhaps we need a more relaxed check that does not
+  ;; account for the `denote-directory' instead of
+  ;; `denote--current-file-is-note-p'?  For the use-case, see commit
+  ;; a3cc59a.  Basically, a 'denote:' link will work for as long as the
+  ;; target file is in the `denote-directory'.  So why not buttonize
+  ;; those links even from outside the `denote-directory'?
   (when (and (not (derived-mode-p 'org-mode)) (denote--current-file-is-note-p))
     (save-excursion
       (goto-char (or beg (point-min)))
@@ -2374,6 +2384,20 @@ interface by first selecting the `denote:' hyperlink type."
    "denote:"
    (denote--retrieve-filename-identifier (denote--retrieve-read-file-prompt))))
 
+(defun denote-link-ol-store()
+  "Handler for `org-store-link' adding support for denote: links."
+  (when (denote--current-file-is-note-p)
+    (let* ((file (buffer-file-name))
+           (file-type (denote--filetype-heuristics file))
+           (file-id (denote--retrieve-filename-identifier file))
+           (file-title (denote--retrieve-title-or-filename file file-type)))
+
+      (org-link-store-props
+       :type "denote"
+       :description file-title
+       :link (concat "denote:" file-id)))
+    org-store-link-plist))
+
 (defun denote-link-ol-export (link description format)
   "Export a `denote:' link from Org files.
 The LINK, DESCRIPTION, and FORMAT are handled by the export
@@ -2407,6 +2431,7 @@ backend."
            :follow #'denote-link-ol-follow
            :face #'denote-link-ol-face
            :complete #'denote-link-ol-complete
+           :store #'denote-link-ol-store
            :export #'denote-link-ol-export)))))
 
 ;;;; Glue code for org-capture
