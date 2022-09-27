@@ -539,19 +539,23 @@ FILE must be an absolute path."
   'denote-get-file-name-relative-to-denote-directory
   "1.0.0")
 
-;; TODO 2022-09-14: Do we actually need the following two given the
-;; above predicate functions?
+(defun denote-extract-id-from-string (string)
+  "Return existing Denote identifier in STRING, else nil."
+  (when (string-match denote--id-regexp string)
+    (match-string 0 string)))
+
+(define-obsolete-function-alias
+  'denote-link--id-from-string
+  'denote-extract-id-from-string
+  "1.0.0")
+
+;; TODO 2022-09-26: Maybe we can consolidate this with
+;; `denote--dir-in-denote-directory-p'?  Another check for the
+;; directory prefix is done in `denote-file-is-note-p'.
 (defun denote--default-dir-has-denote-prefix ()
   "Test `default-directory' for variable `denote-directory' prefix."
   (string-prefix-p (denote-directory)
                    (expand-file-name default-directory)))
-
-(defun denote--current-file-is-note-p ()
-  "Return non-nil if current file likely is a Denote note."
-  (and (buffer-file-name)
-       (or (string-match-p denote--id-regexp (buffer-file-name))
-           (string-match-p denote--id-regexp (buffer-name)))
-       (denote--default-dir-has-denote-prefix)))
 
 (defun denote-directory-files ()
   "Return list of absolute file paths in variable `denote-directory'.
@@ -1488,7 +1492,7 @@ set to \\='(template title keywords)."
 
 ;;;###autoload
 (defun denote-open-or-create (target)
-  "Visit file in variable `denote-directory'.
+  "Visit TARGET file in variable `denote-directory'.
 If file does not exist, invoke `denote' to create a file."
   (interactive (list (denote-file-prompt)))
   (if (file-exists-p target)
@@ -1944,12 +1948,7 @@ relevant front matter."
   :group 'denote-faces
   :package-version '(denote . "0.5.0"))
 
-(defface denote-faces-broken-link '((t :inherit (error link)))
-  "Face used to style Denote broken links in the buffer.
-This only works in Org files, as Emacs' generic buttons do not
-provide a facility that uses a face based on certain conditions."
-  :group 'denote-faces
-  :package-version '(denote . "0.5.0"))
+(make-obsolete 'denote-faces-broken-link nil "1.0.0")
 
 (defface denote-faces-subdirectory '((t :inherit bold))
   "Face for subdirectory of file name.
@@ -2231,9 +2230,9 @@ format is always [[denote:IDENTIFIER]]."
   (interactive)
   (if-let* ((regexp (denote-link--file-type-regexp (buffer-file-name)))
             (files (denote-link--expand-identifiers regexp)))
-      (find-file ; TODO 2022-09-05: Revise for possible refinement
+      (find-file
        (denote-get-path-by-id
-        (denote-link--id-from-string
+        (denote-extract-id-from-string
          (denote-link--find-file-prompt files))))
     (user-error "No links found in the current buffer")))
 
@@ -2313,12 +2312,6 @@ file's title.  This has the same meaning as in `denote-link'."
             (thing-at-point-looking-at "\\[\\(denote:.*\\)]"))
     (match-string-no-properties 0)))
 
-(defun denote-link--id-from-string (string)
-  "Extract identifier from STRING."
-  (replace-regexp-in-string
-   (concat ".*denote:" "\\(" denote--id-regexp "\\)" ".*")
-   "\\1" string))
-
 ;; NOTE 2022-06-15: I add this as a variable for advanced users who may
 ;; prefer something else.  If there is demand for it, we can make it a
 ;; defcustom, but I think it would be premature at this stage.
@@ -2327,7 +2320,7 @@ file's title.  This has the same meaning as in `denote-link'."
 
 (defun denote-link--find-file-at-button (button)
   "Visit file referenced by BUTTON."
-  (let* ((id (denote-link--id-from-string
+  (let* ((id (denote-extract-id-from-string
               (buffer-substring-no-properties
                (button-start button)
                (button-end button))))
@@ -2347,13 +2340,8 @@ this.
 When called from Lisp, with optional BEG and END as buffer
 positions, limit the process to the region in-between."
   (interactive)
-  ;; TODO 2022-09-05: Perhaps we need a more relaxed check that does not
-  ;; account for the `denote-directory' instead of
-  ;; `denote--current-file-is-note-p'?  For the use-case, see commit
-  ;; a3cc59a.  Basically, a 'denote:' link will work for as long as the
-  ;; target file is in the `denote-directory'.  So why not buttonize
-  ;; those links even from outside the `denote-directory'?
-  (when (and (not (derived-mode-p 'org-mode)) (denote--current-file-is-note-p))
+  (when (and (not (derived-mode-p 'org-mode))
+             (denote-file-has-identifier-p (buffer-file-name)))
     (save-excursion
       (goto-char (or beg (point-min)))
       (while (re-search-forward denote--id-regexp end t)
@@ -2586,18 +2574,6 @@ file."
    (denote-link--ol-resolve-link-to-target link)
    nil))
 
-(defun denote-link-ol-face (link)
-  "Return appropriate face for LINK.
-If the LINK resolves to a note, use `denote-faces-link', else
-return `denote-faces-broken-link'.  When links are propertized in
-other contexts, apply the generic `link' face (this happens with
-the Org agenda)."
-  (if (not (denote--current-file-is-note-p))
-      'link
-    (if (denote-link--ol-resolve-link-to-target link)
-        'denote-faces-link
-      'denote-faces-broken-link)))
-
 (defun denote-link-ol-complete ()
   "Like `denote-link' but for Org integration.
 This lets the user complete a link through the `org-insert-link'
@@ -2611,16 +2587,16 @@ interface by first selecting the `denote:' hyperlink type."
 
 (defun denote-link-ol-store()
   "Handler for `org-store-link' adding support for denote: links."
-  (when (denote--current-file-is-note-p)
-    (let* ((file (buffer-file-name))
-           (file-type (denote-filetype-heuristics file))
-           (file-id (denote-retrieve-filename-identifier file))
-           (file-title (denote--retrieve-title-or-filename file file-type)))
-      (org-link-store-props
-       :type "denote"
-       :description file-title
-       :link (concat "denote:" file-id)))
-    org-store-link-plist))
+  (when-let* ((file (buffer-file-name))
+              ((denote-file-is-note-p file))
+              (file-type (denote-filetype-heuristics file))
+              (file-id (denote-retrieve-filename-identifier file))
+              (file-title (denote--retrieve-title-or-filename file file-type)))
+    (org-link-store-props
+     :type "denote"
+     :description file-title
+     :link (concat "denote:" file-id)))
+  org-store-link-plist)
 
 (defun denote-link-ol-export (link description format)
   "Export a `denote:' link from Org files.
@@ -2653,7 +2629,7 @@ backend."
           (org-link-set-parameters
            "denote"
            :follow #'denote-link-ol-follow
-           :face #'denote-link-ol-face
+           :face 'denote-faces-link
            :complete #'denote-link-ol-complete
            :store #'denote-link-ol-store
            :export #'denote-link-ol-export)))))

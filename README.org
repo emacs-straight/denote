@@ -1142,13 +1142,6 @@ like an ordinary link by default.  This is just a convenience for the
 user/theme in case they want =denote:= links to remain distinct from
 other links.
 
-#+vindex: denote-faces-broken-link
-In Org files, broken links get the ~denote-faces-broken-link~ if the
-linked identifier does not resolve to a file path with a note.  The
-ability to use distinct faces for such a scenario is a feature of Org,
-which is not available in other supported file types that use Emacs'
-generic button mechanism.
-
 ** Insert links matching a regexp
 :PROPERTIES:
 :CUSTOM_ID: h:9bec2c83-36ca-4951-aefc-7187c5463f90
@@ -2192,11 +2185,11 @@ its symbol such as ~denote--file-extension~.  Do not use those as we
 might change them without further notice.
 
 #+findex: denote-file-is-note-p
-+ ~denote-file-is-note-p~ :: Return non-nil if =FILE= is an actual Denote
-  note.  For our purposes, a note must note be a directory, must satisfy
-  ~file-regular-p~, its path must be part of the variable
-  ~denote-directory~, it must have a Denote identifier in its name, and
-  use one of the extensions implied by ~denote-file-type~.
++ ~denote-file-is-note-p~ :: Return non-nil if =FILE= is an actual
+  Denote note.  For our purposes, a note must not be a directory, must
+  satisfy ~file-regular-p~, its path must be part of the variable
+  ~denote-directory~, it must have a Denote identifier in its name,
+  and use one of the extensions implied by ~denote-file-type~.
 
 #+findex: denote-file-has-identifier-p
 + ~denote-file-has-identifier-p~ :: Return non-nil if FILE has a Denote
@@ -2292,6 +2285,10 @@ might change them without further notice.
   and return them as a list of strings.  =PATH= must be a Denote-style
   file name where keywords are prefixed with an underscore.  If =PATH=
   has no such keywords, return nil ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+findex: denote-extract-id-from-string
++ ~denote-extract-id-from-string~ :: Return existing Denote identifier
+  in =STRING=, else nil.
 
 #+findex: denote-retrieve-filename-identifier
 + ~denote-retrieve-filename-identifier~ :: Extract identifier from
@@ -2953,11 +2950,11 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Kaludercic, Quiliro Ordóñez, Stefan Monnier.
 
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
-  Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Frank Ehmsen,
-  Hanspeter Gisler, Jack Baty, Juanjo Presa, Kaushal Modi, M. Hadi
-  Timachi, Paul van Gelder, Peter Prevos, Shreyas Ragavan, Summer Emacs,
-  Sven Seebeck, Taoufik, Ypot, atanasj, hpgisler, pRot0ta1p, sienic,
-  sundar bp.
+  Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Elias Storms,
+  Frank Ehmsen, Hanspeter Gisler, Jack Baty, Juanjo Presa, Kaushal
+  Modi, M. Hadi Timachi, Paul van Gelder, Peter Prevos, Shreyas
+  Ragavan, Summer Emacs, Sven Seebeck, Taoufik, Ypot, atanasj,
+  hpgisler, pRot0ta1p, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
