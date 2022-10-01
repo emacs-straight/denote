@@ -4,9 +4,9 @@
 #+language:              en
 #+options:               ':t toc:nil author:t email:t num:t
 #+startup:               content
-#+macro:                 stable-version 0.6.0
-#+macro:                 release-date 2022-08-31
-#+macro:                 development-version 1.0.0-dev
+#+macro:                 stable-version 1.0.0
+#+macro:                 release-date 2022-09-30
+#+macro:                 development-version 1.1.0-dev
 #+export_file_name:      denote.texi
 #+texinfo_filename:      denote.info
 #+texinfo_dir_category:  Emacs misc features
@@ -1204,6 +1204,20 @@ above is for interactive usage.
 Links are created only for files which qualify as a "note" for our
 purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
 
+** Insert links, but only those missing from current buffer
+:PROPERTIES:
+:CUSTOM_ID: h:0c1fdaab-5a6b-4792-9694-fed53cd042e6
+:END:
+
+#+findex: denote-link-add-missing-links
+As a variation on the ~denote-link-add-links~ command, one may wish to
+only include 'missing links', i.e. links that are not yet present in
+the current file.
+
+This can be achieved with ~denote-link-add-missing-links~. The command
+is similar to ~denote-link-add-links~, but will only include links to
+notes that are not yet linked to ([[#h:9bec2c83-36ca-4951-aefc-7187c5463f90][Insert links matching a regexp]]).
+
 ** Insert links from marked files in Dired
 :PROPERTIES:
 :CUSTOM_ID: h:9cbb692e-5d8a-44a6-9193-899a07872a07
@@ -1237,9 +1251,6 @@ for our purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
 :PROPERTIES:
 :CUSTOM_ID: h:9e41e7df-2aac-4835-94c5-659b6111e6de
 :END:
-
-[ The ~denote-link-after-creating~ and ~denote-link-or-create~ are part
-  of {{{development-version}}}. ]
 
 In one's note-taking workflow, there may come a point where they are
 expounding on a certain topic but have an idea about another subject
@@ -1955,8 +1966,6 @@ Git).
 :CUSTOM_ID: h:ad91ca39-cf10-4e16-b224-fdf78f093883
 :END:
 
-[ Part of {{{development-version}}} ]
-
 #+findex: denote-open-or-create
 The command ~denote-open-or-create~ prompts to visit a file in the
 ~denote-directory~.  If the user input does not have any matches,
@@ -2023,8 +2032,6 @@ For templates, refer to `denote-templates'."
 :PROPERTIES:
 :CUSTOM_ID: h:b6056e6b-93df-4e6b-a778-eebd105bac46
 :END:
-
-[ Part of {{{development-version}}} ]
 
 #+findex: denote-link-or-create
 The command ~denote-link-or-create~ uses ~denote-link~ on a =TARGET=
@@ -2262,8 +2269,6 @@ Everything is in place to set up the package.
 :CUSTOM_ID: h:c916d8c5-540a-409f-b780-6ccbd90e088e
 :END:
 
-[ Part of {{{development-version}}} ]
-
 Denote is in a stable state and can be relied upon as the basis for
 custom extensions.  Further below is a list with the functions or
 variables we provide for public usage.  Those are in addition to all
@@ -2280,87 +2285,120 @@ By contradistinction, a "private" form is declared with two hyphens in
 its symbol such as ~denote--file-extension~.  Do not use those as we
 might change them without further notice.
 
+#+vindex: denote-id-format
++ Variable ~denote-id-format~ :: Format of ID prefix of a note's
+  filename.  The note's ID is derived from the date and time of its
+  creation ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+vindex: denote-id-regexp
++ Variable ~denote-id-regexp~ :: Regular expression to match
+  ~denote-id-format~.
+
+#+vindex: denote-title-regexp
++ Variable ~denote-title-regexp~ :: Regular expression to match the
+  TITLE field in a file name ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+vindex: denote-keywords-regexp
++ Variable ~denote-keywords-regexp~ :: Regular expression to match the
+  KEYWORDS field in a file name ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+vindex: denote-excluded-punctuation-regexp
++ Variable ~denote-excluded-punctuation-regexp~ :: Punctionation that
+  is removed from file names.  We consider those characters illegal
+  for our purposes.
+
+#+vindex: denote-excluded-punctuation-extra-regexp
++ Variable ~denote-excluded-punctuation-extra-regexp~ :: Additional
+  punctuation that is removed from file names.  This variable is for
+  advanced users who need to extend the ~denote-excluded-punctuation-regexp~.
+  Once we have a better understanding of what we should be omitting,
+  we will update things accordingly.
+
 #+findex: denote-file-is-note-p
-+ ~denote-file-is-note-p~ :: Return non-nil if =FILE= is an actual
-  Denote note.  For our purposes, a note must not be a directory, must
-  satisfy ~file-regular-p~, its path must be part of the variable
-  ~denote-directory~, it must have a Denote identifier in its name,
-  and use one of the extensions implied by ~denote-file-type~.
++ Function ~denote-file-is-note-p~ :: Return non-nil if =FILE= is an
+  actual Denote note.  For our purposes, a note must not be a
+  directory, must satisfy ~file-regular-p~, its path must be part of
+  the variable ~denote-directory~, it must have a Denote identifier in
+  its name, and use one of the extensions implied by
+  ~denote-file-type~.
 
 #+findex: denote-file-has-identifier-p
-+ ~denote-file-has-identifier-p~ :: Return non-nil if FILE has a Denote
-  identifier.
++ Function ~denote-file-has-identifier-p~ :: Return non-nil if =FILE=
+  has a Denote identifier.
 
 #+findex: denote-file-has-supported-extension-p
-+ ~denote-file-has-supported-extension-p~ :: Return non-nil if =FILE=
-  has supported extension.  Also account for the possibility of an added
-  =.gpg= suffix. Supported extensions are those implied by
++ Function ~denote-file-has-supported-extension-p~ :: Return non-nil
+  if =FILE= has supported extension.  Also account for the possibility
+  of an added =.gpg= suffix. Supported extensions are those implied by
   ~denote-file-type~.
 
 #+findex: denote-file-is-writable-and-supported-p
-+ ~denote-file-is-writable-and-supported-p~ :: Return non-nil if =FILE=
-  is writable and has supported extension.
++ Function ~denote-file-is-writable-and-supported-p~ :: Return non-nil
+  if =FILE= is writable and has supported extension.
 
 #+findex: denote-keywords
-+ ~denote-keywords~ :: Return appropriate list of keyword candidates.
-  If ~denote-infer-keywords~ is non-nil, infer keywords from existing
-  notes and combine them into a list with ~denote-known-keywords~.  Else
-  use only the latter ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]).
++ Function ~denote-keywords~ :: Return appropriate list of keyword
+  candidates.  If ~denote-infer-keywords~ is non-nil, infer keywords
+  from existing notes and combine them into a list with
+  ~denote-known-keywords~.  Else use only the latter set of keywords
+  ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]).
 
 #+findex: denote-directory
-+ ~denote-directory~ (function) :: Return path of the variable
++ Function ~denote-directory~ :: Return path of the variable
   ~denote-directory~ as a proper directory, also because it accepts a
-  directory-local value ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
+  directory-local value for what we internally refer to as "silos"
+  ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
 
 #+findex: denote-directory-files
-+ ~denote-directory-files~ :: Return list of absolute file paths in
-  variable ~denote-directory~. The returned files only need to have an
-  identifier.  This may include files that are not implied by
-  ~denote-file-type~.  Remember that the ~denote-directory~ accepts a
-  directory-local value ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
-
-#+findex: denote-directory-subdirectories
-+ ~denote-directory-subdirectories~ :: Return list of subdirectories in
-  variable ~denote-directory~.  Note that the ~denote-directory~ accepts
++ Function ~denote-directory-files~ :: Return list of absolute file
+  paths in variable ~denote-directory~. The returned files only need
+  to have an identifier.  This may include files that are not implied
+  by ~denote-file-type~.  Remember that the ~denote-directory~ accepts
   a directory-local value ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
 
+#+findex: denote-directory-subdirectories
++ Function ~denote-directory-subdirectories~ :: Return list of
+  subdirectories of the variable ~denote-directory~.  Note that the
+  ~denote-directory~ accepts a directory-local value for what we call
+  "silos" ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
+
 #+findex: denote-directory-files-matching-regexp
-+ ~denote-directory-files-matching-regexp~ :: Return list of files
-  matching =REGEXP= in ~denote-directory-files~.
++ Function ~denote-directory-files-matching-regexp~ :: Return list of
+  files matching =REGEXP= in ~denote-directory-files~.
 
 #+findex: denote-file-name-relative-to-denote-directory
-+ ~denote-file-name-relative-to-denote-directory~ :: Return name of
-  =FILE= relative to the variable ~denote-directory~.  =FILE= must be an
-  absolute path.
++ Function ~denote-file-name-relative-to-denote-directory~ :: Return
+  name of =FILE= relative to the variable ~denote-directory~.  =FILE=
+  must be an absolute path.
 
 #+findex: denote-get-path-by-id
-+ ~denote-get-path-by-id~ :: Return absolute path of =ID= string in
-  ~denote-directory-files~.
++ Function ~denote-get-path-by-id~ :: Return absolute path of =ID=
+  string in ~denote-directory-files~.
 
 #+findex: denote-barf-duplicate-id
-+ ~denote-barf-duplicate-id~ :: Throw a ~user-error~ if =IDENTIFIER=
-  already exists.
++ Function ~denote-barf-duplicate-id~ :: Throw a ~user-error~ if
+  =IDENTIFIER= already exists.
 
 #+findex: denote-sluggify
-+ ~denote-sluggify~ :: Make =STR= an appropriate slug for file names and
-  related ([[#h:ae8b19a1-7f67-4258-96b3-370a72c43f4e][Sluggified title and keywords]]).
++ Function ~denote-sluggify~ :: Make =STR= an appropriate slug for
+  file names and related ([[#h:ae8b19a1-7f67-4258-96b3-370a72c43f4e][Sluggified title and keywords]]).
 
 #+findex: denote-sluggify-and-join
-+ ~denote-sluggify-and-join~ :: Sluggify =STR= while joining separate
-  words.
++ Function ~denote-sluggify-and-join~ :: Sluggify =STR= while joining
+  separate words.
 
 #+findex: denote-desluggify
-+ ~denote-desluggify~ :: Upcase first char in =STR= and dehyphenate =STR=,
-  inverting ~denote-sluggify~.  Basically, convert =this-is-a-test= to
-  =This is a test=.
++ Function ~denote-desluggify~ :: Upcase first char in =STR= and
+  dehyphenate =STR=, inverting ~denote-sluggify~.  Basically, convert
+  =this-is-a-test= to =This is a test=.
 
 #+findex: denote-sluggify-keywords
-+ ~denote-sluggify-keywords~ :: Sluggify =KEYWORDS=, which is a list of
-  strings ([[#h:ae8b19a1-7f67-4258-96b3-370a72c43f4e][Sluggified title and keywords]]).
++ Function ~denote-sluggify-keywords~ :: Sluggify =KEYWORDS=, which is
+  a list of strings ([[#h:ae8b19a1-7f67-4258-96b3-370a72c43f4e][Sluggified title and keywords]]).
 
 #+findex: denote-filetype-heuristics
-+ ~denote-filetype-heuristics~ :: Return likely file type of =FILE=.
-  Use the file extension to detect the file type of the file.
++ Function ~denote-filetype-heuristics~ :: Return likely file type of
+  =FILE=.  Use the file extension to detect the file type of the file.
 
   If more than one file type correspond to this file extension, use the
   first file type for which the key-title-kegexp matches in the file or,
@@ -2371,106 +2409,111 @@ might change them without further notice.
   file type is assumed to be the first of ~denote-file-types~.
 
 #+findex: denote-format-file-name
-+ ~denote-format-file-name~ :: Format file name.  =PATH=, =ID=,
-  =KEYWORDS=, =TITLE-SLUG= are expected to be supplied by ~denote~ or
-  equivalent: they will all be converted into a single string.
-  =EXTENSION= is the file type extension, as a string.
++ Function ~denote-format-file-name~ :: Format file name.  =PATH=,
+  =ID=, =KEYWORDS=, =TITLE-SLUG= are expected to be supplied by
+  ~denote~ or equivalent: they will all be converted into a single
+  string.  =EXTENSION= is the file type extension, as a string.
 
 #+findex: denote-extract-keywords-from-path
-+ ~denote-extract-keywords-from-path~ :: Extract keywords from =PATH=
-  and return them as a list of strings.  =PATH= must be a Denote-style
-  file name where keywords are prefixed with an underscore.  If =PATH=
-  has no such keywords, return nil ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
++ Function ~denote-extract-keywords-from-path~ :: Extract keywords
+  from =PATH= and return them as a list of strings.  =PATH= must be a
+  Denote-style file name where keywords are prefixed with an
+  underscore.  If =PATH= has no such keywords, which is possible,
+  return nil ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
 
 #+findex: denote-extract-id-from-string
-+ ~denote-extract-id-from-string~ :: Return existing Denote identifier
-  in =STRING=, else nil.
++ Function ~denote-extract-id-from-string~ :: Return existing Denote
+  identifier in =STRING=, else nil.
 
 #+findex: denote-retrieve-filename-identifier
-+ ~denote-retrieve-filename-identifier~ :: Extract identifier from
-  =FILE= name.  To only return an existing identifier or create a new
-  one, refer to the ~denote-retrieve-or-create-file-identifier~
++ Function ~denote-retrieve-filename-identifier~ :: Extract identifier
+  from =FILE= name.  To only return an existing identifier or create a
+  new one, refer to the ~denote-retrieve-or-create-file-identifier~
   function.
 
 #+findex: denote-retrieve-or-create-file-identifier
-+ ~denote-retrieve-or-create-file-identifier~ :: Extract identifier from
-  =FILE= name.  To only return an existing identifier or create a new one,
-  refer to the function ~denote-retrieve-or-create-file-identifier~.
++ Function ~denote-retrieve-or-create-file-identifier~ :: Extract
+  identifier from =FILE= name.  To only return an existing identifier
+  or create a new one, refer to the function
+  ~denote-retrieve-or-create-file-identifier~.
 
 #+findex: denote-retrieve-filename-title
-+ ~denote-retrieve-filename-title~ :: Extract title from =FILE= name,
-  else return ~file-name-base~.  Run ~denote-desluggify~ on the title if
-  the extraction is successful.
++ Function ~denote-retrieve-filename-title~ :: Extract title from
+  =FILE= name, else return ~file-name-base~.  Run ~denote-desluggify~
+  on the title if the extraction is successful.
 
 #+findex: denote-retrieve-title-value
-+ ~denote-retrieve-title-value~ :: Return title value from =FILE= front
-  matter per =FILE-TYPE=.
++ Function ~denote-retrieve-title-value~ :: Return title value from
+  =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-retrieve-title-line
-+ ~denote-retrieve-title-line~ :: Return title line from =FILE= front
-  matter per =FILE-TYPE=.
++ Function ~denote-retrieve-title-line~ :: Return title line from
+  =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-retrieve-keywords-value
-+ ~denote-retrieve-keywords-value~ :: Return keywords value from =FILE=
-  front matter per =FILE-TYPE=.
++ Function ~denote-retrieve-keywords-value~ :: Return keywords value
+  from =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-retrieve-keywords-line
-+ ~denote-retrieve-keywords-line~ :: Return keywords line from =FILE=
-  front matter per =FILE-TYPE=.
++ Function ~denote-retrieve-keywords-line~ :: Return keywords line
+  from =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-file-prompt
-+ ~denote-file-prompt~ :: Prompt for file with identifier in variable
-  ~denote-directory~.
++ Function ~denote-file-prompt~ :: Prompt for file with identifier in
+  variable ~denote-directory~.
 
 #+findex: denote-keywords-prompt
-+ ~denote-keywords-prompt~ :: Prompt for one or more keywords.  In the
-  case of multiple entries, those are separated by the ~crm-sepator~,
-  which typically is a comma.  In such a scenario, the output is sorted
-  with ~string-lessp~.
++ Function ~denote-keywords-prompt~ :: Prompt for one or more
+  keywords.  In the case of multiple entries, those are separated by
+  the ~crm-sepator~, which typically is a comma.  In such a scenario,
+  the output is sorted with ~string-lessp~.
 
 #+findex: denote-title-prompt
-+ ~denote-title-prompt~ :: Read file title for ~denote~.  With optional
-  =DEFAULT-TITLE= use it as the default value.
++ Function ~denote-title-prompt~ :: Read file title for ~denote~.
+  With optional =DEFAULT-TITLE= use it as the default value.
 
 #+findex: denote-file-type-prompt
-+ ~denote-file-type-prompt~ :: Prompt for ~denote-file-type~.  Note that
-  a non-nil value other than ~text~, ~markdown-yaml~, and
-  ~markdown-toml~ falls back to an Org file type.  We use ~org~ here for
-  clarity.
++ Function ~denote-file-type-prompt~ :: Prompt for ~denote-file-type~.
+  Note that a non-nil value other than ~text~, ~markdown-yaml~, and
+  ~markdown-toml~ falls back to an Org file type.  We use ~org~ here
+  for clarity.
 
 #+findex: denote-date-prompt
-+ ~denote-date-prompt~ :: Prompt for date, expecting =YYYY-MM-DD= or
-  that plus =HH:MM= (or =HH:MM:SS=).  Use Org's more advanced date
-  selection utility if ~denote-date-prompt-use-org-read-date~ is
-  non-nil ([[#h:e7ef08d6-af1b-4ab3-bb00-494a653e6d63][The denote-date-prompt-use-org-read-date option]]).
++ Function ~denote-date-prompt~ :: Prompt for date, expecting
+  =YYYY-MM-DD= or that plus =HH:MM= (or even =HH:MM:SS=).  Use Org's
+  more advanced date selection utility if the user option
+  ~denote-date-prompt-use-org-read-date~ is non-nil.  It requires Org
+  ([[#h:e7ef08d6-af1b-4ab3-bb00-494a653e6d63][The denote-date-prompt-use-org-read-date option]]).
 
 #+findex: denote-template-prompt
-+ ~denote-template-prompt~ :: Prompt for template key in
++ Function ~denote-template-prompt~ :: Prompt for template key in
   ~denote-templates~ and return its value.
 
 #+findex: denote-subdirectory-prompt
-+ ~denote-subdirectory-prompt~ :: Prompt for subdirectory of the
-  variable ~denote-directory~.  The table uses the ~file~ completion
-  category (so it works with packages such as ~marginalia~ and
-  ~embark~).
++ Function ~denote-subdirectory-prompt~ :: Prompt for subdirectory of
+  the variable ~denote-directory~.  The table uses the ~file~
+  completion category (so it works with packages such as ~marginalia~
+  and ~embark~).
 
 #+findex: denote-rename-file-prompt
-+ ~denote-rename-file-prompt~ :: Prompt to rename file named =OLD-NAME=
-  to =NEW-NAME=.
++ Function ~denote-rename-file-prompt~ :: Prompt to rename file named
+  =OLD-NAME= to =NEW-NAME=.
 
 #+findex: denote-rename-file-and-buffer
-+ ~denote-rename-file-and-buffer~ :: Rename file named =OLD-NAME= to
-  =NEW-NAME=, updating buffer name.
++ Function ~denote-rename-file-and-buffer~ :: Rename file named
+  =OLD-NAME= to =NEW-NAME=, updating buffer name.
 
 #+findex: denote-update-dired-buffers
-+ ~denote-update-dired-buffers~ :: Update Dired buffers of variable
-  ~denote-directory~.  Note that the ~denote-directory~ accepts a
-  directory-local value ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
++ Function ~denote-update-dired-buffers~ :: Update Dired buffers of
+  variable ~denote-directory~.  Note that the ~denote-directory~
+  accepts a directory-local value for what we internally refer to as
+  "silos" ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
 
 #+vindex: denote-file-types
-+ ~denote-file-types~ :: Alist of ~denote-file-type~ and their format
-  properties.  Each element is of the form =(SYMBOL . PROPERTY-LIST)=.
-  =SYMBOL= is one of those specified in ~denote-file-type~.
++ Variable ~denote-file-types~ :: Alist of ~denote-file-type~ and
+  their format properties.  Each element is of the form =(SYMBOL
+  . PROPERTY-LIST)=.  =SYMBOL= is one of those specified in
+  ~denote-file-type~.
 
   =PROPERTY-LIST= is a plist that consists of eight elements:
 
@@ -2509,57 +2552,60 @@ might change them without further notice.
      of the =:keywords-value-function=.
 
 #+vindex: denote-org-front-matter
-+ ~denote-org-front-matter~ :: Variable holding the Org front matter.
-  It is passed to ~format~ with arguments =TITLE=, =DATE=, =KEYWORDS=,
-  =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
++ Variable ~denote-org-front-matter~ :: Specifies the Org front
+  matter.  It is passed to ~format~ with arguments =TITLE=, =DATE=,
+  =KEYWORDS=, =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
 
 #+vindex: denote-yaml-front-matter
-+ ~denote-yaml-front-matter~ :: Variable holding the YAML (Markdown)
++ Variable ~denote-yaml-front-matter~ :: Specifies the YAML (Markdown)
   front matter.  It is passed to ~format~ with arguments =TITLE=,
   =DATE=, =KEYWORDS=, =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
 
 #+vindex: denote-toml-front-matter
-+ ~denote-toml-front-matter~ :: Variable holding the TOML (Markdown)
++ Variable ~denote-toml-front-matter~ :: Specifies the TOML (Markdown)
   front matter.  It is passed to ~format~ with arguments =TITLE=,
   =DATE=, =KEYWORDS=, =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
 
 #+vindex: denote-text-front-matter
-+ ~denote-text-front-matter~ :: Variable holding the plain text front
-  matter.  It is passed to ~format~ with arguments =TITLE=, =DATE=,
-  =KEYWORDS=, =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
++ Variable ~denote-text-front-matter~ :: Specifies the plain text
+  front matter.  It is passed to ~format~ with arguments =TITLE=,
+  =DATE=, =KEYWORDS=, =ID= ([[#h:7f918854-5ed4-4139-821f-8ee9ba06ad15][Change the front matter format]])
 
 #+findex: denote-surround-with-quotes
-+ ~denote-surround-with-quotes~ :: Surround string =S= with quotes.
-  This can be used in ~denote-file-types~ to format front mattter.
++ Function ~denote-surround-with-quotes~ :: Surround string =S= with
+  quotes.  This can be used in ~denote-file-types~ to format front
+  mattter.
 
 #+findex: denote-trim-whitespace
-+ ~denote-trim-whitespace~ :: Trim whitespace around string =S= .  This
-  can be used in ~denote-file-types~ to format front mattter.
++ Function ~denote-trim-whitespace~ :: Trim whitespace around string
+  =S=.  This can be used in ~denote-file-types~ to format front
+  mattter.
 
 #+findex: denote-trim-whitespace-then-quotes
-+ ~denote-trim-whitespace-then-quotes~ :: Trim whitespace then quotes
-  around string =S=.  This can be used in ~denote-file-types~ to format
-  front mattter.
++ Function ~denote-trim-whitespace-then-quotes~ :: Trim whitespace
+  then quotes around string =S=.  This can be used in
+  ~denote-file-types~ to format front mattter.
 
 #+findex: denote-format-keywords-for-md-front-matter
-+ ~denote-format-keywords-for-md-front-matter~ :: Format front matter
-  =KEYWORDS= for markdown file type.  =KEYWORDS= is a list of strings.
-  Consult the ~denote-file-types~ for how this is used.
++ Function ~denote-format-keywords-for-md-front-matter~ :: Format
+  front matter =KEYWORDS= for markdown file type.  =KEYWORDS= is a
+  list of strings.  Consult the ~denote-file-types~ for how this is
+  used.
 
 #+findex: denote-format-keywords-for-text-front-matter
-+ ~denote-format-keywords-for-text-front-matter~ :: Format front matter
-  =KEYWORDS= for text file type.  =KEYWORDS= is a list of strings.
-  Consult the ~denote-file-types~ for how this is used.
++ Function ~denote-format-keywords-for-text-front-matter~ :: Format
+  front matter =KEYWORDS= for text file type.  =KEYWORDS= is a list of
+  strings.  Consult the ~denote-file-types~ for how this is used.
 
 #+findex: denote-format-keywords-for-org-front-matter
-+ ~denote-format-keywords-for-org-front-matter~ :: Format front matter
-  =KEYWORDS= for org file type.  =KEYWORDS= is a list of strings.
-  Consult the ~denote-file-types~ for how this is used.
++ Function ~denote-format-keywords-for-org-front-matter~ :: Format
+  front matter =KEYWORDS= for org file type.  =KEYWORDS= is a list of
+  strings.  Consult the ~denote-file-types~ for how this is used.
 
 #+findex: denote-extract-keywords-from-front-matter
-+ ~denote-extract-keywords-from-front-matter~ :: Format front matter
-  =KEYWORDS= for org file type.  =KEYWORDS= is a list of strings.
-  Consult the ~denote-file-types~ for how this is used.
++ Function ~denote-extract-keywords-from-front-matter~ :: Format front
+  matter =KEYWORDS= for org file type.  =KEYWORDS= is a list of
+  strings.  Consult the ~denote-file-types~ for how this is used.
 
 * Contributing
 :PROPERTIES:
@@ -3044,9 +3090,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 
 + Contributions to code or the manual :: Abin Simon, Alan Schmitt,
   Benjamin Kästner, Clemens Radermacher, Colin McLear, Damien Cassou,
-  Eshel Yaron, Hilde Rhyne, Jack Baty, Jean-Philippe Gagné Guay, Jürgen
-  Hötzel, Kaushal Modi, Kyle Meyer, Marc Fargas, Peter Prevos, Philip
-  Kaludercic, Quiliro Ordóñez, Stefan Monnier.
+  Elias Storms, Eshel Yaron, Hilde Rhyne, Jack Baty, Jean-Philippe
+  Gagné Guay, Jürgen Hötzel, Kaushal Modi, Kyle Meyer, Marc Fargas,
+  Peter Prevos, Philip Kaludercic, Quiliro Ordóñez, Stefan Monnier.
 
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
   Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Elias Storms,
