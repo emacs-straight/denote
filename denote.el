@@ -2509,12 +2509,12 @@ inserts links with just the identifier."
     (read-regexp "Insert links matching REGEX: " nil 'denote-link--add-links-history)
     current-prefix-arg))
   (let ((current-file (buffer-file-name)))
-    (if-let ((files (delete current-file (denote-directory-files-matching-regexp regexp))))
-        (let ((beg (point)))
+    (if-let ((files (delete current-file (denote-directory-files-matching-regexp regexp)))
+             (beg (point)))
+        (progn
           (insert (denote-link--prepare-links files current-file id-only))
-          (unless (derived-mode-p 'org-mode)
-            (denote-link-buttonize-buffer beg (point))))
-      (user-error "No links matching `%s'" regexp))))
+          (denote-link-buttonize-buffer beg (point)))
+      (message "No links matching `%s'" regexp))))
 
 (defalias 'denote-link-insert-links-matching-regexp (symbol-function 'denote-link-add-links))
 
@@ -2540,7 +2540,7 @@ inserts links with just the identifier."
         (progn
           (insert (denote-link--prepare-links final-files current-file id-only))
           (denote-link-buttonize-buffer beg (point)))
-      (user-error "No links matching `%s' that aren't yet present in the current buffer" regexp))))
+      (message "No links matching `%s' that aren't yet present in the current buffer" regexp))))
 
 ;;;;; Links from Dired marks
 
