@@ -1353,6 +1353,10 @@ certain executables to the relevant environment variable.
 
 [[#h:42f6b07e-5956-469a-8294-17f9cf62eb2b][Why do I get "Search failed with status 1" when I search for backlinks?]]
 
+Backlinks can also be visited by using minibuffer completion.  The
+command is ~denote-link-find-backlink~, which is part of
+{{{development-version}}} ([[#h:1bc2adad-dca3-4878-b9f0-b105d5dec6f4][Visiting linked files via the minibuffer]]).
+
 ** Writing metanotes
 :PROPERTIES:
 :CUSTOM_ID: h:6060a7e6-f179-4d42-a9de-a9968aaebecc
@@ -1406,6 +1410,13 @@ a package such as =marginalia= will display accurate annotations, while
 the =embark= package will be able to work its magic such as in exporting
 the list into a filtered Dired buffer (i.e. a familiar Dired listing
 with only the files of the current minibuffer session).
+
+#+findex: denote-link-find-backlink
+To visit backlinks to the current note via the minibuffer, use
+~denote-link-find-backlink~.  This is an alternative to placing
+backlinks in a dedicated buffer ([[#h:c73f1f68-e214-49d5-b369-e694f6a5d708][The backlinks' buffer]]).
+
+[ The ~denote-link-find-backlink~ is part of {{{development-version}}}. ]
 
 ** Miscellaneous information about links
 :PROPERTIES:
@@ -2236,8 +2247,9 @@ Everything is in place to set up the package.
   ;; `markdown-mode-map', and/or `text-mode-map'.
   (define-key map (kbd "C-c n i") #'denote-link) ; "insert" mnemonic
   (define-key map (kbd "C-c n I") #'denote-link-add-links)
-  (define-key map (kbd "C-c n l") #'denote-link-find-file) ; "list" links
   (define-key map (kbd "C-c n b") #'denote-link-backlinks)
+  (define-key map (kbd "C-c n f f") #'denote-link-find-file)
+  (define-key map (kbd "C-c n f b") #'denote-link-find-backlink)
   ;; Note that `denote-rename-file' can work from any context, not just
   ;; Dired bufffers.  That is why we bind it here to the `global-map'.
   (define-key map (kbd "C-c n r") #'denote-rename-file)
@@ -2801,7 +2813,7 @@ should not be mutually exclusive.
 
 If I missed something, please let me know.
 
-** Alternative ideas wih Emacs and further reading
+** Alternative ideas with Emacs and further reading
 :PROPERTIES:
 :CUSTOM_ID: h:188c0986-f2fa-444f-b493-5429356e75cf
 :END:
@@ -3096,10 +3108,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
   Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Elias Storms,
-  Frank Ehmsen, Hanspeter Gisler, Jack Baty, Juanjo Presa, Kaushal
-  Modi, M. Hadi Timachi, Paul van Gelder, Peter Prevos, Shreyas
-  Ragavan, Summer Emacs, Sven Seebeck, Taoufik, Yi Liu, Ypot, atanasj,
-  hpgisler, pRot0ta1p, sienic, sundar bp.
+  Federico Stilman, Frank Ehmsen, Hanspeter Gisler, Jack Baty, Juanjo
+  Presa, Kaushal Modi, M. Hadi Timachi, Paul van Gelder, Peter Prevos,
+  Shreyas Ragavan, Summer Emacs, Sven Seebeck, Taoufik, Yi Liu, Ypot,
+  atanasj, hpgisler, pRot0ta1p, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

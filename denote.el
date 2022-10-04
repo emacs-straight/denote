@@ -2252,7 +2252,7 @@ format is always [[denote:IDENTIFIER]]."
   (let ((file-names (mapcar #'denote-get-file-name-relative-to-denote-directory
                             files)))
     (completing-read
-     "Find linked file "
+     "Find linked file: "
      (denote--completion-table 'file file-names)
      nil t nil 'denote-link--find-file-history)))
 
@@ -2267,6 +2267,20 @@ format is always [[denote:IDENTIFIER]]."
         (denote-extract-id-from-string
          (denote-link--find-file-prompt files))))
     (user-error "No links found in the current buffer")))
+
+;;;###autoload
+(defun denote-link-find-backlink ()
+  "Use minibuffer completion to visit backlink to current file.
+
+Like `denote-link-find-file', but select backlink to follow."
+  (interactive)
+  (when-let* ((file (buffer-file-name))
+              (id (denote-retrieve-filename-identifier file))
+              (files (denote--retrieve-process-grep id)))
+    (find-file
+      (denote-get-path-by-id
+        (denote-extract-id-from-string
+          (denote-link--find-file-prompt files))))))
 
 ;;;###autoload
 (defun denote-link-after-creating (&optional id-only)
