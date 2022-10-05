@@ -828,7 +828,7 @@ Consult the `denote-file-types' for how this is used."
   ;; to be org by default.
   `((org
      :extension ".org"
-     :front-matter ,denote-org-front-matter
+     :front-matter denote-org-front-matter
      :title-key-regexp "^#\\+title\\s-*:"
      :title-value-function identity
      :title-value-reverse-function denote-trim-whitespace
@@ -837,7 +837,7 @@ Consult the `denote-file-types' for how this is used."
      :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
     (markdown-yaml
      :extension ".md"
-     :front-matter ,denote-yaml-front-matter
+     :front-matter denote-yaml-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function denote-surround-with-quotes
      :title-value-reverse-function denote-trim-whitespace-then-quotes
@@ -846,7 +846,7 @@ Consult the `denote-file-types' for how this is used."
      :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
     (markdown-toml
      :extension ".md"
-     :front-matter ,denote-toml-front-matter
+     :front-matter denote-toml-front-matter
      :title-key-regexp "^title\\s-*="
      :title-value-function denote-surround-with-quotes
      :title-value-reverse-function denote-trim-whitespace-then-quotes
@@ -855,7 +855,7 @@ Consult the `denote-file-types' for how this is used."
      :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
     (text
      :extension ".txt"
-     :front-matter ,denote-text-front-matter
+     :front-matter denote-text-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function identity
      :title-value-reverse-function denote-trim-whitespace
@@ -911,9 +911,12 @@ PROPERTY-LIST is a plist that consists of 8 elements:
 
 (defun denote--front-matter (file-type)
   "Return front matter based on FILE-TYPE."
-  (plist-get
-   (alist-get file-type denote-file-types)
-   :front-matter))
+  (let ((prop (plist-get
+               (alist-get file-type denote-file-types)
+               :front-matter)))
+    (if (symbolp prop)
+        (symbol-value prop)
+      prop)))
 
 (defun denote--title-key-regexp (file-type)
   "Return the title key regexp associated to FILE-TYPE."
@@ -1156,9 +1159,10 @@ Apply `downcase' to KEYWORDS."
 TITLE, DATE, KEYWORDS, FILENAME, ID are all strings which are
 provided by `denote'.  FILETYPE is one of the values of
 `denote-file-type'."
-  (let ((title (denote--format-front-matter-title title filetype))
-        (kws (denote--format-front-matter-keywords keywords filetype)))
-    (format (denote--front-matter filetype) title date kws id)))
+  (let* ((fm (denote--front-matter filetype))
+         (title (denote--format-front-matter-title title filetype))
+         (kws (denote--format-front-matter-keywords keywords filetype)))
+    (if fm (format fm title date kws id) "")))
 
 (defun denote--path (title keywords dir id file-type)
   "Return path to new file with ID, TITLE, KEYWORDS and FILE-TYPE in DIR."
@@ -2661,7 +2665,7 @@ interface by first selecting the `denote:' hyperlink type."
 (declare-function org-link-store-props "ol.el" (&rest plist))
 (defvar org-store-link-plist)
 
-(defun denote-link-ol-store()
+(defun denote-link-ol-store ()
   "Handler for `org-store-link' adding support for denote: links."
   (when-let* ((file (buffer-file-name))
               ((denote-file-is-note-p file))
