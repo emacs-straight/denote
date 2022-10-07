@@ -2443,7 +2443,8 @@ Expand `denote-link-backlinks-display-buffer-action'."
   "Create backlinks' buffer for ID including FILES.
 Use optional TITLE for a prettier heading."
   (let ((inhibit-read-only t)
-        (buf (format "*denote-backlinks to %s*" id)))
+        (buf (format "*denote-backlinks to %s*" id))
+        (file (buffer-file-name)))
     (with-current-buffer (get-buffer-create buf)
       (setq-local default-directory (denote-directory))
       (erase-buffer)
@@ -2460,7 +2461,12 @@ Use optional TITLE for a prettier heading."
             files)
       (goto-char (point-min))
       (when denote-link-fontify-backlinks
-        (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t)))
+        (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t))
+      (setq-local revert-buffer-function
+                  (lambda (_ignore-auto _noconfirm)
+                    (when-let ((buffer-file-name file)
+                               (files (denote--retrieve-process-grep id)))
+                      (denote-link--prepare-backlinks id files title)))))
     (denote-link--display-buffer buf)))
 
 ;;;###autoload
@@ -2643,6 +2649,7 @@ and the identifier."
       (concat path "::" search))
      (path))))
 
+;;;###autoload
 (defun denote-link-ol-follow (link)
   "Find file of type `denote:' matching LINK.
 LINK is the identifier of the note, optionally followed by a
@@ -2655,6 +2662,7 @@ file."
    (denote-link--ol-resolve-link-to-target link)
    nil))
 
+;;;###autoload
 (defun denote-link-ol-complete ()
   "Like `denote-link' but for Org integration.
 This lets the user complete a link through the `org-insert-link'
@@ -2666,6 +2674,7 @@ interface by first selecting the `denote:' hyperlink type."
 (declare-function org-link-store-props "ol.el" (&rest plist))
 (defvar org-store-link-plist)
 
+;;;###autoload
 (defun denote-link-ol-store ()
   "Handler for `org-store-link' adding support for denote: links."
   (when-let* ((file (buffer-file-name))
@@ -2679,6 +2688,7 @@ interface by first selecting the `denote:' hyperlink type."
      :link (concat "denote:" file-id))
   org-store-link-plist))
 
+;;;###autoload
 (defun denote-link-ol-export (link description format)
   "Export a `denote:' link from Org files.
 The LINK, DESCRIPTION, and FORMAT are handled by the export
@@ -2769,91 +2779,8 @@ Consult the manual for template samples."
 
 (add-hook 'org-capture-after-finalize-hook #'denote-org-capture-delete-empty-file)
 
-;;;; For the migration of old Org filetags/Markdown+YAML tags
-
-(defun denote--migrate-type-files (type file-type)
-  "Return list of TYPE files in variable `denote-directory'.
-TYPE is a string which matches the `file-name-extension'.
-FILE-TYPE is the symbol file-type."
-  (delq nil
-        (mapcar
-         (lambda (file)
-           (when-let* ((value (denote-retrieve-keywords-line
-                               file file-type))
-                       ((cond
-                         ((eq file-type 'markdown-yaml) (not (string-match-p "," value)))
-                         ((eq file-type 'org) (not (string-match-p " :" value)))
-                         (t nil))))
-             file))
-         (seq-remove
-          (lambda (file)
-            (not (string= (file-name-extension file) type)))
-          (denote-directory-files)))))
-
-;;;###autoload
-(defun denote-migrate-old-org-filetags ()
-  "Rewrite Org filetags' value as colon-separated.
-
-Change the filetags from:
-
-    #+filetags:   one  two
-
-To the standard format of:
-
-    #+filetags:  :one:two:
-
-A single tags chnages from TAG to :TAG:.
-
-Denote used to format filetags with two spaces between them, but
-this is not fully supported by Org.  The colon-separated entries
-are the rule.
-
-The rewrite DOES NOT SAVE BUFFERS.  The user is expected to
-review the changes, such as by using `diff-buffer-with-file'.
-Multiple buffers can be saved with `save-some-buffers' (check its
-doc string).
-
-This command is provided for the convenience of the user.  It
-shall be deprecated and eventually removed from future versions
-of Denote.  Written on 2022-08-10 for version 0.5.0."
-  (interactive)
-  (when-let (((yes-or-no-p "Rewrite filetags in Org files to use colons (buffers are NOT saved)?"))
-             (files (denote--migrate-type-files "org" 'org)))
-    (dolist (file files)
-      (when-let* ((kw (denote-retrieve-keywords-value file 'org))
-                  ((denote--edit-front-matter-p file 'org)))
-        (denote--rewrite-keywords file kw 'org)))))
-
-;;;###autoload
-(defun denote-migrate-old-markdown-yaml-tags ()
-  "Rewrite Markdown YAML tags value as comma-separated strings.
-
-Change the tags from:
-
-    tags:   one  two
-
-To the standard format of:
-
-    tags:  [\"one\", \"two\"]
-
-Denote used to format filetags with two spaces between them, but
-this is not supported by YAML.
-
-The rewrite DOES NOT SAVE BUFFERS.  The user is expected to
-review the changes, such as by using `diff-buffer-with-file'.
-Multiple buffers can be saved with `save-some-buffers' (check its
-doc string).
-
-This command is provided for the convenience of the user.  It
-shall be deprecated and eventually removed from future versions
-of Denote.  Written on 2022-08-10 for version 0.5.0."
-  (interactive)
-  (when-let (((yes-or-no-p "Rewrite tags in Markdown files with YAML header to use lists (buffers are NOT saved)?"))
-             (files (denote--migrate-type-files "md" 'markdown-yaml)))
-    (dolist (file files)
-      (when-let* ((kw (denote-retrieve-keywords-value file 'markdown-yaml))
-                  ((denote--edit-front-matter-p file 'markdown-yaml)))
-        (denote--rewrite-keywords file kw 'markdown-yaml)))))
+(make-obsolete 'denote-migrate-old-org-filetags nil "1.1.0")
+(make-obsolete 'denote-migrate-old-markdown-yaml-tags nil "1.1.0")
 
 (provide 'denote)
 ;;; denote.el ends here
