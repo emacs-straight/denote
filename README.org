@@ -1134,6 +1134,11 @@ When ~denote-link~ is called with a prefix argument (=C-u= by default),
 it formats links like =[[denote:IDENTIFIER]]=.  The user might prefer
 its simplicity.
 
+The description of the link is taken from the target file's front
+matter or, if that is not available, from the file name.  If the
+region is active, its text is used as the link's description instead [
+the ability to use the region is part of {{{development-version}}} ].
+
 Inserted links are automatically buttonized and remain active for as
 long as the buffer is available.  In Org this is handled by the major
 mode: the =denote:= hyperlink type works exactly like the standard
@@ -3184,11 +3189,11 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 + Author/maintainer :: Protesilaos Stavrou.
 
 + Contributions to code or the manual :: Abin Simon, Alan Schmitt,
-  Benjamin Kästner, Clemens Radermacher, Colin McLear, Damien Cassou,
-  Elias Storms, Eshel Yaron, Hilde Rhyne, Jack Baty, Jean-Philippe
-  Gagné Guay, Jürgen Hötzel, Kaushal Modi, Kyle Meyer, Marc Fargas,
-  Noboru Ota (nobiot), Peter Prevos, Philip Kaludercic, Quiliro
-  Ordóñez, Stefan Monnier.
+  Benjamin Kästner, Charanjit Singh, Clemens Radermacher, Colin
+  McLear, Damien Cassou, Elias Storms, Eshel Yaron, Hilde Rhyne, Jack
+  Baty, Jean-Philippe Gagné Guay, Jürgen Hötzel, Kaushal Modi, Kyle
+  Meyer, Marc Fargas, Noboru Ota (nobiot), Peter Prevos, Philip
+  Kaludercic, Quiliro Ordóñez, Stefan Monnier.
 
 + Ideas and/or user feedback :: Abin Simon, Alan Schmitt, Alfredo
   Borrás, Benjamin Kästner, Colin McLear, Damien Cassou, Elias Storms,

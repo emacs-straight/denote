@@ -2239,12 +2239,14 @@ title."
     ("md" denote-link--regexp-markdown)
     (_ denote-link--regexp-org)))
 
-(defun denote-link--format-link (file pattern)
-  "Prepare link to FILE using PATTERN."
+(defun denote-link--format-link (file pattern &optional description)
+  "Prepare link to FILE using PATTERN.
+If DESCRIPTION is non-nil, use it as link description instead of
+FILE's title."
   (let* ((file-id (denote-retrieve-filename-identifier file))
          (file-type (denote-filetype-heuristics file))
          (file-title (unless (string= pattern denote-link--format-id-only)
-                       (denote--retrieve-title-or-filename file file-type))))
+                       (or description (denote--retrieve-title-or-filename file file-type)))))
     (format pattern file-id file-title)))
 
 ;;;###autoload
@@ -2252,14 +2254,28 @@ title."
   "Create link to TARGET note in variable `denote-directory'.
 With optional ID-ONLY, such as a universal prefix
 argument (\\[universal-argument]), insert links with just the
-identifier and no further description.  In this case, the link
-format is always [[denote:IDENTIFIER]]."
+identifier and no further description. In this case, the link
+format is always [[denote:IDENTIFIER]].
+
+Use TARGET's title for the link's description.  The title comes
+either from the front matter or the file name.
+
+If region is active, use its text as the link's description
+instead of TARGET's title."
   (interactive (list (denote-file-prompt) current-prefix-arg))
-  (let ((beg (point)))
+  (let* ((beg (point))
+         ;; TODO 2022-10-09: Do we need to check for empty region?
+         (description (when-let* (((region-active-p))
+                                  (beg (region-beginning))
+                                  (end (region-end))
+                                  (selected-text (buffer-substring-no-properties beg end)))
+                        (delete-region beg end)
+                        selected-text)))
     (insert
      (denote-link--format-link
       target
-      (denote-link--file-type-format (buffer-file-name) id-only)))
+      (denote-link--file-type-format (buffer-file-name) id-only)
+      description))
     (unless (derived-mode-p 'org-mode)
       (make-button beg (point) 'type 'denote-link-button))))
 
