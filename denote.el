@@ -603,6 +603,11 @@ value, as explained in its doc string."
       (not (denote-file-has-identifier-p f)))
     (directory-files-recursively (denote-directory) directory-files-no-dot-files-regexp t))))
 
+(defun denote-directory-text-only-files ()
+  "Return list of text files in variable `denote-directory'.
+Filter `denote-directory-files' using `denote-file-is-note-p'."
+  (seq-filter #'denote-file-is-note-p (denote-directory-files)))
+
 (define-obsolete-function-alias
   'denote--directory-files
   'denote-directory-files
@@ -1118,7 +1123,7 @@ Run `denote-desluggify' on title if the extraction is sucessful."
   "Return xrefs of IDENTIFIER in variable `denote-directory'.
 The xrefs are returned as an alist."
   (xref--alistify
-   (xref-matches-in-files identifier (denote-directory-files))
+   (xref-matches-in-files identifier (denote-directory-text-only-files))
    (lambda (x)
      (xref-location-group (xref-item-location x)))))
 
@@ -1131,10 +1136,9 @@ Parse `denote--retrieve-xrefs'."
 
 (defun denote--retrieve-process-grep (identifier)
   "Process lines matching IDENTIFIER and return list of files."
-  (seq-filter
-   #'denote-file-is-note-p
-   (delete (buffer-file-name) (denote--retrieve-files-in-xrefs
-                               (denote--retrieve-xrefs identifier)))))
+  (delete (buffer-file-name)
+          (denote--retrieve-files-in-xrefs
+           (denote--retrieve-xrefs identifier))))
 
 ;;;; New note
 
@@ -2254,23 +2258,26 @@ FILE's title."
   "Create link to TARGET note in variable `denote-directory'.
 With optional ID-ONLY, such as a universal prefix
 argument (\\[universal-argument]), insert links with just the
-identifier and no further description. In this case, the link
+identifier and no further description.  In this case, the link
 format is always [[denote:IDENTIFIER]].
 
 Use TARGET's title for the link's description.  The title comes
 either from the front matter or the file name.
 
 If region is active, use its text as the link's description
-instead of TARGET's title."
+instead of TARGET's title.  If active region is empty (i.e
+whitespace-only), insert an ID-ONLY link."
   (interactive (list (denote-file-prompt) current-prefix-arg))
   (let* ((beg (point))
-         ;; TODO 2022-10-09: Do we need to check for empty region?
          (description (when-let* (((region-active-p))
                                   (beg (region-beginning))
                                   (end (region-end))
-                                  (selected-text (buffer-substring-no-properties beg end)))
+                                  (selected-text
+                                   (string-trim
+                                    (buffer-substring-no-properties beg end))))
                         (delete-region beg end)
-                        selected-text)))
+                        selected-text))
+         (id-only (or id-only (string-empty-p description))))
     (insert
      (denote-link--format-link
       target

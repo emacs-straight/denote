@@ -1136,8 +1136,10 @@ its simplicity.
 
 The description of the link is taken from the target file's front
 matter or, if that is not available, from the file name.  If the
-region is active, its text is used as the link's description instead [
-the ability to use the region is part of {{{development-version}}} ].
+region is active, its text is used as the link's description instead.
+If the active region has no text, the inserted link used just the
+identifier, as with the =C-u= prefix mentioned above [the ability of
+~denote-link~ to use the region is part of {{{development-version}}}].
 
 Inserted links are automatically buttonized and remain active for as
 long as the buffer is available.  In Org this is handled by the major
@@ -2391,6 +2393,12 @@ might change them without further notice.
   to have an identifier.  This may include files that are not implied
   by ~denote-file-type~.  Remember that the ~denote-directory~ accepts
   a directory-local value ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
+
+#+findex: denote-directory-text-only-files
++ Function ~denote-directory-text-only-files~ :: Return list of text
+  files in variable ~denote-directory~.  Filter
+  ~denote-directory-files~ using ~denote-file-is-note-p~. [ This is
+  part of {{{development-version}}}. ]
 
 #+findex: denote-directory-subdirectories
 + Function ~denote-directory-subdirectories~ :: Return list of
