@@ -791,8 +791,10 @@ This can be used in `denote-file-types' to format front mattter."
 (defun denote-trim-whitespace (s)
   "Trim whitespace around string S.
 This can be used in `denote-file-types' to format front mattter."
-  (let ((trims "[ \t\n\r]+"))
-    (string-trim s trims trims)))
+  (if (string-blank-p s)
+      ""
+    (let ((trims "[ \t\n\r]+"))
+      (string-trim s trims trims))))
 
 (defun denote--trim-quotes (s)
   "Trim quotes around string S."
@@ -802,7 +804,9 @@ This can be used in `denote-file-types' to format front mattter."
 (defun denote-trim-whitespace-then-quotes (s)
   "Trim whitespace then quotes around string S.
 This can be used in `denote-file-types' to format front mattter."
-  (denote--trim-quotes (denote-trim-whitespace s)))
+  (if (string-blank-p s)
+      ""
+    (denote--trim-quotes (denote-trim-whitespace s))))
 
 (defun denote-format-keywords-for-md-front-matter (keywords)
   "Format front matter KEYWORDS for markdown file type.
@@ -826,8 +830,13 @@ for how this is used."
 
 (defun denote-extract-keywords-from-front-matter (keywords-string)
   "Extract keywords list from front matter KEYWORDS-STRING.
+Split KEYWORDS-STRING into a list of strings.  If KEYWORDS-STRING
+satisfies `string-blank-p', return an empty string.
+
 Consult the `denote-file-types' for how this is used."
-  (split-string keywords-string "[:,\s]+" t "[][ \"']+"))
+  (if (string-blank-p keywords-string)
+      ""
+    (split-string keywords-string "[:,\s]+" t "[][ \"']+")))
 
 (defvar denote-file-types
   ;; If denote-file-type is nil, we use the first element
@@ -1115,7 +1124,8 @@ Run `denote-desluggify' on title if the extraction is sucessful."
 (defun denote--retrieve-title-or-filename (file type)
   "Return appropriate title for FILE given its TYPE."
   (if-let (((denote-file-is-note-p file))
-           (title (denote-retrieve-title-value file type)))
+           (title (denote-retrieve-title-value file type))
+           ((not (string-blank-p title))))
       title
     (denote-retrieve-filename-title file)))
 
@@ -1153,7 +1163,7 @@ string.  EXTENSION is the file type extension, as a string."
         (file-name (concat path id)))
     (when (and title-slug (not (string-empty-p title-slug)))
       (setq file-name (concat file-name "--" title-slug)))
-    (when keywords
+    (when (and keywords (not (string-blank-p kws)))
       (setq file-name (concat file-name "__" kws)))
     (concat file-name extension)))
 
@@ -1893,15 +1903,19 @@ function `buffer-file-name' which is subsequently inspected for
 the requisite front matter.  It is thus implied that the FILE has
 a file type that is supported by Denote, per `denote-file-type'.
 
-Unless AUTO-CONFIRM is non-nil, ask for confirmation, showing the
-difference between the old and the new file names.  Refrain from
-performing the operation if the buffer has unsaved changes,
-unless AUTO-CONFIRM is non-nil: then save the buffer first.
+Unless AUTO-CONFIRM is non-nil (such as with a prefix argument),
+ask for confirmation, showing the difference between the old and
+the new file names.
 
 Never modify the identifier of the FILE, if any, even if it is
 edited in the front matter.  Denote considers the file name to be
 the source of truth in this case to avoid potential breakage with
-typos and the like."
+typos and the like.
+
+Refrain from performing the operation if the buffer has unsaved
+changes.  Inform the user about the need to save their changes
+first.  If AUTO-CONFIRM is non-nil, then save the buffer and
+proceed with the renaming."
   (interactive (list (buffer-file-name) current-prefix-arg))
   (when (buffer-modified-p)
     (if (or auto-confirm
