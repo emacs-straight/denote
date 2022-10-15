@@ -1572,6 +1572,46 @@ If file does not exist, invoke `denote' to create a file."
       (find-file target)
     (call-interactively #'denote)))
 
+;;;###autoload
+(defun denote-keyword-add (keywords)
+  "Prompt for KEYWORDS to add to the current note's front matter.
+When called from Lisp, KEYWORDS is a list of strings.
+
+Rename the file without further prompt so that its name reflects
+the new front matter, per `denote-rename-file-using-front-matter'."
+  (interactive (list (denote-keywords-prompt)))
+  ;; A combination of if-let and let, as we need to take into account
+  ;; the scenario in which there are no keywords yet.
+  (if-let* ((file (buffer-file-name))
+            ((denote-file-is-note-p file))
+            (file-type (denote-filetype-heuristics file)))
+      (let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
+             (new-keywords (if (string-blank-p cur-keywords)
+                               keywords
+                             (seq-uniq (append keywords cur-keywords)))))
+        (denote--rewrite-keywords file new-keywords file-type)
+        (denote-rename-file-using-front-matter file t))
+    (message "Buffer not visiting a Denote file")))
+
+;;;###autoload
+(defun denote-keyword-remove ()
+  "Prompt for a keyword in current note and remove it.
+Keywords are retrieved from the file's front matter.
+
+Rename the file without further prompt so that its name reflects
+the new front matter, per `denote-rename-file-using-front-matter'."
+  (declare (interactive-only t))
+  (interactive)
+  (if-let* ((file (buffer-file-name))
+            ((denote-file-is-note-p file))
+            (file-type (denote-filetype-heuristics file)))
+      (when-let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
+                  ((or (listp cur-keywords) (not (string-blank-p cur-keywords))))
+                  (del-keyword (completing-read "Keyword to remove: " cur-keywords nil t)))
+        (denote--rewrite-keywords file (delete del-keyword cur-keywords) file-type)
+        (denote-rename-file-using-front-matter file t))
+    (message "Buffer not visiting a Denote file")))
+
 ;;;; Note modification
 
 ;;;;; Common helpers for note modifications
@@ -1932,8 +1972,8 @@ proceed with the renaming."
             (dir (file-name-directory file))
             (new-name (denote-format-file-name
                        dir id keywords (denote-sluggify title) extension)))
-    (when (or auto-confirm
-              (denote-rename-file-prompt file new-name))
+      (when (or auto-confirm
+                (denote-rename-file-prompt file new-name))
         (denote-rename-file-and-buffer file new-name)
         (denote-update-dired-buffers))
     (user-error "No front matter for title and/or keywords")))
@@ -2356,9 +2396,9 @@ Like `denote-link-find-file', but select backlink to follow."
               (id (denote-retrieve-filename-identifier file))
               (files (denote--retrieve-process-grep id)))
     (find-file
-      (denote-get-path-by-id
-        (denote-extract-id-from-string
-          (denote-link--find-file-prompt files))))))
+     (denote-get-path-by-id
+      (denote-extract-id-from-string
+       (denote-link--find-file-prompt files))))))
 
 ;;;###autoload
 (defun denote-link-after-creating (&optional id-only)
@@ -2759,7 +2799,7 @@ interface by first selecting the `denote:' hyperlink type."
      :type "denote"
      :description file-title
      :link (concat "denote:" file-id))
-  org-store-link-plist))
+    org-store-link-plist))
 
 ;;;###autoload
 (defun denote-link-ol-export (link description format)
