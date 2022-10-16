@@ -703,11 +703,13 @@ existing notes and combine them into a list with
 (defvar denote--keyword-history nil
   "Minibuffer history of inputted keywords.")
 
-(defun denote--keywords-crm (keywords)
-  "Use `completing-read-multiple' for KEYWORDS."
+(defun denote--keywords-crm (keywords &optional prompt)
+  "Use `completing-read-multiple' for KEYWORDS.
+With optional PROMPT, use it instead of a generic text for file
+keywords."
   (delete-dups
    (completing-read-multiple
-    "File keyword: " keywords
+    (or prompt "File keyword: ") keywords
     nil nil nil 'denote--keyword-history)))
 
 (defun denote-keywords-prompt ()
@@ -1573,7 +1575,7 @@ If file does not exist, invoke `denote' to create a file."
     (call-interactively #'denote)))
 
 ;;;###autoload
-(defun denote-keyword-add (keywords)
+(defun denote-keywords-add (keywords)
   "Prompt for KEYWORDS to add to the current note's front matter.
 When called from Lisp, KEYWORDS is a list of strings.
 
@@ -1586,16 +1588,27 @@ the new front matter, per `denote-rename-file-using-front-matter'."
             ((denote-file-is-note-p file))
             (file-type (denote-filetype-heuristics file)))
       (let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
-             (new-keywords (if (string-blank-p cur-keywords)
+             (new-keywords (if (and (stringp cur-keywords)
+                                    (string-blank-p cur-keywords))
                                keywords
                              (seq-uniq (append keywords cur-keywords)))))
         (denote--rewrite-keywords file new-keywords file-type)
         (denote-rename-file-using-front-matter file t))
-    (message "Buffer not visiting a Denote file")))
+    (user-error "Buffer not visiting a Denote file")))
+
+(defun denote--keywords-delete-prompt (keywords)
+  "Prompt for one or more KEYWORDS.
+In the case of multiple entries, those are separated by the
+`crm-sepator', which typically is a comma.  In such a case, the
+output is sorted with `string-lessp'."
+  (let ((choice (denote--keywords-crm keywords "Keyword to remove: ")))
+    (if denote-sort-keywords
+        (sort choice #'string-lessp)
+      choice)))
 
 ;;;###autoload
-(defun denote-keyword-remove ()
-  "Prompt for a keyword in current note and remove it.
+(defun denote-keywords-remove ()
+  "Prompt for keywords in current note and remove them.
 Keywords are retrieved from the file's front matter.
 
 Rename the file without further prompt so that its name reflects
@@ -1607,10 +1620,13 @@ the new front matter, per `denote-rename-file-using-front-matter'."
             (file-type (denote-filetype-heuristics file)))
       (when-let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
                   ((or (listp cur-keywords) (not (string-blank-p cur-keywords))))
-                  (del-keyword (completing-read "Keyword to remove: " cur-keywords nil t)))
-        (denote--rewrite-keywords file (delete del-keyword cur-keywords) file-type)
+                  (del-keyword (denote--keywords-delete-prompt cur-keywords)))
+        (denote--rewrite-keywords
+         file
+         (seq-difference cur-keywords del-keyword)
+         file-type)
         (denote-rename-file-using-front-matter file t))
-    (message "Buffer not visiting a Denote file")))
+    (user-error "Buffer not visiting a Denote file")))
 
 ;;;; Note modification
 
