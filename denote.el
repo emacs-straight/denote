@@ -7,7 +7,7 @@
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
 ;; Version: 1.1.0
-;; Package-Requires: ((emacs "27.2"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -355,6 +355,21 @@ command."
   :package-version '(denote . "0.5.0")
   :link '(info-link "(denote) The denote-templates option")
   :group 'denote)
+
+(defcustom denote-backlinks-show-context nil
+  "When non-nil, show link context in the backlinks buffer.
+
+The context is the line a link to the current note is found in.
+The context includes multiple links to the same note, if those
+are present.
+
+When nil, only show a simple list of file names that link to the
+current note."
+  :group 'denote
+  :package-version '(denote . "1.2.0")
+  :type 'boolean)
+
+(make-obsolete 'denote-link-fontify-backlinks 'denote-backlinks-show-context "1.2.0")
 
 ;;;; Main variables
 
@@ -1139,8 +1154,14 @@ The xrefs are returned as an alist."
    (lambda (x)
      (xref-location-group (xref-item-location x)))))
 
+(defun denote--retrieve-files-in-xrefs (xref-alist)
+  "Return sorted, deduplicated file names from XREF-ALIST."
+  (sort
+   (delete-dups (mapcar #'car xref-alist))
+   #'string-lessp))
+
 (defun denote--retrieve-process-grep (identifier)
-  "Process lines matching IDENTIFIER and return list of xrefs-alist."
+  "Process lines matching IDENTIFIER and return list of xref-alist."
   (assoc-delete-all (buffer-file-name)
                     (denote--retrieve-xrefs identifier)))
 
@@ -2259,13 +2280,6 @@ Add this function to `dired-mode-hook'."
 
 ;;;;; User options
 
-(defcustom denote-link-fontify-backlinks t
-  "When non-nil, apply faces to files in the backlinks' buffer."
-  :type 'boolean
-  :package-version '(denote . "0.1.0")
-  :link '(info-link "(denote) The backlinks' buffer")
-  :group 'denote-link)
-
 (defcustom denote-link-backlinks-display-buffer-action
   '((display-buffer-reuse-window display-buffer-below-selected)
     (window-height . fit-window-to-buffer))
@@ -2432,7 +2446,8 @@ Like `denote-link-find-file', but select backlink to follow."
   (interactive)
   (when-let* ((file (buffer-file-name))
               (id (denote-retrieve-filename-identifier file))
-              (files (denote--retrieve-process-grep id)))
+              (files (denote--retrieve-files-in-xrefs
+                      (denote--retrieve-process-grep id))))
     (find-file
      (denote-get-path-by-id
       (denote-extract-id-from-string
@@ -2584,8 +2599,30 @@ Expand `denote-link-backlinks-display-buffer-action'."
    buf
    `(,@denote-link-backlinks-display-buffer-action)))
 
+(defun denote-backlinks-next (&optional n)
+  "Use appropriate command for forward motion in backlinks buffer.
+With optional N as a numeric argument, move to the Nth button
+from point (relevant when `denote-backlinks-show-context' is
+nil)."
+  (interactive "p" denote-backlinks-mode)
+  (if denote-backlinks-show-context
+      (xref-next-line)
+    (forward-button n)))
+
+(defun denote-backlinks-prev (&optional n)
+  "Use appropriate command for backward motion in backlinks buffer.
+With optional N as a numeric argument, move to the Nth button
+from point (relevant when `denote-backlinks-show-context' is
+nil)."
+  (interactive "p" denote-backlinks-mode)
+  (if denote-backlinks-show-context
+      (xref-prev-line)
+    (backward-button n)))
+
 (defvar denote-backlinks-mode-map
   (let ((m (make-sparse-keymap)))
+    (define-key m "n" #'denote-backlinks-next)
+    (define-key m "p" #'denote-backlinks-prev)
     (define-key m "g" #'revert-buffer)
     m)
   "Keymap for `denote-backlinks-mode'.")
@@ -2594,13 +2631,13 @@ Expand `denote-link-backlinks-display-buffer-action'."
 
 (define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
   "Major mode for backlinks buffers."
-  (when denote-link-fontify-backlinks
+  (unless denote-backlinks-show-context
     (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t)))
 
 (make-obsolete-variable 'denote-backlink-mode 'denote-backlinks-mode "0.6.0")
 
-(defun denote-link--prepare-backlinks (id xrefs-alist &optional title)
-  "Create backlinks' buffer for ID using XREFS-ALIST.
+(defun denote-link--prepare-backlinks (id xref-alist &optional title)
+  "Create backlinks' buffer for ID using XREF-ALIST.
 Use optional TITLE for a prettier heading."
   (let ((inhibit-read-only t)
         (buf (format "*denote-backlinks to %s*" id))
@@ -2615,13 +2652,19 @@ Use optional TITLE for a prettier heading."
                   (l (length heading)))
         (insert (format "%s\n%s\n\n" heading (make-string l ?-))))
       ;;; We could have a user option to use the current backlink buffer
-      (denote-xref--insert-xrefs xrefs-alist)
+      (if denote-backlinks-show-context
+          (denote-xref--insert-xrefs xref-alist)
+        (mapc (lambda (x)
+                (insert (denote-get-file-name-relative-to-denote-directory (car x)))
+                (make-button (line-beginning-position) (line-end-position) :type 'denote-link-backlink-button)
+                (newline))
+              xref-alist))
       (goto-char (point-min))
       (setq-local revert-buffer-function
                   (lambda (_ignore-auto _noconfirm)
                     (when-let ((buffer-file-name file)
-                               (xrefs-alist (denote--retrieve-process-grep id)))
-                      (denote-link--prepare-backlinks id xrefs-alist title)))))
+                               (xref-alist (denote--retrieve-process-grep id)))
+                      (denote-link--prepare-backlinks id xref-alist title)))))
     (denote-link--display-buffer buf)))
 
 (defun denote-xref--insert-xrefs (xref-alist)
@@ -2696,9 +2739,9 @@ default, it will show up below the current window."
       (let* ((id (denote-retrieve-filename-identifier file))
              (file-type (denote-filetype-heuristics file))
              (title (denote-retrieve-title-value file file-type)))
-        (if-let ((xrefs-alist (denote--retrieve-process-grep id)))
+        (if-let ((xref-alist (denote--retrieve-process-grep id)))
             (progn (xref--push-markers)
-                   (denote-link--prepare-backlinks id xrefs-alist title))
+                   (denote-link--prepare-backlinks id xref-alist title))
           (user-error "No links to the current note"))))))
 
 (defalias 'denote-link-show-backlinks-buffer (symbol-function 'denote-link-backlinks))
