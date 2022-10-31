@@ -278,16 +278,24 @@ Reduce them to a single word, such as by turning <word1_word2> or
   "The file type extension for new notes.
 
 By default (a nil value), the file type is that of Org mode.
-Though the `org' can be specified for the same effect.
+Though the `org' symbol can be specified for the same effect.
 
 When the value is the symbol `markdown-yaml', the file type is
-that of Markdown mode and the front matter uses YAML.  Similarly,
-`markdown-toml' will use Markdown but apply TOML to the front
-matter.
+that of Markdown mode and the front matter uses YAML notation.
+Similarly, `markdown-toml' is Markdown but has TOML syntax in the
+front matter.
 
 When the value is `text', the file type is that of Text mode.
 
-Any other non-nil value is the same as the default."
+Any other non-nil value is the same as the default.
+
+NOTE: expert users can change the supported file types by leaving
+the value of this user option to nil and directly editing the
+value of `denote-file-types'.  That variable, which is not a user
+option, controls the behaviour of all file-type-aware
+functions (creating notes, renaming them, inserting front matter,
+formatting a link, etc.).  Consult its documentation for the
+technicalities."
   :type '(choice
           (const :tag "Unspecified (defaults to Org)" nil)
           (const :tag "Org mode (default)" org)
@@ -607,8 +615,12 @@ FILE must be an absolute path."
 
 (defun denote-directory-files ()
   "Return list of absolute file paths in variable `denote-directory'.
-The returned files only need to have an identifier.  This may
-include files that are not implied by `denote-file-type'.
+
+Files only need to have an identifier.  The return value may thus
+include file types that are not implied by `denote-file-type'.
+To limit the return value to text files, use the function
+`denote-directory-text-only-files'.
+
 Remember that the variable `denote-directory' accepts a dir-local
 value, as explained in its doc string."
   (mapcar
@@ -862,85 +874,116 @@ Consult the `denote-file-types' for how this is used."
     (split-string keywords-string "[:,\s]+" t "[][ \"']+")))
 
 (defvar denote-file-types
-  ;; If denote-file-type is nil, we use the first element
-  ;; of denote-file-types for new note creation, which we want
-  ;; to be org by default.
-  `((org
+  '((org
      :extension ".org"
+     :date-function denote-date-org-timestamp
      :front-matter denote-org-front-matter
      :title-key-regexp "^#\\+title\\s-*:"
      :title-value-function identity
      :title-value-reverse-function denote-trim-whitespace
      :keywords-key-regexp "^#\\+filetags\\s-*:"
      :keywords-value-function denote-format-keywords-for-org-front-matter
-     :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
+     :keywords-value-reverse-function denote-extract-keywords-from-front-matter
+     :link denote-org-link-format
+     :link-in-context-regexp denote-org-link-in-context-regexp)
     (markdown-yaml
      :extension ".md"
+     :date-function denote-date-rfc3339
      :front-matter denote-yaml-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function denote-surround-with-quotes
      :title-value-reverse-function denote-trim-whitespace-then-quotes
      :keywords-key-regexp "^tags\\s-*:"
      :keywords-value-function denote-format-keywords-for-md-front-matter
-     :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
+     :keywords-value-reverse-function denote-extract-keywords-from-front-matter
+     :link denote-md-link-format
+     :link-in-context-regexp denote-md-link-in-context-regexp)
     (markdown-toml
      :extension ".md"
+     :date-function denote-date-rfc3339
      :front-matter denote-toml-front-matter
      :title-key-regexp "^title\\s-*="
      :title-value-function denote-surround-with-quotes
      :title-value-reverse-function denote-trim-whitespace-then-quotes
      :keywords-key-regexp "^tags\\s-*="
      :keywords-value-function denote-format-keywords-for-md-front-matter
-     :keywords-value-reverse-function denote-extract-keywords-from-front-matter)
+     :keywords-value-reverse-function denote-extract-keywords-from-front-matter
+     :link denote-md-link-format
+     :link-in-context-regexp denote-md-link-in-context-regexp)
     (text
      :extension ".txt"
+     :date-function denote-date-iso-8601
      :front-matter denote-text-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function identity
      :title-value-reverse-function denote-trim-whitespace
      :keywords-key-regexp "^tags\\s-*:"
      :keywords-value-function denote-format-keywords-for-text-front-matter
-     :keywords-value-reverse-function denote-extract-keywords-from-front-matter))
+     :keywords-value-reverse-function denote-extract-keywords-from-front-matter
+     :link denote-org-link-format
+     :link-in-context-regexp denote-org-link-in-context-regexp))
   "Alist of `denote-file-type' and their format properties.
 
-Each element is of the form (SYMBOL . PROPERTY-LIST).  SYMBOL is
-one of those specified in `denote-file-type'.
+Each element is of the form (SYMBOL PROPERTY-LIST).  SYMBOL is
+one of those specified in `denote-file-type' or an arbitrary
+symbol that defines a new file type.
 
 PROPERTY-LIST is a plist that consists of 8 elements:
 
-- `:extension' which is a string with the file extension
-  including the perion.
+- `:extension' is a string with the file extension including the
+  period.
 
-- `:front-matter' which is either a string passed to `format' or
-  a variable holding such a string.  The `format' function
-  accepts four arguments, which come from `denote' in this order:
-  TITLE, DATE, KEYWORDS, IDENTIFIER.  Read the doc string of
-  `format' on how to reorder arguments.
+- `:date-function' is a function that can format a date.  See the
+  functions `denote-date-iso-8601', `denote-date-rfc3339', and
+  `denote-date-org-timestamp'.
 
-- `:title-key-regexp' is a string with the regular expression
-  that is used to retrieve the title line in a file.  The first
-  line matching this regexp is considered the title line.
+- `:front-matter' is either a string passed to `format' or a
+  variable holding such a string.  The `format' function accepts
+  four arguments, which come from `denote' in this order: TITLE,
+  DATE, KEYWORDS, IDENTIFIER.  Read the doc string of `format' on
+  how to reorder arguments.
+
+- `:title-key-regexp' is a regular expression that is used to
+  retrieve the title line in a file.  The first line matching
+  this regexp is considered the title line.
 
 - `:title-value-function' is the function used to format the raw
   title string for inclusion in the front matter (e.g. to
-  surround it in quotes).  Use the `identity' function if no
+  surround it with quotes).  Use the `identity' function if no
   further processing is required.
 
 - `:title-value-reverse-function' is the function used to
   retrieve the raw title string from the front matter.  It
   performs the reverse of `:title-value-function'.
 
-- `:keywords-key-regexp' is a string with the regular expression
-  used to retrieve the keywords' line in the file.  The first
-  line matching this regexp is considered the keywords' line.
+- `:keywords-key-regexp' is a regular expression used to retrieve
+  the keywords' line in the file.  The first line matching this
+  regexp is considered the keywords' line.
 
 - `:keywords-value-function' is the function used to format the
-  keywords' list of strings as a single string for inclusion in
-  the front matter.
+  keywords' list of strings as a single string, with appropriate
+  delimiters, for inclusion in the front matter.
 
 - `:keywords-value-reverse-function' is the function used to
   retrieve the keywords' value from the front matter.  It
-  performs the reverse of the `:keywords-value-function'.")
+  performs the reverse of the `:keywords-value-function'.
+
+- `:link' is a string, or variable holding a string, that
+  specifies the format of a link.  See the variables
+  `denote-org-link-format', `denote-md-link-format'.
+
+- `:link-in-context-regexp' is a regular expression that is used
+  to match the aforementioned link format.  See the variables
+  `denote-org-link-in-context-regexp',`denote-md-link-in-context-regexp'.
+
+If `denote-file-type' is nil, use the first element of this list
+for new note creation.  The default is `org'.")
+
+(defun denote--date-format-function (file-type)
+  "Return date format function of FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :date-function))
 
 (defun denote--file-extension (file-type)
   "Return file type extension based on FILE-TYPE."
@@ -993,15 +1036,27 @@ PROPERTY-LIST is a plist that consists of 8 elements:
    (alist-get file-type denote-file-types)
    :keywords-value-reverse-function))
 
+(defun denote--link-format (file-type)
+  "Return link format extension based on FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :link))
+
+(defun denote--link-in-context-regexp (file-type)
+  "Return link regexp in context based on FILE-TYPE."
+  (plist-get
+   (alist-get file-type denote-file-types)
+   :link-in-context-regexp))
+
 (defun denote--extensions ()
-  "Return all extensions in `denote-file-type'."
+  "Return all extensions in `denote-file-types'."
   (delete-dups
    (mapcar (lambda (type)
              (plist-get (cdr type) :extension))
            denote-file-types)))
 
 (defun denote--file-type-keys ()
-  "Return all `denote-file-type' keys."
+  "Return all `denote-file-types' keys."
   (delete-dups (mapcar #'car denote-file-types)))
 
 (defun denote--get-title-line-from-front-matter (title file-type)
@@ -1251,19 +1306,34 @@ provided by `denote'.  FILETYPE is one of the values of
 
 ;; Adapted from `org-hugo--org-date-time-to-rfc3339' in the `ox-hugo'
 ;; package: <https://github.com/kaushalmodi/ox-hugo>.
-(defun denote--date-rfc3339 (date)
+(defun denote-date-rfc3339 (date)
   "Format DATE using the RFC3339 specification."
   (replace-regexp-in-string
    "\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)\\'" "\\1:\\2"
    (format-time-string "%FT%T%z" date)))
 
-(defun denote--date-org-timestamp (date)
+(define-obsolete-function-alias
+  'denote--date-rfc3339
+  'denote-date-rfc3339
+  "1.2.0")
+
+(defun denote-date-org-timestamp (date)
   "Format DATE using the Org inactive timestamp notation."
   (format-time-string "[%F %a %R]" date))
 
-(defun denote--date-iso-8601 (date)
+(define-obsolete-function-alias
+  'denote--date-org-timestamp
+  'denote-date-org-timestamp
+  "1.2.0")
+
+(defun denote-date-iso-8601 (date)
   "Format DATE according to ISO 8601 standard."
   (format-time-string "%F" date))
+
+(define-obsolete-function-alias
+  'denote--date-iso-8601
+  'denote-date-iso-8601
+  "1.2.0")
 
 (defun denote--date (date file-type)
   "Expand DATE in an appropriate format for FILE-TYPE."
@@ -1271,13 +1341,10 @@ provided by `denote'.  FILETYPE is one of the values of
     (cond
      ((stringp format)
       (format-time-string format date))
-     ((or (eq file-type 'markdown-toml)
-          (eq file-type 'markdown-yaml))
-      (denote--date-rfc3339 date))
-     ((eq file-type 'text)
-      (denote--date-iso-8601 date))
+     ((when-let ((fn (denote--date-format-function file-type)))
+        (funcall fn date)))
      (t
-      (denote--date-org-timestamp date)))))
+      (denote-date-org-timestamp date)))))
 
 (defun denote--prepare-note (title keywords date id directory file-type template)
   "Prepare a new note file.
@@ -1452,7 +1519,7 @@ Note that a non-nil value other than `text', `markdown-yaml', and
 `markdown-toml' falls back to an Org file type.  We use `org'
 here for clarity."
   (completing-read
-   "Select file type: " '(org markdown-yaml markdown-toml text) nil t
+   "Select file type: " (denote--file-type-keys) nil t
    nil 'denote--file-type-history))
 
 (define-obsolete-function-alias
@@ -2342,54 +2409,99 @@ and/or the documentation string of `display-buffer'."
 
 ;;;;; Link to note
 
-;; Arguments are: FILE-ID FILE-TITLE
-(defconst denote-link--format-org "[[denote:%s][%s]]"
-  "Format of Org link to note.")
+(define-obsolete-variable-alias
+  'denote-link--format-org
+  'denote-org-link-format
+  "1.2.0")
 
-;; The %N$s notation is for `format'.
-(defconst denote-link--format-markdown "[%2$s](denote:%1$s)"
-  "Format of Markdown link to note.")
+(defvar denote-org-link-format "[[denote:%s][%s]]"
+  "Format of Org link to note.
+The value is passed to `format' with IDENTIFIER and TITLE
+arguments, in this order.
 
-(defconst denote-link--format-id-only "[[denote:%s]]"
-  "Format of identifier-only link to note.")
+Also see `denote-org-link-in-context-regexp'.")
 
-(defconst denote-link--regexp-org
-  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]" "\\[.*?]]"))
+(define-obsolete-variable-alias
+  'denote-link--format-markdown
+  'denote-md-link-format
+  "1.2.0")
 
-(defconst denote-link--regexp-markdown
-  (concat "\\[.*?]" "(denote:"  "\\(?1:" denote-id-regexp "\\)" ")"))
+(defvar denote-md-link-format "[%2$s](denote:%1$s)"
+  "Format of Markdown link to note.
+The %N$s notation used in the default value is for `format' as
+the supplied arguments are IDENTIFIER and TITLE, in this order.
 
-(defconst denote-link--regexp-plain
-  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]]"))
+Also see `denote-md-link-in-context-regexp'.")
 
-(defun denote-link--file-type-format (current-file id-only)
-  "Return link format based on CURRENT-FILE format.
+(define-obsolete-variable-alias
+  'denote-link--format-id-only
+  'denote-id-only-link-format
+  "1.2.0")
+
+(defvar denote-id-only-link-format "[[denote:%s]]"
+  "Format of identifier-only link to note.
+The value is passed to `format' with IDENTIFIER as its sole
+argument.
+
+Also see `denote-id-only-link-in-context-regexp'.")
+
+(define-obsolete-variable-alias
+  'denote-link--regexp-org
+  'denote-org-link-in-context-regexp
+  "1.2.0")
+
+(defvar denote-org-link-in-context-regexp
+  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]" "\\[.*?]]")
+  "Regexp to match an Org link in its context.
+The format of such links is `denote-org-link-format'.")
+
+(define-obsolete-variable-alias
+  'denote-link--regexp-markdown
+  'denote-md-link-in-context-regexp
+  "1.2.0")
+
+(defvar denote-md-link-in-context-regexp
+  (concat "\\[.*?]" "(denote:"  "\\(?1:" denote-id-regexp "\\)" ")")
+  "Regexp to match a Markdown link in its context.
+The format of such links is `denote-md-link-format'.")
+
+(define-obsolete-variable-alias
+  'denote-link--regexp-plain
+  'denote-id-only-link-in-context-regexp
+  "1.2.0")
+
+(defvar denote-id-only-link-in-context-regexp
+  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]]")
+  "Regexp to match an identifier-only link in its context.
+The format of such links is `denote-id-only-link-format'."  )
+
+(defun denote-link--file-type-format (file-type id-only)
+  "Return link format based on FILE-TYPE.
 With non-nil ID-ONLY, use the generic link format without a
-title."
+title.
+
+Fall back to `denote-org-link-format'."
   ;; Includes backup files.  Maybe we can remove them?
-  (let ((current-file-ext (file-name-extension current-file)))
-    (cond
-     (id-only denote-link--format-id-only)
-     ((string= current-file-ext "md")
-      denote-link--format-markdown)
-     ;; Plain text also uses [[denote:ID][TITLE]]
-     (t denote-link--format-org))))
+  (cond
+   (id-only denote-id-only-link-format)
+   ((when-let ((link (denote--link-format file-type)))
+      link))
+   ;; Plain text also uses [[denote:ID][TITLE]]
+   (t denote-org-link-format)))
 
-(defun denote-link--file-type-regexp (file)
-  "Return link regexp based on FILE format."
-  (pcase (file-name-extension file)
-    ("md" denote-link--regexp-markdown)
-    (_ denote-link--regexp-org)))
-
-(defun denote-link--format-link (file pattern &optional description)
-  "Prepare link to FILE using PATTERN.
+(defun denote-link--format-link (file format &optional description)
+  "Prepare link to FILE using FORMAT.
 If DESCRIPTION is non-nil, use it as link description instead of
-FILE's title."
+FILE's title.
+
+FORMAT is the symbol of a variable that specifies a string.  See
+the `:link' property of `denote-file-types'."
   (let* ((file-id (denote-retrieve-filename-identifier file))
+         (fm (if (symbolp format) (symbol-value format) format))
          (file-type (denote-filetype-heuristics file))
-         (file-title (unless (string= pattern denote-link--format-id-only)
+         (file-title (unless (string= fm denote-id-only-link-format)
                        (or description (denote--retrieve-title-or-filename file file-type)))))
-    (format pattern file-id file-title)))
+    (format fm file-id file-title)))
 
 ;;;###autoload
 (defun denote-link (target &optional id-only)
@@ -2415,11 +2527,12 @@ whitespace-only), insert an ID-ONLY link."
                                     (buffer-substring-no-properties beg end))))
                         (delete-region beg end)
                         selected-text))
-         (id-only (or id-only (string-empty-p description))))
+         (identifier-only (or id-only (string-empty-p description)))
+         (file-type (denote-filetype-heuristics (buffer-file-name))))
     (insert
      (denote-link--format-link
       target
-      (denote-link--file-type-format (buffer-file-name) id-only)
+      (denote-link--file-type-format file-type identifier-only)
       description))
     (unless (derived-mode-p 'org-mode)
       (make-button beg (point) 'type 'denote-link-button))))
@@ -2432,16 +2545,17 @@ whitespace-only), insert an ID-ONLY link."
     (save-excursion
       (goto-char (point-min))
       (while (or (re-search-forward regexp nil t)
-                 (re-search-forward denote-link--regexp-plain nil t))
+                 (re-search-forward denote-id-only-link-in-context-regexp nil t))
         (push (match-string-no-properties 1) matches)))
     matches))
 
 (defun denote-link--expand-identifiers (regexp)
   "Expend identifiers matching REGEXP into file paths."
   (let ((files (denote-directory-files))
-        (found-files))
+        (rx (if (symbolp regexp) (symbol-value regexp) regexp))
+        found-files)
     (dolist (file files)
-      (dolist (i (denote-link--collect-identifiers regexp))
+      (dolist (i (denote-link--collect-identifiers rx))
         (when (string-prefix-p i (file-name-nondirectory file))
           (push file found-files))))
     found-files))
@@ -2462,7 +2576,9 @@ whitespace-only), insert an ID-ONLY link."
 (defun denote-link-find-file ()
   "Use minibuffer completion to visit linked file."
   (interactive)
-  (if-let* ((regexp (denote-link--file-type-regexp (buffer-file-name)))
+  (if-let* ((current-file (buffer-file-name))
+            (file-type (denote-filetype-heuristics current-file))
+            (regexp (denote--link-in-context-regexp file-type))
             (files (denote-link--expand-identifiers regexp)))
       (find-file
        (denote-get-path-by-id
@@ -2557,9 +2673,9 @@ file's title.  This has the same meaning as in `denote-link'."
 
 (defun denote-link--link-at-point-string ()
   "Return identifier at point."
-  (when (or (thing-at-point-looking-at denote-link--regexp-plain)
-            (thing-at-point-looking-at denote-link--regexp-markdown)
-            (thing-at-point-looking-at denote-link--regexp-org)
+  (when (or (thing-at-point-looking-at denote-id-only-link-in-context-regexp)
+            (thing-at-point-looking-at denote-md-link-in-context-regexp)
+            (thing-at-point-looking-at denote-org-link-in-context-regexp)
             ;; Meant to handle the case where a link is broken by
             ;; `fill-paragraph' into two lines, in which case it
             ;; buttonizes only the "denote:ID" part.  Example:
@@ -2769,11 +2885,14 @@ inserts links with just the identifier."
    (list
     (read-regexp "Insert links matching REGEX: " nil 'denote-link--add-links-history)
     current-prefix-arg))
-  (let ((current-file (buffer-file-name)))
-    (if-let ((files (delete current-file (denote-directory-files-matching-regexp regexp)))
+  (let* ((current-file (buffer-file-name))
+         (file-type (denote-filetype-heuristics current-file)))
+    (if-let ((files (assoc-delete-all
+                     current-file
+                     (denote-directory-files-matching-regexp regexp)))
              (beg (point)))
         (progn
-          (insert (denote-link--prepare-links files current-file id-only))
+          (insert (denote-link--prepare-links files file-type id-only))
           (denote-link-buttonize-buffer beg (point)))
       (message "No links matching `%s'" regexp))))
 
@@ -2792,14 +2911,16 @@ inserts links with just the identifier."
     (read-regexp "Insert links matching REGEX: " nil 'denote-link--add-links-history)
     current-prefix-arg))
   (let* ((current-file (buffer-file-name))
-         (current-id (denote-link--file-type-regexp current-file))
+         (file-type (denote-filetype-heuristics current-file))
+         (current-id (denote--link-in-context-regexp file-type))
          (linked-files (denote-link--expand-identifiers current-id)))
-    (if-let* ((found-files (delete current-file
-                                   (denote-directory-files-matching-regexp regexp)))
+  (if-let* ((found-files (assoc-delete-all
+                          current-file
+                          (denote-directory-files-matching-regexp regexp)))
               (final-files (seq-difference found-files linked-files))
               (beg (point)))
         (progn
-          (insert (denote-link--prepare-links final-files current-file id-only))
+          (insert (denote-link--prepare-links final-files file-type id-only))
           (denote-link-buttonize-buffer beg (point)))
       (message "No links matching `%s' that aren't yet present in the current buffer" regexp))))
 
@@ -2861,7 +2982,10 @@ This command is meant to be used from a Dired buffer."
       (user-error "No note files to link to")
     (when (y-or-n-p (format "Create links at point in %s?" buffer))
       (with-current-buffer buffer
-        (insert (denote-link--prepare-links files (buffer-file-name) id-only))
+        (insert (denote-link--prepare-links
+                 files
+                 (denote-filetype-heuristics (buffer-file-name))
+                 id-only))
         (denote-link-buttonize-buffer)))))
 
 ;;;;; Register `denote:' custom Org hyperlink
