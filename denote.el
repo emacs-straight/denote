@@ -1717,7 +1717,7 @@ When called from Lisp, KEYWORDS is a list of strings.
 
 Rename the file without further prompt so that its name reflects
 the new front matter, per `denote-rename-file-using-front-matter'."
-  (interactive (list (denote-keywords-prompt)))
+  (interactive (list (denote-keywords-sort (denote-keywords-prompt))))
   ;; A combination of if-let and let, as we need to take into account
   ;; the scenario in which there are no keywords yet.
   (if-let* ((file (buffer-file-name))
@@ -1727,7 +1727,8 @@ the new front matter, per `denote-rename-file-using-front-matter'."
              (new-keywords (if (and (stringp cur-keywords)
                                     (string-blank-p cur-keywords))
                                keywords
-                             (seq-uniq (append keywords cur-keywords)))))
+                             (denote-keywords-sort
+                              (seq-uniq (append keywords cur-keywords))))))
         (denote--rewrite-keywords file new-keywords file-type)
         (denote-rename-file-using-front-matter file t))
     (user-error "Buffer not visiting a Denote file")))
@@ -2074,7 +2075,7 @@ The operation does the following:
   the user option `denote-file-type')."
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files)))
-      (let ((keywords (denote-keywords-prompt)))
+      (let ((keywords (denote-keywords-sort (denote-keywords-prompt))))
         (when (yes-or-no-p "Add front matter or rewrite front matter of keywords (buffers are not saved)?")
           (progn
             (dolist (file marks)
@@ -2219,7 +2220,7 @@ relevant front matter."
    (list
     (buffer-file-name)
     (denote-title-prompt)
-    (denote-keywords-prompt)))
+    (denote-keywords-sort (denote-keywords-prompt))))
   (when (denote-file-is-writable-and-supported-p file)
     (denote--add-front-matter
      file title keywords
@@ -3120,7 +3121,7 @@ arbitrary text).
 
 Consult the manual for template samples."
   (let* ((title (denote-title-prompt))
-         (keywords (denote-keywords-prompt))
+         (keywords (denote-keywords-sort (denote-keywords-prompt)))
          (front-matter (denote--format-front-matter
                         title (denote--date nil 'org) keywords
                         (format-time-string denote-id-format nil) 'org)))
