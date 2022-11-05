@@ -379,6 +379,16 @@ current note."
 
 (make-obsolete 'denote-link-fontify-backlinks 'denote-backlinks-show-context "1.2.0")
 
+(defcustom denote-excluded-directories-regexp nil
+  "Regular expression of directories to exclude from file prompts.
+When nil (the default value) all directory names are shown.
+
+File prompts are used by several commands, such as `denote-link'.
+The underlying function is `denote-file-prompt'."
+  :group 'denote
+  :package-version '(denote . "1.2.0")
+  :type 'string)
+
 ;;;; Main variables
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
@@ -548,6 +558,14 @@ and use one of the extensions implied by `denote-file-type'."
   'denote-file-has-identifier-p
   "1.0.0")
 
+(defun denote-file-directory-p (file)
+  "Return non-nil if FILE is a directory.
+Omit FILE if it matches the value of user option
+`denote-excluded-directories-regexp'."
+  (and (file-directory-p file)
+       denote-excluded-directories-regexp
+       (not (string-match-p denote-excluded-directories-regexp file))))
+
 (defun denote-file-has-supported-extension-p (file)
   "Return non-nil if FILE has supported extension.
 Also account for the possibility of an added .gpg suffix.
@@ -684,7 +702,7 @@ With optional INITIAL-TEXT, use it to prepopulate the minibuffer."
   (read-file-name "Select note: " (denote-directory) nil nil initial-text
                   (lambda (f)
                     (or (denote-file-has-identifier-p f)
-                        (file-directory-p f)))))
+                        (denote-file-directory-p f)))))
 
 (define-obsolete-function-alias
   'denote--retrieve-read-file-prompt
