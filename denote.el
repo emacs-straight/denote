@@ -380,11 +380,17 @@ current note."
 (make-obsolete 'denote-link-fontify-backlinks 'denote-backlinks-show-context "1.2.0")
 
 (defcustom denote-excluded-directories-regexp nil
-  "Regular expression of directories to exclude from file prompts.
-When nil (the default value) all directory names are shown.
+  "Regular expression of directories to exclude from all operations.
+Omit matching directories from file prompts and also exclude them
+from all functions that check the contents of the variable
+`denote-directory'.  The regexp needs to match only the name of
+the directory, not its full path.
 
-File prompts are used by several commands, such as `denote-link'.
-The underlying function is `denote-file-prompt'."
+File prompts are used by several commands, such as `denote-link'
+and `denote-subdirectory'.
+
+Functions that check for files include `denote-directory-files'
+and `denote-directory-subdirectories'."
   :group 'denote
   :package-version '(denote . "1.2.0")
   :type 'string)
@@ -646,7 +652,16 @@ value, as explained in its doc string."
    (seq-remove
     (lambda (f)
       (not (denote-file-has-identifier-p f)))
-    (directory-files-recursively (denote-directory) directory-files-no-dot-files-regexp t))))
+    (directory-files-recursively
+     (denote-directory)
+     directory-files-no-dot-files-regexp
+     :include-directories
+     (lambda (f)
+       (cond
+        ((when-let ((regexp denote-excluded-directories-regexp))
+           (not (string-match-p regexp f))))
+        ((file-readable-p f))
+        (t)))))))
 
 (defun denote-directory-text-only-files ()
   "Return list of text files in variable `denote-directory'.
@@ -659,12 +674,17 @@ Filter `denote-directory-files' using `denote-file-is-note-p'."
   "1.0.0")
 
 (defun denote-directory-subdirectories ()
-  "Return list of subdirectories in variable `denote-directory'."
+  "Return list of subdirectories in variable `denote-directory'.
+Omit dotfiles (such as .git) unconditionally.  Also exclude
+whatever matches `denote-excluded-directories-regexp'."
   (seq-remove
    (lambda (filename)
-     (or (not (file-directory-p filename))
-         (string-match-p "\\`\\." (denote-get-file-name-relative-to-denote-directory filename))
-         (string-match-p "/\\." (denote-get-file-name-relative-to-denote-directory filename))))
+     (let ((rel (denote-get-file-name-relative-to-denote-directory filename)))
+       (or (not (file-directory-p filename))
+           (string-match-p "\\`\\." rel)
+           (string-match-p "/\\." rel)
+           (when-let ((regexp denote-excluded-directories-regexp))
+             (string-match-p regexp rel)))))
    (directory-files-recursively (denote-directory) ".*" t t)))
 
 (define-obsolete-function-alias
@@ -763,8 +783,8 @@ In the case of multiple entries, those are separated by the
 `crm-sepator', which typically is a comma.  In such a case, the
 output is sorted with `string-lessp'.
 
-To sort the return value, use `denote-keywords-sort'."
-  (denote--keywords-crm (denote-keywords)))
+Process the return value with `denote-keywords-sort'."
+  (denote-keywords-sort (denote--keywords-crm (denote-keywords))))
 
 (defun denote-keywords-sort (keywords)
   "Sort KEYWORDS if `denote-sort-keywords' is non-nil.
@@ -1496,7 +1516,9 @@ When called from Lisp, all arguments are optional.
      (append args nil)))
   (let* ((title (or title ""))
          (file-type (denote--valid-file-type (or file-type denote-file-type)))
-         (kws (denote-keywords-sort keywords))
+         (kws (if (called-interactively-p 'interactive)
+                  keywords
+                (denote-keywords-sort keywords)))
          (date (if (or (null date) (string-empty-p date))
                    (current-time)
                  (denote--valid-date date)))
@@ -1735,7 +1757,7 @@ When called from Lisp, KEYWORDS is a list of strings.
 
 Rename the file without further prompt so that its name reflects
 the new front matter, per `denote-rename-file-using-front-matter'."
-  (interactive (list (denote-keywords-sort (denote-keywords-prompt))))
+  (interactive (list (denote-keywords-prompt)))
   ;; A combination of if-let and let, as we need to take into account
   ;; the scenario in which there are no keywords yet.
   (if-let* ((file (buffer-file-name))
@@ -2093,7 +2115,7 @@ The operation does the following:
   the user option `denote-file-type')."
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files)))
-      (let ((keywords (denote-keywords-sort (denote-keywords-prompt))))
+      (let ((keywords (denote-keywords-prompt)))
         (when (yes-or-no-p "Add front matter or rewrite front matter of keywords (buffers are not saved)?")
           (progn
             (dolist (file marks)
@@ -2238,7 +2260,7 @@ relevant front matter."
    (list
     (buffer-file-name)
     (denote-title-prompt)
-    (denote-keywords-sort (denote-keywords-prompt))))
+    (denote-keywords-prompt)))
   (when (denote-file-is-writable-and-supported-p file)
     (denote--add-front-matter
      file title keywords
@@ -2906,9 +2928,8 @@ inserts links with just the identifier."
     current-prefix-arg))
   (let* ((current-file (buffer-file-name))
          (file-type (denote-filetype-heuristics current-file)))
-    (if-let ((files (assoc-delete-all
-                     current-file
-                     (denote-directory-files-matching-regexp regexp)))
+    (if-let ((files (delete current-file
+                            (denote-directory-files-matching-regexp regexp)))
              (beg (point)))
         (progn
           (insert (denote-link--prepare-links files file-type id-only))
@@ -2933,9 +2954,8 @@ inserts links with just the identifier."
          (file-type (denote-filetype-heuristics current-file))
          (current-id (denote--link-in-context-regexp file-type))
          (linked-files (denote-link--expand-identifiers current-id)))
-  (if-let* ((found-files (assoc-delete-all
-                          current-file
-                          (denote-directory-files-matching-regexp regexp)))
+    (if-let* ((found-files (delete current-file
+                                   (denote-directory-files-matching-regexp regexp)))
               (final-files (seq-difference found-files linked-files))
               (beg (point)))
         (progn
@@ -3139,7 +3159,7 @@ arbitrary text).
 
 Consult the manual for template samples."
   (let* ((title (denote-title-prompt))
-         (keywords (denote-keywords-sort (denote-keywords-prompt)))
+         (keywords (denote-keywords-prompt))
          (front-matter (denote--format-front-matter
                         title (denote--date nil 'org) keywords
                         (format-time-string denote-id-format nil) 'org)))
