@@ -1,4 +1,4 @@
-;;; denote-org.el --- Org-functionalities in addition to denote.el -*- lexical-binding: t -*-
+;;; denote-org-dblock.el --- Org Dynamic blocks for denote.el -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022  Free Software Foundation, Inc.
 
@@ -26,31 +26,18 @@
 
 ;;; Commentary:
 ;;
-;; This file provides specialized extensions to Denote that are
-;; specific to Org-mode.  By "specialized", we refer to features that
-;; are likely not to be used in casual workflows.
+;; This file provides a specialized Org-mode extension to Denote: it
+;; introduces Org Dynamic blocks that collect links to Denote notes
+;; based on a provided regexp.  In short, this automates
+;; 'denote-link-add-links' and 'denote-link-add-backlinks'.
+;;
+;; For more information, read the commented code below or refer to the
+;; Denote manual
 
 ;;; Code:
 
 (require 'denote)
 (require 'org)
-
-;;; Org-mode Subtree to new note
-
-;;;###autoload
-(defun denote-org-extract-subtree ()
-  "Create new Denote note as an Org file using current Org subtree.
-
-The Org-tags are used as note keywords, and the subtree title as note title.
-This command deletes the original subtree."
-  (interactive)
-  (if-let ((text (org-get-entry))
-           (heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)))
-      (progn
-        (delete-region (org-entry-beginning-position) (org-entry-end-position))
-        (denote heading (org-get-tags) 'org)
-        (insert text))
-    (user-error "No subtree to extract; aborting")))
 
 ;;; Org-mode Dynamic blocks
 
@@ -72,32 +59,33 @@ This command deletes the original subtree."
 ;; contents of the block with links to notes matching the search
 ;; ':regexp'. See also the denote manual on 'denote-link-add-links'.
 ;;
-;; To only include "missing links" (i.e., links to notes that the
-;; current buffer doesn't already link to), add ':missing-only t' to
-;; the block's header.
-;;
-;; With ':block-name "string"', include a name in the Dynamic block,
-;; formated as '#+NAME: string'. This enables users to use the Dynamic
-;; block as inputs for further computation, e.g. in Org source blocks.
-;;
-;; In summary, Org Dynamic blocks of the denote-links type can have
-;; three arguments:
-;;  1. :regexp "string" -- the search input (required)
-;;  2. :missing-only t  -- to only include missing links
-;;  3. :block-name "n"  -- to include a name for later processing
-;;
 ;; Inserting a block can be done via the Org-mode entry point
 ;; 'org-dynamic-block-insert-dblock' and selecting 'denote-links' from
 ;; the list, or directly by calling 'denote-org-dblock-insert-links'.
 ;;
+;;
+;; Org Dynamic blocks of the denote-links type can have three
+;; arguments:
+;;  1. :regexp "string" -- the search input (required)
+;;  2. :missing-only t  -- to only include missing links
+;;  3. :block-name "n"  -- to include a name for later processing
+;;
+;; By default ':missing-only t' is included as a parameter in the
+;; block's header, so that only "missing links" are included (i.e.,
+;; links to notes that the current buffer doesn't already link to).
+;; Remove this parameter or set to 'nil' to include all matching
+;; notes.
+;;
+;; With ':block-name "string"' include a '#+NAME: string' line in the
+;; Dynamic block. This allows use of the Dynomic block output as input
+;; for further computation, e.g. in Org source blocks.
+
 ;;;###autoload
 (defun denote-org-dblock-insert-links (regexp)
   "Create Org dynamic block to insert Denote links matching REGEXP."
   (interactive
-   ;; TODO 2022-11-10: Should we make this a `read-regexp' as is the
-   ;; case with `denote-link-add-missing-links'?  Also add the
-   ;; minibuffer history.
-    (list (read-string "Search for (include _ for keyword): ")))
+    (list
+     (read-regexp "Search for notes matching REGEX: " nil 'denote-link--add-links-history)))
   (org-create-dblock (list :name "denote-links"
                            :regexp regexp
                            :missing-only 't))
@@ -105,16 +93,12 @@ This command deletes the original subtree."
 
 (org-dynamic-block-define "denote-links" 'denote-org-dblock-insert-links)
 
-;; FIXME 2022-11-10: The `denote-org-dblock-write-links' is not used
-;; anywhere.  We need to check again.
-
 ;; By using the `org-dblock-write:' format, Org-mode knows how to
 ;; compute the dynamic block. Inner workings of this function copied
 ;; from `denote-link-add-links'.
-(defun denote-org-dblock-write-links (params)
-  "Write denote links with PARAMS in org dynamic block."
-  ;; TODO 2022-11-10: check doc string.  I simply added something here
-  ;; to placate the compiler.
+(defun org-dblock-write:denote-links (params)
+  "Function to update `denote-links' Org Dynamic blocks.
+Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   (let ((regexp (plist-get params :regexp))
         (missing-only (plist-get params :missing-only))
         (block-name (plist-get params :block-name))
@@ -150,10 +134,9 @@ This command deletes the original subtree."
 
 (org-dynamic-block-define "denote-backlinks" 'denote-org-dblock-insert-backlinks)
 
-;; FIXME 2022-11-10: Add doc string to the following function and make
-;; sure the PARAMS are used.
-
-(defun denote-org-dblock-write-backlinks (params)
+(defun org-dblock-write:denote-backlinks (params)
+  "Function to update `denote-backlinks' Org Dynamic blocks.
+Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   (when-let* ((file (buffer-file-name))
               (id (denote-retrieve-filename-identifier file))
               (files (denote--retrieve-files-in-xrefs
@@ -161,5 +144,5 @@ This command deletes the original subtree."
     (insert (denote-link--prepare-links files file nil))
     (join-line))) ;; remove trailing empty line
 
-(provide 'denote-org)
-;;; denote-org.el ends here
+(provide 'denote-org-dblock)
+;;; denote-org-dblock.el ends here
