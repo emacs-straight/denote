@@ -29,7 +29,7 @@
 ;; This file provides a specialized Org-mode extension to Denote: it
 ;; introduces Org Dynamic blocks that collect links to Denote notes
 ;; based on a provided regexp.  In short, this automates
-;; 'denote-link-add-links' and 'denote-link-add-backlinks'.
+;; 'denote-link-add-links'.
 ;;
 ;; For more information, read the commented code below or refer to the
 ;; Denote manual
@@ -139,8 +139,7 @@ Used by `org-dblock-update' with PARAMS provided by the dynamic block."
 Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   (when-let* ((file (buffer-file-name))
               (id (denote-retrieve-filename-identifier file))
-              (files (denote--retrieve-files-in-xrefs
-                      (denote--retrieve-process-grep id))))
+              (files (delete file (denote--retrieve-files-in-xrefs id)))))
     (insert (denote-link--prepare-links files file nil))
     (join-line))) ;; remove trailing empty line
 
