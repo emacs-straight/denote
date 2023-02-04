@@ -592,14 +592,9 @@ Omit FILE if it matches the value of user option
   "Return non-nil if FILE has supported extension.
 Also account for the possibility of an added .gpg suffix.
 Supported extensions are those implied by `denote-file-type'."
-  (let* ((extensions (denote--extensions))
-         (valid-extensions (append extensions
-                                   (mapcar (lambda (e)
-                                             (concat e ".gpg"))
-                                           extensions))))
-    (seq-some
-     (lambda (e) (string-suffix-p e file))
-     valid-extensions)))
+  (seq-some (lambda (e)
+              (string-suffix-p e file))
+            (denote--extensions-with-encryption)))
 
 (define-obsolete-function-alias
   'denote--file-supported-extension-p
@@ -750,8 +745,9 @@ With optional INITIAL-TEXT, use it to prepopulate the minibuffer."
          (dirs (list (project-root project)))
          (all-files (project-files project dirs))
          (completion-ignore-case read-file-name-completion-ignore-case))
-    (funcall project-read-file-name-function
-             "Select note: " all-files nil 'denote--title-history initial-text)))
+    (when all-files
+      (funcall project-read-file-name-function
+               "Select note: " all-files nil 'denote--title-history initial-text))))
 
 (define-obsolete-function-alias
   'denote--retrieve-read-file-prompt
@@ -1126,6 +1122,20 @@ for new note creation.  The default is `org'.")
    (mapcar (lambda (type)
              (plist-get (cdr type) :extension))
            denote-file-types)))
+
+;; TODO 2023-01-24: Perhaps there is a good reason to make this a user
+;; option, but I am keeping it as a private variable for now.
+(defvar denote--encryption-file-extensions '(".gpg" ".age")
+  "List of strings specifying file extensions for encryption.")
+
+(defun denote--extensions-with-encryption ()
+  "Derive `denote--extensions' including `denote--encryption-file-extensions'."
+  (let ((file-extensions (denote--extensions))
+        all)
+    (dolist (ext file-extensions)
+      (dolist (enc denote--encryption-file-extensions)
+        (push (concat ext enc) all)))
+    (append file-extensions all)))
 
 (defun denote--file-type-keys ()
   "Return all `denote-file-types' keys."
@@ -1743,7 +1753,7 @@ further edit their last input, using it as the newly created
 note's actual title.  At the `denote-title-prompt' type
 \\<minibuffer-local-map>\\[previous-history-element]."
   (interactive (list (denote-file-prompt)))
-  (if (file-exists-p target)
+  (if (and target (file-exists-p target))
       (find-file target)
     (call-interactively #'denote)))
 
@@ -2567,13 +2577,14 @@ whitespace-only), insert an ID-ONLY link."
                         selected-text))
          (identifier-only (or id-only (string-empty-p description)))
          (file-type (denote-filetype-heuristics (buffer-file-name))))
-    (insert
-     (denote-link--format-link
-      target
-      (denote-link--file-type-format file-type identifier-only)
-      description))
-    (unless (derived-mode-p 'org-mode)
-      (make-button beg (point) 'type 'denote-link-button))))
+    (when target
+      (insert
+       (denote-link--format-link
+        target
+        (denote-link--file-type-format file-type identifier-only)
+        description))
+      (unless (derived-mode-p 'org-mode)
+        (make-button beg (point) 'type 'denote-link-button)))))
 
 (defalias 'denote-link-insert-link 'denote-link
   "Alias of `denote-link' command.")
@@ -2688,7 +2699,7 @@ With optional ID-ONLY as a prefix argument create a link that
 consists of just the identifier.  Else try to also include the
 file's title.  This has the same meaning as in `denote-link'."
   (interactive (list (denote-file-prompt) current-prefix-arg))
-  (if (file-exists-p target)
+  (if (and target (file-exists-p target))
       (denote-link target id-only)
     (call-interactively #'denote-link-after-creating)))
 
@@ -3081,9 +3092,9 @@ file."
   "Like `denote-link' but for Org integration.
 This lets the user complete a link through the `org-insert-link'
 interface by first selecting the `denote:' hyperlink type."
-  (concat
-   "denote:"
-   (denote-retrieve-filename-identifier (denote-file-prompt))))
+  (if-let ((file (denote-file-prompt)))
+      (concat "denote:" (denote-retrieve-filename-identifier file))
+    (user-error "No files in `denote-directory'")))
 
 (declare-function org-link-store-props "ol.el" (&rest plist))
 (defvar org-store-link-plist)

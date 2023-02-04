@@ -568,6 +568,8 @@ reference.  They will not read the global value of ~denote-directory~.
 The global value of ~denote-directory~ is read everywhere else except
 the silos.
 
+[[#h:0f72e6ea-97f0-42e1-8fd4-0684af0422e0][Use custom commands to select a silo]].
+
 In concrete terms, this is a representation of the directory structures
 (notice the =.dir-locals.el= file is needed only for the silos):
 
@@ -665,6 +667,65 @@ to experiment with the best setup for their workflow.
 
 Feel welcome to ask for help if the information provided herein is not
 sufficient.  The manual shall be expanded accordingly.
+
+*** Use custom commands to select a silo
+:PROPERTIES:
+:CUSTOM_ID: h:0f72e6ea-97f0-42e1-8fd4-0684af0422e0
+:END:
+
+We implement silos as directory-local values of the user option
+~denote-directory~.  This means that all Denote commands read from the
+local value if they are invoked from that context.  For example, is
+=~/Videos/recordings= is a silo and =~/Documents/notes= is the
+default/global value of ~denote-directory~ all Denote commands will
+read the video's path when called from there (e.g. by using Emacs'
+~dired~); any other context reads the global value.
+
+[[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directory silos for notes]].
+
+There are cases where the user (i) wants to maintain multiple silos
+and (ii) prefers an interactive way to switch between them without
+going through Dired.  Since this is specific to the user's workflow,
+it is easier to have some custom code for it.  The following should be
+added to the user's Denote configuration:
+
+#+begin_src emacs-lisp
+(defvar my-denote-silo-directories
+  `("/home/prot/Videos/recordings"
+    "/home/prot/Documents/books"
+    ;; You don't actually need to include the `denote-directory' here
+    ;; if you use the regular commands in their global context.  I am
+    ;; including it for completeness.
+    ,denote-directory)
+  "List of file paths pointing to my Denote silos.
+This is a list of strings.")
+
+(defvar my-denote-commands-for-silos
+  '(denote
+    denote-date
+    denote-subdirectory
+    denote-template
+    denote-type)
+  "List of Denote commands to call after selecting a silo.
+This is a list of symbols that specify the note-creating
+interactive functions that Denote provides.")
+
+(defun my-denote-pick-silo-then-command (silo command)
+  "Select SILO and run Denote COMMAND in it.
+SILO is a file path from `my-denote-silo-directories', while
+COMMAND is one among `my-denote-commands-for-silos'."
+  (interactive
+   (list (completing-read "Select a silo: " my-denote-silo-directories nil t)
+         (intern (completing-read
+                  "Run command in silo: "
+                  my-denote-commands-for-silos nil t))))
+  (let ((denote-directory silo))
+    (call-interactively command)))
+#+end_src
+
+With this in place, =M-x my-denote-pick-silo-then-command= will use
+minibuffer completion to select a silo among the predefined options
+and then ask for the command to run in that context.
 
 ** Exclude certain directories from all operations
 :PROPERTIES:
@@ -2252,6 +2313,24 @@ can be set to ~nil~ to hide the identifier.  Depending on how one
 searches through their notes, this refashioned presentation may be the
 best option ([[#h:1a953736-86c2-420b-b566-fb22c97df197][Features of the file-naming scheme for searching or filtering]]).
 
+** Use the ~denote-menu~ package
+:PROPERTIES:
+:CUSTOM_ID: h:472db709-27de-4a1f-a171-c3fe0a7a9be8
+:END:
+
+Denote's file-naming scheme is designed to be efficient and to provide
+valueable meta information about the file.  The cost, however, is that
+it is terse and harder to read, depending on how the user chooses to
+filter and process their notes.
+
+To this end, [[https://github.com/namilus/denote-menu][the ~denote-menu~ package by Mohamed Suliman]] provides the
+convenience of a nice tabular interface for all notes.  ~denote-menu~
+removes the delimiters that are found in Denote file names and
+presents the information in a human-readable format.  Furthermore, the
+package provides commands to interact with the list of notes, such as
+to filter them and to transition from the tabular list to Dired.  Its
+documentation expands on the technicalities.
+
 ** Treat your notes as a project
 :PROPERTIES:
 :CUSTOM_ID: h:fad3eb08-ddc7-43e4-ba28-210d89668037
@@ -3643,8 +3722,8 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Jack Baty, Jeremy Friesen, Juanjo Presa, Johan Bolmsjö, Kaushal
   Modi, M. Hadi Timachi, Mirko Hernandez, Paul van Gelder, Peter
   Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
-  Taoufik, Viktor Haag, Yi Liu, Ypot, atanasj, hpgisler, pRot0ta1p,
-  sienic, sundar bp.
+  Taoufik, Viktor Haag, Yi Liu, Ypot, atanasj, drcxd, hpgisler,
+  pRot0ta1p, rbenit68, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
