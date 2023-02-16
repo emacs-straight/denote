@@ -72,8 +72,21 @@ modify this GNU manual.”
 :END:
 
 Denote aims to be a simple-to-use, focused-in-scope, and effective
-note-taking tool for Emacs.  It is based on the following core design
-principles:
+note-taking tool for Emacs.
+
+Denote is based on the idea that notes should follow a predictable and
+descriptive file-naming scheme.  The file name must offer a clear
+indication of what the note is about, without reference to any other
+metadata.  Denote basically streamlines the creation of such files
+while providing facilities to link between them.
+
+Denote's file-naming scheme is not limited to "notes".  It can be used
+for all types of file, including those that are not editable in Emacs,
+such as videos.  Naming files in a constistent way makes their
+filtering and retrieval considerably easier.  Denote provides relevant
+facilities to rename files, regardless of file type.
+
+Denote is based on the following core design principles:
 
 + Predictability :: File names must follow a consistent and descriptive
   naming convention ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).  The file name alone
@@ -756,6 +769,32 @@ to experiment with the best setup for their workflow.
 
 Feel welcome to ask for help if the information provided herein is not
 sufficient.  The manual shall be expanded accordingly.
+
+*** Determine levels of depth in a silo
+:PROPERTIES:
+:CUSTOM_ID: h:3aeacd4d-8cd2-49b7-bc49-15bbbf4281c0
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+Silos have a directory-local variable that isolates them from the
+default value of the user option ~denote-directory~.  When the silo is
+a flat directory, Denote can easily know about it.  Otherwise it needs
+to search the parents of the current directory in order to determine
+if the current file belongs to a silo.
+
+#+vindex: denote-silo-nesting-depth
+To this end, the user can specify a natural number as the value of the
+user option ~denote-silo-nesting-depth~.  The default value is =2=,
+meaning that Denote will check the current directory and its parent
+directory to determine if either of those paths constitute a silo.  If
+they are, Denote will return the given path, else it will use the
+default (global) value of the ~denote-directory~.
+
+[[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directory silos for notes]].
+
+Levels of depth are needed to allow silos to have subdirectories.
+Otherwise they are assume to be flat.
 
 *** Use custom commands to select a silo
 :PROPERTIES:
