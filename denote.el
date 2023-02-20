@@ -799,13 +799,17 @@ The path is relative to DIRECTORY (default: ‘default-directory’)."
   'denote-directory-files-matching-regexp
   "1.0.0")
 
+(defun denote-all-files ()
+  "Return the list of Denote files in variable `denote-directory'."
+  (let* ((project-find-functions #'denote-project-find)
+         (project (project-current nil (denote-directory)))
+         (dirs (list (project-root project))))
+    (project-files project dirs)))
+
 (defun denote-file-prompt (&optional initial-text)
   "Prompt for file with identifier in variable `denote-directory'.
 With optional INITIAL-TEXT, use it to prepopulate the minibuffer."
-  (let* ((project-find-functions #'denote-project-find)
-         (project (project-current nil (denote-directory)))
-         (dirs (list (project-root project)))
-         (all-files (project-files project dirs))
+  (let* ((all-files (denote-all-files))
          (completion-ignore-case read-file-name-completion-ignore-case))
     (when all-files
       (funcall project-read-file-name-function
@@ -2153,6 +2157,46 @@ files)."
         (if (denote--edit-front-matter-p new-name file-type)
             (denote--rewrite-front-matter new-name title keywords file-type)
           (denote--add-front-matter new-name title keywords id file-type))))))
+
+;;;###autoload
+(defun denote-change-file-type (file new-file-type)
+  "Change file type of FILE and add an appropriate front matter.
+
+If in Dired, consider FILE to be the one at point, else prompt
+with minibuffer completion for one.
+
+Add a front matter in the format of the NEW-FILE-TYPE at the
+beginning of the file.
+
+The title is retrieved from a line starting with a title field in
+the file's contents, depending on the previous file type (e.g.
+#+title for Org). The same process applies for keywords and id.
+
+As a final step, ask for confirmation, showing the difference
+between old and new file names.
+
+Important note: No attempt is made to modify any other elements
+of the file. This needs to be done manually."
+  (interactive
+   (list
+    (denote--rename-dired-file-or-prompt)
+    (denote--valid-file-type (or (denote-file-type-prompt) denote-file-type))))
+  (let* ((dir (file-name-directory file))
+         (old-file-type (denote-filetype-heuristics file))
+         (id (denote-retrieve-or-create-file-identifier file))
+         (title (denote-retrieve-title-value file old-file-type))
+         (keywords (denote-retrieve-keywords-value file old-file-type))
+         (old-extension (file-name-extension file t))
+         (new-extension (denote--file-extension new-file-type))
+         (new-name (denote-format-file-name
+                    dir id keywords (denote-sluggify title) new-extension))
+         (max-mini-window-height 0.33)) ; allow minibuffer to be resized
+    (when (and (not (eq old-extension new-extension))
+               (denote-rename-file-prompt file new-name))
+      (denote-rename-file-and-buffer file new-name)
+      (denote-update-dired-buffers)
+      (when (denote-file-is-writable-and-supported-p new-name)
+        (denote--add-front-matter new-name title keywords id new-file-type)))))
 
 ;;;###autoload
 (defun denote-dired-rename-marked-files ()
@@ -3565,11 +3609,7 @@ This include the definition itself."
                                                          (eql 'denote)))
   "Return list of Denote identifers as completion table."
 
-  (let* ((project-find-functions #'denote-project-find)
-         (project (project-current nil (denote-directory)))
-         (dirs (list (project-root project)))
-         (all-files (project-files project dirs)))
-    (mapcar #'denote-retrieve-filename-identifier all-files)))
+  (mapcar #'denote-retrieve-filename-identifier (denote-all-files)))
 
 (provide 'denote)
 ;;; denote.el ends here
