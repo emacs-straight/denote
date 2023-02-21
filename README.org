@@ -770,32 +770,6 @@ to experiment with the best setup for their workflow.
 Feel welcome to ask for help if the information provided herein is not
 sufficient.  The manual shall be expanded accordingly.
 
-*** Determine levels of depth in a silo
-:PROPERTIES:
-:CUSTOM_ID: h:3aeacd4d-8cd2-49b7-bc49-15bbbf4281c0
-:END:
-
-[ Part of {{{development-version}}}. ]
-
-Silos have a directory-local variable that isolates them from the
-default value of the user option ~denote-directory~.  When the silo is
-a flat directory, Denote can easily know about it.  Otherwise it needs
-to search the parents of the current directory in order to determine
-if the current file belongs to a silo.
-
-#+vindex: denote-silo-nesting-depth
-To this end, the user can specify a natural number as the value of the
-user option ~denote-silo-nesting-depth~.  The default value is =2=,
-meaning that Denote will check the current directory and its parent
-directory to determine if either of those paths constitute a silo.  If
-they are, Denote will return the given path, else it will use the
-default (global) value of the ~denote-directory~.
-
-[[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directory silos for notes]].
-
-Levels of depth are needed to allow silos to have subdirectories.
-Otherwise they are assume to be flat.
-
 *** Use custom commands to select a silo
 :PROPERTIES:
 :CUSTOM_ID: h:0f72e6ea-97f0-42e1-8fd4-0684af0422e0
@@ -1110,6 +1084,34 @@ modification, i.e. the one already written on disk.
 
 This command is useful for synchronizing multiple file names with their
 respective front matter.
+
+** Rename file by changing only its file type
+:PROPERTIES:
+:CUSTOM_ID: h:85b65995-89fd-4978-bba3-7bb6c8d6f945
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+findex: denote-change-file-type
+The command ~denote-change-file-type~ provides the convenience of
+converting a note taken in one file type, say, =.txt= into another
+like =.org=.  It presents a choice among the ~denote-file-type~
+options.
+
+The conversion does NOT modify the existing front matter.  Instead, it
+prepends new front matter to the top of the file.  We do this as a
+safety precaution since the user can, in principle, add arbitrary
+extras to their front matter that we would not want to touch.
+
+If in Dired, ~denote-change-file-type~ operates on the file at point,
+else it prompts with minibuffer completion for one.
+
+The title of the file is retrieved from a line starting with a title
+field in the file's front matter, depending on the previous file type
+(e.g.  =#+title= for Org).  The same process applies for keywords.
+
+As a final step, the command asks for confirmation, showing the
+difference between old and new file names.
 
 * The file-naming scheme
 :PROPERTIES:

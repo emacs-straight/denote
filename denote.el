@@ -150,27 +150,6 @@ directory and also checks if a safe local value should be used."
   :link '(info-link "(denote) Maintain separate directories for notes")
   :type 'directory)
 
-(defcustom denote-silo-nesting-depth 2
-  "How many levels up to check if current file is in a silo.
-Silos have a directory-local variable that isolates them from the
-default value of the variable `denote-directory'.  When the silo
-is a flat directory, Denote can easily know about it.  Otherwise
-it needs to search the parents of the current directory in order
-to determine if the current file belongs to a silo.
-
-The default value is 2, meaning that Denote will check the
-current directory and its parent directory to determine if either
-of those paths constitute a silo.  If they are, Denote will
-return the given path, else it will use the default (global)
-value of the variable `denote-directory'.
-
-Levels of depth are needed to allow silos to have subdirectories.
-Otherwise they are assume to be flat."
-  :group 'denote
-  :type 'natnum
-  :package-version '(denote . "1.3.0")
-  :link '(info-link "(denote) Maintain separate directories for notes"))
-
 (defcustom denote-known-keywords
   '("emacs" "philosophy" "politics" "economics")
   "List of strings with predefined keywords for `denote'.
@@ -514,37 +493,18 @@ things accordingly.")
 
 (defun denote--silo-p (path)
   "Return path to silo if PATH is a silo."
-  (when (and path (file-directory-p path))
-    (with-temp-buffer
-      (when-let* ((files (directory-files path))
-                  ((member ".dir-locals.el" files))
-                  (val (buffer-local-value
-                        'denote-directory
-                        ;; TODO 2023-02-12: Clean up the created buffer
-                        (get-buffer-create (find-file-noselect path)))))
-        path))))
-
-(defun denote--get-silo-path (&optional file levels)
-  "Try to determine if FILE belongs to a silo.
-
-Operate recursively up to optional LEVELS.  If LEVELS is nil, use
-`denote-silo-nesting-depth'.
-
-If no silo is found, return nil.  See the function
-`denote-directory'."
-  (when-let ((file-or-dir (if (and file (file-directory-p file)) file default-directory)))
-    (or (denote--silo-p file-or-dir)
-        (let ((path file-or-dir))
-          (catch 'value
-            (dotimes (_n (or levels denote-silo-nesting-depth))
-              (if (denote--silo-p path)
-                  (throw 'value path)
-                (setq path (file-name-parent-directory path)))))
-          (denote--silo-p path)))))
+  (when-let (((and path (file-directory-p path)))
+             (dir-locals (dir-locals-find-file path)))
+    (cond
+     ((listp dir-locals)
+      (car dir-locals))
+     ((stringp dir-locals)
+      dir-locals)
+     (t nil))))
 
 (defun denote-directory ()
   "Return path of variable `denote-directory' as a proper directory."
-  (let ((path (or (denote--get-silo-path)
+  (let ((path (or (denote--silo-p default-directory)
                   (when (and (stringp denote-directory)
                              (not (file-directory-p denote-directory)))
                     (make-directory denote-directory t))
@@ -2168,15 +2128,16 @@ with minibuffer completion for one.
 Add a front matter in the format of the NEW-FILE-TYPE at the
 beginning of the file.
 
-The title is retrieved from a line starting with a title field in
-the file's contents, depending on the previous file type (e.g.
-#+title for Org). The same process applies for keywords and id.
+Retrieve the title of FILE from a line starting with a title
+field in its front matter, depending on the previous file
+type (e.g.  #+title for Org).  The same process applies for
+keywords.
 
 As a final step, ask for confirmation, showing the difference
 between old and new file names.
 
 Important note: No attempt is made to modify any other elements
-of the file. This needs to be done manually."
+of the file.  This needs to be done manually."
   (interactive
    (list
     (denote--rename-dired-file-or-prompt)
