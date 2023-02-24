@@ -7,7 +7,7 @@
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
 ;; Version: 1.2.0
-;; Package-Requires: ((emacs "28.1") (compat "29.1.3.4"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -112,7 +112,6 @@
 (require 'xref)
 (require 'dired)
 (require 'xdg)
-(require 'compat)
 (eval-when-compile (require 'subr-x))
 
 (defgroup denote ()
@@ -1802,7 +1801,7 @@ the new front matter, per `denote-rename-file-using-front-matter'."
                                keywords
                              (denote-keywords-sort
                               (seq-uniq (append keywords cur-keywords))))))
-        (denote--rewrite-keywords file new-keywords file-type)
+        (denote-rewrite-keywords file new-keywords file-type)
         (denote-rename-file-using-front-matter file t))
     (user-error "Buffer not visiting a Denote file")))
 
@@ -1831,7 +1830,7 @@ the new front matter, per `denote-rename-file-using-front-matter'."
       (when-let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
                   ((or (listp cur-keywords) (not (string-blank-p cur-keywords))))
                   (del-keyword (denote--keywords-delete-prompt cur-keywords)))
-        (denote--rewrite-keywords
+        (denote-rewrite-keywords
          file
          (seq-difference cur-keywords del-keyword)
          file-type)
@@ -1950,15 +1949,14 @@ contains a title line, a keywords line or both."
   (and (denote--regexp-in-file-p (denote--title-key-regexp file-type) file)
        (denote--regexp-in-file-p (denote--keywords-key-regexp file-type) file)))
 
-(defun denote--rewrite-keywords (file keywords file-type)
+(defun denote-rewrite-keywords (file keywords file-type)
   "Rewrite KEYWORDS in FILE outright according to FILE-TYPE.
 
-Do the same as `denote--rewrite-front-matter' for keywords,
+Do the same as `denote-rewrite-front-matter' for keywords,
 but do not ask for confirmation.
 
-This is for use in `denote-dired-rename-marked-files' or related.
-Those commands ask for confirmation once before performing an
-operation on multiple files."
+This is for use in `denote-keywords-add',`denote-keywords-remove',
+`denote-dired-rename-marked-files', or related."
   (with-current-buffer (find-file-noselect file)
     (save-excursion
       (save-restriction
@@ -1969,9 +1967,14 @@ operation on multiple files."
           (insert (denote--get-keywords-line-from-front-matter keywords file-type))
           (delete-region (point) (line-end-position)))))))
 
-(defun denote--rewrite-front-matter (file title keywords file-type)
-  "Rewrite front matter of note after `denote-dired-rename-file'.
-The FILE, TITLE, KEYWORDS, and FILE-TYPE are passed from the
+(define-obsolete-function-alias
+  'denote--rewrite-keywords
+  'denote-rewrite-keywords
+  "1.3.0")
+
+(defun denote-rewrite-front-matter (file title keywords file-type)
+  "Rewrite front matter of note after `denote-rename-file'.
+The FILE, TITLE, KEYWORDS, and FILE-TYPE are given by the
 renaming command and are used to construct new front matter
 values if appropriate."
   (when-let* ((old-title-line (denote-retrieve-title-line file file-type))
@@ -1998,6 +2001,11 @@ values if appropriate."
             (goto-char (line-beginning-position))
             (insert new-keywords-line)
             (delete-region (point) (line-end-position))))))))
+
+(define-obsolete-function-alias
+  'denote--rewrite-front-matter
+  'denote-rewrite-front-matter
+  "1.3.0")
 
 ;;;;; The renaming commands and their prompts
 
@@ -2115,7 +2123,7 @@ files)."
       (denote-update-dired-buffers)
       (when (denote-file-is-writable-and-supported-p new-name)
         (if (denote--edit-front-matter-p new-name file-type)
-            (denote--rewrite-front-matter new-name title keywords file-type)
+            (denote-rewrite-front-matter new-name title keywords file-type)
           (denote--add-front-matter new-name title keywords id file-type))))))
 
 ;;;###autoload
@@ -2203,7 +2211,7 @@ The operation does the following:
                 (denote-rename-file-and-buffer file new-name)
                 (when (denote-file-is-writable-and-supported-p new-name)
                   (if (denote--edit-front-matter-p new-name file-type)
-                      (denote--rewrite-keywords new-name keywords file-type)
+                      (denote-rewrite-keywords new-name keywords file-type)
                     (denote--add-front-matter new-name title keywords id file-type)))))
             (revert-buffer))))
     (user-error "No marked files; aborting")))
