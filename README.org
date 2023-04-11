@@ -1268,14 +1268,16 @@ scheme we apply guarantees that a listing is readable in a variety of
 contexts.  The Denote file-naming scheme is, in essence, an effective,
 low-tech invention.
 
-** Sluggified title and keywords
+** Sluggified title, keywords, and signature
 :PROPERTIES:
 :CUSTOM_ID: h:ae8b19a1-7f67-4258-96b3-370a72c43f4e
 :END:
 
+[ Signatures are part of {{{development-version}}}. ]
+
 Denote has to be highly opinionated about which characters can be used
 in file names and the file's front matter in order to enforce its
-file-naming scheme.  The private variable ~denote--punctuation-regexp~
+file-naming scheme.  The variable ~denote-excluded-punctuation-regexp~
 holds the relevant value.  In simple terms:
 
 + What we count as "illegal characters" are converted into hyphens.
@@ -1285,6 +1287,9 @@ holds the relevant value.  In simple terms:
 
 + Keywords should not have spaces or other delimiters.  If they do, they
   are converted into hyphens.  Keywords are always downcased.
+
++ Signatures are like the above, but use the equals sign instead of
+  hyphens.
 
 ** Features of the file-naming scheme for searching or filtering
 :PROPERTIES:
@@ -2129,7 +2134,7 @@ Of course, you can always set up the function so that it asks for a
   "Create an entry tagged 'journal', while prompting for a title."
   (interactive)
   (denote
-   (denote--title-prompt) ; ask for title, instead of using human-readable date
+   (denote-title-prompt) ; ask for title, instead of using human-readable date
    '("journal")))
 #+end_src
 
@@ -2192,7 +2197,7 @@ Prompt for title and keywords of the new note."
   (if-let (((region-active-p))
            (text (buffer-substring-no-properties beg end)))
       (progn
-        (denote (denote--title-prompt) (denote--keywords-prompt))
+        (denote (denote-title-prompt) (denote-keywords-prompt))
         (insert text))
     (user-error "No region is available")))
 #+end_src
@@ -2882,7 +2887,7 @@ Everything is in place to set up the package.
   "Create an entry tagged 'journal', while prompting for a title."
   (interactive)
   (denote
-   (denote--title-prompt)
+   (denote-title-prompt)
    '("journal")))
 
 ;; Denote DOES NOT define any key bindings.  This is for the user to
@@ -3085,6 +3090,10 @@ might change them without further notice.
 + Function ~denote-desluggify~ :: Upcase first char in =STR= and
   dehyphenate =STR=, inverting ~denote-sluggify~.  Basically, convert
   =this-is-a-test= to =This is a test=.
+
+#+findex: denote-sluggify-signature
++ Function ~denote-sluggify-signature~ :: Make STR an appropriate slug
+  for signatures. [Part of {{{development-version}}}]
 
 #+findex: denote-sluggify-keywords
 + Function ~denote-sluggify-keywords~ :: Sluggify =KEYWORDS=, which is
@@ -4030,11 +4039,11 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Schmitt, Alfredo Borrás, Benjamin Kästner, Colin McLear, Damien
   Cassou, Elias Storms, Federico Stilman, Florian, Frank Ehmsen, Guo
   Yong, Hanspeter Gisler, Jack Baty, Jeremy Friesen, Jonathan Sahar,
-  Juanjo Presa, Johan Bolmsjö, Kaushal Modi, M. Hadi Timachi, Mirko
-  Hernandez, Paul van Gelder, Peter Prevos, Shreyas Ragavan, Stefan
-  Thesing, Summer Emacs, Sven Seebeck, Taoufik, Viktor Haag, Yi Liu,
-  Ypot, atanasj, doolio, drcxd, hpgisler, pRot0ta1p, rbenit68,
-  relict007, sienic, sundar bp.
+  Juanjo Presa, Johan Bolmsjö, Kai von Fintel, Kaushal Modi, M. Hadi
+  Timachi, Mirko Hernandez, Paul van Gelder, Peter Prevos, Shreyas
+  Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, Viktor
+  Haag, Yi Liu, Ypot, atanasj, doolio, drcxd, hpgisler, pRot0ta1p,
+  rbenit68, relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
