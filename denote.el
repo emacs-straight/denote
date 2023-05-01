@@ -711,6 +711,28 @@ FILE must be an absolute path."
   (string-prefix-p (denote-directory)
                    (expand-file-name default-directory)))
 
+(defun denote--exclude-directory-regexp-p (file)
+  "Return non-nil if FILE matches `denote-excluded-directories-regexp'."
+  (and denote-excluded-directories-regexp
+       (string-match-p denote-excluded-directories-regexp file)))
+
+(defun denote--directory-all-files-recursively ()
+  "Return list of all files in variable `denote-directory'.
+Avoids traversing dotfiles (unconditionally) and whatever matches
+`denote-excluded-directories-regexp'."
+  (directory-files-recursively
+     (denote-directory)
+     directory-files-no-dot-files-regexp
+     :include-directories
+     (lambda (f)
+       (cond
+        ((string-match-p "\\`\\." f) nil)
+        ((string-match-p "/\\." f) nil)
+        ((denote--exclude-directory-regexp-p f) nil)
+        ((file-readable-p f))
+        (t)))
+     :follow-symlinks))
+
 (defun denote-directory-files ()
   "Return list of absolute file paths in variable `denote-directory'.
 
@@ -726,17 +748,7 @@ value, as explained in its doc string."
    (seq-remove
     (lambda (f)
       (not (denote-file-has-identifier-p f)))
-    (directory-files-recursively
-     (denote-directory)
-     directory-files-no-dot-files-regexp
-     :include-directories
-     (lambda (f)
-       (cond
-        ((when-let ((regexp denote-excluded-directories-regexp))
-           (not (string-match-p regexp f))))
-        ((file-readable-p f))
-        (t)))
-     :follow-symlinks))))
+    (denote--directory-all-files-recursively))))
 
 (defun denote-directory-text-only-files ()
   "Return list of text files in variable `denote-directory'.
@@ -758,9 +770,8 @@ whatever matches `denote-excluded-directories-regexp'."
        (or (not (file-directory-p filename))
            (string-match-p "\\`\\." rel)
            (string-match-p "/\\." rel)
-           (when-let ((regexp denote-excluded-directories-regexp))
-             (string-match-p regexp rel)))))
-   (directory-files-recursively (denote-directory) ".*" t t)))
+           (denote--exclude-directory-regexp-p rel))))
+   (denote--directory-all-files-recursively)))
 
 (define-obsolete-function-alias
   'denote--subdirs
@@ -1853,9 +1864,26 @@ is set to \\='(signature title keywords)."
   ;; We do not need to check if `file-name-history' is initialised
   ;; because it is defined in files.el.  My understanding is that it
   ;; is always loaded.
-  (when-let ((title (expand-file-name (car file-name-history))))
+  (when-let ((title (expand-file-name (car denote--file-history))))
     (string-match (denote-directory) title)
     (substring title (match-end 0))))
+
+(defun denote--append-extracted-string-to-history (history)
+  "Append `denote--extract-title-from-file-history' to HISTORY."
+  (append
+   (list (denote--extract-title-from-file-history))
+   history))
+
+(defun denote--command-with-title-history (command)
+  "Call COMMAND with modified title history.
+Allow COMMAND to gain access to the return value of
+`denote--append-extracted-string-to-history' for the
+`denote--title-history'.  This is what makes
+`denote-open-or-create' and `denote-link-or-create' return the
+last input on demand when prompting for a title."
+  (let ((denote--title-history
+         (denote--append-extracted-string-to-history denote--title-history)))
+    (call-interactively command)))
 
 ;;;###autoload
 (defun denote-open-or-create (target)
@@ -1871,7 +1899,7 @@ note's actual title.  At the `denote-file-prompt' type
   (interactive (list (denote-file-prompt)))
   (if (and target (file-exists-p target))
       (find-file target)
-    (call-interactively #'denote)))
+    (denote--command-with-title-history #'denote)))
 
 ;;;###autoload
 (defun denote-keywords-add (keywords)
@@ -2516,7 +2544,7 @@ and seconds."
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
 (defvar denote-faces--file-name-regexp
   (concat "\\(?1:[0-9]\\{8\\}\\)\\(?2:T[0-9]\\{6\\}\\)"
-          "\\(?:\\(?3:==\\)\\(?4:[[:alnum:][:nonascii:]]*?\\)\\)?"
+          "\\(?:\\(?3:==\\)\\(?4:[[:alnum:][:nonascii:]=]*?\\)\\)?"
           "\\(?:\\(?5:--\\)\\(?6:[[:alnum:][:nonascii:]-]*?\\)\\)?"
           "\\(?:\\(?7:__\\)\\(?8:[[:alnum:][:nonascii:]_-]*?\\)\\)?"
           "\\(?9:\\..*\\)?$")
@@ -2884,7 +2912,7 @@ file's title.  This has the same meaning as in `denote-link'."
   (interactive (list (denote-file-prompt) current-prefix-arg))
   (if (and target (file-exists-p target))
       (denote-link target id-only)
-    (call-interactively #'denote-link-after-creating)))
+    (denote--command-with-title-history #'denote-link-after-creating)))
 
 (defalias 'denote-link-to-existing-or-new-note 'denote-link-or-create
   "Alias of `denote-link-or-create' command.")
