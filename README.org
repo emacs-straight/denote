@@ -2138,6 +2138,39 @@ Of course, you can always set up the function so that it asks for a
    '("journal")))
 #+end_src
 
+The above snippets do not check if a daily entry exists: they always
+create a new one.  The idea is that one may want to write multiple
+journal entries per day.  Another approach is to create a single entry
+on a given day, in which case the command must be repurposed to
+surface the existing note, if present.  As with ~my-denote-journal~
+above, the title is formatted as =Tuesday 14 June 2022=.
+
+#+begin_src emacs-lisp
+(defun my-denote-journal ()
+  "Create an entry tagged 'journal' with the date as its title.
+If a journal for the current day exists, visit it.  If multiple
+entries exist, prompt with completion for a choice between them.
+Else create a new file."
+  (interactive)
+  (let* ((today (format-time-string "%A %e %B %Y"))
+         (string (denote-sluggify today))
+         (files (denote-directory-files-matching-regexp string)))
+    (cond
+     ((> (length files) 1)
+      (find-file (completing-read "Select file: " files nil :require-match)))
+     (files
+      (find-file (car files)))
+     (t
+      (denote
+       today
+       '("journal"))))))
+#+end_src
+
+*** Journaling with a timer
+:PROPERTIES:
+:CUSTOM_ID: h:4af1f81e-e93a-43cc-b344-960032a16d42
+:END:
+
 Sometimes journaling is done with the intent to hone one's writing
 skills.  Perhaps you are learning a new language or wish to communicate
 your ideas with greater clarity and precision.  As with everything that
@@ -3623,7 +3656,7 @@ Denote, feel welcome to tell us about it ([[#h:1ebe4865-c001-4747-a6f2-0fe45aad7
 
 + Peter Prevos: /Simulating Text Files with R to Test the Emacs Denote
   Package/, 2022-07-28, <https://lucidmanager.org/productivity/testing-denote-package/>
-  
+
 + Stefan Thesing: /Denote as a Zettelkasten/, 2023-03-02,
   <https://www.thesing-online.de/blog/denote-as-a-zettelkasten>
 
