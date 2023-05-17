@@ -721,17 +721,17 @@ FILE must be an absolute path."
 Avoids traversing dotfiles (unconditionally) and whatever matches
 `denote-excluded-directories-regexp'."
   (directory-files-recursively
-     (denote-directory)
-     directory-files-no-dot-files-regexp
-     :include-directories
-     (lambda (f)
-       (cond
-        ((string-match-p "\\`\\." f) nil)
-        ((string-match-p "/\\." f) nil)
-        ((denote--exclude-directory-regexp-p f) nil)
-        ((file-readable-p f))
-        (t)))
-     :follow-symlinks))
+   (denote-directory)
+   directory-files-no-dot-files-regexp
+   :include-directories
+   (lambda (f)
+     (cond
+      ((string-match-p "\\`\\." f) nil)
+      ((string-match-p "/\\." f) nil)
+      ((denote--exclude-directory-regexp-p f) nil)
+      ((file-readable-p f))
+      (t)))
+   :follow-symlinks))
 
 (defun denote-directory-files ()
   "Return list of absolute file paths in variable `denote-directory'.
@@ -2849,6 +2849,7 @@ whitespace-only), insert an ID-ONLY link."
   "Return list of links in current or optional FILE.
 Also see `denote-link-return-backlinks'."
   (when-let* ((current-file (or file (buffer-file-name)))
+              ((denote-file-has-supported-extension-p current-file))
               (file-type (denote-filetype-heuristics current-file))
               (regexp (denote--link-in-context-regexp file-type))
               (links (with-current-buffer (find-file-noselect current-file)
