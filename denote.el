@@ -291,7 +291,7 @@ If nil, show the keywords in their given order."
   :package-version '(denote . "0.1.0")
   :type 'boolean)
 
-(defcustom denote-allow-multi-word-keywords t
+(defcustom denote-allow-multi-word-keywords nil
   "If non-nil keywords can consist of multiple words.
 Words are automatically separated by a hyphen when using the
 `denote' command or related.  The hyphen is the only legal
@@ -299,11 +299,15 @@ character---no spaces, no other characters.  If, for example, the
 user types <word1_word2> or <word1 word2>, it is converted to
 <word1-word2>.
 
-When nil, do not allow keywords to consist of multiple words.
-Reduce them to a single word, such as by turning <word1_word2> or
-<word1 word2> into <word1word2>."
+When nil (the default), do not allow keywords to consist of
+multiple words.  Reduce them to a single word, such as by turning
+<word1_word2> or <word1 word2> into <word1word2>.
+
+[ The author of Denote encourages you to use single words for
+  keywords and, if needed, rely on multiple separate keywords to
+  derive meaning.]"
   :group 'denote
-  :package-version '(denote . "0.1.0")
+  :package-version '(denote . "2.0.0")
   :type 'boolean)
 
 (defcustom denote-file-type nil
@@ -520,17 +524,24 @@ things accordingly.")
       dir-locals)
      (t nil))))
 
+(defun denote--make-denote-directory ()
+  "Make the variable `denote-directory' and its parents, if needed."
+  (when (and (stringp denote-directory)
+             (not (file-directory-p denote-directory)))
+    (make-directory denote-directory :parents)))
+
 (defun denote-directory ()
   "Return path of variable `denote-directory' as a proper directory."
   (let ((path (or (denote--default-directory-is-silo-p)
-                  (when (and (stringp denote-directory)
-                             (not (file-directory-p denote-directory)))
-                    (make-directory denote-directory t))
+                  (denote--make-denote-directory)
                   (default-value 'denote-directory))))
     (file-name-as-directory (expand-file-name path))))
 
 (defun denote--slug-no-punct (str)
-  "Convert STR to a file name slug."
+  "Remove punctuation from STR.
+Concretely, replace with spaces anything that matches the
+`denote-excluded-punctuation-regexp' and
+`denote-excluded-punctuation-extra-regexp'."
   (replace-regexp-in-string
    (concat denote-excluded-punctuation-regexp
            denote-excluded-punctuation-extra-regexp)
@@ -583,18 +594,27 @@ any leading and trailing signs."
 
 (defun denote-sluggify-keywords (keywords)
   "Sluggify KEYWORDS, which is a list of strings."
-  (mapcar (if denote-allow-multi-word-keywords
-              #'denote-sluggify
-            #'denote-sluggify-and-join)
-          keywords))
+  (if (listp keywords)
+    (mapcar
+     (if denote-allow-multi-word-keywords
+         #'denote-sluggify
+       #'denote-sluggify-and-join)
+     keywords)
+    (error "`%s' is not a list" keywords)))
 
 (define-obsolete-function-alias
   'denote--sluggify-keywords
   'denote-sluggify-keywords
   "1.0.0")
 
+;; TODO 2023-05-22: Review name of `denote-desluggify' to signify what
+;; the doc string warns about.
 (defun denote-desluggify (str)
-  "Upcase first char in STR and dehyphenate STR, inverting `denote-sluggify'."
+  "Upcase first char in STR and dehyphenate STR, inverting `denote-sluggify'.
+The intent of this function is to be used on individual strings,
+such as the TITLE component of a Denote file name, but not on the
+entire file name.  Put differently, it does not work with
+signatures and keywords."
   (let ((str (replace-regexp-in-string "-" " " str)))
     (aset str 0 (upcase (aref str 0)))
     str))
@@ -610,7 +630,7 @@ any leading and trailing signs."
 
 (defun denote-file-is-note-p (file)
   "Return non-nil if FILE is an actual Denote note.
-For our purposes, a note must note be a directory, must satisfy
+For our purposes, a note must not be a directory, must satisfy
 `file-regular-p', its path must be part of the variable
 `denote-directory', it must have a Denote identifier in its name,
 and use one of the extensions implied by `denote-file-type'."
@@ -2099,7 +2119,7 @@ This is for use in `denote-keywords-add',`denote-keywords-remove',
 (define-obsolete-function-alias
   'denote--rewrite-keywords
   'denote-rewrite-keywords
-  "1.3.0")
+  "2.0.0")
 
 (defun denote-rewrite-front-matter (file title keywords file-type)
   "Rewrite front matter of note after `denote-rename-file'.
@@ -2134,7 +2154,7 @@ values if appropriate."
 (define-obsolete-function-alias
   'denote--rewrite-front-matter
   'denote-rewrite-front-matter
-  "1.3.0")
+  "2.0.0")
 
 ;;;;; The renaming commands and their prompts
 
