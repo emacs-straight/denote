@@ -1,4 +1,4 @@
-;;; denote.el --- Unit tests for Denote -*- lexical-binding: t -*-
+;;; denote-test.el --- Unit tests for Denote -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2023  Free Software Foundation, Inc.
 
@@ -46,7 +46,7 @@
   (should (null (denote--make-denote-directory))))
 
 (ert-deftest denote-test--denote-directory ()
-  "Test that `denote-directory' returns an absolute directory name."
+  "Test that variable `denote-directory' returns an absolute directory name."
   (let ((path (denote-directory)))
     (should (and (file-directory-p path)
                  (file-name-absolute-p path)))))
@@ -124,40 +124,30 @@ The function also account for the value of the user option
                 (denote--file-empty-p file)
               (delete-file file)))))
 
-;; FIXME 2023-05-22: It does not return non-nil even though I am
-;; giving it what should be a file in `denote-directory'.
-;; (ert-deftest denote-test--denote-file-is-note-p ()
-
-;;   "Test that `denote-file-is-note-p' checks that files is a Denote note.
-;; For our purposes, a note must note be a directory, must satisfy
-;; `file-regular-p', its path must be part of the variable
-;; `denote-directory', it must have a Denote identifier in its name,
-;; and use one of the extensions implied by `denote-file-type'."
-;;   (should (let* ((tmp (temporary-file-directory))
-;;                  (denote-directory tmp)
-;;                  (file (concat tmp "20230522T154900--test__keyword.txt")))
-;;             (prog1
-;;                 (denote-file-is-note-p file)
-;;               (delete-file file)))))
+(ert-deftest denote-test--denote-file-is-note-p ()
+  "Test that `denote-file-is-note-p' checks that files is a Denote note.
+For our purposes, a note must note be a directory, must satisfy
+`file-regular-p', its path must be part of the variable
+`denote-directory', it must have a Denote identifier in its name,
+and use one of the extensions implied by `denote-file-type'."
+  (should (let* ((tmp (temporary-file-directory))
+                 (denote-directory tmp)
+                 (file (concat tmp "20230522T154900--test__keyword.txt")))
+            (with-current-buffer (find-file-noselect file)
+              (write-file file))
+            (prog1
+                (denote-file-is-note-p file)
+              (delete-file file)))))
 
 (ert-deftest denote-test--denote-file-has-identifier-p ()
   "Test that `denote-file-has-identifier-p' checks for a Denote identifier."
-  (should
-   (denote-file-has-identifier-p "20230522T154900--test__keyword.txt")))
+  (should (denote-file-has-identifier-p "20230522T154900--test__keyword.txt"))
+  (should (null (denote-file-has-identifier-p "T154900--test__keyword.txt"))))
 
 (ert-deftest denote-test--denote-file-has-signature-p ()
   "Test that `denote-file-has-signature-p' checks for a Denote signature."
-  (should
-   (denote-file-has-signature-p "20230522T154900==sig--test__keyword.txt")))
-
-;; TODO 2023-05-22: Check the solution to the FIXME above and proceed
-;; accordingly.
-
-;; (ert-deftest denote-test--denote-file-directory-p ()
-;;   "Test that `denote-file-directory-p' returns non-nil on a directory.
-;; The function should return nil if the directory it checks for is
-;; matched by the user option `denote-excluded-directories-regexp'."
-;;   (should
+  (should (denote-file-has-signature-p "20230522T154900==sig--test__keyword.txt"))
+  (should (null (denote-file-has-signature-p "20230522T154900--test__keyword.txt"))))
 
 (provide 'denote-test)
 ;;; denote-test.el ends here
