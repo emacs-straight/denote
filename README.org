@@ -936,14 +936,20 @@ tools to make use of that information (e.g. Org's export mechanism).
 The renaming mechanism takes care to keep this data in sync with the
 file name, when the user performs a change.
 
-Renaming is useful for managing existing files created with Denote, but
-also for converting older text files to Denote notes.
+Renaming is useful for managing existing files created with Denote,
+but also for converting older text files to Denote notes.  Denote's
+file-naming scheme is not specific to notes or text files: it is
+relevant for all sorts of items, such as multimedia and PDFs that form
+part of the user's longer-term storage.  While Denote does not manage
+such files (e.g. doesn't create links to them), it already has all the
+mechanisms to facilitate the task of renaming them.
 
-Lastly, Denote's file-naming scheme is not specific to notes or text
-files: it is useful for all sorts of items, such as multimedia and PDFs
-that form part of the user's longer-term storage.  While Denote does not
-manage such files (e.g. doesn't create links to them), it already has
-all the mechanisms to facilitate the task of renaming them.
+Apart from renaming files, Denote can also rename only the buffer.
+The idea is that the underlying file name is correct but it can be
+easier to use shorter buffer names when displaying them on the mode
+line or switching between then with commands like ~switch-to-buffer~.
+
+[[#h:3ca4db16-8f26-4d7d-b748-bac48ae32d69][Automatically rename Denote buffers]].
 
 ** Rename a single file
 :PROPERTIES:
@@ -1968,6 +1974,45 @@ scenaria where, say, one wants to organise their collection of PDFs and
 multimedia in a systematic way (and, perhaps, use them as attachments
 for the notes Denote produces if you are writing Org notes and are using
 its standand attachments' facility).
+
+* Automatically rename Denote buffers
+:PROPERTIES:
+:CUSTOM_ID: h:3ca4db16-8f26-4d7d-b748-bac48ae32d69
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+findex: denote-rename-buffer-mode
+The ~denote-rename-buffer-mode~ minor mode provides the means to
+automatically rename the buffer of a Denote file upon visiting the
+file.  A buffer is renamed upon visiting the underlying file.  This
+means that existing buffers are not renamed until they are visited
+again in a new buffer (files are visited with the command ~find-file~
+or related).  Enable the mode thus:
+
+#+begin_src emacs-lisp
+(denote-rename-buffer-mode 1)
+#+end_src
+
+The default behaviour is to rename the buffer based on the file's
+title, which is retrieved from the front matter or from the =TITLE=
+component of the file name ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+vindex: denote-rename-buffer-function
+Customize the user option ~denote-rename-buffer-function~ to affect
+how buffers are renamed.  Its value must be the symbol of a function.
+The default is the ~denote-rename-buffer-with-title~, with an
+alternative of ~denote-rename-buffer-with-identifier~.
+
+The user option also accepts an arbitrary function.  Refer to the
+implementation details of ~denote-rename-buffer-with-title~ or
+~denote-rename-buffer-with-identifier~ for guidance on how to write a
+custom function.
+
+Note that renaming a buffer is not the same as renaming a file
+([[#h:532e8e2a-9b7d-41c0-8f4b-3c5cbb7d4dca][Renaming files]]).  The former is just for convenience inside of Emacs.
+Whereas the latter is for writing changes to disk, making them
+available to all programs.
 
 * Use Org dynamic blocks
 :PROPERTIES:
