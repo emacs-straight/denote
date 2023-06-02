@@ -2316,9 +2316,21 @@ Delete the original subtree."
   (interactive)
   (if-let ((text (org-get-entry))
            (heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)))
-      (progn
-        (delete-region (org-entry-beginning-position) (org-entry-end-position))
-        (denote heading (org-get-tags) 'org)
+      (let ((element (org-element-at-point))
+            (tags (org-get-tags)))
+        (delete-region (org-entry-beginning-position)
+                       (save-excursion (org-end-of-subtree t) (point)))
+        (denote heading
+                tags
+                'org
+                nil
+                (or
+                 ;; Check PROPERTIES drawer for :created: or :date:
+                 (org-element-property :CREATED element)
+                 (org-element-property :DATE element)
+                 ;; Check the subtree for CLOSED
+                 (org-element-property :raw-value
+                                       (org-element-property :closed element))))
         (insert text))
     (user-error "No subtree to extract; aborting")))
 #+end_src
@@ -4358,7 +4370,8 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Guay, Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kyle Meyer, Marc
   Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter
   Prevos, Philip Kaludercic, Quiliro Ordóñez, Stefan Monnier, Stefan
-  Thesing, Thibaut Benjamin, Tomasz Hołubowicz, relict007.
+  Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang Manerikar,
+  relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Alfredo Borrás, Benjamin Kästner, Colin McLear, Damien
