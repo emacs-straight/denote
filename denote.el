@@ -531,9 +531,22 @@ things accordingly.")
              (not (file-directory-p denote-directory)))
     (make-directory denote-directory :parents)))
 
+(defvar denote-user-enforced-denote-directory nil
+  "Value of the variable `denote-directory'.
+Use this to `let' bind a directory path, thus overriding what the
+function `denote-directory' ordinarily returns.")
+
 (defun denote-directory ()
-  "Return path of variable `denote-directory' as a proper directory."
-  (let ((path (or (denote--default-directory-is-silo-p)
+  "Return path of variable `denote-directory' as a proper directory.
+Custom Lisp code can `let' bind the value of the variable
+`denote-user-enforced-denote-directory' to override what this
+function returns.
+
+Otherwise, the order of precedence is to first check for a silo
+before falling back to the value of the variable
+`denote-directory'."
+  (let ((path (or denote-user-enforced-denote-directory
+                  (denote--default-directory-is-silo-p)
                   (denote--make-denote-directory)
                   (default-value 'denote-directory))))
     (file-name-as-directory (expand-file-name path))))
@@ -2591,7 +2604,7 @@ and seconds."
   "Regexp of file names for fontification.")
 
 (defconst denote-faces-file-name-keywords
-  `((,(concat " " denote-faces--file-name-regexp)
+  `((,(concat "[\t\s]+" denote-faces--file-name-regexp)
      (1 'denote-faces-date)
      (2 'denote-faces-time)
      (3 'denote-faces-delimiter nil t)

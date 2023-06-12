@@ -806,7 +806,7 @@ sufficient.  The manual shall be expanded accordingly.
 
 We implement silos as directory-local values of the user option
 ~denote-directory~.  This means that all Denote commands read from the
-local value if they are invoked from that context.  For example, is
+local value if they are invoked from that context.  For example, if
 =~/Videos/recordings= is a silo and =~/Documents/notes= is the
 default/global value of ~denote-directory~ all Denote commands will
 read the video's path when called from there (e.g. by using Emacs'
@@ -814,11 +814,15 @@ read the video's path when called from there (e.g. by using Emacs'
 
 [[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directory silos for notes]].
 
+#+vindex: denote-user-enforced-denote-directory
 There are cases where the user (i) wants to maintain multiple silos
 and (ii) prefers an interactive way to switch between them without
 going through Dired.  Since this is specific to the user's workflow,
 it is easier to have some custom code for it.  The following should be
 added to the user's Denote configuration:
+
+[ NOTE that the variable ~denote-user-enforced-denote-directory~ is
+  part of {{{development-version}}}. ]
 
 #+begin_src emacs-lisp
 (defvar my-denote-silo-directories
@@ -829,7 +833,7 @@ added to the user's Denote configuration:
     ;; including it for completeness.
     ,denote-directory)
   "List of file paths pointing to my Denote silos.
-This is a list of strings.")
+  This is a list of strings.")
 
 (defvar my-denote-commands-for-silos
   '(denote
@@ -838,25 +842,37 @@ This is a list of strings.")
     denote-template
     denote-type)
   "List of Denote commands to call after selecting a silo.
-This is a list of symbols that specify the note-creating
-interactive functions that Denote provides.")
+  This is a list of symbols that specify the note-creating
+  interactive functions that Denote provides.")
 
 (defun my-denote-pick-silo-then-command (silo command)
   "Select SILO and run Denote COMMAND in it.
-SILO is a file path from `my-denote-silo-directories', while
-COMMAND is one among `my-denote-commands-for-silos'."
+  SILO is a file path from `my-denote-silo-directories', while
+  COMMAND is one among `my-denote-commands-for-silos'."
   (interactive
    (list (completing-read "Select a silo: " my-denote-silo-directories nil t)
          (intern (completing-read
                   "Run command in silo: "
                   my-denote-commands-for-silos nil t))))
-  (let ((denote-directory silo))
+  (let ((denote-user-enforced-denote-directory silo))
     (call-interactively command)))
 #+end_src
 
 With this in place, =M-x my-denote-pick-silo-then-command= will use
 minibuffer completion to select a silo among the predefined options
 and then ask for the command to run in that context.
+
+Note the use of the variable ~user-enforced-denote-directory~. This
+variable is specially meant for custom commands to select silos. When
+it is set, it overrides the global default value of ~denote-directory~
+as well as the value provided by the =.dir-locals.el= file. Use it
+only when writing wrapper functions like
+~my-denote-pick-silo-then-command~.
+
+To see another example of a wrapper function that uses
+~user-enforced-denote-directory~, see:
+
+[[#h:d0c7cb79-21e5-4176-a6af-f4f68578c8dd][Extending Denote: Split an Org subtree into its own note]].
 
 ** Exclude certain directories from all operations
 :PROPERTIES:
@@ -2303,21 +2319,30 @@ It will create a note using the heading's text and tags for the new
 file.  The contents of the subtree become the contents of the new note
 and are removed from the old one.
 
+[ NOTE that the variable ~denote-user-enforced-denote-directory~ is
+  part of {{{development-version}}}. ]
+
 #+begin_src emacs-lisp
-(defun my-denote-org-extract-subtree ()
+(defun my-denote-org-extract-subtree (&optional silo)
   "Create new Denote note using current Org subtree.
 Make the new note use the Org file type, regardless of the value
 of `denote-file-type'.
+
+With an optional SILO argument as a prefix (\\[universal-argument]),
+ask user to select a SILO from `my-denote-silo-directories'.
 
 Use the subtree title as the note's title.  If available, use the
 tags of the heading are used as note keywords.
 
 Delete the original subtree."
-  (interactive)
+  (interactive
+   (list (when current-prefix-arg
+           (completing-read "Select a silo: " my-denote-silo-directories nil t))))
   (if-let ((text (org-get-entry))
            (heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)))
       (let ((element (org-element-at-point))
-            (tags (org-get-tags)))
+            (tags (org-get-tags))
+            (denote-user-enforced-denote-directory silo))
         (delete-region (org-entry-beginning-position)
                        (save-excursion (org-end-of-subtree t) (point)))
         (denote heading
@@ -3361,7 +3386,12 @@ might change them without further notice.
 + Function ~denote-directory~ :: Return path of the variable
   ~denote-directory~ as a proper directory, also because it accepts a
   directory-local value for what we internally refer to as "silos"
-  ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
+  ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).  Custom Lisp code can
+  ~let~ bind the value of the variable ~denote-user-enforced-denote-directory~
+  to override what this function returns.
+
+  [ NOTE that the variable ~denote-user-enforced-denote-directory~ is
+    part of {{{development-version}}}. ]
 
 #+findex: denote-directory-files
 + Function ~denote-directory-files~ :: Return list of absolute file
@@ -4378,10 +4408,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Cassou, Elias Storms, Federico Stilman, Florian, Frank Ehmsen, Guo
   Yong, Hanspeter Gisler, Jack Baty, Jeremy Friesen, Jonathan Sahar,
   Juanjo Presa, Johan Bolmsjö, Kai von Fintel, Kaushal Modi, M. Hadi
-  Timachi, Mirko Hernandez, Paul van Gelder, Peter Prevos, Shreyas
-  Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, Viktor
-  Haag, Wade Mealing, Yi Liu, Ypot, atanasj, doolio, drcxd, hpgisler,
-  pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
+  Timachi, Mirko Hernandez, Niall Dooley, Paul van Gelder, Peter
+  Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
+  Taoufik, Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj, doolio,
+  drcxd, hpgisler, pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
