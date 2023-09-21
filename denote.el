@@ -451,6 +451,31 @@ The match is performed with `string-match-p'."
   :package-version '(denote . "2.1.0")
   :type 'hook)
 
+(defcustom denote-region-after-new-note-functions nil
+  "Abnormal hook called after `denote-region'.
+Functions in this hook are called with two arguments,
+representing the beginning and end buffer positions of the region
+that was inserted in the new note.  These are called only if
+`denote-region' is invoked while a region is active.
+
+A common use-case is to call `org-insert-structure-template'
+after a region is inserted.  This case does not actually require
+the aforementioned arguments, in which case the function can
+simply declare them as ignored by prefixing the argument names
+with an underscore.  For example, the following will prompt for a
+structure template as soon as `denote-region' is done:
+
+    (defun my-denote-region-org-structure-template (_beg _end)
+      (when (derived-mode-p \\='org-mode)
+        (activate-mark)
+        (call-interactively \\='org-insert-structure-template)))
+
+    (add-hook \\='denote-region-after-new-note-functions
+              #\\='my-denote-region-org-structure-template)"
+  :group 'denote
+  :package-version '(denote . "2.1.0")
+  :type 'hook)
+
 ;;;; Main variables
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
@@ -1672,6 +1697,26 @@ The meaning of FILES is the same as in `denote--id-exists-p'."
   'denote-barf-duplicate-id
   "1.0.0")
 
+(defconst denote-commands-for-new-notes
+  '(denote
+    denote-date
+    denote-subdirectory
+    denote-template
+    denote-type
+    denote-signature)
+  "List of commands for `denote-command-prompt' that create a new note.")
+
+(defvar denote--command-prompt-history nil
+  "Minibuffer history for `denote-command-prompt'.")
+
+(defun denote-command-prompt ()
+  "Prompt for command among `denote-commands-for-new-notes'."
+  (let ((default (car denote--command-prompt-history)))
+    (completing-read
+     (format-prompt "Run command in silo" default)
+     denote-commands-for-new-notes nil :require-match
+     nil 'denote--command-prompt-history)))
+
 ;;;;; The `denote' command and its prompts
 
 ;;;###autoload
@@ -1951,6 +1996,25 @@ is set to \\='(signature title keywords)."
 
 (defalias 'denote-create-note-using-signature 'denote-signature
   "Alias for `denote-signature' command.")
+
+;;;###autoload
+(defun denote-region ()
+  "Call `denote' and insert therein the text of the active region.
+Prompt for title and keywords.  With no active region, call
+`denote' ordinarily (refer to its documentation for the
+technicalities)."
+  (declare (interactive-only t))
+  (interactive)
+  (if-let (((region-active-p))
+           ;; We capture the text early, otherwise it will be empty
+           ;; the moment `insert' is called.
+           (text (buffer-substring-no-properties (region-beginning) (region-end))))
+      (progn
+        (denote (denote-title-prompt) (denote-keywords-prompt))
+        (push-mark (point))
+        (insert text)
+        (run-hook-with-args 'denote-region-after-new-note-functions (mark) (point)))
+    (call-interactively 'denote)))
 
 ;;;;; Other convenience commands
 
@@ -3033,6 +3097,8 @@ With optional ID-ONLY as a prefix argument create a link that
 consists of just the identifier.  Else try to also include the
 file's title.  This has the same meaning as in `denote-link'.
 
+For a variant of this, see `denote-link-after-creating-with-command'.
+
 IMPORTANT NOTE: Normally, `denote' does not save the buffer it
 produces for the new note.  This is a safety precaution to not
 write to disk unless the user wants it (e.g. the user may choose
@@ -3046,6 +3112,25 @@ file."
   (let (path)
     (save-window-excursion
       (call-interactively #'denote)
+      (save-buffer)
+      (setq path (buffer-file-name)))
+    (denote-link path id-only)))
+
+;;;###autoload
+(defun denote-link-after-creating-with-command (command &optional id-only)
+  "Like `denote-link-after-creating' but prompt for note-making COMMAND.
+Use this to, for example, call `denote-signature' so that the
+newly created note has a signature as part of its file name.
+
+Optional ID-ONLY has the same meaning as in the command
+`denote-link-after-creating'."
+  (interactive
+   (list
+    (denote-command-prompt)
+    current-prefix-arg))
+  (let (path)
+    (save-window-excursion
+      (call-interactively command)
       (save-buffer)
       (setq path (buffer-file-name)))
     (denote-link path id-only)))

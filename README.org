@@ -152,12 +152,14 @@ Obligations, Tasks, and Engagements.
 #+findex: denote-subdirectory
 #+findex: denote-template
 #+findex: denote-signature
-There are five ways to write a note with Denote: invoke the ~denote~,
-~denote-type~, ~denote-date~, ~denote-subdirectory~,
+There are five main ways to write a note with Denote: invoke the
+~denote~, ~denote-type~, ~denote-date~, ~denote-subdirectory~,
 ~denote-template~, ~denote-signature~ commands, or leverage the
 ~org-capture-templates~ by setting up a template which calls the
 function ~denote-org-capture~.  We explain all of those in the
-subsequent sections.
+subsequent sections.  Other more specialised commands exist as well,
+which one shall learn about as they read through this manual.  We do
+not want to overwhelm the user with options at this stage.
 
 ** Standard note creation
 :PROPERTIES:
@@ -906,13 +908,10 @@ prompts for a directory among ~denote-silo-extras-directories~ and runs
 the ~denote-open-or-create~ command from there.
 
 #+findex: denote-silo-extras-select-silo-then-command
-#+vindex: denote-silo-extras-commands
 The command ~denote-silo-extras-select-silo-then-command~ prompts with
 minibuffer completion for a directory among ~denote-silo-extras-directories~.
 Once the user selects a silo, a second prompt asks for a Denote
 note-creation command to call from inside that silo ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]).
-The list of available commands is specified in the user option
-~denote-silo-extras-commands~.
 
 ** Exclude certain directories from all operations
 :PROPERTIES:
@@ -1800,6 +1799,14 @@ this end, Denote provides two convenience commands:
   the buffer in order to (i) establish valid links, and (ii) retrieve
   whatever front matter from the target file.
 
+#+findex: denote-link-after-creating-with-command
++ ~denote-link-after-creating-with-command~ :: This command is like
+  ~denote-link-after-creating~ except it prompts for a note-creating
+  command ([[*Points of entry][Points of entry]]).  Use this to, for example, call
+  ~denote-signature~ so that the newly created note has a signature as
+  part of its file name.  Optional =ID-ONLY= has the same meaning as
+  in the command ~denote-link-after-creating~.
+
 #+findex: denote-link-or-create
 + ~denote-link-or-create~ :: Use ~denote-link~ on =TARGET= file,
   creating it if necessary.
@@ -2256,9 +2263,9 @@ more suitable for those who like to keep a record of something like a
 thought or event (though this can also be achieved by the regular
 ~denote~ command or maybe ~denote-subdirectory~).
 
-#+vindex: denote-journa-extras-hook
+#+vindex: denote-journal-extras-hook
 The ~denote-journal-extras-new-entry~ command calls the normal hook
-~denote-journa-extras-hook~ after it is done.  The user can leverage
+~denote-journal-extras-hook~ after it is done.  The user can leverage
 this to produce consequences therefrom, such as to set a timer with
 the ~tmr~ package from GNU ELPA ([[#h:4af1f81e-e93a-43cc-b344-960032a16d42][Journaling with a timer]]).
 
@@ -2297,20 +2304,20 @@ your output and its quality.  To use a timer with Emacs, consider the
 
 To make this timer start as soon as a new journal entry is created
 with the command ~denote-journal-extras-new-entry~, add a function to
-the ~denote-journa-extras-hook~.  For example:
+the ~denote-journal-extras-hook~.  For example:
 
 #+begin_src emacs-lisp
 ;; Add an anonymous function, which is more difficult to modify after
 ;; the fact:
-(add-hook 'denote-journa-extras-hook (lambda ()
-                                       (tmr "10" "Practice writing in my journal")))
+(add-hook 'denote-journal-extras-hook (lambda ()
+                                        (tmr "10" "Practice writing in my journal")))
 
 ;; Or write a small function that you can then modify without
 ;; revaluating the hook:
 (defun my-denote-tmr ()
   (tmr "10" "Practice writing in my journal"))
 
-(add-hook 'denote-journa-extras-hook 'my-denote-tmr)
+(add-hook 'denote-journal-extras-hook 'my-denote-tmr)
 
 ;; Or to make it fully featured, define variables for the duration and
 ;; the description and set it up so that you only need to modify
@@ -2322,7 +2329,7 @@ the ~denote-journa-extras-hook~.  For example:
 (defun my-denote-tmr ()
   (tmr my-denote-tmr-duration my-denote-tmr-description))
 
-(add-hook 'denote-journa-extras-hook 'my-denote-tmr)
+(add-hook 'denote-journal-extras-hook 'my-denote-tmr)
 #+end_src
 
 Once the timer elapses, stop writing and review your performance.
@@ -2344,28 +2351,49 @@ Sources for ~tmr~:
 :CUSTOM_ID: h:2f8090f1-50af-4965-9771-d5a91a0a87bd
 :END:
 
-Sometimes it makes sense to gather notes in a single file and later
-review it to make multiple notes out of it.  With the following code,
-the user marks a region and then invokes the command
-~my-denote-create-new-note-from-region~: it prompts for a title and
-keywords and then uses the region's contents to fill in the newly
-created note.
+[ Rewritten as part of {{{development-version}}} to include the
+  ~denote-region~ command which supersedes a custom function that was
+  once documented herein. ]
+
+#+findex: denote-region
+The command ~denote-region~ takes the contents of the active region
+and then prompts for a title and keywords.  Once a new note is
+created, it inserts the contents of the region therein.  This is
+useful to quickly elaborate on some snippet of text or capture it for
+future reference.
+
+If there is no active region, ~denote-region~ simply calls the
+~denote~ command which will behave the way it does ordinarily.
+
+#+vindex: denote-region-after-new-note-functions
+When the ~denote-region~ command is called with an active region, it
+finalises its work by calling ~denote-region-after-new-note-functions~.
+This is an abnormal hook, meaning that the functions added to it are
+called with arguments.  The arguments are two, representing the
+beginning and end positions of the newly inserted text.
+
+A common use-case for Org mode users is to call the command
+~org-insert-structure-template~ after a region is inserted.  Emacs
+will thus prompt for a structure template, such as the one
+corresponding to a source block.  In this case the function added to
+~denote-region-after-new-note-functions~ does not actually need
+aforementioned arguments: it can simply declare those as ignored by
+prefixing the argument names with an underscore (an underscore is
+enough, but it is better to include a name for clarity).  For example,
+the following will prompt for a structure template as soon as
+~denote-region~ is done:
 
 #+begin_src emacs-lisp
-(defun my-denote-create-new-note-from-region (beg end)
-  "Create note whose contents include the text between BEG and END.
-Prompt for title and keywords of the new note."
-  (interactive "r")
-  (if-let (((region-active-p))
-           (text (buffer-substring-no-properties beg end)))
-      (progn
-        (denote (denote-title-prompt) (denote-keywords-prompt))
-        (insert text))
-    (user-error "No region is available")))
+(defun my-denote-region-org-structure-template (_beg _end)
+  (when (derived-mode-p 'org-mode)
+    (activate-mark)
+    (call-interactively 'org-insert-structure-template)))
+
+(add-hook 'denote-region-after-new-note-functions #'my-denote-region-org-structure-template)
 #+end_src
 
-Have a different workflow?  Feel welcome to discuss it in any of our
-official channels ([[#h:1ebe4865-c001-4747-a6f2-0fe45aad71cd][Contributing]]).
+Remember that ~denote-region-after-new-note-functions~ are not called
+if ~denote-region~ is used without an active region.
 
 ** Split an Org subtree into its own note
 :PROPERTIES:
@@ -2839,6 +2867,10 @@ For templates, refer to `denote-templates'."
 :PROPERTIES:
 :CUSTOM_ID: h:b6056e6b-93df-4e6b-a778-eebd105bac46
 :END:
+
+[ As part of {{{development-version}}} we provide the command
+  ~denote-link-after-creating-with-command~.  It supersedes what we
+  document in this section. ]
 
 #+findex: denote-link-or-create
 The command ~denote-link-or-create~ uses ~denote-link~ on a =TARGET=
@@ -3320,6 +3352,7 @@ Everything is in place to set up the package.
 ;; decide.  For example:
 (let ((map global-map))
   (define-key map (kbd "C-c n n") #'denote)
+  (define-key map (kbd "C-c n c") #'denote-region) ; "contents" mnemonic
   (define-key map (kbd "C-c n N") #'denote-type)
   (define-key map (kbd "C-c n d") #'denote-date)
   (define-key map (kbd "C-c n z") #'denote-signature) ; "zettelkasten" mnemonic
@@ -3655,6 +3688,11 @@ might change them without further notice.
   more advanced date selection utility if the user option
   ~denote-date-prompt-use-org-read-date~ is non-nil.  It requires Org
   ([[#h:e7ef08d6-af1b-4ab3-bb00-494a653e6d63][The denote-date-prompt-use-org-read-date option]]).
+
+#+findex: denote-command-prompt
++ Function ~denote-command-prompt~ ::  Prompt for command among
+  ~denote-commands-for-new-notes~ ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]). [ Part of
+  {{{development-version}}}. ]
 
 #+findex: denote-prompt-for-date-return-id
 + Function ~denote-prompt-for-date-return-id~ :: Use
