@@ -1618,20 +1618,20 @@ The following sections delve into the details.
 :END:
 
 #+findex: denote-link
-The ~denote-link~ command inserts a link at point to an entry specified
+The ~denote-link~ command inserts a link at point to a file specified
 at the minibuffer prompt.  Links are formatted depending on the file
-type of current note.  In Org and plain text buffers, links are
-formatted thus: =[[denote:IDENTIFIER][TITLE]]=.  While in Markdown they
-are expressed as =[TITLE](denote:IDENTIFIER)=.
+type of the current note.  In Org and plain text buffers, links are
+formatted thus: =[[denote:IDENTIFIER][TITLE]]=.  While in Markdown
+they are expressed as =[TITLE](denote:IDENTIFIER)=.
 
-When ~denote-link~ is called with a prefix argument (=C-u= by default),
-it formats links like =[[denote:IDENTIFIER]]=.  The user might prefer
-its simplicity.
+When ~denote-link~ is called with a prefix argument (=C-u= by
+default), it formats links like =[[denote:IDENTIFIER]]=.  The user
+might prefer its simplicity.
 
 The description of the link is taken from the target file's front
 matter or, if that is not available, from the file name.  If the
 region is active, its text is used as the link's description instead.
-If the active region has no text, the inserted link used just the
+If the active region has no text, the inserted link uses just the
 identifier, as with the =C-u= prefix mentioned above.
 
 Inserted links are automatically buttonized and remain active for as
@@ -1720,6 +1720,26 @@ above is for interactive usage.
 
 Links are created only for files which qualify as a "note" for our
 purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
+
+** Insert link to file with signature
+:PROPERTIES:
+:CUSTOM_ID: h:066e5221-9844-474b-8858-398398646f86
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+findex: denote-link-with-signature
+The command ~denote-link-with-signature~ prompts for a file among
+those that contain a ===SIGNATURE= and inserts a link to it.  The
+description of the link includes the text of the signature and that of
+the file's title, if any.  For example, a link to the following file:
+
+: 20230925T144303==abc--my-first-signature-note__denote_testing.txt
+
+will get this link: =[[denote:20230925T144303][abc My first signature note]]=.
+
+For more advanced uses, especially when called from Lisp, refer to the
+doc string of the ~denote-link~ function.
 
 ** Insert links, but only those missing from current buffer
 :PROPERTIES:
@@ -3662,8 +3682,10 @@ might change them without further notice.
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in
-  variable ~denote-directory~.  With optional =INITIAL-TEXT=, use it
-  to prepopulate the minibuffer.
+  variable ~denote-directory~.  With optional =FILES-MATCHING-REGEXP=,
+  filter the candidates per the given regular expression. [ Refactored
+  as part of {{{development-version}}} because the old =INITIAL-INPUT=
+  argument was not actually used anywhere. ]
 
 #+findex: denote-keywords-prompt
 + Function ~denote-keywords-prompt~ :: Prompt for one or more
@@ -4536,10 +4558,11 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Frank Ehmsen, Guo Yong, Hanspeter Gisler, Jack Baty, Jay Rajput,
   Jean-Charles Bagneris, Jeremy Friesen, Jonathan Sahar, Johan
   Bolmsjö, Juanjo Presa, Kai von Fintel, Kaushal Modi, M. Hadi
-  Timachi, Mirko Hernandez, Niall Dooley, Paul van Gelder, Peter
-  Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
-  Taoufik, Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj, doolio,
-  drcxd, hpgisler, pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
+  Timachi, Mark Olson, Mirko Hernandez, Niall Dooley, Paul van Gelder,
+  Peter Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven
+  Seebeck, Taoufik, Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj,
+  doolio, drcxd, hpgisler, pRot0ta1p, rbenit68, relict007, sienic,
+  sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

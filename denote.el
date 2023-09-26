@@ -888,14 +888,18 @@ The path is relative to DIRECTORY (default: ‘default-directory’)."
 (defvar denote--file-history nil
   "Minibuffer history of `denote-file-prompt'.")
 
-(defun denote-file-prompt (&optional initial-text)
+(defun denote-file-prompt (&optional files-matching-regexp)
   "Prompt for file with identifier in variable `denote-directory'.
-With optional INITIAL-TEXT, use it to prepopulate the minibuffer."
-  (let* ((all-files (denote-all-files))
-         (completion-ignore-case read-file-name-completion-ignore-case))
-    (when all-files
-      (funcall project-read-file-name-function
-               "Select note: " all-files nil 'denote--file-history initial-text))))
+With optional FILES-MATCHING-REGEXP, filter the candidates per
+the given regular expression."
+  (when-let ((files (if files-matching-regexp
+                    (denote-directory-files-matching-regexp files-matching-regexp)
+                  (denote-all-files)))
+             (completion-ignore-case read-file-name-completion-ignore-case)
+             (file (funcall project-read-file-name-function
+                            "Select note: " files nil 'denote--file-history)))
+    (add-to-history 'denote--file-history file)
+    file))
 
 (define-obsolete-function-alias
   'denote--retrieve-read-file-prompt
@@ -1712,10 +1716,11 @@ The meaning of FILES is the same as in `denote--id-exists-p'."
 (defun denote-command-prompt ()
   "Prompt for command among `denote-commands-for-new-notes'."
   (let ((default (car denote--command-prompt-history)))
-    (completing-read
-     (format-prompt "Run command in silo" default)
-     denote-commands-for-new-notes nil :require-match
-     nil 'denote--command-prompt-history)))
+    (intern
+     (completing-read
+      (format-prompt "Run note-creating Denote command" default)
+      denote-commands-for-new-notes nil :require-match
+      nil 'denote--command-prompt-history default))))
 
 ;;;;; The `denote' command and its prompts
 
@@ -2478,7 +2483,7 @@ Specifically, do the following:
     check them to confirm that the new front matter does not
     cause any problems (e.g. with the `diff-buffer-with-file'
     command).  Multiple buffers can be saved in one go with
-    `save-some-buffers' (read its doc string). ]
+    `save-some-buffers' (read its doc string).  ]
 
 With the optional NO-UNIQUE-ID-CHECK as non-nil (such as as a
 double prefix argument), do not process the file identifiers of
@@ -2491,12 +2496,12 @@ of time all identifiers will be unique or do not care about them.
 [ When renaming files in Dired, it is possible to produce
   duplicate identifiers.  This can happen when multiple files
   share the same modification time, which can be casually done
-  with the `touch' command, `git', and others. ]"
+  with the `touch' command, `git', and others.  ]"
   (interactive
-   (list
-    (when current-prefix-arg
-      (setq skip-front-matter-prompt t
-            no-unique-id-check (when (>= (car current-prefix-arg) 16) t))))
+   (when current-prefix-arg
+     (list
+      t
+      (when (>= (car current-prefix-arg) 16) t)))
    dired-mode)
   (if-let ((marks (dired-get-marked-files)))
       (let ((keywords (denote-keywords-prompt)))
@@ -2939,13 +2944,15 @@ Fall back to `denote-org-link-format'."
    ;; Plain text also uses [[denote:ID][TITLE]]
    (t denote-org-link-format)))
 
-(defun denote-link--format-link (file format &optional description)
-  "Prepare link to FILE using FORMAT.
-If DESCRIPTION is non-nil, use it as link description instead of
-FILE's title.
+(defun denote-format-link (file format description)
+  "Prepare link to FILE using FORMAT and DESCRIPTION text.
+FILE is the path to a file name.  FORMAT is the symbol of a
+variable that specifies a string.  See the `:link' property of
+`denote-file-types'.
 
-FORMAT is the symbol of a variable that specifies a string.  See
-the `:link' property of `denote-file-types'."
+DESCRIPTION is the text of the link.  If nil, DESCRIPTION is
+retrieved from the FILE, unless the FORMAT is
+`denote-id-only-link-format'."
   (let* ((file-id (denote-retrieve-filename-identifier file))
          (fm (if (symbolp format) (symbol-value format) format))
          (file-type (denote-filetype-heuristics file))
@@ -2953,36 +2960,57 @@ the `:link' property of `denote-file-types'."
                        (or description (denote--retrieve-title-or-filename file file-type)))))
     (format fm file-id file-title)))
 
+(make-obsolete 'denote-link--format-link 'denote-format-link "2.1.0")
+
+(defun denote--link-get-description (file file-type)
+  "Return description for `denote-link'.
+If the region is active, make the description the text within the
+region's boundaries.  Else retrieve the title from FILE, given
+FILE-TYPE."
+  (if-let (((region-active-p))
+           (beg (region-beginning))
+           (end (region-end))
+           (selected-text (string-trim (buffer-substring-no-properties beg end))))
+      (progn
+        (delete-region beg end)
+        selected-text)
+    (denote--retrieve-title-or-filename file file-type)))
+
 ;;;###autoload
-(defun denote-link (target &optional id-only)
-  "Create link to TARGET note in variable `denote-directory'.
-With optional ID-ONLY, such as a universal prefix
-argument (\\[universal-argument]), insert links with just the
-identifier and no further description.  In this case, the link
-format is always [[denote:IDENTIFIER]].
+(defun denote-link (file file-type description &optional id-only)
+  "Create link to FILE note in variable `denote-directory' with DESCRIPTION.
 
-Use TARGET's title for the link's description.  The title comes
-either from the front matter or the file name.
+When called interactively, prompt for FILE using completion.  In
+this case, derive FILE-TYPE from the selected FILE, as well as
+the DESCRIPTION from the title of FILE.  The title comes either
+from the front matter or the file name.  With an action region,
+the DESCRIPTION is the text of the region, despite the
+aforementioned.  If active region is empty (i.e whitespace-only),
+insert an ID-ONLY link.
 
-If region is active, use its text as the link's description
-instead of TARGET's title.  If active region is empty (i.e
-whitespace-only), insert an ID-ONLY link."
-  (interactive (list (denote-file-prompt) current-prefix-arg))
+With optional ID-ONLY as a non-nil argument, such as with a
+universal prefix (\\[universal-argument]), insert links with just
+the identifier and no further description.  In this case, the
+link format is always [[denote:IDENTIFIER]].
+
+When called from Lisp, FILE is a string representing a full file
+system path.  FILE-TYPE is a symbol as described in
+`denote-file-type'.  DESCRIPTION is a string.  Whether the called
+treats the active region specially, is up to it."
+  (interactive
+   (let ((file (denote-file-prompt))
+         (type (denote-filetype-heuristics (buffer-file-name))))
+     (list
+      file
+      type
+      (denote--link-get-description file type)
+      current-prefix-arg)))
   (let* ((beg (point))
-         (description (when-let* (((region-active-p))
-                                  (beg (region-beginning))
-                                  (end (region-end))
-                                  (selected-text
-                                   (string-trim
-                                    (buffer-substring-no-properties beg end))))
-                        (delete-region beg end)
-                        selected-text))
-         (identifier-only (or id-only (string-empty-p description)))
-         (file-type (denote-filetype-heuristics (buffer-file-name))))
-    (when target
+         (identifier-only (or id-only (string-empty-p description))))
+    (when file
       (insert
-       (denote-link--format-link
-        target
+       (denote-format-link
+        file
         (denote-link--file-type-format file-type identifier-only)
         description))
       (unless (derived-mode-p 'org-mode)
@@ -2995,6 +3023,35 @@ whitespace-only), insert an ID-ONLY link."
 
 (defalias 'denote-insert-link 'denote-link
   "Alias for `denote-link' command.")
+
+(defun denote--link-get-description-with-signature (file file-type)
+  "Return `denote-link-with-signature' description.
+Retrieve the title and signature from FILE with FILE-TYPE."
+  (let* ((signature (denote-retrieve-filename-signature file))
+         (title (denote-retrieve-title-value file file-type))
+         (specifiers (if (and title
+                              (not (string-empty-p title)))
+                         "%s %s"
+                       "%s")))
+    (format specifiers signature title)))
+
+;;;###autoload
+(defun denote-link-with-signature ()
+  "Insert link to file with signature.
+Prompt for file using minibuffer completion, limiting the list of
+candidates to files with a signature in their file name.
+
+The description of the link includes the signature followed by
+the file's title, if any.  For this case, the signature is
+assumed present.
+
+For more advanced uses, especially when called from Lisp, refer
+to the `denote-link' function."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((file (denote-file-prompt "="))
+        (type (denote-filetype-heuristics (buffer-file-name))))
+    (denote-link file type (denote--link-get-description-with-signature file type))))
 
 (defun denote-link--collect-identifiers (regexp)
   "Return collection of identifiers in buffer matching REGEXP."
@@ -3112,8 +3169,14 @@ file."
       (call-interactively #'denote)
       (save-buffer)
       (setq path (buffer-file-name)))
-    (denote-link path id-only)))
+    (let ((type (denote-filetype-heuristics path)))
+      (denote-link
+       path
+       type
+       (denote--link-get-description path type)
+       id-only))))
 
+;; FIXME 2023-09-25: Consolidate this with the above.
 ;;;###autoload
 (defun denote-link-after-creating-with-command (command &optional id-only)
   "Like `denote-link-after-creating' but prompt for note-making COMMAND.
@@ -3131,7 +3194,14 @@ Optional ID-ONLY has the same meaning as in the command
       (call-interactively command)
       (save-buffer)
       (setq path (buffer-file-name)))
-    (denote-link path id-only)))
+    (let ((type (denote-filetype-heuristics path)))
+      (denote-link
+       path
+       type
+       (if (eq command 'denote-signature)
+           (denote--link-get-description-with-signature path type)
+         (denote--link-get-description path type))
+       id-only))))
 
 ;;;###autoload
 (defun denote-link-or-create (target &optional id-only)
@@ -3153,7 +3223,7 @@ consists of just the identifier.  Else try to also include the
 file's title.  This has the same meaning as in `denote-link'."
   (interactive (list (denote-file-prompt) current-prefix-arg))
   (if (and target (file-exists-p target))
-      (denote-link target id-only)
+      (denote-link target (denote-filetype-heuristics target) target id-only)
     (denote--command-with-title-history #'denote-link-after-creating)))
 
 (defalias 'denote-link-to-existing-or-new-note 'denote-link-or-create
@@ -3383,18 +3453,20 @@ default, it will show up below the current window."
 (defvar denote-link-add-links-sort nil
   "When t, add REVERSE to `sort-lines' of `denote-link-add-links'.")
 
-(defun denote-link--prepare-links (files current-file id-only)
-  "Prepare links to FILES from CURRENT-FILE.
+(defun denote-link--prepare-links (files current-file-type id-only)
+  "Prepare links to FILES from CURRENT-FILE-TYPE.
 When ID-ONLY is non-nil, use a generic link format.  See
 `denote-link--file-type-format'."
   (with-temp-buffer
-    (mapc (lambda (file)
-            (insert
-             (format
-              denote-link--prepare-links-format
-              (denote-link--format-link
-               file
-               (denote-link--file-type-format current-file id-only)))))
+    (mapc
+     (lambda (file)
+       (insert
+        (format
+         denote-link--prepare-links-format
+         (denote-format-link
+          file
+          (denote-link--file-type-format current-file-type id-only)
+          (denote--link-get-description file (denote-filetype-heuristics file))))))
           files)
     (sort-lines denote-link-add-links-sort (point-min) (point-max))
     (buffer-string)))
