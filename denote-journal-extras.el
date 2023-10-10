@@ -105,6 +105,18 @@ journal entry (refer to the `tmr' package on GNU ELPA)."
        ('day-date-month-year-12h "%A %e %B %Y %I:%M %^p"))))
    (t (denote-title-prompt (format-time-string "%F")))))
 
+(defun denote-journal-extras--get-template ()
+  "Return template that has `journal' key in `denote-templates'.
+If no template with `journal' key exists but `denote-templates'
+is non-nil, prompt the user for a template among
+`denote-templates'.  Else return nil.
+
+Also see `denote-journal-extras-new-entry'."
+  (if-let ((template (alist-get 'journal denote-templates)))
+      template
+    (when denote-templates
+      (denote-template-prompt))))
+
 ;;;###autoload
 (defun denote-journal-extras-new-entry ()
   "Create a new journal entry in variable `denote-journal-extras-directory'.
@@ -112,14 +124,11 @@ Use `denote-journal-extras-keyword' as a keyword for the newly
 created file."
   (interactive)
   (let ((denote-user-enforced-denote-directory (denote-journal-extras-directory)))
-    ;; TODO 2023-09-18: Let's see how best to incorporate templates.
-    ;; I think it is better to use the `denote-templates' variable,
-    ;; since this is what we have it for.  Perhaps we can make the
-    ;; behaviour do-what-I-mean, such that the user is prompted for a
-    ;; template only if one exists.  Otherwise, no template is used.
     (denote
      (denote-journal-extras-daily--title-format)
-     `(,denote-journal-extras-keyword))
+     `(,denote-journal-extras-keyword)
+     nil nil nil
+     (denote-journal-extras--get-template))
     (run-hooks 'denote-journal-extras-hook)))
 
 (defun denote-journal-extras--entry-today ()
