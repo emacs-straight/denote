@@ -42,9 +42,15 @@
   (expand-file-name "journal" denote-directory)
   "Directory for storing daily journal entries.
 This can either be the same as the variable `denote-directory' or
-a subdirectory of it."
+a subdirectory of it.
+
+A value of nil means to use the variable `denote-directory'.
+Journal entries will thus be in a flat listing together with all
+other notes.  They can still be retrieved easily by searching for
+the `denote-journal-extras-keyword'."
   :group 'denote-journal-extras
-  :type 'directory)
+  :type '(choice (directory :tag "Provide directory path (is created if missing)")
+                 (const :tag "Use the `denote-directory'" nil)))
 
 (defcustom denote-journal-extras-keyword "journal"
   "Single word keyword to tag journal entries.
@@ -63,6 +69,7 @@ Acceptable symbols and their corresponding styles are:
 
 | Symbol                  | Style                             |
 |-------------------------+-----------------------------------|
+| day                     | Monday                            |
 | day-date-month-year     | Monday 19 September 2023          |
 | day-date-month-year-24h | Monday 19 September 2023 20:49    |
 | day-date-month-year-12h | Monday 19 September 2023 08:49 PM |
@@ -72,9 +79,18 @@ for a title."
   :group 'denote-journal-extras
   :type '(choice
           (const :tag "Prompt for title with `denote-journal-extras-new-entry'" nil)
-          (const :tag "Monday 19 September 2023" :value "%A %e %B %Y" day-date-month-year)
-          (const :tag "Monday 19 September 2023 20:49" :value "%A %e %B %Y %H:%M" day-date-month-year-24h)
-          (const :tag "Monday 19 September 2023 08:49 PM" :value "%A %e %B %Y %I:%M %^p" day-date-month-year-12h)
+          (const :tag "Monday"
+                 :doc "The `format-time-string' is: %A"
+                 day)
+          (const :tag "Monday 19 September 2023"
+                 :doc "The `format-time-string' is: %A %e %B %Y"
+                 day-date-month-year)
+          (const :tag "Monday 19 September 2023 20:49"
+                 :doc "The `format-time-string' is: %A %e %B %Y %H:%M"
+                 day-date-month-year-24h)
+          (const :tag "Monday 19 September 2023 08:49 PM"
+                 :doc "The `format-time-string' is: %A %e %B %Y %I:%M %^p"
+                 day-date-month-year-12h)
           (string :tag "Custom string with `format-time-string' specifiers")))
 
 (defcustom denote-journal-extras-hook nil
@@ -100,6 +116,7 @@ journal entry (refer to the `tmr' package on GNU ELPA)."
    ((symbolp denote-journal-extras-title-format)
     (format-time-string
      (pcase denote-journal-extras-title-format
+       ('day "%A")
        ('day-date-month-year "%A %e %B %Y")
        ('day-date-month-year-24h "%A %e %B %Y %H:%M")
        ('day-date-month-year-12h "%A %e %B %Y %I:%M %^p"))))
