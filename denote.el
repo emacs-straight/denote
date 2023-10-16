@@ -689,18 +689,31 @@ signatures and keywords."
   "Return non-nil if FILE is empty."
   (zerop (or (file-attribute-size (file-attributes file)) 0)))
 
+(defun denote-file-has-supported-extension-p (file)
+  "Return non-nil if FILE has supported extension.
+Also account for the possibility of an added .gpg suffix.
+Supported extensions are those implied by `denote-file-type'."
+  (seq-some (lambda (e)
+              (string-suffix-p e file))
+            (denote-file-type-extensions-with-encryption)))
+
+(defun denote-filename-is-note-p (filename)
+  "Return non-nil if FILENAME is a valid name for a Denote note.
+For our purposes, its path must be part of the variable
+`denote-directory', it must have a Denote identifier in its name,
+and use one of the extensions implied by `denote-file-type'."
+  (and (string-prefix-p (denote-directory) (expand-file-name filename))
+       (string-match-p (concat "\\`" denote-id-regexp)
+                       (file-name-nondirectory filename))
+       (denote-file-has-supported-extension-p filename)))
+
 (defun denote-file-is-note-p (file)
   "Return non-nil if FILE is an actual Denote note.
 For our purposes, a note must not be a directory, must satisfy
-`file-regular-p', its path must be part of the variable
-`denote-directory', it must have a Denote identifier in its name,
-and use one of the extensions implied by `denote-file-type'."
-  (let ((file-name (file-name-nondirectory file)))
-    (and (not (file-directory-p file))
-         (file-regular-p file)
-         (string-prefix-p (denote-directory) (expand-file-name file))
-         (string-match-p (concat "\\`" denote-id-regexp) file-name)
-         (denote-file-has-supported-extension-p file))))
+`file-regular-p' and `denote-filename-is-note-p'."
+  (and (not (file-directory-p file))
+       (file-regular-p file)
+       (denote-filename-is-note-p file)))
 
 (defun denote-file-has-identifier-p (file)
   "Return non-nil if FILE has a Denote identifier."
@@ -715,14 +728,6 @@ and use one of the extensions implied by `denote-file-type'."
                     (file-name-nondirectory file))))
 
 (make-obsolete 'denote-file-directory-p nil "2.0.0")
-
-(defun denote-file-has-supported-extension-p (file)
-  "Return non-nil if FILE has supported extension.
-Also account for the possibility of an added .gpg suffix.
-Supported extensions are those implied by `denote-file-type'."
-  (seq-some (lambda (e)
-              (string-suffix-p e file))
-            (denote-file-type-extensions-with-encryption)))
 
 (defun denote--file-regular-writable-p (file)
   "Return non-nil if FILE is regular and writable."
@@ -748,13 +753,10 @@ FILE must be an absolute path."
   (when (string-match denote-id-regexp string)
     (match-string 0 string)))
 
-;; TODO 2022-09-26: Maybe we can consolidate this with
-;; `denote--dir-in-denote-directory-p'?  Another check for the
-;; directory prefix is done in `denote-file-is-note-p'.
-(defun denote--default-dir-has-denote-prefix ()
-  "Test `default-directory' for variable `denote-directory' prefix."
-  (string-prefix-p (denote-directory)
-                   (expand-file-name default-directory)))
+(define-obsolete-function-alias
+  'denote--default-dir-has-denote-prefix
+  'denote--dir-in-denote-directory-p
+  "2.1.0")
 
 (defun denote--exclude-directory-regexp-p (file)
   "Return non-nil if FILE matches `denote-excluded-directories-regexp'."
@@ -908,6 +910,8 @@ the given regular expression."
                         (denote-directory-files-matching-regexp files-matching-regexp)
                       (denote-all-files)))
              (file (funcall project-read-file-name-function
+                            ;; FIXME 2023-10-15: Why do I get an empty history at the prompt even
+                            ;; though it is given as an argument and it is not empty?
                             "Select note: " files nil 'denote--file-history)))
     (let ((completion-ignore-case read-file-name-completion-ignore-case))
       (add-to-history 'denote--file-history file)
@@ -1374,9 +1378,16 @@ Run `denote-desluggify' on title if the extraction is sucessful."
   "Return path to FILE or its buffer together with the appropriate function.
 Subroutine of `denote--file-with-temp-buffer'."
   (when file
-    (if (file-exists-p file)
-        (cons #'insert-file-contents buffer-file-name)
-      (cons #'insert-buffer (get-file-buffer file)))))
+    (let ((buffer (get-file-buffer file))
+          (file-exists (file-exists-p file)))
+      (cond
+       ((or (and file-exists buffer (not (buffer-modified-p buffer)))
+            file-exists)
+        (cons #'insert-file-contents file))
+       (buffer
+        (cons #'insert-buffer buffer))
+       (t
+        (error "Cannot find anything about file `%s'" file))))))
 
 (defmacro denote--file-with-temp-buffer (file &rest body)
   "If FILE exists, insert its contents in a temp buffer and call BODY."
@@ -1538,11 +1549,10 @@ creation."
       (insert template))))
 
 (defun denote--dir-in-denote-directory-p (directory)
-  "Return DIRECTORY if in variable `denote-directory', else nil."
-  (when (and directory
-             (string-prefix-p (denote-directory)
-                              (expand-file-name directory)))
-    directory))
+  "Return non-nil if DIRECTORY is in variable `denote-directory'."
+  (and directory
+       (string-prefix-p (denote-directory)
+                        (expand-file-name directory))))
 
 (defun denote--valid-file-type (filetype)
   "Return a valid filetype given the argument FILETYPE.
@@ -1583,7 +1593,7 @@ where the former does not read dates without a time component."
          (lambda (buffer)
            (when-let (((buffer-live-p buffer))
                       (file (buffer-file-name buffer))
-                      ((denote-file-is-note-p file)))
+                      ((denote-filename-is-note-p file)))
              file))
          (buffer-list))))
 
@@ -2087,7 +2097,7 @@ the file type is assumed to be the first of `denote-file-types'."
    (lambda (buf)
      (with-current-buffer buf
        (when (and (eq major-mode 'dired-mode)
-                  (denote--default-dir-has-denote-prefix))
+                  (denote--dir-in-denote-directory-p default-directory))
          (revert-buffer))))
    (buffer-list)))
 
