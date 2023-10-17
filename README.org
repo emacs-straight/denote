@@ -3643,6 +3643,12 @@ might change them without further notice.
   ~denote-sort-keywords~ is non-nil.  =KEYWORDS= is a list of strings,
   per ~denote-keywords-prompt~.
 
+#+findex: denote-keywords-combine
++ Function ~denote-keywords-combine~ :: Combine =KEYWORDS= list of
+  strings into a single string. Keywords are separated by the
+  underscore character, per the Denote file-naming scheme. [ Made
+  public as part of {{{development-version}}}. ]
+
 #+findex: denote-directory
 + Function ~denote-directory~ :: Return path of the variable
   ~denote-directory~ as a proper directory, also because it accepts a
@@ -3784,7 +3790,18 @@ might change them without further notice.
 
 #+findex: denote-retrieve-keywords-value
 + Function ~denote-retrieve-keywords-value~ :: Return keywords value
-  from =FILE= front matter per =FILE-TYPE=.
+  from =FILE= front matter per =FILE-TYPE=. The return value is a list
+  of strings. To get a combined string the way it would appear in a
+  Denote file name, use ~denote-retrieve-keywords-value-as-string~ [
+  That function is part of {{{development-version}}}. ].
+
+#+findex: denote-retrieve-keywords-value-as-string
++ Function ~denote-retrieve-keywords-value-as-string~ :: Return
+  keywords value from =FILE= front matter per =FILE-TYPE=. The return
+  value is a string, with the underscrore as a separator between
+  individual keywords. To get a list of strings instead, use
+  ~denote-retrieve-keywords-value~ (the current function uses that
+  internally). [ Part of {{{development-version}}}. ]
 
 #+findex: denote-retrieve-keywords-line
 + Function ~denote-retrieve-keywords-line~ :: Return keywords line
@@ -4682,9 +4699,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Johan Bolmsjö, Juanjo Presa, Kai von Fintel, Kaushal Modi, M. Hadi
   Timachi, Mark Olson, Mirko Hernandez, Niall Dooley, Paul van Gelder,
   Peter Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven
-  Seebeck, Taoufik, Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj,
-  doolio, drcxd, hpgisler, pRot0ta1p, rbenit68, relict007, sienic,
-  sundar bp.
+  Seebeck, Taoufik, TJ Stankus, Viktor Haag, Wade Mealing, Yi Liu,
+  Ypot, atanasj, doolio, drcxd, hpgisler, pRot0ta1p, rbenit68,
+  relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

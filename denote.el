@@ -742,10 +742,10 @@ For our purposes, a note must not be a directory, must satisfy
 (defun denote-get-file-name-relative-to-denote-directory (file)
   "Return name of FILE relative to the variable `denote-directory'.
 FILE must be an absolute path."
-  (when-let* ((dir (denote-directory))
-              ((file-name-absolute-p file))
-              (file-name (expand-file-name file))
-              ((string-prefix-p dir file-name)))
+  (when-let ((dir (denote-directory))
+             ((file-name-absolute-p file))
+             (file-name (expand-file-name file))
+             ((string-prefix-p dir file-name)))
     (substring-no-properties file-name (length dir))))
 
 (defun denote-extract-id-from-string (string)
@@ -981,8 +981,15 @@ KEYWORDS is a list of strings, per `denote-keywords-prompt'."
       (sort keywords #'string-collate-lessp)
     keywords))
 
-(defun denote--keywords-combine (keywords)
-  "Format KEYWORDS output of `denote-keywords-prompt'."
+(define-obsolete-function-alias
+  'denote--keywords-combine
+  'denote-keywords-combine
+  "2.1.0")
+
+(defun denote-keywords-combine (keywords)
+  "Combine KEYWORDS list of strings into a single string.
+Keywords are separated by the underscore character, per the
+Denote file-naming scheme."
   (mapconcat
    (lambda (k)
      (denote-letter-case 'keywords k))
@@ -1367,10 +1374,10 @@ To only return an existing identifier, refer to the function
 (defun denote-retrieve-filename-title (file)
   "Extract title from FILE name, else return `file-name-base'.
 Run `denote-desluggify' on title if the extraction is sucessful."
-  (if-let* (((file-exists-p file))
-            ((denote-file-has-identifier-p file))
-            ((string-match denote-title-regexp file))
-            (title (match-string 1 file)))
+  (if-let (((file-exists-p file))
+           ((denote-file-has-identifier-p file))
+           ((string-match denote-title-regexp file))
+           (title (match-string 1 file)))
       (denote-desluggify title)
     (file-name-base file)))
 
@@ -1412,11 +1419,22 @@ Subroutine of `denote--file-with-temp-buffer'."
       (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
 
 (defun denote-retrieve-keywords-value (file file-type)
-  "Return keywords value from FILE front matter per FILE-TYPE."
+  "Return keywords value from FILE front matter per FILE-TYPE.
+The return value is a list of strings.  To get a combined string
+the way it would appear in a Denote file name, use
+`denote-retrieve-keywords-value-as-string'."
   (denote--file-with-temp-buffer file
     (when (re-search-forward (denote--keywords-key-regexp file-type) nil t 1)
       (funcall (denote--keywords-value-reverse-function file-type)
                (buffer-substring-no-properties (point) (line-end-position))))))
+
+(defun denote-retrieve-keywords-value-as-string (file file-type)
+  "Return keywords value from FILE front matter per FILE-TYPE.
+The return value is a string, with the underscrore as a separator
+between individual keywords.  To get a list of strings instead,
+use `denote-retrieve-keywords-value' (the current function uses
+that internally)."
+  (denote-keywords-combine (denote-retrieve-keywords-value file file-type)))
 
 (defun denote-retrieve-keywords-line (file file-type)
   "Return keywords line from FILE front matter per FILE-TYPE."
@@ -1460,7 +1478,7 @@ See `denote--retrieve-locations-in-xrefs'."
   "Format file name.
 PATH, ID, KEYWORDS, TITLE-SLUG, EXTENSION and optional SIGNATURE
 are expected to be supplied by `denote' or equivalent command."
-  (let ((kws (denote--keywords-combine keywords))
+  (let ((kws (denote-keywords-combine keywords))
         (file-name (concat path id)))
     (when (and signature (not (string-empty-p signature)))
       (setq file-name (concat file-name "==" signature)))
@@ -1479,8 +1497,6 @@ are expected to be supplied by `denote' or equivalent command."
 Apply `denote-letter-case' to KEYWORDS."
   (let ((kw (denote-sluggify-keywords keywords)))
     (funcall (denote--keywords-value-function file-type) kw)))
-
-(make-obsolete-variable 'denote-text-front-matter-delimiter nil "0.6.0")
 
 (defun denote--format-front-matter (title date keywords id filetype)
   "Front matter for new notes.
@@ -2001,9 +2017,9 @@ the new front matter, per `denote-rename-file-using-front-matter'."
   (interactive (list (denote-keywords-prompt)))
   ;; A combination of if-let and let, as we need to take into account
   ;; the scenario in which there are no keywords yet.
-  (if-let* ((file (buffer-file-name))
-            ((denote-file-is-note-p file))
-            (file-type (denote-filetype-heuristics file)))
+  (if-let ((file (buffer-file-name))
+           ((denote-file-is-note-p file))
+           (file-type (denote-filetype-heuristics file)))
       (let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
              (new-keywords (if (and (stringp cur-keywords)
                                     (string-blank-p cur-keywords))
@@ -2033,12 +2049,12 @@ Rename the file without further prompt so that its name reflects
 the new front matter, per `denote-rename-file-using-front-matter'."
   (declare (interactive-only t))
   (interactive)
-  (if-let* ((file (buffer-file-name))
-            ((denote-file-is-note-p file))
-            (file-type (denote-filetype-heuristics file)))
-      (when-let* ((cur-keywords (denote-retrieve-keywords-value file file-type))
-                  ((or (listp cur-keywords) (not (string-blank-p cur-keywords))))
-                  (del-keyword (denote--keywords-delete-prompt cur-keywords)))
+  (if-let ((file (buffer-file-name))
+           ((denote-file-is-note-p file))
+           (file-type (denote-filetype-heuristics file)))
+      (when-let ((cur-keywords (denote-retrieve-keywords-value file file-type))
+                 ((or (listp cur-keywords) (not (string-blank-p cur-keywords))))
+                 (del-keyword (denote--keywords-delete-prompt cur-keywords)))
         (denote-rewrite-keywords
          file
          (seq-difference cur-keywords del-keyword)
@@ -2124,8 +2140,8 @@ the file type is assumed to be the first of `denote-file-types'."
 The TITLE, KEYWORDS ID, and FILE-TYPE are passed from the
 renaming command and are used to construct a new front matter
 block if appropriate."
-  (when-let* ((date (denote--date (date-to-time id) file-type))
-              (new-front-matter (denote--format-front-matter title date keywords id file-type)))
+  (when-let ((date (denote--date (date-to-time id) file-type))
+             (new-front-matter (denote--format-front-matter title date keywords id file-type)))
     (with-current-buffer (find-file-noselect file)
       (goto-char (point-min))
       (insert new-front-matter))))
@@ -2174,10 +2190,10 @@ This is for use in `denote-keywords-add',`denote-keywords-remove',
 The FILE, TITLE, KEYWORDS, and FILE-TYPE are given by the
 renaming command and are used to construct new front matter
 values if appropriate."
-  (when-let* ((old-title-line (denote-retrieve-title-line file file-type))
-              (old-keywords-line (denote-retrieve-keywords-line file file-type))
-              (new-title-line (denote--get-title-line-from-front-matter title file-type))
-              (new-keywords-line (denote--get-keywords-line-from-front-matter keywords file-type)))
+  (when-let ((old-title-line (denote-retrieve-title-line file file-type))
+             (old-keywords-line (denote-retrieve-keywords-line file file-type))
+             (new-title-line (denote--get-title-line-from-front-matter title file-type))
+             (new-keywords-line (denote--get-keywords-line-from-front-matter keywords file-type)))
     (with-current-buffer (find-file-noselect file)
       (when (y-or-n-p (format
                        "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
@@ -2455,21 +2471,21 @@ proceed with the renaming."
       (user-error "Save buffer before proceeding")))
   (unless (denote-file-is-writable-and-supported-p file)
     (user-error "The file is not writable or does not have a supported file extension"))
-  (if-let* ((file-type (denote-filetype-heuristics file))
-            (title (denote-retrieve-title-value file file-type))
-            (extension (denote-get-file-extension file))
-            (id (or (denote-retrieve-filename-identifier file :no-error)
-                    (denote-create-unique-file-identifier file)))
-            (dir (file-name-directory file))
-            (new-name (denote-format-file-name
-                       ;; The `denote-retrieve-keywords-value' and
-                       ;; `denote-retrieve-filename-signature' are
-                       ;; not inside the `if-let*' because we do not
-                       ;; want to throw an exception if any is nil.
-                       dir id
-                       (or (denote-retrieve-keywords-value file file-type) nil)
-                       (denote-sluggify title 'title) extension
-                       (or (denote-retrieve-filename-signature file) nil))))
+  (if-let ((file-type (denote-filetype-heuristics file))
+           (title (denote-retrieve-title-value file file-type))
+           (extension (denote-get-file-extension file))
+           (id (or (denote-retrieve-filename-identifier file :no-error)
+                   (denote-create-unique-file-identifier file)))
+           (dir (file-name-directory file))
+           (new-name (denote-format-file-name
+                      ;; The `denote-retrieve-keywords-value' and
+                      ;; `denote-retrieve-filename-signature' are not
+                      ;; inside the `if-let' because we do not want
+                      ;; to throw an exception if any is nil.
+                      dir id
+                      (or (denote-retrieve-keywords-value file file-type) nil)
+                      (denote-sluggify title 'title) extension
+                      (or (denote-retrieve-filename-signature file) nil))))
       (when (or auto-confirm
                 (denote-rename-file-prompt file new-name))
         (denote-rename-file-and-buffer file new-name)
@@ -2838,7 +2854,9 @@ retrieved from the FILE, unless the FORMAT is
   "Return description for `denote-link'.
 If the region is active, make the description the text within the
 region's boundaries.  Else retrieve the title from FILE, given
-FILE-TYPE."
+FILE-TYPE.
+
+Also see `denote--link-get-description-with-signature'."
   (if-let (((region-active-p))
            (beg (region-beginning))
            (end (region-end))
@@ -2898,14 +2916,19 @@ treats the active region specially, is up to it."
 
 (defun denote--link-get-description-with-signature (file file-type)
   "Return `denote-link-with-signature' description.
-Retrieve the title and signature from FILE with FILE-TYPE."
+Retrieve the title and signature from FILE with FILE-TYPE.  If
+the region is active, use it to describe the link instead of the
+file's title.  Make the signature a prefix.  If there is no title
+or text in the active region, return the signature on its own.
+
+Also see `denote--link-get-description'."
   (let* ((signature (denote-retrieve-filename-signature file))
-         (title (denote-retrieve-title-value file file-type))
-         (specifiers (if (and title
-                              (not (string-empty-p title)))
+         (text (denote--link-get-description file file-type))
+         (specifiers (if (and text
+                              (not (string-empty-p text)))
                          "%s %s"
                        "%s")))
-    (format specifiers signature title)))
+    (format specifiers signature text)))
 
 ;;;###autoload
 (defun denote-link-with-signature ()
@@ -2961,12 +2984,12 @@ function."
 (defun denote-link-return-links (&optional file)
   "Return list of links in current or optional FILE.
 Also see `denote-link-return-backlinks'."
-  (when-let* ((current-file (or file (buffer-file-name)))
-              ((denote-file-has-supported-extension-p current-file))
-              (file-type (denote-filetype-heuristics current-file))
-              (regexp (denote--link-in-context-regexp file-type))
-              (links (with-current-buffer (find-file-noselect current-file)
-                       (denote-link--expand-identifiers regexp))))
+  (when-let ((current-file (or file (buffer-file-name)))
+             ((denote-file-has-supported-extension-p current-file))
+             (file-type (denote-filetype-heuristics current-file))
+             (regexp (denote--link-in-context-regexp file-type))
+             (links (with-current-buffer (find-file-noselect current-file)
+                      (denote-link--expand-identifiers regexp))))
     links))
 
 (defalias 'denote-link-return-forelinks 'denote-link-return-links
@@ -2989,9 +3012,9 @@ Also see `denote-link-return-backlinks'."
 (defun denote-link-return-backlinks (&optional file)
   "Return list of backlinks in current or optional FILE.
 Also see `denote-link-return-links'."
-  (when-let* ((current-file (or file (buffer-file-name)))
-              (id (denote-retrieve-filename-identifier current-file))
-              (backlinks (delete current-file (denote--retrieve-files-in-xrefs id))))
+  (when-let ((current-file (or file (buffer-file-name)))
+             (id (denote-retrieve-filename-identifier current-file))
+             (backlinks (delete current-file (denote--retrieve-files-in-xrefs id))))
     backlinks))
 
 (define-obsolete-function-alias
@@ -3197,22 +3220,36 @@ Expand `denote-link-backlinks-display-buffer-action'."
    buf
    `(,@denote-link-backlinks-display-buffer-action)))
 
-(defun denote-backlinks-next (&optional n)
+(defun denote-backlinks-next (n)
   "Use appropriate command for forward motion in backlinks buffer.
-With optional N as a numeric argument, move to the Nth button
-from point (relevant when `denote-backlinks-show-context' is
-nil)."
+With N as a numeric argument, move to the Nth button from point.
+A nil value of N is understood as 1.
+
+When `denote-backlinks-show-context' is nil, move between files
+in the backlinks buffer.
+
+When `denote-backlinks-show-context' is non-nil move between
+matching identifiers."
   (interactive "p" denote-backlinks-mode)
+  (unless (derived-mode-p 'denote-backlinks-mode)
+    (user-error "Only use this in a Denote backlinks buffer"))
   (if denote-backlinks-show-context
       (xref-next-line)
     (forward-button n)))
 
-(defun denote-backlinks-prev (&optional n)
+(defun denote-backlinks-prev (n)
   "Use appropriate command for backward motion in backlinks buffer.
-With optional N as a numeric argument, move to the Nth button
-from point (relevant when `denote-backlinks-show-context' is
-nil)."
+With N as a numeric argument, move to the Nth button from point.
+A nil value of N is understood as 1.
+
+When `denote-backlinks-show-context' is nil, move between files
+in the backlinks buffer.
+
+When `denote-backlinks-show-context' is non-nil move between
+matching identifiers."
   (interactive "p" denote-backlinks-mode)
+  (unless (derived-mode-p 'denote-backlinks-mode)
+    (user-error "Only use this in a Denote backlinks buffer"))
   (if denote-backlinks-show-context
       (xref-prev-line)
     (backward-button n)))
@@ -3224,8 +3261,6 @@ nil)."
     (define-key m "g" #'revert-buffer)
     m)
   "Keymap for `denote-backlinks-mode'.")
-
-(make-obsolete-variable 'denote-backlink-mode-map 'denote-backlinks-mode-map "0.6.0")
 
 (define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
   "Major mode for backlinks buffers."
@@ -3257,9 +3292,9 @@ ALIST is not used in favour of using
       (setq overlay-arrow-position nil)
       (denote-backlinks-mode)
       (goto-char (point-min))
-      (when-let*  ((title (denote-retrieve-title-value file file-type))
-                   (heading (format "Backlinks to %S (%s)" title id))
-                   (l (length heading)))
+      (when-let  ((title (denote-retrieve-title-value file file-type))
+                  (heading (format "Backlinks to %S (%s)" title id))
+                  (l (length heading)))
         (insert (format "%s\n%s\n\n" heading (make-string l ?-))))
       (if denote-backlinks-show-context
           (xref--insert-xrefs xref-alist)
@@ -3401,10 +3436,10 @@ inserts links with just the identifier."
          (file-type (denote-filetype-heuristics current-file))
          (current-id (denote--link-in-context-regexp file-type))
          (linked-files (denote-link--expand-identifiers current-id)))
-    (if-let* ((found-files (delete current-file
-                                   (denote-directory-files-matching-regexp regexp)))
-              (final-files (seq-difference found-files linked-files))
-              (beg (point)))
+    (if-let ((found-files (delete current-file
+                                  (denote-directory-files-matching-regexp regexp)))
+             (final-files (seq-difference found-files linked-files))
+             (beg (point)))
         (progn
           (insert (denote-link--prepare-links final-files file-type id-only))
           (denote-link-buttonize-buffer beg (point)))
@@ -3606,11 +3641,11 @@ interface by first selecting the `denote:' hyperlink type."
 ;;;###autoload
 (defun denote-link-ol-store ()
   "Handler for `org-store-link' adding support for denote: links."
-  (when-let* ((file (buffer-file-name))
-              ((denote-file-is-note-p file))
-              (file-type (denote-filetype-heuristics file))
-              (file-id (denote-retrieve-filename-identifier file))
-              (file-title (denote--retrieve-title-or-filename file file-type)))
+  (when-let ((file (buffer-file-name))
+             ((denote-file-is-note-p file))
+             (file-type (denote-filetype-heuristics file))
+             (file-id (denote-retrieve-filename-identifier file))
+             (file-title (denote--retrieve-title-or-filename file file-type)))
     (org-link-store-props
      :type "denote"
      :description file-title
@@ -3741,8 +3776,8 @@ option `denote-templates'."
 
 (defun denote-org-capture-delete-empty-file ()
   "Delete file if capture with `denote-org-capture' is aborted."
-  (when-let* ((file denote-last-path)
-              ((denote--file-empty-p file)))
+  (when-let ((file denote-last-path)
+             ((denote--file-empty-p file)))
     (delete-file denote-last-path)))
 
 (add-hook 'org-capture-after-finalize-hook #'denote-org-capture-delete-empty-file)
