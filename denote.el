@@ -431,7 +431,10 @@ The match is performed with `string-match-p'."
   :type 'string)
 
 (defcustom denote-after-new-note-hook nil
-  "Normal hook that runs after the `denote' command."
+  "Normal hook that runs after the `denote' command.
+This also covers all convenience functions that call `denote'
+internally, such as `denote-signature' and `denote-type' (check
+the default value of the user option `denote-commands-for-new-notes')."
   :group 'denote
   :package-version '(denote . "2.1.0")
   :type 'hook)
@@ -1390,11 +1393,15 @@ Run `denote-desluggify' on title if the extraction is sucessful."
   "Return path to FILE or its buffer together with the appropriate function.
 Subroutine of `denote--file-with-temp-buffer'."
   (when file
-    (let ((buffer (get-file-buffer file))
-          (file-exists (file-exists-p file)))
+    (let* ((buffer (get-file-buffer file))
+           (file-exists (file-exists-p file))
+           (buffer-modified (buffer-modified-p buffer)))
       (cond
-       ((or (and file-exists buffer (not (buffer-modified-p buffer)))
-            file-exists)
+       ((or (and file-exists
+                 buffer
+                 (not buffer-modified)
+                 (not (eq buffer-modified 'autosaved)))
+            (and file-exists (not buffer)))
         (cons #'insert-file-contents file))
        (buffer
         (cons #'insert-buffer buffer))
@@ -2345,46 +2352,10 @@ files)."
             (denote-rewrite-front-matter new-name title keywords file-type)
           (denote--add-front-matter new-name title keywords id file-type))))))
 
-;;;###autoload
-(defun denote-change-file-type (file new-file-type)
-  "Change file type of FILE and add an appropriate front matter.
-
-If in Dired, consider FILE to be the one at point, else prompt
-with minibuffer completion for one.
-
-Add a front matter in the format of the NEW-FILE-TYPE at the
-beginning of the file.
-
-Retrieve the title of FILE from a line starting with a title
-field in its front matter, depending on the previous file
-type (e.g.  #+title for Org).  The same process applies for
-keywords.
-
-As a final step, ask for confirmation, showing the difference
-between old and new file names.
-
-Important note: No attempt is made to modify any other elements
-of the file.  This needs to be done manually."
-  (interactive
-   (list
-    (denote--rename-dired-file-or-prompt)
-    (denote--valid-file-type (or (denote-file-type-prompt) denote-file-type))))
-  (let* ((dir (file-name-directory file))
-         (old-file-type (denote-filetype-heuristics file))
-         (id (or (denote-retrieve-filename-identifier file :no-error) ""))
-         (title (denote-retrieve-title-value file old-file-type))
-         (keywords (denote-retrieve-keywords-value file old-file-type))
-         (old-extension (denote-get-file-extension file))
-         (new-extension (denote--file-extension new-file-type))
-         (new-name (denote-format-file-name
-                    dir id keywords (denote-sluggify title 'title) new-extension))
-         (max-mini-window-height 0.33)) ; allow minibuffer to be resized
-    (when (and (not (eq old-extension new-extension))
-               (denote-rename-file-prompt file new-name))
-      (denote-rename-file-and-buffer file new-name)
-      (denote-update-dired-buffers)
-      (when (denote-file-is-writable-and-supported-p new-name)
-        (denote--add-front-matter new-name title keywords id new-file-type)))))
+(define-obsolete-function-alias
+  'denote-change-file-type
+  'denote-change-file-type-and-front-matter
+  "2.1.0")
 
 ;;;###autoload
 (defun denote-dired-rename-marked-files (&optional skip-front-matter-prompt)
@@ -2464,16 +2435,11 @@ edited in the front matter.  Denote considers the file name to be
 the source of truth in this case to avoid potential breakage with
 typos and the like.
 
-Refrain from performing the operation if the buffer has unsaved
-changes.  Inform the user about the need to save their changes
-first.  If AUTO-CONFIRM is non-nil, then save the buffer and
-proceed with the renaming."
+If AUTO-CONFIRM is non-nil, then proceed with the renaming
+operation without prompting for confirmation.  This is what the
+command `denote-dired-rename-marked-files-using-front-matter'
+does internally."
   (interactive (list (buffer-file-name) current-prefix-arg))
-  (when (buffer-modified-p)
-    (if (or auto-confirm
-            (y-or-n-p "Would you like to save the buffer?"))
-        (save-buffer)
-      (user-error "Save buffer before proceeding")))
   (unless (denote-file-is-writable-and-supported-p file)
     (user-error "The file is not writable or does not have a supported file extension"))
   (if-let ((file-type (denote-filetype-heuristics file))
@@ -2499,34 +2465,14 @@ proceed with the renaming."
 
 ;;;###autoload
 (defun denote-dired-rename-marked-files-using-front-matter ()
-  "Rename marked files in Dired using their front matter as input.
+  "Call `denote-rename-file-using-front-matter' over the Dired marked files.
+Refer to the documentation of that command for the technicalities.
+
 Marked files must count as notes for the purposes of Denote,
 which means that they at least have an identifier in their file
 name and use a supported file type, per `denote-file-type'.
-Files that do not meet this criterion are ignored.
-
-The operation does the following:
-
-- the title in the front matter becomes the TITLE component of
-  the file name, with hyphenation per Denote's file-naming
-  scheme;
-
-- the keywords in the front matter are used for the KEYWORDS
-  component of the file name and are processed accordingly, if
-  needed;
-
-- the identifier remains unchanged in the file name even if it is
-  modified in the front matter (this is done to avoid breakage
-  caused by typos and the like).
-
-NOTE that files must be saved, because Denote reads from the
-underlying file, not a modified buffer (this is done to avoid
-potential mistakes).  The return value of a modified buffer is
-the one prior to the modification, i.e. the one already written
-on disk.
-
-This command is useful for synchronizing multiple file names with
-their respective front matter."
+Files that do not meet this criterion are ignored because Denote
+cannot know if they have front matter and what that may be."
   (interactive nil dired-mode)
   (if-let ((marks (seq-filter
                    (lambda (m)
@@ -2535,18 +2481,9 @@ their respective front matter."
                    (dired-get-marked-files))))
       (progn
         (dolist (file marks)
-          (let* ((dir (file-name-directory file))
-                 (id (denote-retrieve-filename-identifier file :no-error))
-                 (signature (denote-retrieve-filename-signature file))
-                 (file-type (denote-filetype-heuristics file))
-                 (title (denote-retrieve-title-value file file-type))
-                 (keywords (denote-retrieve-keywords-value file file-type))
-                 (extension (denote-get-file-extension file))
-                 (new-name (denote-format-file-name
-                            dir id keywords (denote-sluggify title 'title) extension signature)))
-            (denote-rename-file-and-buffer file new-name)))
-        (revert-buffer))
-    (user-error "No marked files; aborting")))
+          (denote-rename-file-using-front-matter file :auto-confirm))
+        (denote-update-dired-buffers))
+    (user-error "No marked Denote files; aborting")))
 
 ;;;;; Creation of front matter
 
@@ -2590,6 +2527,47 @@ relevant front matter."
      file title keywords
      (denote-retrieve-filename-identifier file)
      (denote-filetype-heuristics file))))
+
+;;;###autoload
+(defun denote-change-file-type-and-front-matter (file new-file-type)
+  "Change file type of FILE and add an appropriate front matter.
+
+If in Dired, consider FILE to be the one at point, else prompt
+with minibuffer completion for one.
+
+Add a front matter in the format of the NEW-FILE-TYPE at the
+beginning of the file.
+
+Retrieve the title of FILE from a line starting with a title
+field in its front matter, depending on the previous file
+type (e.g.  #+title for Org).  The same process applies for
+keywords.
+
+As a final step, ask for confirmation, showing the difference
+between old and new file names.
+
+Important note: No attempt is made to modify any other elements
+of the file.  This needs to be done manually."
+  (interactive
+   (list
+    (denote--rename-dired-file-or-prompt)
+    (denote--valid-file-type (or (denote-file-type-prompt) denote-file-type))))
+  (let* ((dir (file-name-directory file))
+         (old-file-type (denote-filetype-heuristics file))
+         (id (or (denote-retrieve-filename-identifier file :no-error) ""))
+         (title (denote-retrieve-title-value file old-file-type))
+         (keywords (denote-retrieve-keywords-value file old-file-type))
+         (old-extension (denote-get-file-extension file))
+         (new-extension (denote--file-extension new-file-type))
+         (new-name (denote-format-file-name
+                    dir id keywords (denote-sluggify title 'title) new-extension))
+         (max-mini-window-height 0.33)) ; allow minibuffer to be resized
+    (when (and (not (eq old-extension new-extension))
+               (denote-rename-file-prompt file new-name))
+      (denote-rename-file-and-buffer file new-name)
+      (denote-update-dired-buffers)
+      (when (denote-file-is-writable-and-supported-p new-name)
+        (denote--add-front-matter new-name title keywords id new-file-type)))))
 
 ;;;; The Denote faces
 
