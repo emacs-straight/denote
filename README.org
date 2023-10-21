@@ -1052,122 +1052,86 @@ line or switching between then with commands like ~switch-to-buffer~.
 :CUSTOM_ID: h:7cc9e000-806a-48da-945c-711bbc7426b0
 :END:
 
+[ Refactored as part of {{{development-version}}} to prompt for a
+  signature (plus other refinements under the hood). ]
+
 #+findex: denote-rename-file
 The ~denote-rename-file~ command renames a file and updates existing
-front matter if appropriate.
+front matter if appropriate. It is possible to do the same with
+multiple files ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
 
-If in Dired, the =FILE= to be renamed is the one at point, else the
-command prompts with minibuffer completion for a target file.
+If in Dired, consider =FILE= to be the one at point, else prompt with
+minibuffer completion for one. When called from Lisp, =FILE= is a
+filesystem path represented as a string.
 
 If =FILE= has a Denote-compliant identifier, retain it while updating
-the =TITLE= and =KEYWORDS= fields of the file name.  Else create an
-identifier based on the following conditions:
+the TITLE and =KEYWORDS= fields of the file name.
 
-- If =FILE= does not have an identifier and optional =DATE= is non-nil
-  (such as with a prefix argument), invoke the function
-  ~denote-prompt-for-date-return-id~.  It prompts for a date and uses
-  it to derive the identifier.
+Else create an identifier based on the following conditions:
 
-- If =FILE= does not have an identifier and optional =DATE= is nil
-  (this is the case without a prefix argument), use the file
-  attributes to determine the last modified date and format it as an
-  identifier.
+1. If optional =ASK-DATE= is non-nil (such as with a prefix argument),
+   prompt for a date and use it to derive the identifier.
 
-- As a fallback, derive an identifier from the current time.
+2. If optional =ASK-DATE= is nil (this is the case without a prefix
+   argument), use the file attributes to determine the last modified
+   date and format it as an identifier.
 
-- If the resulting identifier is not unique among the files in the
-  variable `denote-directory', increment it such that it becomes
-  unique.
+3. As a fallback, derive an identifier from the current time.
 
-The default =TITLE= is retrieved from a line starting with a title field
-in the file's contents, depending on the given file type ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]).
-Else, the file name is used as a default value at the minibuffer prompt.
+4. If the resulting identifier is not unique among the files in the
+   variable ~denote-directory~, increment it such that it becomes
+   unique.
 
-As a final step after the =FILE=, =TITLE=, and =KEYWORDS= prompts, ask
-for confirmation, showing the difference between old and new file names.
-For example:
+Use =TITLE= to construct the new name of =FILE=. In interactive use,
+retrieve the default =TITLE= value from a line starting with a title
+field in the file's contents, depending on the given file type ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]).
+Else, use the file name as a default value at the minibuffer prompt.
+When called from Lisp, =TITLE= is a string.
+
+Add =SIGNATURE= to the file, using an existing one as the default
+value at the minibuffer prompt. When called from Lisp, =SIGNATURE= is
+a string. If the =SIGNATURE= is empty or ~nil~, it is not included in
+the new file name.
+
+As a final step after the =FILE=, =TITLE=, =KEYWORDS=, and =SIGNATURE=
+are collected, ask for confirmation, showing the difference between
+old and new file names. For example:
 
 #+begin_example
 Rename sample.txt to 20220612T052900--my-sample-title__testing.txt? (y or n)
 #+end_example
 
-The file type extension (e.g. =.txt=) is read from the underlying file
-and is preserved through the renaming process.  Files that have no
-extension are simply left without one.
+Read the file type extension (like =.txt=) from the underlying file
+and preserve it through the renaming process. Files that have no
+extension are left without one.
 
-Renaming only occurs relative to the current directory.  Files are not
+Renaming only occurs relative to the current directory. Files are not
 moved between directories.
 
 If the =FILE= has Denote-style front matter for the =TITLE= and
-=KEYWORDS=, this command asks to rewrite their values in order to
-reflect the new input (this step always requires confirmation and the
-underlying buffer is not saved, so consider invoking
-~diff-buffer-with-file~ to double-check the effect).  The rewrite of the
-=FILE= and =KEYWORDS= in the front matter should not affect the rest of
-the block.
+=KEYWORDS=, ask to rewrite their values in order to reflect the new
+input (this step always requires confirmation and the underlying
+buffer is not saved, so consider invoking ~diff-buffer-with-file~ to
+double-check the effect). The rewrite of the =FILE= and =KEYWORDS= in
+the front matter should not affect the rest of the front matter.
 
 If the file doesn't have front matter but is among the supported file
-types (per ~denote-file-type~), the ~denote-rename-file~ command adds
-front matter at the top of it and leaves the buffer unsaved for further
-inspection.
+types (per ~denote-file-type~), add front matter at the top of it and
+leave the buffer unsaved for further inspection.
+
+For the front matter of each file type, refer to the variables:
+
+- ~denote-org-front-matter~
+- ~denote-text-front-matter~
+- ~denote-toml-front-matter~
+- ~denote-yaml-front-matter~
 
 This command is intended to (i) rename existing Denote notes while
 updating their title and keywords in the front matter, (ii) convert
-existing supported file types to Denote notes, and (ii) rename non-note
-files (e.g. PDF) that can benefit from Denote's file-naming scheme.  The
-latter is a convenience we provide, since we already have all the
-requisite mechanisms in place (though Denote does not---and will
-not---manage such files).
-
-** Rename multiple files at once
-:PROPERTIES:
-:CUSTOM_ID: h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde
-:END:
-
-#+findex: denote-dired-rename-marked-files
-The ~denote-dired-rename-marked-files~ command renames marked files in
-Dired to conform with our file-naming scheme.  Specifically, it does
-the following:
-
-- retains the file's existing name and make it the =TITLE= field, per
-  Denote's file-naming scheme;
-
-- sluggifies the =TITLE= and adjusts its letter casing, per our
-  conventions ([[*Contol the letter casing of file names][Contol the letter casing of file names]]);
-
-- prepends an identifier to the =TITLE=;
-
-- preserves the file's extension, if any;
-
-- prompts once for =KEYWORDS= and applies the user's input to the
-  corresponding field in the file name;
-
-- adds or rewrites existing front matter to the underlying file, if it
-  is recognized as a Denote note (per the ~denote-file-type~ user
-  option), such that it includes the new keywords.
-
-- prompts at the outset for a confirmation, unless optional
-  =SKIP-FRONT-MATTER-PROMPT= is non-nil (such as with a universal
-  prefix argument).
-
-  [ Note that the affected buffers are not saved.  Users can thus
-    check them to confirm that the new front matter does not cause any
-    problems (e.g. with the `diff-buffer-with-file' command).  Multiple
-    buffers can be saved in one go with `save-some-buffers' (read its
-    doc string). ]
-
-With the optional =NO-UNIQUE-ID-CHECK= as non-nil (such as as a double
-prefix argument), it does not process the file identifiers of the
-marked files for potential duplicates.  The default is to check for
-duplicates and increment them such that they become unique.  The
-reason this optional argument exists is for those who want to speed up
-the process, perhaps because they know ahead of time all identifiers
-will be unique or do not care about them.
-
-[ When renaming files in Dired, it is possible to produce duplicate
-  identifiers.  This can happen when multiple files share the same
-  modification time, which can be casually done with the `touch'
-  command, `git', and others. ]
+existing supported file types to Denote notes, and (ii) rename
+non-note files (e.g. PDF) that can benefit from Denote's file-naming
+scheme. The latter is a convenience we provide, since we already have
+all the requisite mechanisms in place.
 
 ** Rename a single file based on its front matter
 :PROPERTIES:
@@ -1228,6 +1192,70 @@ edited in the front matter: Denote considers the file name to be the
 source of truth in this case, to avoid potential breakage with typos and
 the like.
 
+** Rename multiple files interactively
+:PROPERTIES:
+:CUSTOM_ID: h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+findex: denote-dired-rename-files
+The command ~denote-dired-rename-files~ renames the files that are
+marked in a Dired buffer. Its behaviour is similar to the
+~denote-rename-file~ in that it prompts for a title, keywords, and
+signature ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]). It does so over each marked file,
+renaming one after the other.
+
+Unlike ~denote-rename-file~, the command ~denote-dired-rename-files~
+does not ask to confirm the changes made to the files: it performs
+them outright. This is done to make it easier to rename multiple files
+without having to confirm each step. For an even more direct approach,
+check the command ~denote-dired-rename-marked-files~:
+
+- [[#h:f365ff7e-2140-4e14-a92f-666ae97382a4][Rename by writing only keywords]]
+- [[#h:ea5673cd-e6ca-4c42-a066-07dc6c9d57f8][Rename multiple files based on their front matter]]
+
+** Rename multiple files at once by asking only for keywords
+:PROPERTIES:
+:CUSTOM_ID: h:f365ff7e-2140-4e14-a92f-666ae97382a4
+:END:
+
+[ The command ~denote-dired-rename-marked-files~ is now called
+  ~denote-dired-rename-marked-files-with-keywords~ to better describe
+  what it actually does. To rename multiple Dired marked files while
+  being asked about each file's specifics, use the command
+  ~denote-dired-rename-files~ ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
+  This change is done as part of {{{development-version}}}. ]
+
+#+findex: denote-dired-rename-marked-files-with-keywords
+The ~denote-dired-rename-marked-files-with-keywords~ command renames
+marked files in Dired to conform with our file-naming scheme. It does
+so by writing keywords to them. Specifically, it does the following:
+
+- retains the file's existing name and makes it the =TITLE= field, per
+  Denote's file-naming scheme;
+
+- sluggifies the =TITLE= and adjusts its letter casing, according to
+  our conventions ([[*Contol the letter casing of file names][Contol the letter casing of file names]]);
+
+- prepends an identifier to the =TITLE=, if one is missing;
+
+- preserves the file's extension, if any;
+
+- prompts once for =KEYWORDS= and applies the user's input to the
+  corresponding field in the file name, rewriting any keywords that
+  may exist;
+
+- adds or rewrites existing front matter to the underlying file, if it
+  is recognized as a Denote note (per the ~denote-file-type~ user
+  option), such that it includes the new keywords.
+
+[ Note that the affected buffers are not saved. Users can thus check
+  them to confirm that the new front matter does not cause any
+  problems (e.g. with the ~diff-buffer-with-file~ command). Multiple
+  buffers can be saved in one go with ~save-some-buffers~ (read its
+  doc string). ]
+
 ** Rename multiple files based on their front matter
 :PROPERTIES:
 :CUSTOM_ID: h:ea5673cd-e6ca-4c42-a066-07dc6c9d57f8
@@ -1250,9 +1278,10 @@ Marked files must count as notes for the purposes of Denote, which
 means that they at least have an identifier in their file name and use
 a supported file type, per ~denote-file-type~. Files that do not meet
 this criterion are ignored, because Denote cannot know if they have
-front matter and what that may be.
+front matter and what that may be. For such files, it is still
+possible to rename them interactively ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
 
-** Rename file by changing only its file type
+** Rename a file by changing only its file type
 :PROPERTIES:
 :CUSTOM_ID: h:85b65995-89fd-4978-bba3-7bb6c8d6f945
 :END:
@@ -3114,16 +3143,16 @@ See `denote-file-prompt-original'."
 
 [[#h:2d5ee9bf-e8f2-426c-8bf7-bf78bc88d1ee][Rename files with Denote using ~dired-preview~]]
 
-Just as with the ~denote-dired-rename-marked-files~, we can use Denote
-in the Image Dired buffer ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files at once]]).  Here is
-the custom code:
+Just as with the ~denote-dired-rename-marked-files-with-keywords~,
+we can use Denote in the Image Dired buffer ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files at once]]).
+Here is the custom code:
 
 #+begin_src emacs-lisp
 (autoload 'image-dired--with-marked "image-dired")
 (autoload 'image-dired-original-file-name "image-dired-util")
 
 (defun my-denote-image-dired-rename-marked-files (keywords)
-  "Like `denote-dired-rename-marked-files' but for Image Dired.
+  "Like `denote-dired-rename-marked-files-with-keywords' but for Image Dired.
 Prompt for KEYWORDS and rename all marked files in the Image
 Dired buffer to have a Denote-style file name with the given
 KEYWORDS.
@@ -3155,7 +3184,7 @@ can be used instead:
 
 #+begin_src emacs-lisp
 (defun my-image-dired-rename-marked-files (keywords)
-  "Like `denote-dired-rename-marked-files' but for Image Dired.
+  "Like `denote-dired-rename-marked-files-with-keywords' but for Image Dired.
 Prompt for keywords and rename all marked files in the Image
 Dired buffer to have Denote-style keywords, but none of the other
 conventions of Denote's file-naming scheme."
@@ -3182,11 +3211,11 @@ a preview of the file at point in Dired.  This can be helpful in
 tandem with Denote when we want to rename multiple files by taking a
 quick look at their contents.
 
-The command ~denote-dired-rename-marked-files~ will generate
-Denote-style file names based on the keywords it prompts for.
-Identifiers are derived from each file's modification date
-([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files at once]]).  There is no need for any custom
-code in this scenario.
+The command ~denote-dired-rename-marked-files-with-keywords~
+will generate Denote-style file names based on the keywords it prompts
+for. Identifiers are derived from each file's modification date
+([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files at once]]). There is no need for any custom code
+in this scenario.
 
 As noted in the section about Image Dired, the user may sometimes not
 need a fully fledged Denote-style file name but only append Denote-like
@@ -3203,7 +3232,7 @@ actions.  We thus have:
 
 #+begin_src emacs-lisp
 (defun my-denote-dired-rename-marked-files-keywords-only ()
-  "Like `denote-dired-rename-marked-files' but only for keywords in file names.
+  "Like `denote-dired-rename-marked-files-with-keywords' but only for keywords in file names.
 
 Prompt for keywords and rename all marked files in the Dired
 buffer to only have Denote-style keywords, but none of the other
@@ -3498,7 +3527,8 @@ Everything is in place to set up the package.
 ;; Key bindings specifically for Dired.
 (let ((map dired-mode-map))
   (define-key map (kbd "C-c C-d C-i") #'denote-link-dired-marked-notes)
-  (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-marked-files)
+  (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-files)
+  (define-key map (kbd "C-c C-d C-k") #'denote-dired-rename-marked-files-with-keywords)
   (define-key map (kbd "C-c C-d C-R") #'denote-dired-rename-marked-files-using-front-matter))
 
 (with-eval-after-load 'org-capture
@@ -3810,8 +3840,11 @@ might change them without further notice.
   from =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-signature-prompt
-+ Function ~denote-signature-prompt~ :: Prompt for signature
-  string.
++ Function ~denote-signature-prompt~ :: Prompt for signature string.
+  With optional =DEFAULT-SIGNATURE= use it as the default minibuffer
+  value. With optional =PROMPT-TEXT= use it in the minibuffer instead
+  of the default prompt. [ The =DEFAULT-SIGNATURE= and =PROMPT-TEXT=
+  arguments are added as part of {{{development-version}}}. ]
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in
@@ -3822,14 +3855,20 @@ might change them without further notice.
 
 #+findex: denote-keywords-prompt
 + Function ~denote-keywords-prompt~ :: Prompt for one or more
-  keywords.  In the case of multiple entries, those are separated by
-  the ~crm-sepator~, which typically is a comma.  In such a scenario,
-  the output is sorted with ~string-lessp~.  To sort the return value,
-  use ~denote-keywords-sort~.
+  keywords. Read entries as separate when they are demarcated by the
+  ~crm-separator~, which typically is a comma. With optional
+  =PROMPT-TEXT=, use it to prompt the user for keywords. Else use a
+  generic prompt. Process the return value with ~denote-keywords-sort~
+  and sort with ~string-collate-lessp~ if the user option
+  ~denote-sort-keywords~ is non-nil. [ Refactored as part of
+  {{{development-version}}} to refine how the sorting is done and to
+  include the optional =PROMPT-TEXT=. ]
 
 #+findex: denote-title-prompt
-+ Function ~denote-title-prompt~ :: Read file title for ~denote~.
-  With optional =DEFAULT-TITLE= use it as the default value.
++ Function ~denote-title-prompt~ :: Read file title for ~denote~. With
+  optional =DEFAULT-TITLE= use it as the default value. With optional
+  =PROMPT-TEXT= use it in the minibuffer instead of the generic
+  prompt. [ The =PROMPT-TEXT= is part of {{{development-version}}}. ]
 
 #+vindex: denote-title-prompt-current-default
 + Variable ~denote-title-prompt-current-default~ :: Currently bound
@@ -3884,14 +3923,17 @@ might change them without further notice.
   note after ~denote-rename-file~ (or related) The =FILE=, =TITLE=,
   =KEYWORDS=, and =FILE-TYPE= arguments are given by the renaming
   command and are used to construct new front matter values if
-  appropriate.
+  appropriate. With optional =NO-CONFIRM=, do not prompt to confirm the
+  rewriting of the front matter. Otherwise produce a ~y-or-n-p~ prompt
+  to that effect. [ The =NO-CONFIRM= argument is part of
+  {{{development-version}}}. ]
 
 #+findex: denote-rewrite-keywords
 + Function ~denote-rewrite-keywords~ :: Rewrite =KEYWORDS= in =FILE=
   outright according to =FILE-TYPE=.  Do the same as
   ~denote-rewrite-front-matter~ for keywords, but do not ask for
   confirmation.  This is for use in ~denote-keywords-add~,
-  ~denote-keywords-remove~, ~denote-dired-rename-marked-files~, or
+  ~denote-keywords-remove~, ~denote-dired-rename-marked-files-with-keywords~, or
   related.
 
 #+findex: denote-update-dired-buffers
@@ -4700,9 +4742,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen, Jonathan Sahar,
   Johan Bolmsjö, Juanjo Presa, Kai von Fintel, Kaushal Modi, M. Hadi
   Timachi, Mark Olson, Mirko Hernandez, Niall Dooley, Paul van Gelder,
-  Peter Prevos, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven
-  Seebeck, Taoufik, TJ Stankus, Viktor Haag, Wade Mealing, Yi Liu,
-  Ypot, atanasj, doolio, drcxd, hpgisler, pRot0ta1p, rbenit68,
+  Peter Prevos, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer
+  Emacs, Sven Seebeck, Taoufik, TJ Stankus, Viktor Haag, Wade Mealing,
+  Yi Liu, Ypot, atanasj, doolio, drcxd, hpgisler, pRot0ta1p, rbenit68,
   relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
