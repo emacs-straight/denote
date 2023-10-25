@@ -1849,13 +1849,14 @@ packages such as `marginalia' and `embark')."
   "Minibuffer history of `denote-signature-prompt'.")
 
 (defun denote-signature-prompt (&optional default-signature prompt-text)
-  "Prompt for signature string.
+  "Prompt for signature string and apply `denote-sluggify-signature' to it.
 With optional DEFAULT-SIGNATURE use it as the default minibuffer
 value.  With optional PROMPT-TEXT use it in the minibuffer
 instead of the default prompt."
-  (read-string
-   (format-prompt (or prompt-text "Provide signature") nil)
-   nil 'denote--signature-history default-signature))
+  (denote-sluggify-signature
+   (read-string
+    (format-prompt (or prompt-text "Provide signature") nil)
+    nil 'denote--signature-history default-signature)))
 
 ;;;;; Convenience commands as `denote' variants
 
@@ -2431,6 +2432,8 @@ the changes made to the file: perform them outright."
                                (not (denote-retrieve-filename-identifier m :no-error)))
                              marks)
                         (denote--get-all-used-ids))))
+        ;; FIXME 2023-10-24: There is repetition between this and
+        ;; `denote-rename-file'.  We better avoid it.
         (dolist (file marks)
           (let* ((file-type (denote-filetype-heuristics file))
                  (file-in-prompt (propertize file 'face 'error))
@@ -3529,11 +3532,8 @@ inserts links with just the identifier."
 
 (defun denote-link--map-over-notes ()
   "Return list of `denote-file-is-note-p' from Dired marked items."
-  (seq-filter
-   (lambda (f)
-     (and (denote-file-is-note-p f)
-          (denote--dir-in-denote-directory-p default-directory)))
-   (dired-get-marked-files)))
+  (when (denote--dir-in-denote-directory-p default-directory)
+    (seq-filter #'denote-file-is-note-p (dired-get-marked-files))))
 
 ;;;###autoload
 (defun denote-link-dired-marked-notes (files buffer &optional id-only)
