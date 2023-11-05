@@ -1101,6 +1101,9 @@ old and new file names. For example:
 Rename sample.txt to 20220612T052900--my-sample-title__testing.txt? (y or n)
 #+end_example
 
+Do not ask for confirmation if the ~denote-rename-no-confirm~ option
+is set to a non-nil value ([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]).
+
 Read the file type extension (like =.txt=) from the underlying file
 and preserve it through the renaming process. Files that have no
 extension are left without one.
@@ -1132,6 +1135,29 @@ existing supported file types to Denote notes, and (ii) rename
 non-note files (e.g. PDF) that can benefit from Denote's file-naming
 scheme. The latter is a convenience we provide, since we already have
 all the requisite mechanisms in place.
+
+*** The ~denote-rename-no-confirm~ option
+:PROPERTIES:
+:CUSTOM_ID: h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+The default behaviour of the ~denote-rename-file~ command is to ask
+for an affirmative answer as a final step before changing the file
+name and, where relevant, inserting or updating the corresponding
+front matter ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
+
+Remember that ~denote-rename-file~ does not save the underlying buffer
+it modifies. It leaves it unsaved so that the user can review what
+happened, such as by invoking the command ~diff-buffer-with-file~.
+
+Specialised commands that build on top of ~denote-rename-file~ may
+internally bind this user option to a non-nil value in order to
+perform their operation (e.g. ~denote-dired-rename-files~ goes through
+each marked Dired file, prompting for the information to use, but
+carries out the renaming without asking for confirmation (buffers
+remain unsaved)).
 
 ** Rename a single file based on its front matter
 :PROPERTIES:
@@ -3755,7 +3781,7 @@ might change them without further notice.
 
 #+findex: denote-sluggify-signature
 + Function ~denote-sluggify-signature~ :: Make =STR= an appropriate
-  slug for signatures.
+  slug for signatures ([[#h:6ae1ab8c-5e36-4216-8e93-f37f4447582c][Contol the letter casing of file names]]).
 
 #+findex: denote-sluggify-keywords
 + Function ~denote-sluggify-keywords~ :: Sluggify =KEYWORDS=, which is
@@ -3852,17 +3878,14 @@ might change them without further notice.
   from =FILE= front matter per =FILE-TYPE=.
 
 #+findex: denote-signature-prompt
-+ Function ~denote-signature-prompt~ :: Prompt for signature string
-  and apply ~denote-sluggify-signature~ to it. With optional
-  =DEFAULT-SIGNATURE= use it as the default minibuffer value. With
-  optional =PROMPT-TEXT= use it in the minibuffer instead of the
-  default prompt. Previous inputs at this prompt are available for
-  minibuffer completion. Consider ~savehist-mode~ to persist
++ Function ~denote-signature-prompt~ :: Prompt for signature string.
+  With optional =DEFAULT-SIGNATURE= use it as the default minibuffer
+  value. With optional =PROMPT-TEXT= use it in the minibuffer instead
+  of the default prompt. Previous inputs at this prompt are available
+  for minibuffer completion. Consider ~savehist-mode~ to persist
   minibuffer histories between sessions. [ The =DEFAULT-SIGNATURE= and
   =PROMPT-TEXT= arguments, as well as previous input completion, are
-  added as part of {{{development-version}}}. Same for the parsing
-  application of ~denote-sluggify-signature~ to the user input (this
-  was always the intent). ]
+  added as part of {{{development-version}}}. ]
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in
@@ -4759,7 +4782,7 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Meyer, Marc Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid
   Behrnd, Peter Prevos, Philip Kaludercic, Quiliro Ordóñez, Stefan
   Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-  Manerikar, ezchi, relict007.
+  Manerikar, ezchi, mentalisttraceur, relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Alfredo Borrás, Ashton Wiersdorf, Benjamin Kästner, Colin
@@ -4768,10 +4791,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Jay Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
   Jonathan Sahar, Johan Bolmsjö, Juanjo Presa, Kai von Fintel, Kaushal
   Modi, M. Hadi Timachi, Mark Olson, Mirko Hernandez, Niall Dooley,
-  Paul van Gelder, Peter Prevos, Suhail Singh, Shreyas Ragavan, Stefan
-  Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Viktor
-  Haag, Wade Mealing, Yi Liu, Ypot, atanasj, doolio, drcxd, hpgisler,
-  pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
+  Paul van Gelder, Peter Prevos, Peter Smith, Suhail Singh, Shreyas
+  Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
+  Stankus, Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj, doolio,
+  drcxd, hpgisler, pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
