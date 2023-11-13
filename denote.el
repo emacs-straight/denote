@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 2.0.0
+;; Version: 2.1.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -513,7 +513,7 @@ The value is an alist where each element is a cons cell of the
 form (COMPONENT . METHOD).
 
 - The COMPONENT is an unquoted symbol among `title', `signature',
-  `keywords', which refer to the corresponding component of the
+  `keywords', which refers to the corresponding component of the
   file name.  The special t COMPONENT is a fallback value in case
   the others are not specified.
 
