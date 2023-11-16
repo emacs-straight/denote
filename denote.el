@@ -2805,10 +2805,22 @@ and seconds."
 (defcustom denote-dired-directories (list denote-directory)
   "List of directories where `denote-dired-mode' should apply to.
 For this to take effect, add `denote-dired-mode-in-directories',
-to the `dired-mode-hook'."
+to the `dired-mode-hook'.
+
+If `denote-dired-directories-include-subdirectories' is non-nil,
+also apply the effect to all subdirectories of those specified in
+the list."
   :type '(repeat directory)
   :package-version '(denote . "0.1.0")
   :link '(info-link "(denote) Fontification in Dired")
+  :group 'denote-dired)
+
+(defcustom denote-dired-directories-include-subdirectories nil
+  "If non-nil `denote-dired-directories' also affects all subdirectories.
+Otherwise `denote-dired-directories' works only with exact matches."
+  :package-version '(denote . "2.2.0")
+  :link '(info-link "(denote) Fontification in Dired")
+  :type 'boolean
   :group 'denote-dired)
 
 ;; FIXME 2022-08-12: Make `denote-dired-mode' work with diredfl.  This
@@ -2862,8 +2874,18 @@ written, it is always returned as a directory."
 ;;;###autoload
 (defun denote-dired-mode-in-directories ()
   "Enable `denote-dired-mode' in `denote-dired-directories'.
-Add this function to `dired-mode-hook'."
-  (when (member (file-truename default-directory) (denote-dired--modes-dirs-as-dirs))
+Add this function to `dired-mode-hook'.
+
+If `denote-dired-directories-include-subdirectories' is non-nil,
+also enable it in all subdirectories."
+  (when-let ((dirs (denote-dired--modes-dirs-as-dirs))
+             ;; Also include subdirs
+             ((or (member (file-truename default-directory) dirs)
+                  (and denote-dired-directories-include-subdirectories
+                       (seq-some
+                        (lambda (dir)
+                          (string-prefix-p dir (file-truename default-directory)))
+                        dirs)))))
     (denote-dired-mode 1)))
 
 ;;;; The linking facility
