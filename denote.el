@@ -6,7 +6,7 @@
 ;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/denote
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
-;; Version: 2.1.0
+;; Version: 2.1.1
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -2429,7 +2429,7 @@ place."
          (title (or title (denote--retrieve-title-or-filename file file-type)))
          (keywords (or keywords (denote-retrieve-keywords-value file file-type)))
          (signature (or signature (denote-retrieve-filename-signature file)))
-         (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (denote-sluggify-signature signature)))
+         (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (when signature (denote-sluggify-signature signature))))
          (max-mini-window-height denote-rename-max-mini-window-height))
     (when (or denote-rename-no-confirm (denote-rename-file-prompt file new-name))
       (denote-rename-file-and-buffer file new-name)
@@ -2530,7 +2530,7 @@ Specifically, do the following:
                  (file-type (denote-filetype-heuristics file))
                  (title (denote--retrieve-title-or-filename file file-type))
                  (extension (denote-get-file-extension file))
-                 (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (denote-sluggify-signature signature))))
+                 (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (when signature (denote-sluggify-signature signature)))))
             (denote-rename-file-and-buffer file new-name)
             (when (denote-file-is-writable-and-supported-p new-name)
               (if (denote--edit-front-matter-p new-name file-type)
@@ -2573,7 +2573,7 @@ does internally."
              (signature (denote-retrieve-filename-signature file))
              (extension (denote-get-file-extension file))
              (dir (file-name-directory file))
-             (new-name (denote-format-file-name dir id keywords sluggified-title extension signature)))
+             (new-name (denote-format-file-name dir id keywords sluggified-title extension (when signature (denote-sluggify-signature signature)))))
         (when (or auto-confirm
                   (denote-rename-file-prompt file new-name))
           (denote-rename-file-and-buffer file new-name)
