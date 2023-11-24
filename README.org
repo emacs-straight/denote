@@ -2366,10 +2366,11 @@ facility.  Start by loading the relevant library:
 #+end_src
 
 A dynamic block gets its contents by evaluating a given function,
-depending on the type of block.  The type of block and its parameters
-are stated in the opening =#+BEGIN= line of the block.  Typing =C-c C-c=
-with point on that line runs the function, with the given arguments,
-and populates the block's contents accordingly.
+depending on the type of block. The type of block and its parameters
+are stated in the opening =#+BEGIN= line of the block. Typing =C-c C-x
+C-u= (~org-dblock-update~) with point on that line runs the function,
+with the given arguments, and populates the block's contents
+accordingly.
 
 Denote leverages Org dynamic blocks to streamline the inclusion of (i)
 links to notes whose name matches a given search query (like
@@ -2449,6 +2450,57 @@ Evaluate:
 
 Dynamic blocks are particularly useful for metanote entries that
 reflect on the status of earlier notes ([[#h:6060a7e6-f179-4d42-a9de-a9968aaebecc][Writing metanotes]]).
+
+** Org dynamic block to insert file contents
+:PROPERTIES:
+:CUSTOM_ID: h:f15fa143-5036-416f-9bff-1bcabbb03456
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+Denote can optionally use Org's dynamic blocks facility to produce a
+section that lists entire file contents ([[#h:8b542c50-dcc9-4bca-8037-a36599b22779][Use Org dynamic blocks]]).
+This works by instrucing Org to match a regular expression of Denote
+files, the same way we do with Denote links ([[#h:9bec2c83-36ca-4951-aefc-7187c5463f90][Insert links matching a regexp]]). 
+
+This is useful to, for example, compile a dynamically concatenated
+list of scattered thoughts on a given topic, like =^2023.*_emacs= for
+long entry that incorporates all the notes written in 2023 with the
+keyword =emacs=.
+
+To produce such a block, use the following syntax in an Org file and
+type =C-c C-x C-u= (~org-dblock-update~) on the =#+BEGIN= line (type
+=C-c C-x C-u= again to recalculate the block):
+
+: #+BEGIN: denote-files :regexp "YOUR-REGEXP-HERE"
+:
+: #+END:
+
+The =:regexp= parameter is mandatory. Its value is a string,
+representing a regular expression to match Denote file names. Its
+value may also be an ~rx~ expression instead of a string, as noted in
+the previous section about Org dynamic blocks.
+
+#+vindex: denote-org-dblock-file-contents-separator
+File contents are inserted verbatim. They are separated by the
+~denote-org-dblock-file-contents-separator~, which introduces some
+empty lines and a horizontal rule between them to visually distinguish
+individual files. Though the block accepts an optional parameter of
+=:file-separator=, which takes a string as a value. It is recommended
+to include newline characters (=\n=) in the string for better results.
+The value of =:file-separator= may also be =none=, in which case no
+separator is used.
+
+An optional =:block-name= parameter adds a =#+name= to the results for
+further processing using Org facilities (this is outside Denote's
+purview).
+
+The optional =:no-front-matter= parameter with a ~t~ value instructs
+Denote to try to remove front matter from the files it is inserting in
+the dynamic block. The technique used to perform this operation is by
+removing all lines from the top of the file until the first empty
+line. This works with the default front matter that Denote adds, but
+is not 100% reliable with all sorts of user-level modifications.
 
 * Minibuffer histories
 :PROPERTIES:
@@ -3156,8 +3208,9 @@ invoke this command."
                (id (denote-retrieve-filename-identifier file))
                (file-type (denote-filetype-heuristics file))
                (title (denote--retrieve-title-or-filename file file-type))
+               (signature (denote-retrieve-filename-signature file))
                (extension (file-name-extension file t))
-               (new-name (denote-format-file-name dir id keywords title extension))
+               (new-name (denote-format-file-name dir id keywords title extension signature))
                (default-directory dir))
      (denote-rename-file-and-buffer file new-name))))
 #+end_src
@@ -3746,10 +3799,10 @@ might change them without further notice.
   file type is assumed to be the first of ~denote-file-types~.
 
 #+findex: denote-format-file-name
-+ Function ~denote-format-file-name~ :: Format file name.  =PATH=,
-  =ID=, =KEYWORDS=, =TITLE-SLUG= are expected to be supplied by
-  ~denote~ or equivalent: they will all be converted into a single
-  string.  =EXTENSION= is the file type extension, as a string.
++ Function ~denote-format-file-name~ :: Format file name. =PATH=, =ID=,
+  =KEYWORDS=, =TITLE-SLUG=, and =SIGNATURE-SLUG= are expected to be
+  supplied by ~denote~ or equivalent: they will all be converted into a
+  single string. =EXTENSION= is the file type extension, as a string.
 
 #+findex: denote-extract-keywords-from-path
 + Function ~denote-extract-keywords-from-path~ :: Extract keywords
