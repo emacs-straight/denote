@@ -629,9 +629,13 @@ Concretely, replace with spaces anything that matches the
 With optional EXTRA-CHARACTERS as a string, include them in the
 regexp to be replaced."
   (replace-regexp-in-string
-   (concat denote-excluded-punctuation-regexp
+   (concat "\\("
+           denote-excluded-punctuation-regexp
+           "\\|"
            denote-excluded-punctuation-extra-regexp
-           extra-characters)
+           "\\|"
+           extra-characters
+           "\\)")
    "" str))
 
 (defun denote--slug-hyphenate (str)
@@ -1406,8 +1410,9 @@ Subroutine of `denote--file-with-temp-buffer'."
       (cons #'insert-file-contents file))
      (buffer
       (cons #'insert-buffer buffer))
-     (t
-      (error "Cannot find anything about file `%s'" file)))))
+     ;; (t
+     ;;  (error "Cannot find anything about file `%s'" file))
+     )))
 
 (defmacro denote--file-with-temp-buffer (file &rest body)
   "If FILE exists, insert its contents in a temp buffer and call BODY."
