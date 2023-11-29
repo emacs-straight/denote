@@ -86,7 +86,7 @@ Denote file name."
   "Test that `denote-sluggify-signature' sluggifies the string for file signatures.
 This is like `denote-test--denote-sluggify', except that it also
 accounts for what we describe in `denote-test--denote--slug-put-equals'."
-  (should (equal (denote-sluggify-signature " ___ !~!!$%^ This iS a tEsT ++ ?? ")
+  (should (equal (denote-sluggify-signature "--- ___ !~!!$%^ This -iS- a tEsT ++ ?? ")
                  "this=is=a=test")))
 
 (ert-deftest denote-test--denote-sluggify-and-join ()
@@ -95,7 +95,7 @@ In this context, to join words is to elimitate any space or
 delimiter between them.
 
 Otherwise, this is like `denote-test--denote-sluggify'."
-  (should (equal (denote-sluggify-and-join " ___ !~!!$%^ This iS a tEsT ++ ?? ")
+  (should (equal (denote-sluggify-and-join "--- ___ !~!!$%^ This iS a - tEsT ++ ?? ")
                  "thisisatest")))
 
 (ert-deftest denote-test--denote-sluggify-keywords ()
@@ -103,7 +103,7 @@ Otherwise, this is like `denote-test--denote-sluggify'."
 The function also account for the value of the user option
 `denote-allow-multi-word-keywords'."
   (should
-   (equal (denote-sluggify-keywords '("one !@# one" "   two" "__  three  __"))
+   (equal (denote-sluggify-keywords '("one !@# --- one" "   two" "__  three  __"))
           '("oneone" "two" "three"))))
 
 (ert-deftest denote-test--denote-desluggify ()
@@ -185,48 +185,120 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
 (ert-deftest denote-test--denote--format-front-matter ()
   "Test that `denote--format-front-matter' formats front matter correctly."
   (should (and (equal (denote--format-front-matter "" "" '("") "" 'text)
-                      "title:      
-date:       
-tags:       
-identifier: 
----------------------------
+                      (mapconcat #'identity
+                                 '("title:      "
+                                   "date:       "
+                                   "tags:       "
+                                   "identifier: "
+                                   "---------------------------\n\n")
+                                 "\n"))
 
-")
                (equal
-                ;; (denote--format-front-matter
-                ;;  "Some test" (denote--date nil 'org) '("one" "two")
-                ;;  (format-time-string denote-id-format nil) 'org)
                 (denote--format-front-matter
                  "Some test" "2023-06-05" '("one" "two")
                  "20230605T102234" 'text)
-                "title:      Some test
-date:       2023-06-05
-tags:       one  two
-identifier: 20230605T102234
----------------------------
+                (mapconcat #'identity
+                           '("title:      Some test"
+                             "date:       2023-06-05"
+                             "tags:       one  two"
+                             "identifier: 20230605T102234"
+                             "---------------------------\n\n")
+                           "\n"))))
 
-"))))
+  (should (and (equal (denote--format-front-matter "" "" nil "" 'org)
+                      (mapconcat #'identity
+                                 '("#+title:      "
+                                   "#+date:       "
+                                   "#+filetags:   "
+                                   "#+identifier: "
+                                   "\n")
+                                 "\n"))
 
-;; ;; NOTE 2023-06-30: The following needs to be reviewed.
-;;
-;; (ert-deftest denote-test--denote-format-file-name ()
-;;   "Test that `denote-format-file-name' returns all expected paths."
-;;   (let ((title "Some test")
-;;         (id (format-time-string denote-id-format (current-time-string "2023-06-05")))
-;;         (kws '("one" "two"))
-;;         (type 'text))
-;;     (should
-;;      (equal
-;;      (denote-format-file-name
-;;              (denote--path title
-;;                            kws
-;;                            (denote-directory)
-;;                            id
-;;                            type)
-;;              id
-;;              (denote-sluggify-keywords kws)
-;;              (denote-sluggify title)
-;;              (denote--file-extension type))))
+               (equal
+                (denote--format-front-matter
+                 "Some test" "2023-06-05" '("one" "two")
+                 "20230605T102234" 'org)
+                (mapconcat #'identity
+                           '("#+title:      Some test"
+                             "#+date:       2023-06-05"
+                             "#+filetags:   :one:two:"
+                             "#+identifier: 20230605T102234"
+                             "\n")
+                           "\n"))))
+
+  (should (and (equal (denote--format-front-matter "" "" nil "" 'markdown-yaml)
+                      (mapconcat #'identity
+                                 '("---"
+                                   "title:      \"\""
+                                   "date:       "
+                                   "tags:       []"
+                                   "identifier: \"\""
+                                   "---"
+                                   "\n")
+                                 "\n"))
+
+               (equal
+                (denote--format-front-matter
+                 "Some test" "2023-06-05" '("one" "two")
+                 "20230605T102234" 'markdown-yaml)
+                (mapconcat #'identity
+                           '("---"
+                             "title:      \"Some test\""
+                             "date:       2023-06-05"
+                             "tags:       [\"one\", \"two\"]"
+                             "identifier: \"20230605T102234\""
+                             "---"
+                             "\n")
+                           "\n"))))
+
+(should (and (equal (denote--format-front-matter "" "" nil "" 'markdown-toml)
+                    (mapconcat #'identity
+                               '("+++"
+                                 "title      = \"\""
+                                 "date       = "
+                                 "tags       = []"
+                                 "identifier = \"\""
+                                 "+++"
+                                 "\n")
+                               "\n"))
+
+             (equal
+              (denote--format-front-matter
+               "Some test" "2023-06-05" '("one" "two")
+               "20230605T102234" 'markdown-toml)
+              (mapconcat #'identity
+                         '("+++"
+                           "title      = \"Some test\""
+                           "date       = 2023-06-05"
+                           "tags       = [\"one\", \"two\"]"
+                           "identifier = \"20230605T102234\""
+                           "+++"
+                           "\n")
+                         "\n")))))
+
+(ert-deftest denote-test--denote-format-file-name ()
+  "Test that `denote-format-file-name' returns all expected paths."
+  (let* ((title "Some test")
+         (id (format-time-string denote-id-format (denote--valid-date "2023-11-28 05:53:11")))
+         (denote-directory "/tmp/test-denote")
+         (kws '("one" "two")))
+    (should (equal (denote-format-file-name
+                    (denote-directory)
+                    id
+                    (denote-sluggify-keywords kws)
+                    (denote-sluggify title)
+                    (denote--file-extension 'org)
+                    "")
+                   "/tmp/test-denote/20231128T055311--some-test__one_two.org"))
+
+    (should (equal (denote-format-file-name
+                    (denote-directory)
+                    id
+                    (denote-sluggify-keywords kws)
+                    (denote-sluggify title)
+                    (denote--file-extension 'org)
+                    (denote-sluggify-signature "sig"))
+                   "/tmp/test-denote/20231128T055311==sig--some-test__one_two.org"))))
 
 (ert-deftest denote-test--denote-get-file-extension ()
   "Test that `denote-get-file-extension' gets the correct file extension."
