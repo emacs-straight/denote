@@ -45,42 +45,67 @@
 (defvar denote-sort-comparison-function #'string-collate-lessp
   "String comparison function used by `denote-sort-files' subroutines.")
 
-(defmacro denote-sort--define (component)
-  "Define Denote sort function for file name COMPONENT."
-  `(defun ,(intern (format "denote-sort-%s-lessp" component)) (file1 file2)
-     ,(format "Return smallest between FILE1 and FILE2 based on their %s.
-The comparison is done with `denote-sort-comparison-function' between the
-two signature values." component)
-     (when-let ((one (,(intern (format "denote-retrieve-filename-%s" component)) file1))
-                (two (,(intern (format "denote-retrieve-filename-%s" component)) file2))
-                (sort (funcall denote-sort-comparison-function one two)))
-       file1)))
+(defvar denote-sort-components '(title keywords signature identifier)
+  "List of sorting keys applicable for `denote-sort-files' and related.")
 
-(denote-sort--define title)
-(denote-sort--define keywords)
-(denote-sort--define signature)
+(defun denote-sort-title-lessp (file1 file2)
+  "Return smallest between FILE1 and FILE2 based on their title.
+The comparison is done with `denote-sort-comparison-function' between the
+two title values."
+  (let ((one (denote-retrieve-filename-title file1))
+        (two (denote-retrieve-filename-title file2)))
+    (cond
+     ((string= one (file-name-sans-extension file1))
+      file2)
+     ((or (string= two (file-name-sans-extension file2))
+          (funcall denote-sort-comparison-function one two))
+      file1)
+     (t nil))))
+
+(defun denote-sort-keywords-lessp (file1 file2)
+  "Return smallest between FILE1 and FILE2 based on their keywords.
+The comparison is done with `denote-sort-comparison-function' between the
+two keywords values."
+  (let ((one (denote-retrieve-filename-keywords file1))
+        (two (denote-retrieve-filename-keywords file2)))
+    (cond
+     ((and (string-empty-p one) (not (string-empty-p two))) file2)
+     ((or (and (not (string-empty-p one)) (string-empty-p two))
+          (funcall denote-sort-comparison-function one two))
+      file1)
+     (t nil))))
+
+(defun denote-sort-signature-lessp (file1 file2)
+  "Return smallest between FILE1 and FILE2 based on their signature.
+The comparison is done with `denote-sort-comparison-function' between the
+two signature values."
+  (let ((one (denote-retrieve-filename-signature file1))
+        (two (denote-retrieve-filename-signature file2)))
+    (cond
+     ((and (string-empty-p one) (not (string-empty-p two))) file2)
+     ((or (and (not (string-empty-p one)) (string-empty-p two))
+          (funcall denote-sort-comparison-function one two))
+      file1)
+     (t nil))))
 
 ;;;###autoload
-(defun denote-sort-files (files &optional component reverse)
+(defun denote-sort-files (files component &optional reverse)
   "Returned sorted list of Denote FILES.
 
-With optional COMPONENT as a keyword of `:signature', `:title',
-`:keywords', sort files based on the corresponding file name
-component.
+With COMPONENT as a symbol among `denote-sort-components',
+sort files based on the corresponding file name component.
 
-Without COMPONENT, do not sort: keep the original date-based
+With COMPONENT as a nil value keep the original date-based
 sorting which relies on the identifier of each file name.
 
 With optional REVERSE as a non-nil value, reverse the sort order."
   (let* ((files-to-sort (copy-sequence files))
-         (sorted-files (if component
-                           (sort files
-                                 (pcase component
-                                   (:title #'denote-sort-title-lessp)
-                                   (:keywords #'denote-sort-keywords-lessp)
-                                   (:signature #'denote-sort-signature-lessp)
-                                   (_ #'ignore)))
-                         files-to-sort)))
+         (sort-fn (when component
+                    (pcase component
+                     ('title #'denote-sort-title-lessp)
+                     ('keywords #'denote-sort-keywords-lessp)
+                     ('signature #'denote-sort-signature-lessp))))
+         (sorted-files (if sort-fn (sort files sort-fn) files-to-sort)))
     (if reverse
         (reverse sorted-files)
       sorted-files)))
@@ -91,13 +116,13 @@ With optional REVERSE as a non-nil value, reverse the sort order."
 With FILES-MATCHING-REGEXP as a string limit files to those
 matching the given regular expression.
 
-With SORT-BY-COMPONENT as a Lisp keyword, pass it to
-`denote-sort-files' to sort by the corresponding file name
-component.
+With SORT-BY-COMPONENT as a symbol among `denote-sort-components',
+pass it to `denote-sort-files' to sort by the corresponding file
+name component.
 
 With optional REVERSE as a non-nil value, reverse the sort order."
   (denote-sort-files
-   (denote-directory-files-matching-regexp files-matching-regexp)
+   (denote-directory-files files-matching-regexp)
    sort-by-component
    reverse))
 
@@ -108,20 +133,17 @@ With optional REVERSE as a non-nil value, reverse the sort order."
   "Prompt for REGEXP to filter Denote files by."
   (read-regexp "Match files with the given REGEXP: " nil 'denote-sort--files-matching-regexp-hist))
 
-(defvar denote-sort--component-key-hist nil
-  "Minibuffer history of `denote-sort--component-key-prompt'.")
+(defvar denote-sort--component-hist nil
+  "Minibuffer history of `denote-sort-component-prompt'.")
 
-(defvar denote-sort-files-keys '(:title :keywords :signature :identifier)
-  "List of sorting keys applicable for `denote-sort-files'.")
-
-(defun denote-sort--component-key-prompt ()
-  "Prompt `denote-sort-files' for sorting key among `denote-sort-files-keys'."
-  (let ((default (car denote-sort--component-key-hist)))
+(defun denote-sort-component-prompt ()
+  "Prompt `denote-sort-files' for sorting key among `denote-sort-components'."
+  (let ((default (car denote-sort--component-hist)))
     (intern
      (completing-read
       (format-prompt "Sort by file name component " default)
-      denote-sort-files-keys nil :require-match
-      nil 'denote-sort--component-key-hist default))))
+      denote-sort-components nil :require-match
+      nil 'denote-sort--component-hist default))))
 
 (defun denote-sort--prepare-dired (buffer-name files)
   "Return Dired buffer with BUFFER-NAME showing FILES.
@@ -144,7 +166,7 @@ SORT-BY-COMPONENT, and REVERSE.
    those matching the provided regular expression.
 
 2. SORT-BY-COMPONENT sorts the files by their file name
-   component (one among `denote-sort-files-keys').
+   component (one among `denote-sort-components').
 
 3. REVERSE is a boolean to reverse the order when it is a non-nil value.
 
@@ -153,7 +175,7 @@ a non-nil value, respectively."
   (interactive
    (list
     (denote-sort--files-matching-regexp-prompt)
-    (denote-sort--component-key-prompt)
+    (denote-sort-component-prompt)
     (y-or-n-p "Reverse sort? ")))
   (denote-sort--prepare-dired
    (format "Denote files matching `%s' sorted by %s" files-matching-regexp sort-by-component)

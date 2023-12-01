@@ -2442,7 +2442,9 @@ Remember to type =C-c C-x C-u= (~org-dblock-update~) with point on the
 :CUSTOM_ID: h:f15fa143-5036-416f-9bff-1bcabbb03456
 :END:
 
-[ Part of {{{development-version}}}. ]
+[ Part of {{{development-version}}}. As of 2023-11-30 06:54 +0200 and
+  as part of {{{development-version}}}, this dynamic block also provides
+  facilities for sorting, courtesy of the new =denote-sort.el= library. ]
 
 Denote can optionally use Org's dynamic blocks facility to produce a
 section that lists entire file contents ([[#h:8b542c50-dcc9-4bca-8037-a36599b22779][Use Org dynamic blocks]]).
@@ -2467,7 +2469,7 @@ or manually write the following block in an Org file and then type
 To fully control the output, include these additional optional
 parameters, which are described further below:
 
-: #+BEGIN: denote-files :regexp "YOUR REGEXP HERE" :no-front-matter nil :file-separator t :add-links nil
+: #+BEGIN: denote-files :regexp "YOUR REGEXP HERE" :sort-by-component nil :reverse-sort nil :no-front-matter nil :file-separator t :add-links nil
 :
 : #+END:
 
@@ -2478,6 +2480,18 @@ parameters, which are described further below:
   Note that you do not need to write an actual regular expression to
   get meaningful results: even something like =_journal= will work to
   include all files that have a =journal= keyword.
+
+- The =:sort-by-component= parameter is optional. It sorts the files
+  by the given Denote file name component. The value it accepts is an
+  unquoted symbol among =title=, =keywords=, =signature=, =identifier=.
+  When using the command ~denote-org-dblock-insert-files~, this
+  parameter is automatically inserted together with the (=:regexp=
+  parameter) and the user is prompted for a file name component.
+
+- The =:reverse-sort= parameter is optional. It reverses the order in
+  which files appear in. This is meaningful even without the presence
+  of the parameter =:sort-by-component=, though it also combines with
+  it.
 
 #+vindex: denote-org-dblock-file-contents-separator
 - The =:file-separator= parameter is optional. If it is omitted, then
@@ -2513,6 +2527,49 @@ parameters, which are described further below:
   value to add a =#+name= to the results. This is useful for further
   processing using Org facilities (a feature that is outside Denote's
   purview).
+
+* Sort files by component
+:PROPERTIES:
+:CUSTOM_ID: h:9fe01e63-f34f-4479-8713-f162a5ca865e
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+The =denote-sort.el= file is an optional extension to the core
+functionality of Denote, which empowers users to sort files by the
+given file name component ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+#+findex: denote-sort-dired
+The command ~denote-sort-dired~ produces a Dired file listing with a
+flat, filtered, and sorted set of files from the ~denote-directory~.
+It does so by means of three minibuffer prompts:
+
+1. It first asks for a regular expression with which to match Denote
+   files. Remember that due to Denote's efficient file-naming scheme,
+   you do not need to write some complex regular expression. Even
+   something like =_journal= will match only files with a =journal=
+   keyword.
+2. Once the regular expression is provided, the command asks for a
+   Denote file name component to sort files by. This is a symbol among
+   =title=, =keywords=, =signature=, and =identifier=.
+3. Finally, it asks a "yes or no" on whether to reverse the sort
+   order.
+
+The resulting Dired listing is a regular Dired buffer, unlike that of
+~dired-virtual-mode~ ([[#h:d35d8d41-f51b-4139-af8f-9c8cc508e35b][Use ~dired-virtual-mode~ for arbitrary file listings]]).
+
+The dynamic Org blocks that Denote defines to insert file contents
+also use this feature ([[#h:f15fa143-5036-416f-9bff-1bcabbb03456][Org dynamic block to insert file contents]]).
+
+DEVELOPMENT NOTE as of 2023-11-30 07:24 +0200: The sort mechanism will
+be incorporated in more functions on a case-by-case basis, subject to
+user feedback. For the time being, I am not documenting the functions
+that are only accessed from Lisp. Do not hesitate to contact me
+(Protesilaos) in person or on one of the development sources (mailing
+list or GitHub/GitLab mirror) if you have a use-case where sorting
+seems useful. I am happy to help but do not want to roll this feature
+everywhere before eliciting relevant feedback: once we add it, we are
+not going back.
 
 * Minibuffer histories
 :PROPERTIES:
@@ -2861,6 +2918,11 @@ Restore the buffer with \\<dired-mode-map>`\\[revert-buffer]'."
 :PROPERTIES:
 :CUSTOM_ID: h:d35d8d41-f51b-4139-af8f-9c8cc508e35b
 :END:
+
+[ As part of {{{development-version}}}, we provide the
+  ~denote-sort-dired~ command which should cover most of the uses of a
+  virtual Dired listing. The ~denote-sort-dired~ produces a fully
+  fledged Dired buffer ([[#h:9fe01e63-f34f-4479-8713-f162a5ca865e][Sort files by component]]). ]
 
 Emacs' Dired is a powerful file manager that builds its functionality
 on top of the Unix =ls= command.  As noted elsewhere in this manual,
@@ -3735,17 +3797,19 @@ might change them without further notice.
 
 #+findex: denote-directory-files
 + Function ~denote-directory-files~ :: Return list of absolute file
-  paths in variable ~denote-directory~.  Files only need to have an
-  identifier.  The return value may thus include file types that are
-  not implied by ~denote-file-type~. To limit the return value to text
-  files, use the function ~denote-directory-text-only-files~.
-  Remember that the ~denote-directory~ accepts a directory-local value
-  ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
-
-#+findex: denote-directory-text-only-files
-+ Function ~denote-directory-text-only-files~ :: Return list of text
-  files in variable ~denote-directory~.  Filter
-  ~denote-directory-files~ using ~denote-file-is-note-p~.
+  paths in variable ~denote-directory~. Files only need to have an
+  identifier. The return value may thus include file types that are
+  not implied by ~denote-file-type~. Remember that the variable
+  ~denote-directory~ accepts a dir-local value, as explained in its
+  doc string ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]). With optional
+  =FILES-MATCHING-REGEXP=, restrict files to those matching the given
+  regular expression. With optional =OMIT-CURRENT= as a non-nil value,
+  do not include the current Denote file in the returned list. With
+  optional =TEXT-ONLY= as a non-nil value, limit the results to text
+  files that satisfy ~denote-file-is-note-p~. [ As part of
+  {{{development-version}}}, the ~denote-directory-files~ subsumes the
+  now-deprecated ~denote-directory-files-matching-regexp~,
+  ~denote-all-files~, ~denote-directory-text-only-files~. ]
 
 #+findex: denote-directory-subdirectories
 + Function ~denote-directory-subdirectories~ :: Return list of
@@ -3754,15 +3818,6 @@ might change them without further notice.
   ~denote-excluded-directories-regexp~.  Note that the
   ~denote-directory~ accepts a directory-local value for what we call
   "silos" ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).
-
-#+findex: denote-directory-files-matching-regexp
-+ Function ~denote-directory-files-matching-regexp~ :: Return list of
-  files matching =REGEXP= in ~denote-directory-files~.
-
-#+findex: denote-all-files
-+ Function ~denote-all-files~ :: Return the list of Denote files in
-  the variable ~denote-directory~. With optional =OMIT-CURRENT=, do
-  not include the current Denote file in the returned list.
 
 #+findex: denote-file-name-relative-to-denote-directory
 + Function ~denote-file-name-relative-to-denote-directory~ :: Return
