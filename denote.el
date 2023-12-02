@@ -1617,12 +1617,16 @@ TEMPLATE, and SIGNATURE should be valid for note creation."
                         (expand-file-name directory))))
 
 (defun denote--valid-file-type (filetype)
-  "Return a valid filetype given the argument FILETYPE.
+  "Return a valid filetype symbol given the argument FILETYPE.
 If none is found, the first element of `denote-file-types' is
 returned."
-  (if (memq filetype (mapcar 'car denote-file-types))
-      filetype
-    (caar denote-file-types)))
+  (let ((type (cond
+               ((stringp filetype) (intern filetype))
+               ((symbolp filetype) filetype)
+               (t (error "The `%s' is neither a string nor a symbol" filetype)))))
+    (if (memq type (denote--file-type-keys))
+        type
+      (caar denote-file-types))))
 
 (defun denote--date-add-current-time (date)
   "Add current time to DATE, if necessary.
@@ -1890,31 +1894,30 @@ packages such as `marginalia' and `embark')."
 
 (defun denote-signature-prompt (&optional default-signature prompt-text)
   "Prompt for signature string.
-With optional DEFAULT-SIGNATURE use it as the default minibuffer
-value.  With optional PROMPT-TEXT use it in the minibuffer
-instead of the default prompt.
+With optional DEFAULT-SIGNATURE use it as the initial minibuffer
+text.  With optional PROMPT-TEXT use it in the minibuffer instead
+of the default prompt.
 
 Previous inputs at this prompt are available for minibuffer
 completion.  Consider `savehist-mode' to persist minibuffer
 histories between sessions."
   (when (and default-signature (string-empty-p default-signature))
     (setq default-signature nil))
-  (denote-sluggify-signature
-   ;; NOTE 2023-10-27: By default SPC performs completion in the
-   ;; minibuffer.  We do not want that, as the user should be able to
-   ;; input an arbitrary string, while still performing completion
-   ;; against their input history.
-   (minibuffer-with-setup-hook
-       (lambda ()
-         (use-local-map
-          (let ((map (make-composed-keymap
-                      nil (current-local-map))))
-            (define-key map (kbd "SPC") nil)
-            map)))
-     (completing-read
-      (format-prompt (or prompt-text "Provide signature") nil)
-      denote--signature-history
-      nil nil nil 'denote--signature-history default-signature))))
+  ;; NOTE 2023-10-27: By default SPC performs completion in the
+  ;; minibuffer.  We do not want that, as the user should be able to
+  ;; input an arbitrary string, while still performing completion
+  ;; against their input history.
+  (minibuffer-with-setup-hook
+      (lambda ()
+        (use-local-map
+         (let ((map (make-composed-keymap
+                     nil (current-local-map))))
+           (define-key map (kbd "SPC") nil)
+           map)))
+    (completing-read
+     (format-prompt (or prompt-text "Provide signature") nil)
+     denote--signature-history
+     nil nil default-signature 'denote--signature-history)))
 
 ;;;;; Convenience commands as `denote' variants
 
@@ -2377,7 +2380,7 @@ TITLE is a string.
 Add SIGNATURE to the file, using an existing one as the default
 value at the minibuffer prompt.  When called from Lisp, SIGNATURE
 is a string.  If the SIGNATURE is empty or nil, it is not
-included in the new file name.
+included in the new file name or removed from an existing one.
 
 As a final step after the FILE, TITLE, KEYWORDS, and SIGNATURE
 are collected, ask for confirmation, showing the difference
@@ -2431,7 +2434,7 @@ place."
        (format "Rename `%s' with keywords" file-in-prompt))
       (denote-signature-prompt
        (denote-retrieve-filename-signature file)
-       (format "Rename `%s' with signature (empty to ignore)" file-in-prompt))
+       (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt))
       current-prefix-arg)))
   (let* ((dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file :no-error)
@@ -2479,7 +2482,7 @@ the changes made to the file: perform them outright."
                             (format "Rename `%s' with keywords" file-in-prompt)))
                  (signature (denote-signature-prompt
                              (denote-retrieve-filename-signature file)
-                             (format "Rename `%s' with signature (empty to ignore)" file-in-prompt)))
+                             (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt)))
                  (extension (denote-get-file-extension file))
                  (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (denote-sluggify-signature signature))))
             (denote-rename-file-and-buffer file new-name)
@@ -3514,10 +3517,13 @@ default, it will show up below the current window."
 (defvar denote-link-add-links-sort nil
   "When t, add REVERSE to `sort-lines' of `denote-link-add-links'.")
 
-(defun denote-link--prepare-links (files current-file-type id-only)
+(defun denote-link--prepare-links (files current-file-type id-only &optional no-sort)
   "Prepare links to FILES from CURRENT-FILE-TYPE.
 When ID-ONLY is non-nil, use a generic link format.  See
-`denote-link--file-type-format'."
+`denote-link--file-type-format'.
+
+With optional NO-SORT do not try to sort the inserted lines.
+Otherwise sort lines while accounting for `denote-link-add-links-sort'."
   (with-temp-buffer
     (mapc
      (lambda (file)
@@ -3529,7 +3535,8 @@ When ID-ONLY is non-nil, use a generic link format.  See
           (denote-link--file-type-format current-file-type id-only)
           (denote--link-get-description file (denote-filetype-heuristics file))))))
           files)
-    (sort-lines denote-link-add-links-sort (point-min) (point-max))
+    (unless no-sort
+      (sort-lines denote-link-add-links-sort (point-min) (point-max)))
     (buffer-string)))
 
 (defvar denote-link--add-links-history nil
@@ -3539,6 +3546,20 @@ When ID-ONLY is non-nil, use a generic link format.  See
   'denote-link-add-links
   'denote-add-links
   "2.0.0")
+
+(defun denote-link--insert-links (files current-file-type &optional id-only no-sort)
+  "Insert at point a typographic list of links matching FILES.
+
+With CURRENT-FILE-TYPE as a symbol among those specified in
+`denote-file-type' (or the `car' of each element in
+`denote-file-types'), format the link accordingly.  With a nil or
+unknown non-nil value, default to the Org notation.
+
+With ID-ONLY as a non-nil value, produce links that consist only
+of the identifier, thus deviating from CURRENT-FILE-TYPE.
+
+Optional NO-SORT is passed to `denote-link--prepare-links'."
+  (insert (denote-link--prepare-links files current-file-type id-only no-sort)))
 
 ;;;###autoload
 (defun denote-add-links (regexp &optional id-only)
@@ -3557,7 +3578,7 @@ inserts links with just the identifier."
     (if-let ((files (denote-directory-files regexp :omit-current))
              (beg (point)))
         (progn
-          (insert (denote-link--prepare-links files file-type id-only))
+          (denote-link--insert-links files file-type id-only)
           (denote-link-buttonize-buffer beg (point)))
       (message "No links matching `%s'" regexp))))
 

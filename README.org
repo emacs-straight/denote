@@ -1083,7 +1083,8 @@ When called from Lisp, =TITLE= is a string.
 Add =SIGNATURE= to the file, using an existing one as the default
 value at the minibuffer prompt. When called from Lisp, =SIGNATURE= is
 a string. If the =SIGNATURE= is empty or ~nil~, it is not included in
-the new file name.
+the new file name or removed from an existing one. [ Made it
+intuitive/consistent as part of {{{development-version}}}. ]
 
 As a final step after the =FILE=, =TITLE=, =KEYWORDS=, and =SIGNATURE=
 are collected, ask for confirmation, showing the difference between
@@ -2392,7 +2393,7 @@ The =denote-links= block can be inserted at point with the command
 ~denote-org-dblock-insert-links~ or by manually including the
 following in an Org file:
 
-: #+BEGIN: denote-links :regexp "YOUR REGEXP HERE" :id-only nil
+: #+BEGIN: denote-links :regexp "YOUR REGEXP HERE" :sort-by-component nil :reverse-sort nil :id-only nil
 :
 : #+END:
 
@@ -2414,6 +2415,19 @@ line to update the block.
   meaningful results: even something like =_journal= will work to
   include all files that have a =journal= keyword.
 
+- The =:sort-by-component= parameter is optional. It sorts the files
+  by the given Denote file name component. The value it accepts is an
+  unquoted symbol among =title=, =keywords=, =signature=, =identifier=.
+  When using the command ~denote-org-dblock-insert-files~, this
+  parameter is automatically inserted together with the (=:regexp=
+  parameter) and the user is prompted for a file name component. [ The
+  =:sort-by-component= parameter is part of {{{development-version}}}. ]
+
+- The =:reverse-sort= parameter is optional. It reverses the order in
+  which files appear in. This is meaningful even without the presence
+  of the parameter =:sort-by-component=, though it also combines with
+  it. [ The =:reverse-sort= parameter is part of {{{development-version}}}. ]
+
 - The =:id-only= parameter is optional. It accepts a ~t~ value, in
   which case links are inserted without a description text but only
   with the identifier of the given file. This has the same meaning as
@@ -2430,9 +2444,12 @@ The same as above except for the =:regexp= parameter are true for the
 command ~denote-org-dblock-insert-backlinks~ or by manually writing
 this in an Org file:
 
-: #+BEGIN: denote-backlinks :id-only nil
+: #+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil
 :
 : #+END:
+
+[ As with the =denote-links= block, the parameters =:sort-by-component=
+  and =:reverse-sort= are part of {{{development-version}}}. ]
 
 Remember to type =C-c C-x C-u= (~org-dblock-update~) with point on the
 =#+BEGIN= line to update the block.
@@ -3948,11 +3965,15 @@ might change them without further notice.
 
 #+findex: denote-signature-prompt
 + Function ~denote-signature-prompt~ :: Prompt for signature string.
-  With optional =DEFAULT-SIGNATURE= use it as the default minibuffer
-  value. With optional =PROMPT-TEXT= use it in the minibuffer instead
+  With optional =DEFAULT-SIGNATURE= use it as the initial minibuffer
+  text. With optional =PROMPT-TEXT= use it in the minibuffer instead
   of the default prompt. Previous inputs at this prompt are available
   for minibuffer completion. Consider ~savehist-mode~ to persist
-  minibuffer histories between sessions.
+  minibuffer histories between sessions. [ Revised as part of
+  {{{development-version}}} to use initial text instead of a default
+  value. This way, the current can still input an empty string when
+  they want to. Whereas before the empty string was interpreted as the
+  default value (this is how Emacs does it). ]
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in

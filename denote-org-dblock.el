@@ -41,11 +41,28 @@
 (require 'denote-sort)
 (require 'org)
 
-;;;; Dynamic block to insert links
+;;;; Common helper functions
+
+(defun denote-org-dblock--files (files-matching-regexp &optional sort-by-component reverse)
+  "Return list of FILES-MATCHING-REGEXP in variable `denote-directory'.
+SORT-BY-COMPONENT and REVERSE have the same meaning as
+`denote-sort-files'.  If both are nil, do not try to perform any
+sorting."
+  (cond
+   ((and sort-by-component reverse)
+    (denote-sort-get-directory-files files-matching-regexp sort-by-component reverse))
+   (sort-by-component
+    (denote-sort-get-directory-files files-matching-regexp sort-by-component))
+   (reverse
+    (denote-sort-get-directory-files files-matching-regexp :no-component-specified reverse))
+   (t
+    (denote-directory-files files-matching-regexp))))
 
 (defun denote-org-dblock--file-regexp-prompt ()
   "Prompt for regexp to match Denote file names."
   (read-regexp "Search for notes matching REGEX: " nil 'denote-link--add-links-history))
+
+;;;; Dynamic block to insert links
 
 ;;;###autoload
 (defun denote-org-dblock-insert-links (regexp)
@@ -53,6 +70,8 @@
   (interactive (list (denote-org-dblock--file-regexp-prompt)))
   (org-create-dblock (list :name "denote-links"
                            :regexp regexp
+                           :sort-by-component nil
+                           :reverse-sort nil
                            :id-only nil))
   (org-update-dblock))
 
@@ -63,19 +82,36 @@
 Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   (let* ((regexp (plist-get params :regexp))
          (rx (if (listp regexp) (macroexpand `(rx ,regexp)) regexp))
-         (block-name (plist-get params :block-name)))
-    (when block-name
-      (insert "#+name: " block-name "\n"))
-    (denote-add-links rx (plist-get params :id-only))
+         (sort (plist-get params :sort-by-component))
+         (reverse (plist-get params :reverse-sort))
+         (block-name (plist-get params :block-name))
+         (files (denote-org-dblock--files rx sort reverse)))
+    (when block-name (insert "#+name: " block-name "\n"))
+    (denote-link--insert-links files 'org (plist-get params :id-only) :no-other-sorting)
     (join-line))) ; remove trailing empty line
 
 ;;;; Dynamic block to insert backlinks
+
+(defun denote-org-dblock--maybe-sort-backlinks (files sort-by-component reverse)
+  "Sort backlink FILES if SORT-BY-COMPONENT and/or REVERSE is non-nil."
+  (cond
+   ((and sort-by-component reverse)
+    (denote-sort-files files sort-by-component reverse))
+   (sort-by-component
+    (denote-sort-files files sort-by-component))
+   (reverse
+    (denote-sort-files files :no-component-specified reverse))
+   (t
+    files)))
 
 ;;;###autoload
 (defun denote-org-dblock-insert-backlinks ()
   "Insert new Org dynamic block to include backlinks."
   (interactive)
-  (org-create-dblock (list :name "denote-backlinks" :id-only nil))
+  (org-create-dblock (list :name "denote-backlinks"
+                           :sort-by-component nil
+                           :reverse-sort nil
+                           :id-only nil))
   (org-update-dblock))
 
 (org-dynamic-block-define "denote-backlinks" 'denote-org-dblock-insert-backlinks)
@@ -84,8 +120,11 @@ Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   "Function to update `denote-backlinks' Org Dynamic blocks.
 Used by `org-dblock-update' with PARAMS provided by the dynamic block."
   (when-let ((files (denote-link-return-backlinks)))
-    (insert (denote-link--prepare-links files 'org (plist-get params :id-only)))
-    (join-line))) ; remove trailing empty line
+    (let* ((sort (plist-get params :sort-by-component))
+           (reverse (plist-get params :reverse-sort))
+           (files (denote-org-dblock--maybe-sort-backlinks files sort reverse)))
+      (denote-link--insert-links files 'org (plist-get params :id-only) :no-other-sorting)
+      (join-line)))) ; remove trailing empty line
 
 ;;;; Dynamic block to insert entire file contents
 
@@ -155,16 +194,7 @@ component.  If the symbol is not among `denote-sort-components',
 fall back to the default identifier-based sorting.
 
 If optional REVERSE is non-nil reverse the sort order."
-  (let ((files
-         (cond
-          ((and sort-by-component reverse)
-           (denote-sort-get-directory-files regexp sort-by-component reverse))
-          (sort-by-component
-           (denote-sort-get-directory-files regexp sort-by-component))
-          (reverse
-           (denote-sort-get-directory-files regexp :no-component-specified reverse))
-          (t
-           (denote-directory-files regexp)))))
+  (let ((files (denote-org-dblock--files regexp sort-by-component reverse)))
     ;; FIXME 2023-11-23: Do not use a separator for the last file.
     ;; Not a big issue, but is worth checking.
     (mapc
