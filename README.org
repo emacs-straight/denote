@@ -1221,7 +1221,7 @@ Unlike ~denote-rename-file~, the command ~denote-dired-rename-files~
 does not ask to confirm the changes made to the files: it performs
 them outright. This is done to make it easier to rename multiple files
 without having to confirm each step. For an even more direct approach,
-check the command ~denote-dired-rename-marked-files~:
+check the command ~denote-dired-rename-marked-files-with-keywords~.
 
 - [[#h:f365ff7e-2140-4e14-a92f-666ae97382a4][Rename by writing only keywords]]
 - [[#h:ea5673cd-e6ca-4c42-a066-07dc6c9d57f8][Rename multiple files based on their front matter]]
@@ -1304,6 +1304,24 @@ field in the file's front matter, depending on the previous file type
 
 As a final step, the command asks for confirmation, showing the
 difference between old and new file names.
+
+** Faces used by rename commands
+:PROPERTIES:
+:CUSTOM_ID: h:ab3f355a-f763-43ae-a4c9-179d2d9265a5
+:END:
+
+[ These faces are part of {{{development-version}}}. The styles they
+  use are the same they had before. The difference now is that themes
+  can style them as they see fit instead of having to deal with
+  hardcoded values. ]
+
+These are the faces used by the various Denote rename commands to
+style or highlight the old/new/current file shown in the relevant
+minibuffer prompts:
+
+- ~denote-faces-prompt-current-name~
+- ~denote-faces-prompt-new-name~
+- ~denote-faces-prompt-old-name~
 
 * The file-naming scheme
 :PROPERTIES:
@@ -2237,6 +2255,7 @@ The faces we define for this purpose are:
 #+vindex: denote-faces-delimiter
 #+vindex: denote-faces-extension
 #+vindex: denote-faces-keywords
+#+vindex: denote-faces-signature
 #+vindex: denote-faces-subdirectory
 #+vindex: denote-faces-time
 #+vindex: denote-faces-title
@@ -2244,6 +2263,7 @@ The faces we define for this purpose are:
 + ~denote-faces-delimiter~
 + ~denote-faces-extension~
 + ~denote-faces-keywords~
+- ~denote-faces-signature~
 + ~denote-faces-subdirectory~
 + ~denote-faces-time~
 + ~denote-faces-title~
@@ -3905,19 +3925,23 @@ might change them without further notice.
   ~denote-create-unique-file-identifier~ function.
 
 #+findex: denote-retrieve-filename-title
-+ Function ~denote-retrieve-filename-title~ :: Extract title from
-  =FILE= name, else return ~file-name-base~.  Run ~denote-desluggify~
-  on the title if the extraction is successful.
++ Function ~denote-retrieve-filename-title~ ::  Extract Denote title
+  component from =FILE= name, else return an empty string. With
+  optional =FILE-NAME-BASE-FALLBACK= return ~file-name-base~ if no
+  Denote title component exists. If the extraction is succcessful
+  (when no ~file-name-base~ is involved) run ~denote-desluggify~ on
+  the title. [ Revised as part of {{{development-version}}} to return
+  an empty string if no title is present and to make the use of
+  ~file-name-base~ optional. ]
 
 #+findex: denote-retrieve-filename-keywords
 + Function ~denote-retrieve-filename-keywords~ ::  Extract keywords
   from =FILE= name, if present, else return an empty string. Return
-  matched keywords as a single string. [ Part of
-  {{{development-version}}} . ]
+  matched keywords as a single string. [ Part of {{{development-version}}} . ]
 
 #+findex: denote-retrieve-filename-signature
 + Function ~denote-retrieve-filename-signature~ :: Extract signature
-  from =FILE= name, if present, else return nil.
+  from =FILE= name, if present, else return an empty string.
 
 #+findex: denote-create-unique-file-identifier
 + Function ~denote-create-unique-file-identifier~ :: Create a new unique
@@ -3971,9 +3995,10 @@ might change them without further notice.
   for minibuffer completion. Consider ~savehist-mode~ to persist
   minibuffer histories between sessions. [ Revised as part of
   {{{development-version}}} to use initial text instead of a default
-  value. This way, the current can still input an empty string when
-  they want to. Whereas before the empty string was interpreted as the
-  default value (this is how Emacs does it). ]
+  value. This way, the user can still input an empty string when they
+  want to. Whereas before the empty string was interpreted as the
+  default value (this is how Emacs does it but is not what we wanted
+  in this case). ]
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in
@@ -3990,12 +4015,17 @@ might change them without further notice.
   ~denote-sort-keywords~ is non-nil.
 
 #+findex: denote-title-prompt
-+ Function ~denote-title-prompt~ :: Read file title for ~denote~. With
-  optional =DEFAULT-TITLE= use it as the default value. With optional
-  =PROMPT-TEXT= use it in the minibuffer instead of the generic
-  prompt. Previous inputs at this prompt are available for minibuffer
-  completion. Consider ~savehist-mode~ to persist minibuffer histories
-  between sessions.
++ Function ~denote-title-prompt~ :: Prompt for title string. With
+  optional =DEFAULT-TITLE= use it as the initial minibuffer text. With
+  optional =PROMPT-TEXT= use it in the minibuffer instead of the
+  default prompt. Previous inputs at this prompt are available for
+  minibuffer completion. Consider ~savehist-mode~ to persist
+  minibuffer histories between sessions. [ Revised as part of
+  {{{development-version}}} to use initial text instead of a default
+  value. This way, the user can still input an empty string when they
+  want to. Whereas before the empty string was interpreted as the
+  default value (this is how Emacs does it but is not what we wanted
+  in this case). ]
 
 #+vindex: denote-title-prompt-current-default
 + Variable ~denote-title-prompt-current-default~ :: Currently bound
@@ -4057,8 +4087,8 @@ might change them without further notice.
   outright according to =FILE-TYPE=.  Do the same as
   ~denote-rewrite-front-matter~ for keywords, but do not ask for
   confirmation.  This is for use in ~denote-keywords-add~,
-  ~denote-keywords-remove~, ~denote-dired-rename-marked-files-with-keywords~, or
-  related.
+  ~denote-keywords-remove~, ~denote-dired-rename-marked-files-with-keywords~,
+  or related.
 
 #+findex: denote-update-dired-buffers
 + Function ~denote-update-dired-buffers~ :: Update Dired buffers of

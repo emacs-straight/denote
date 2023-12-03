@@ -1415,15 +1415,23 @@ Return matched keywords as a single string."
         (match-string 1 filename)
       "")))
 
-(defun denote-retrieve-filename-title (file)
-  "Extract title from FILE name, else return `file-name-base'.
-Run `denote-desluggify' on title if the extraction is sucessful."
-  (if-let (((file-exists-p file))
-           ((denote-file-has-identifier-p file))
-           ((string-match denote-title-regexp file))
-           (title (match-string 1 file)))
-      (denote-desluggify title)
-    (file-name-base file)))
+(defun denote-retrieve-filename-title (file &optional file-name-base-fallback)
+  "Extract Denote title component from FILE name, else return an empty string.
+
+With optional FILE-NAME-BASE-FALLBACK return `file-name-base' if
+no Denote title component exists.
+
+If the extraction is succcessful (when no `file-name-base' is
+involved) run `denote-desluggify' on the title"
+  (unless (file-exists-p file)
+    (error "%s does not exist as a file" file))
+  (cond
+   ((and (denote-file-has-identifier-p file)
+         (string-match denote-title-regexp file))
+    (denote-desluggify (match-string 1 file)))
+   (file-name-base-fallback
+    (file-name-base file))
+   (t "")))
 
 (defun denote--file-with-temp-buffer-subr (file)
   "Return path to FILE or its buffer together with the appropriate function.
@@ -1496,7 +1504,7 @@ that internally)."
            (title (denote-retrieve-title-value file type))
            ((not (string-blank-p title))))
       title
-    (denote-retrieve-filename-title file)))
+    (denote-retrieve-filename-title file :file-name-base-as-fallback)))
 
 (defun denote--retrieve-location-in-xrefs (identifier)
   "Return list of xrefs for IDENTIFIER with their respective location.
@@ -1787,10 +1795,11 @@ command that needs to supply a default title before calling
 back to nil.")
 
 (defun denote-title-prompt (&optional default-title prompt-text)
-  "Read file title for `denote'.
-With optional DEFAULT-TITLE use it as the default value.  With
-optional PROMPT-TEXT use it in the minibuffer instead of the
-generic prompt.
+  "Prompt for title string.
+
+With optional DEFAULT-TITLE use it as the initial minibuffer
+text.  With optional PROMPT-TEXT use it in the minibuffer instead
+of the default prompt.
 
 Previous inputs at this prompt are available for minibuffer
 completion.  Consider `savehist-mode' to persist minibuffer
@@ -1806,11 +1815,10 @@ histories between sessions."
                      nil (current-local-map))))
            (define-key map (kbd "SPC") nil)
            map)))
-    (let ((def (or default-title denote-title-prompt-current-default)))
-      (completing-read
-       (format-prompt (or prompt-text "File title") def)
-       denote--title-history
-       nil nil nil 'denote--title-history def))))
+    (completing-read
+     (format-prompt (or prompt-text "File title") nil)
+     denote--title-history
+     nil nil default-title 'denote--title-history nil)))
 
 (defvar denote--file-type-history nil
   "Minibuffer history of `denote-file-type-prompt'.")
@@ -2258,7 +2266,7 @@ Do the same as `denote-rewrite-front-matter' for keywords,
 but do not ask for confirmation.
 
 This is for use in `denote-keywords-add',`denote-keywords-remove',
-`denote-dired-rename-marked-files', or related."
+`denote-dired-rename-files', or related."
   (with-current-buffer (find-file-noselect file)
     (save-excursion
       (save-restriction
@@ -2291,10 +2299,10 @@ that effect."
       (when (or no-confirm
                 (y-or-n-p (format
                            "Replace front matter?\n-%s\n+%s\n\n-%s\n+%s?"
-                           (propertize old-title-line 'face 'error)
-                           (propertize new-title-line 'face 'success)
-                           (propertize old-keywords-line 'face 'error)
-                           (propertize new-keywords-line 'face 'success))))
+                           (propertize old-title-line 'face 'denote-faces-prompt-old-name)
+                           (propertize new-title-line 'face 'denote-faces-prompt-new-name)
+                           (propertize old-keywords-line 'face 'denote-faces-prompt-old-name)
+                           (propertize new-keywords-line 'face 'denote-faces-prompt-new-name))))
         (save-excursion
           (save-restriction
             (widen)
@@ -2335,8 +2343,8 @@ Throw error if FILE is not regular, else return FILE."
   (unless (string= (expand-file-name old-name) (expand-file-name new-name))
     (y-or-n-p
      (format "Rename %s to %s?"
-             (propertize (file-name-nondirectory old-name) 'face 'error)
-             (propertize (file-name-nondirectory new-name) 'face 'success)))))
+             (propertize (file-name-nondirectory old-name) 'face 'denote-faces-prompt-old-name)
+             (propertize (file-name-nondirectory new-name) 'face 'denote-faces-prompt-new-name)))))
 
 ;; NOTE 2023-10-20: We do not need a user option for this, though it
 ;; can be useful to have it as a variable.
@@ -2424,12 +2432,12 @@ place."
   (interactive
    (let* ((file (denote--rename-dired-file-or-prompt))
           (file-type (denote-filetype-heuristics file))
-          (file-in-prompt (propertize file 'face 'error)))
+          (file-in-prompt (propertize file 'face 'denote-faces-prompt-current-name)))
      (list
       file
       (denote-title-prompt
        (denote--retrieve-title-or-filename file file-type)
-       (format "Rename `%s' with title" file-in-prompt))
+       (format "Rename `%s' with title (empty to ignore/remove)" file-in-prompt))
       (denote-keywords-prompt
        (format "Rename `%s' with keywords" file-in-prompt))
       (denote-signature-prompt
@@ -2471,13 +2479,13 @@ the changes made to the file: perform them outright."
                         (denote--get-all-used-ids))))
         (dolist (file marks)
           (let* ((file-type (denote-filetype-heuristics file))
-                 (file-in-prompt (propertize file 'face 'error))
+                 (file-in-prompt (propertize file 'face 'denote-faces-prompt-current-name))
                  (dir (file-name-directory file))
                  (id (or (denote-retrieve-filename-identifier file :no-error)
                          (denote-create-unique-file-identifier file used-ids)))
                  (title (denote-title-prompt
                          (denote--retrieve-title-or-filename file file-type)
-                         (format "Rename `%s' with title" file-in-prompt)))
+                         (format "Rename `%s' with title (empty to ignore/remove)" file-in-prompt)))
                  (keywords (denote-keywords-prompt
                             (format "Rename `%s' with keywords" file-in-prompt)))
                  (signature (denote-signature-prompt
@@ -2692,7 +2700,7 @@ of the file.  This needs to be done manually."
   (let* ((dir (file-name-directory file))
          (old-file-type (denote-filetype-heuristics file))
          (id (or (denote-retrieve-filename-identifier file :no-error) ""))
-         (title (denote-retrieve-title-value file old-file-type))
+         (title (denote--retrieve-title-or-filename file old-file-type))
          (keywords (denote-retrieve-keywords-value file old-file-type))
          (signature (denote-retrieve-filename-signature file))
          (old-extension (denote-get-file-extension file))
@@ -2784,7 +2792,8 @@ and seconds."
   "Regexp of file names for fontification.")
 
 (defconst denote-faces-file-name-keywords
-  `((,(concat "[\t\s]+" denote-faces--file-name-regexp)
+  `((,(concat "\\(?11:[\t\s]+\\|.*/\\)?" denote-faces--file-name-regexp)
+     (11 'denote-faces-subdirectory nil t)
      (1 'denote-faces-date)
      (10 'denote-faces-time-delimiter nil t)
      (2 'denote-faces-time)
@@ -2797,20 +2806,22 @@ and seconds."
      (9 'denote-faces-extension nil t )))
   "Keywords for fontification of file names.")
 
-(defconst denote-faces-file-name-keywords-for-backlinks
-  `((,(concat "^\\(?11:.*/\\)?" denote-faces--file-name-regexp)
-     (11 'denote-faces-subdirectory nil t)
-     (1 'denote-faces-date)
-     (10 'denote-faces-time-delimiter nil t)
-     (2 'denote-faces-time)
-     (3 'denote-faces-delimiter nil t)
-     (4 'denote-faces-signature nil t)
-     (5 'denote-faces-delimiter nil t)
-     (6 'denote-faces-title nil t)
-     (7 'denote-faces-delimiter nil t)
-     (8 'denote-faces-keywords nil t)
-     (9 'denote-faces-extension nil t )))
-  "Keywords for fontification of file names in the backlinks buffer.")
+(make-obsolete-variable 'denote-faces-file-name-keywords-for-backlinks nil "2.2.0")
+
+(defface denote-faces-prompt-old-name '((t :inherit error))
+  "Face for the old name shown in the prompt of `denote-rename-file' etc."
+  :group 'denote-faces
+  :package-version '(denote . "2.2.0"))
+
+(defface denote-faces-prompt-new-name '((t :inherit success))
+  "Face for the new name shown in the prompt of `denote-rename-file' etc."
+  :group 'denote-faces
+  :package-version '(denote . "2.2.0"))
+
+(defface denote-faces-prompt-current-name '((t :inherit denote-faces-prompt-old-name))
+  "Face for the current file shown in the prompt of `denote-rename-file' etc."
+  :group 'denote-faces
+  :package-version '(denote . "2.2.0"))
 
 ;;;; Fontification in Dired
 
@@ -3084,6 +3095,10 @@ Also see `denote--link-get-description'."
          (text (denote--link-get-description file file-type))
          (specifiers (if (and text
                               (not (string-empty-p text)))
+                         ;; NOTE 2023-12-02: I want to elicit more
+                         ;; feedback before I make this a variable.
+                         ;; How do users of signatures prefer to
+                         ;; display them in link descriptions?
                          "%s %s"
                        "%s")))
     (format specifiers signature text)))
@@ -3159,6 +3174,7 @@ Also see `denote-link-return-backlinks'."
 ;;;###autoload
 (defun denote-find-link ()
   "Use minibuffer completion to visit linked file."
+  (declare (interactive-only t))
   (interactive)
   (find-file
    (denote-link--find-file-prompt
@@ -3182,6 +3198,7 @@ Also see `denote-link-return-links'."
   "Use minibuffer completion to visit backlink to current file.
 
 Like `denote-find-link', but select backlink to follow."
+  (declare (interactive-only t))
   (interactive)
   (find-file
    (denote-get-path-by-id
@@ -3421,7 +3438,7 @@ matching identifiers."
 (define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords t))
   (add-hook 'project-find-functions #'denote-project-find nil t))
 
 (defun denote-link--prepare-backlinks (fetcher _alist)
@@ -3533,7 +3550,10 @@ Otherwise sort lines while accounting for `denote-link-add-links-sort'."
          (denote-format-link
           file
           (denote-link--file-type-format current-file-type id-only)
-          (denote--link-get-description file (denote-filetype-heuristics file))))))
+          (let ((type (denote-filetype-heuristics file)))
+            (if (denote-file-has-signature-p file)
+                (denote--link-get-description-with-signature file type)
+              (denote--link-get-description file type)))))))
           files)
     (unless no-sort
       (sort-lines denote-link-add-links-sort (point-min) (point-max)))
@@ -3881,6 +3901,14 @@ Consult the manual for template samples."
                         (format-time-string denote-id-format) 'org ""))
     (denote--keywords-add-to-history keywords)
     (concat front-matter denote-org-capture-specifiers)))
+
+;; TODO 2023-12-02: Maybe simplify `denote-org-capture-with-prompts'
+;; by passing a single PROMPTS that is the same value as `denote-prompts'?
+
+;; TODO 2023-12-02: The `denote-org-capture-with-prompts' is missing a
+;; signature argument, but nobody has asked for it.  I think
+;; refactoring it per the above TODO is better, anyway.  But maybe do
+;; this after version 2.2.0 is out.
 
 ;;;###autoload
 (defun denote-org-capture-with-prompts (&optional title keywords subdirectory date template)
