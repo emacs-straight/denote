@@ -1000,7 +1000,7 @@ With optional PROMPT, use it instead of a generic text for file
 keywords."
   (delete-dups
    (completing-read-multiple
-    (format-prompt (or prompt "File keyword") nil)
+    (format-prompt (or prompt "File keywords") nil)
     keywords nil nil nil 'denote--keyword-history)))
 
 (defun denote-keywords-prompt (&optional prompt-text)
@@ -1013,8 +1013,12 @@ keywords.  Else use a generic prompt.
 
 Process the return value with `denote-keywords-sort' and sort
 with `string-collate-lessp' if the user option
-`denote-sort-keywords' is non-nil."
-  (denote-keywords-sort (denote--keywords-crm (denote-keywords) prompt-text)))
+`denote-sort-keywords' is non-nil.
+
+Return an empty string if the minibuffer input is empty."
+  (if-let ((kw (denote--keywords-crm (denote-keywords) prompt-text)))
+      (denote-keywords-sort kw)
+    ""))
 
 (defun denote-keywords-sort (keywords)
   "Sort KEYWORDS if `denote-sort-keywords' is non-nil.
@@ -1531,16 +1535,54 @@ See `denote--retrieve-locations-in-xrefs'."
 
 ;;;;; Common helpers for new notes
 
-(defun denote-format-file-name (path id keywords title-slug extension signature-slug)
+(defun denote-format-file-name (dir-path id keywords title-slug extension signature-slug)
   "Format file name.
-PATH, ID, KEYWORDS, TITLE-SLUG, EXTENSION and SIGNATURE-SLUG are
-expected to be supplied by `denote' or equivalent command."
-  (let ((file-name (concat path id)))
-    (when (not (string-empty-p signature-slug))
+DIR-PATH, ID, KEYWORDS, TITLE-SLUG, EXTENSION and SIGNATURE-SLUG are
+expected to be supplied by `denote' or equivalent command.
+
+DIR-PATH is a string pointing to a directory.  It ends with a
+forward slash (the function `denote-directory' makes sure this is
+the case when returning the value of the variable `denote-directory').
+DIR-PATH cannot be nil or an empty string.
+
+ID is a string holding the identifier of the note.  It cannot be
+nil or an empty string and must match `denote-id-regexp'.
+
+DIR-PATH and ID form the base file name.
+
+KEYWORDS is a list of strings that is reduced to a single string
+by `denote-keywords-combine'.  KEYWORDS can be an empty string or
+a nil value, in which case the relevant file name component is
+not added to the base file name.
+
+TITLE-SLUG and SIGNATURE-SLUG are strings which, in principle,
+are sluggified before passed as arguments here (per
+`denote-sluggify' and `denote-sluggify-signature').  They can be
+an empty string or a nil value, in which case their respective
+file name component is not added to the base file name.
+
+EXTENSION is a string that contains a dot followed by the file
+type extension.  It can be an empty string or a nil value, in
+which case it is not added to the base file name."
+  (cond
+   ((null dir-path)
+    (error "DIR-PATH must not be nil"))
+   ((string-empty-p dir-path)
+    (error "DIR-PATH must not be an empty string"))
+   ((not (string-suffix-p "/" dir-path))
+    (error "DIR-PATH does not end with a / as directories ought to"))
+   ((null id)
+    (error "ID must not be nil"))
+   ((string-empty-p id)
+    (error "ID must not be an empty string"))
+   ((not (string-match-p denote-id-regexp id))
+    (error "ID `%s' does not match `denote-id-regexp'" id)))
+  (let ((file-name (concat dir-path id)))
+    (when (and signature-slug (not (string-empty-p signature-slug)))
       (setq file-name (concat file-name "==" signature-slug)))
-    (when (not (string-empty-p title-slug))
+    (when (and title-slug (not (string-empty-p title-slug)))
       (setq file-name (concat file-name "--" title-slug)))
-    (when keywords
+    (when (and keywords (or (listp keywords) (not (string-empty-p keywords))))
       (setq file-name (concat file-name "__" (denote-keywords-combine keywords))))
     (concat file-name extension)))
 
@@ -2124,7 +2166,7 @@ the new front matter, per `denote-rename-file-using-front-matter'."
 In the case of multiple entries, those are separated by the
 `crm-sepator', which typically is a comma.  In such a case, the
 output is sorted with `string-collate-lessp'."
-  (let ((choice (denote--keywords-crm keywords "Keyword to remove: ")))
+  (let ((choice (denote--keywords-crm keywords "Keywords to remove")))
     (if denote-sort-keywords
         (sort choice #'string-collate-lessp)
       choice)))
@@ -2360,7 +2402,8 @@ with minibuffer completion for one.  When called from Lisp, FILE
 is a filesystem path represented as a string.
 
 If FILE has a Denote-compliant identifier, retain it while
-updating the TITLE and KEYWORDS fields of the file name.
+updating the TITLE, KEYWORDS, and SIGNATURE components of the
+file name.
 
 Else create an identifier based on the following conditions:
 
@@ -2378,23 +2421,30 @@ Else create an identifier based on the following conditions:
    the variable `denote-directory', increment it such that it
    becomes unique.
 
-Use TITLE to construct the new name of FILE.  In interactive use,
+Add TITLE to FILE.  In interactive use, prompt for user input and
 retrieve the default TITLE value from a line starting with a
 title field in the file's contents, depending on the given file
 type (e.g. #+title for Org).  Else, use the file name as a
 default value at the minibuffer prompt.  When called from Lisp,
 TITLE is a string.
 
-Add SIGNATURE to the file, using an existing one as the default
-value at the minibuffer prompt.  When called from Lisp, SIGNATURE
-is a string.  If the SIGNATURE is empty or nil, it is not
-included in the new file name or removed from an existing one.
+If TITLE is nil or an empty string, do not add it to a newly
+renamed file or remove it from an existing file.
 
-As a final step after the FILE, TITLE, KEYWORDS, and SIGNATURE
-are collected, ask for confirmation, showing the difference
-between old and new file names.  Do not ask for confirmation if
-the user option `denote-rename-no-confirm' is set to a non-nil
-value.
+Add SIGNATURE to FILE.  In interactive use, prompt for SIGNATURE,
+using an existing one as the default value at the minibuffer
+prompt.  When called from Lisp, SIGNATURE is a string.
+
+If SIGNATURE is nil or an empty string, do not add it to a newly
+renamed file or remove it from an existing file.
+
+Add KEYWORDS to FILE.  In interactive use, prompt for KEYWORDS.
+More than one keyword can be inserted when separated by the
+`crm-sepator' (normally a comma).  When called from Lisp,
+KEYWORDS is a list of strings.
+
+If KEYWORDS is nil or an empty string, do not add it to a newly
+renamed file or remove it from an existing file.
 
 Read the file type extension (like .txt) from the underlying file
 and preserve it through the renaming process.  Files that have no
@@ -2403,15 +2453,21 @@ extension are left without one.
 Renaming only occurs relative to the current directory.  Files
 are not moved between directories.
 
+As a final step after the FILE, TITLE, KEYWORDS, and SIGNATURE
+are collected, ask for confirmation, showing the difference
+between old and new file names.  Do not ask for confirmation if
+the user option `denote-rename-no-confirm' is set to a non-nil
+value.
+
 If the FILE has Denote-style front matter for the TITLE and
 KEYWORDS, ask to rewrite their values in order to reflect the new
 input (this step always requires confirmation and the underlying
 buffer is not saved, so consider invoking `diff-buffer-with-file'
-to double-check the effect).  The rewrite of the FILE and
+to double-check the effect).  The rewrite of the TITLE and
 KEYWORDS in the front matter should not affect the rest of the
 front matter.
 
-If the file doesn't have front matter but is among the supported
+If the file does not have front matter but is among the supported
 file types (per `denote-file-type'), add front matter at the top
 of it and leave the buffer unsaved for further inspection.
 
@@ -2426,9 +2482,7 @@ This command is intended to (i) rename existing Denote notes
 while updating their title and keywords in the front matter, (ii)
 convert existing supported file types to Denote notes, and (ii)
 rename non-note files (e.g. PDF) that can benefit from Denote's
-file-naming scheme.  The latter is a convenience we provide,
-since we already have all the requisite mechanisms in
-place."
+file-naming scheme."
   (interactive
    (let* ((file (denote--rename-dired-file-or-prompt))
           (file-type (denote-filetype-heuristics file))
@@ -2439,7 +2493,7 @@ place."
        (denote--retrieve-title-or-filename file file-type)
        (format "Rename `%s' with title (empty to ignore/remove)" file-in-prompt))
       (denote-keywords-prompt
-       (format "Rename `%s' with keywords" file-in-prompt))
+       (format "Rename `%s' with keywords (empty to ignore/remove)" file-in-prompt))
       (denote-signature-prompt
        (denote-retrieve-filename-signature file)
        (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt))
@@ -2487,7 +2541,7 @@ the changes made to the file: perform them outright."
                          (denote--retrieve-title-or-filename file file-type)
                          (format "Rename `%s' with title (empty to ignore/remove)" file-in-prompt)))
                  (keywords (denote-keywords-prompt
-                            (format "Rename `%s' with keywords" file-in-prompt)))
+                            (format "Rename `%s' with keywords (empty to ignore/remove)" file-in-prompt)))
                  (signature (denote-signature-prompt
                              (denote-retrieve-filename-signature file)
                              (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt)))
@@ -2526,7 +2580,8 @@ Specifically, do the following:
 
 - prompt once for KEYWORDS and apply the user's input to the
   corresponding field in the file name, rewriting any keywords
-  that may exist;
+  that may exist while removing keywords that do exist if
+  KEYWORDS is empty;
 
 - add or rewrite existing front matter to the underlying file, if
   it is recognized as a Denote note (per `denote-file-type'),
@@ -2540,7 +2595,7 @@ Specifically, do the following:
   (declare (interactive-only t))
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files)))
-      (let ((keywords (denote-keywords-prompt "Rename marked files with these keywords (overwrite existing)"))
+      (let ((keywords (denote-keywords-prompt "Rename marked files with keywords, overwriting existing (empty to ignore/remove)"))
             (used-ids (when (seq-some
                              (lambda (m) (not (denote-retrieve-filename-identifier m :no-error)))
                              marks)
