@@ -26,11 +26,6 @@
 ;;
 ;; Sort Denote files based on their file name components, namely, the
 ;; signature, title, or keywords.
-;;
-;; NOTE 2023-11-29: This file is in development.  My plan is to
-;; integrate it with denote-org-dblock.el and maybe with denote.el
-;; based on user feedback, but I first want to have a stable
-;; interface.
 
 ;;; Code:
 
@@ -48,6 +43,10 @@
 (defvar denote-sort-components '(title keywords signature identifier)
   "List of sorting keys applicable for `denote-sort-files' and related.")
 
+;; NOTE 2023-12-04: We can have compound sorting algorithms such as
+;; title+signature, but I want to keep this simple for the time being.
+;; Let us first hear from users to understand if there is a real need
+;; for such a feature.
 (defmacro denote-sort--define-lessp (component)
   "Define function to sort by COMPONENT."
   (let ((retrieve-fn (intern (format "denote-retrieve-filename-%s" component))))
@@ -58,7 +57,7 @@ The comparison is done with `denote-sort-comparison-function' between the
 two title values."
          component)
        (let* ((one (,retrieve-fn file1))
-              (two (,retrieve-fn  file2))
+              (two (,retrieve-fn file2))
               (one-empty-p (string-empty-p one))
               (two-empty-p (string-empty-p two)))
          (cond
@@ -66,6 +65,8 @@ two title values."
           ((and (not one-empty-p) two-empty-p) one)
           (t (funcall denote-sort-comparison-function one two)))))))
 
+;; TODO 2023-12-04: Subject to the above NOTE, we can also sort by
+;; directory and by file length.
 (denote-sort--define-lessp title)
 (denote-sort--define-lessp keywords)
 (denote-sort--define-lessp signature)
@@ -159,11 +160,7 @@ With optional REVERSE as a non-nil value, reverse the sort order."
   "Return Dired buffer with BUFFER-NAME showing FILES.
 FILES are stripped of their directory component and are displayed
 relative to the variable `denote-directory'."
-  ;; TODO 2023-11-29: Can we improve font-lock to cover the directory
-  ;; component which is on display for files inside a subdir of
-  ;; `denote-directory'?
-  (let* ((dir (denote-directory))
-         (default-directory dir))
+  (let ((default-directory (denote-directory)))
     (dired (cons buffer-name (mapcar #'file-relative-name files)))))
 
 ;;;###autoload
@@ -188,8 +185,19 @@ a non-nil value, respectively."
     (denote-sort-component-prompt)
     (y-or-n-p "Reverse sort? ")))
   (denote-sort--prepare-dired
-   (format "Denote files matching `%s' sorted by %s" files-matching-regexp sort-by-component)
-   (denote-sort-get-directory-files files-matching-regexp sort-by-component reverse)))
+   ;; NOTE 2023-12-04: Passing the FILES-MATCHING-REGEXP here produces
+   ;; an error if the regexp contains a wildcard for a directory.  I
+   ;; can reproduce this in emacs -Q and am not sure if it is a bug.
+   ;; Anyway, I will report it upstream, but even if it is fixed we
+   ;; cannot use it for now (whatever fix will be available for Emacs
+   ;; 30+).
+   ;;
+   ;; (format "Denote sort `%s' by `%s'" files-matching-regexp sort-by-component)
+   (format "Denote sort by `%s'" sort-by-component)
+   (denote-sort-get-directory-files files-matching-regexp sort-by-component reverse))
+  ;; Because of the above NOTE, I am printing a message.  Not what I
+  ;; want, but it is better than nothing...
+  (message "Denote sort `%s' by `%s'" files-matching-regexp sort-by-component))
 
 (provide 'denote-sort)
 ;;; denote-sort.el ends here
