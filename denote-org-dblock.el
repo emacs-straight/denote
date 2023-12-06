@@ -52,15 +52,11 @@ sorting."
    ((and sort-by-component reverse)
     (denote-sort-get-directory-files files-matching-regexp sort-by-component reverse :omit-current))
    (sort-by-component
-    (denote-sort-get-directory-files files-matching-regexp sort-by-component :omit-current))
+    (denote-sort-get-directory-files files-matching-regexp sort-by-component reverse :omit-current))
    (reverse
     (denote-sort-get-directory-files files-matching-regexp :no-component-specified reverse :omit-current))
    (t
     (denote-directory-files files-matching-regexp :omit-current))))
-
-(defun denote-org-dblock--file-regexp-prompt ()
-  "Prompt for regexp to match Denote file names."
-  (read-regexp "Search for notes matching REGEX: " nil 'denote-link--add-links-history))
 
 ;;;; Dynamic block to insert links
 
@@ -69,7 +65,7 @@ sorting."
   "Create Org dynamic block to insert Denote links matching REGEXP."
   (interactive
    (list
-    (denote-org-dblock--file-regexp-prompt))
+    (denote-files-matching-regexp-prompt))
    org-mode)
   (org-create-dblock (list :name "denote-links"
                            :regexp regexp
@@ -109,7 +105,7 @@ Used by `org-dblock-update' with PARAMS provided by the dynamic block."
 
 ;;;###autoload
 (defun denote-org-dblock-insert-backlinks ()
-  "Insert new Org dynamic block to include backlinks."
+  "Create Org dynamic block to insert Denote backlinks to current file."
   (interactive nil org-mode)
   (org-create-dblock (list :name "denote-backlinks"
                            :sort-by-component nil
@@ -153,7 +149,10 @@ argument."
                   (if (eq add-links 'id-only)
                       denote-id-only-link-format
                     denote-org-link-format)
-                  nil))))
+                  (let ((type (denote-filetype-heuristics file)))
+                    (if (denote-file-has-signature-p file)
+                        (denote--link-get-description-with-signature file type)
+                      (denote--link-get-description file type)))))))
       (let ((beginning-of-contents (point)))
         (insert-file-contents file)
         (when no-front-matter
@@ -173,7 +172,7 @@ argument."
 (defun denote-org-dblock--separator (separator)
   "Return appropriate value of SEPARATOR for `denote-org-dblock-add-files'."
   (cond
-   ((eq separator 'none) "")
+   ((null separator) "")
    ((stringp separator) separator)
    (t denote-org-dblock-file-contents-separator)))
 
@@ -216,7 +215,7 @@ Sort the files according to SORT-BY-COMPONENT, which is a symbol
 among `denote-sort-components'."
   (interactive
    (list
-    (denote-org-dblock--file-regexp-prompt)
+    (denote-files-matching-regexp-prompt)
     (denote-sort-component-prompt))
    org-mode)
   (org-create-dblock (list :name "denote-files"
@@ -224,7 +223,7 @@ among `denote-sort-components'."
                            :sort-by-component sort-by-component
                            :reverse-sort nil
                            :no-front-matter nil
-                           :file-separator t
+                           :file-separator nil
                            :add-links nil))
   (org-update-dblock))
 

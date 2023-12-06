@@ -1043,9 +1043,11 @@ Denote file-naming scheme."
 
 (defun denote--keywords-add-to-history (keywords)
   "Append KEYWORDS to `denote--keyword-history'."
-  (mapc (lambda (kw)
-          (add-to-history 'denote--keyword-history kw))
-        (delete-dups keywords)))
+  (when (listp keywords)
+    (mapc
+     (lambda (kw)
+       (add-to-history 'denote--keyword-history kw))
+     (delete-dups keywords))))
 
 ;;;; File types
 
@@ -1969,6 +1971,16 @@ histories between sessions."
      denote--signature-history
      nil nil default-signature 'denote--signature-history)))
 
+(defvar denote--files-matching-regexp-hist nil
+  "Minibuffer history of `denote-files-matching-regexp-prompt'.")
+
+(defun denote-files-matching-regexp-prompt (&optional prompt-text)
+  "Prompt for REGEXP to filter Denote files by.
+With optional PROMPT-TEXT use it instead of a generic prompt."
+  (read-regexp
+   (format-prompt (or prompt-text "Match files with the given REGEXP") nil)
+   nil 'denote--files-matching-regexp-hist))
+
 ;;;;; Convenience commands as `denote' variants
 
 (defalias 'denote-create-note 'denote
@@ -2486,7 +2498,7 @@ file-naming scheme."
   (interactive
    (let* ((file (denote--rename-dired-file-or-prompt))
           (file-type (denote-filetype-heuristics file))
-          (file-in-prompt (propertize file 'face 'denote-faces-prompt-current-name)))
+          (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name)))
      (list
       file
       (denote-title-prompt
@@ -2533,7 +2545,7 @@ the changes made to the file: perform them outright."
                         (denote--get-all-used-ids))))
         (dolist (file marks)
           (let* ((file-type (denote-filetype-heuristics file))
-                 (file-in-prompt (propertize file 'face 'denote-faces-prompt-current-name))
+                 (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
                  (dir (file-name-directory file))
                  (id (or (denote-retrieve-filename-identifier file :no-error)
                          (denote-create-unique-file-identifier file used-ids)))
@@ -3138,6 +3150,13 @@ treats the active region specially, is up to it."
 (defalias 'denote-insert-link 'denote-link
   "Alias for `denote-link' command.")
 
+;; NOTE 2023-12-05 04:16 +0200: This is a candidate for a user option,
+;; subject to feedback.  I think the signature should be better
+;; disambiguated in this context, although the double space is a good
+;; start.
+(defvar denote--link-signature-format "%s  %s"
+  "Format of link description for `denote-link-with-signature'.")
+
 (defun denote--link-get-description-with-signature (file file-type)
   "Return `denote-link-with-signature' description.
 Retrieve the title and signature from FILE with FILE-TYPE.  If
@@ -3150,11 +3169,7 @@ Also see `denote--link-get-description'."
          (text (denote--link-get-description file file-type))
          (specifiers (if (and text
                               (not (string-empty-p text)))
-                         ;; NOTE 2023-12-02: I want to elicit more
-                         ;; feedback before I make this a variable.
-                         ;; How do users of signatures prefer to
-                         ;; display them in link descriptions?
-                         "%s %s"
+                         denote--link-signature-format
                        "%s")))
     (format specifiers signature text)))
 
@@ -3614,9 +3629,6 @@ Otherwise sort lines while accounting for `denote-link-add-links-sort'."
       (sort-lines denote-link-add-links-sort (point-min) (point-max)))
     (buffer-string)))
 
-(defvar denote-link--add-links-history nil
-  "Minibuffer history for `denote-add-links'.")
-
 (define-obsolete-function-alias
   'denote-link-add-links
   'denote-add-links
@@ -3647,7 +3659,7 @@ Optional ID-ONLY has the same meaning as in `denote-link': it
 inserts links with just the identifier."
   (interactive
    (list
-    (read-regexp "Insert links matching REGEX: " nil 'denote-link--add-links-history)
+    (denote-files-matching-regexp-prompt "Insert links matching REGEXP")
     current-prefix-arg))
   (let ((file-type (denote-filetype-heuristics (buffer-file-name))))
     (if-let ((files (denote-directory-files regexp :omit-current))
