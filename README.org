@@ -490,8 +490,10 @@ set to '(template subdirectory title keywords)."
 #+end_src
 
 The tweaks to ~denote-prompts~ determine how the command will behave
-([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The denote-prompts option]]).  Use this paradigm to write your own
-variants which you can then assign to keys or invoke with =M-x=.
+([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The denote-prompts option]]). Use this paradigm to write your own
+variants which you can then assign to keys, invoke with =M-x=, or add
+to the list of commands available at the ~denote-command-prompt~
+([[#h:98c732ac-da0e-4ebd-a0e3-5c47f9075e51][Choose which commands to prompt for]]).
 
 *** The ~denote-date-prompt-use-org-read-date~ option
 :PROPERTIES:
@@ -1001,6 +1003,11 @@ the entry called "Denote".  From there they can use their pointer to
 select a command.  For a sample of how this looks, read the
 development log: <https://protesilaos.com/codelog/2023-03-31-emacs-denote-menu/>.
 
+#+findex: denote-menu-bar-mode
+The command ~denote-menu-bar-mode~ toggles the presentation of the
+menu. It is enabled by default. [ The ~denote-menu-bar-mode~ is part
+of {{{development-version}}}. ]
+
 Emacs also provides support for operations through a context menu.
 This is typically the set of actions that are made available via a
 right mouse click.  Users who enable ~context-menu-mode~ can register
@@ -1232,6 +1239,10 @@ check the command ~denote-dired-rename-marked-files-with-keywords~.
 
 - [[#h:f365ff7e-2140-4e14-a92f-666ae97382a4][Rename by writing only keywords]]
 - [[#h:ea5673cd-e6ca-4c42-a066-07dc6c9d57f8][Rename multiple files based on their front matter]]
+
+[ As part of {{{development-version}}} the
+  ~denote-dired-rename-marked-files~ is an alias for
+  ~denote-dired-rename-files~. ]
 
 ** Rename multiple files at once by asking only for keywords
 :PROPERTIES:
@@ -4877,14 +4888,14 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 + Contributions to code or the manual :: Abin Simon, Adam Růžička,
   Alan Schmitt, Ashton Wiersdorf, Benjamin Kästner, Bruno Boal,
   Charanjit Singh, Clemens Radermacher, Colin McLear, Damien Cassou,
-  Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Graham Marlow,
-  Hilde Rhyne, Ivan Sokolov, Jack Baty, Jean-Charles Bagneris,
-  Jean-Philippe Gagné Guay, Joseph Turner, Jürgen Hötzel, Kaushal
-  Modi, Kai von Fintel, Kostas Andreadis, Kyle Meyer, Marc Fargas,
-  Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter Prevos,
-  Philip Kaludercic, Quiliro Ordóñez, Stefan Monnier, Stefan Thesing,
-  Thibaut Benjamin, Tomasz Hołubowicz, Vedang Manerikar, ezchi,
-  leinfink (Henrik), mentalisttraceur, relict007.
+  Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna D.,
+  Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jean-Charles
+  Bagneris, Jean-Philippe Gagné Guay, Joseph Turner, Jürgen Hötzel,
+  Kaushal Modi, Kai von Fintel, Kostas Andreadis, Kyle Meyer, Marc
+  Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter
+  Prevos, Philip Kaludercic, Quiliro Ordóñez, Stefan Monnier, Stefan
+  Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang Manerikar,
+  ezchi, leinfink (Henrik), mentalisttraceur, relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alfredo Borrás, Ashton Wiersdorf,
