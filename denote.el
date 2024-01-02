@@ -585,40 +585,23 @@ things accordingly.")
         `(metadata (category . ,category))
       (complete-with-action action candidates string pred))))
 
-(defun denote--default-directory-is-silo-p ()
-  "Return path to silo if `default-directory' is a silo."
-  (when-let ((dir-locals (dir-locals-find-file default-directory))
-             ((alist-get 'denote-directory dir-local-variables-alist)))
-    (cond
-     ((listp dir-locals)
-      (car dir-locals))
-     ((stringp dir-locals)
-      dir-locals))))
-
 (defun denote--make-denote-directory ()
   "Make the variable `denote-directory' and its parents, if needed."
   (when (not (file-directory-p denote-directory))
     (make-directory denote-directory :parents)))
 
-(defvar denote-user-enforced-denote-directory nil
-  "Value of the variable `denote-directory'.
-Use this to `let' bind a directory path, thus overriding what the
-function `denote-directory' ordinarily returns.")
-
 (defun denote-directory ()
   "Return path of variable `denote-directory' as a proper directory.
-Custom Lisp code can `let' bind the value of the variable
-`denote-user-enforced-denote-directory' to override what this
-function returns.
+Custom Lisp code can `let' bind the variable `denote-directory'
+to override what this function returns."
+  (let ((denote-directory (file-name-as-directory (expand-file-name denote-directory))))
+    (denote--make-denote-directory)
+    denote-directory))
 
-Otherwise, the order of precedence is to first check for a silo
-before falling back to the value of the variable
-`denote-directory'."
-  (let ((path (or denote-user-enforced-denote-directory
-                  (denote--default-directory-is-silo-p)
-                  (denote--make-denote-directory)
-                  (default-value 'denote-directory))))
-    (file-name-as-directory (expand-file-name path))))
+(make-obsolete
+ 'denote-user-enforced-denote-directory
+ 'denote-directory
+ "3.0.0 (just `let' bind the `denote-directory')")
 
 (defun denote--slug-no-punct (str &optional extra-characters)
   "Remove punctuation from STR.
@@ -778,6 +761,17 @@ FILE must be an absolute path."
   (and denote-excluded-directories-regexp
        (string-match-p denote-excluded-directories-regexp file)))
 
+(defun denote--directory-files-recursively-predicate (file)
+  "Predicate used by `directory-files-recursively' on FILE.
+
+Return t if FILE is valid, else return nil."
+  (let ((rel (denote-get-file-name-relative-to-denote-directory file)))
+    (cond
+     ((string-match-p "\\`\\." rel) nil)
+     ((string-match-p "/\\." rel) nil)
+     ((denote--exclude-directory-regexp-p rel) nil)
+     ((file-readable-p file)))))
+
 (defun denote--directory-all-files-recursively ()
   "Return list of all files in variable `denote-directory'.
 Avoids traversing dotfiles (unconditionally) and whatever matches
@@ -786,13 +780,7 @@ Avoids traversing dotfiles (unconditionally) and whatever matches
    (denote-directory)
    directory-files-no-dot-files-regexp
    :include-directories
-   (lambda (f)
-     (cond
-      ((string-match-p "\\`\\." f) nil)
-      ((string-match-p "/\\." f) nil)
-      ((denote--exclude-directory-regexp-p f) nil)
-      ((file-readable-p f))
-      (t)))
+   #'denote--directory-files-recursively-predicate
    :follow-symlinks))
 
 (defun denote--directory-get-files ()
@@ -2507,7 +2495,9 @@ file-naming scheme."
   (interactive
    (let* ((file (denote--rename-dired-file-or-prompt))
           (file-type (denote-filetype-heuristics file))
-          (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name)))
+          (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
+          (signature-or-nil (denote-retrieve-filename-signature file))
+          (spaced-signature (if signature-or-nil (string-replace "=" " " signature-or-nil) "")))
      (list
       file
       (denote-title-prompt
@@ -2516,9 +2506,8 @@ file-naming scheme."
       (denote-keywords-prompt
        (format "Rename `%s' with keywords (empty to ignore/remove)" file-in-prompt)
        (denote-convert-file-name-keywords-to-crm (denote-retrieve-filename-keywords file)))
-      (denote-signature-prompt
-       (or (denote-retrieve-filename-signature file) "")
-       (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt))
+      (denote-signature-prompt spaced-signature
+                               (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt))
       current-prefix-arg)))
   (let* ((dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file)
@@ -2562,8 +2551,10 @@ the changes made to the file: perform them outright."
                  (keywords (denote-keywords-prompt
                             (format "Rename `%s' with keywords (empty to ignore/remove)" file-in-prompt)
                             (denote-convert-file-name-keywords-to-crm (denote-retrieve-filename-keywords file))))
+                 (signature-or-nil (denote-retrieve-filename-signature file))
+                 (spaced-signature (if signature-or-nil (string-replace "=" " " signature-or-nil) ""))
                  (signature (denote-signature-prompt
-                             (or (denote-retrieve-filename-signature file) "")
+                             spaced-signature
                              (format "Rename `%s' with signature (empty to ignore/remove)" file-in-prompt)))
                  (extension (denote-get-file-extension file))
                  (new-name (denote-format-file-name dir id keywords (denote-sluggify title 'title) extension (denote-sluggify-signature signature))))
@@ -2625,7 +2616,8 @@ Specifically, do the following:
           (let* ((dir (file-name-directory file))
                  (id (or (denote-retrieve-filename-identifier file)
                          (denote-create-unique-file-identifier file used-ids)))
-                 (signature (or (denote-retrieve-filename-signature file) ""))
+                 (signature-or-nil (denote-retrieve-filename-signature file))
+                 (signature (if signature-or-nil (string-replace "=" " " signature-or-nil) ""))
                  (file-type (denote-filetype-heuristics file))
                  (title (denote--retrieve-title-or-filename file file-type))
                  (extension (denote-get-file-extension file))
@@ -2669,7 +2661,8 @@ does internally."
            (id (denote-retrieve-filename-identifier file)))
       (let* ((sluggified-title (denote-sluggify title 'title))
              (keywords (denote-retrieve-front-matter-keywords-value file file-type))
-             (signature (or (denote-retrieve-filename-signature file) ""))
+             (signature-or-nil (denote-retrieve-filename-signature file))
+             (signature (if signature-or-nil (string-replace "=" " " signature-or-nil) ""))
              (extension (denote-get-file-extension file))
              (dir (file-name-directory file))
              (new-name (denote-format-file-name dir id keywords sluggified-title extension (when signature (denote-sluggify-signature signature)))))
