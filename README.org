@@ -527,6 +527,42 @@ Similarly, the ~denote-keywords-remove~ removes one or more keywords
 from the list of existing keywords and then renames the file
 accordingly.
 
+** Create a note from the current Org subtree
+:PROPERTIES:
+:CUSTOM_ID: h:d0c7cb79-21e5-4176-a6af-f4f68578c8dd
+:END:
+
+[ Rewritten as part of {{{development-version}}}. ]
+
+In Org parlance, an entry with all its subheadings is a "subtree".
+Denote can operate on the subtree to extract it from the current file
+and create a new file out of it. One such workflow is to collect
+thoughts in a single file and produce longer standalone notes out of
+them upon review.
+
+#+findex: denote-org-extras-extract-org-subtree
+The command ~denote-org-extras-extract-org-subtree~ (part of the
+optional =denote-org-extras.el= extension) is used for this purpose.
+It create a new Denote note using the current Org subtree. In doing
+so, it removes the subtree from its current file and moves its
+contents into the new Denote file.
+
+The text of the subtree's top level heading becomes the =#+title= of
+the new note.
+
+If the heading has any tags, those are turned into the keywords of the
+new note. Else the new note has no keywords ([[#h:ad4dde4a-8e88-470a-97ae-e7b9d4b41fb4][Add or remove keywords interactively]]).
+
+If the subtree has a =PROPERTIES= drawer, it is retained so that the
+user can perform a further review. If the =PROPERTIES= drawer includes
+a =DATE= or =CREATED= property with a timestamp value, it is used to
+derive the date (or date and time) of the new note (if there is only a
+date, the time is taken as 00:00). If both =DATE= and =CREATED=
+properties are present, the former is used.
+
+The new note is an Org file regardless of the user option
+~denote-file-type~.
+
 ** Create note using Org capture
 :PROPERTIES:
 :CUSTOM_ID: h:656c70cd-cf9a-4471-a0b5-4f0aaf60f881
@@ -664,6 +700,48 @@ treated the same as =:title= or ~t~).
                :kill-buffer t
                :jump-to-captured t))
 #+end_src
+
+** Create a note with the region's contents
+:PROPERTIES:
+:CUSTOM_ID: h:2f8090f1-50af-4965-9771-d5a91a0a87bd
+:END:
+
+#+findex: denote-region
+The command ~denote-region~ takes the contents of the active region
+and then calls the ~denote~ command.  Once a new note is created, it
+inserts the contents of the region therein.  This is useful to
+quickly elaborate on some snippet of text or capture it for future
+reference.
+
+#+vindex: denote-region-after-new-note-functions
+When the ~denote-region~ command is called with an active region, it
+finalises its work by calling ~denote-region-after-new-note-functions~.
+This is an abnormal hook, meaning that the functions added to it are
+called with arguments.  The arguments are two, representing the
+beginning and end positions of the newly inserted text.
+
+A common use-case for Org mode users is to call the command
+~org-insert-structure-template~ after a region is inserted.  Emacs
+will thus prompt for a structure template, such as the one
+corresponding to a source block.  In this case the function added to
+~denote-region-after-new-note-functions~ does not actually need
+aforementioned arguments: it can simply declare those as ignored by
+prefixing the argument names with an underscore (an underscore is
+enough, but it is better to include a name for clarity).  For example,
+the following will prompt for a structure template as soon as
+~denote-region~ is done:
+
+#+begin_src emacs-lisp
+(defun my-denote-region-org-structure-template (_beg _end)
+  (when (derived-mode-p 'org-mode)
+    (activate-mark)
+    (call-interactively 'org-insert-structure-template)))
+
+(add-hook 'denote-region-after-new-note-functions #'my-denote-region-org-structure-template)
+#+end_src
+
+Remember that ~denote-region-after-new-note-functions~ are not called
+if ~denote-region~ is used without an active region.
 
 ** Open an existing note or create it if missing
 :PROPERTIES:
@@ -1736,20 +1814,22 @@ The following sections delve into the details.
 
 #+findex: denote-link
 The ~denote-link~ command inserts a link at point to a file specified
-at the minibuffer prompt.  Links are formatted depending on the file
-type of the current note.  In Org and plain text buffers, links are
-formatted thus: =[[denote:IDENTIFIER][TITLE]]=.  While in Markdown
-they are expressed as =[TITLE](denote:IDENTIFIER)=.
+at the minibuffer prompt ([[#h:d99de1fb-b1b7-4a74-8667-575636a4d6a4][The ~denote-org-store-link-to-heading~ user option]]).
+Links are formatted depending on the file type of the current note. In
+Org and plain text buffers, links are formatted thus:
+=[[denote:IDENTIFIER][TITLE]]=. While in Markdown they are expressed
+as =[TITLE](denote:IDENTIFIER)=.
 
 When ~denote-link~ is called with a prefix argument (=C-u= by
 default), it formats links like =[[denote:IDENTIFIER]]=.  The user
 might prefer its simplicity.
 
-The description of the link is taken from the target file's front
-matter or, if that is not available, from the file name.  If the
-region is active, its text is used as the link's description instead.
-If the active region has no text, the inserted link uses just the
-identifier, as with the =C-u= prefix mentioned above.
+By default, the description of the link is taken from the signature of
+the file, if present, and the target file's front matter's title or, if
+that is not available, from the file name.  If the region is active, its
+text is used as the link's description instead.  If the active region
+has no text, the inserted link uses just the identifier, as with the
+=C-u= prefix mentioned above.
 
 Inserted links are automatically buttonized and remain active for as
 long as the buffer is available.  In Org this is handled by the major
@@ -1775,6 +1855,83 @@ Links are styled with the ~denote-faces-link~ face, which looks exactly
 like an ordinary link by default.  This is just a convenience for the
 user/theme in case they want =denote:= links to remain distinct from
 other links.
+
+** The ~denote-org-store-link-to-heading~ user option
+:PROPERTIES:
+:CUSTOM_ID: h:d99de1fb-b1b7-4a74-8667-575636a4d6a4
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+vindex: denote-org-store-link-to-heading
+The user option ~denote-org-store-link-to-heading~ determines whether
+~org-store-link~ links to the current Org heading (such links are
+merely "stored" and need to be inserted afterwards with the command
+~org-insert-link~).
+
+When its value is non-nil, ~org-store-link~ stores a link to the
+current Org heading inside the Denote file. If the heading does not
+have a =CUSTOM_ID=, it creates it and includes it in the heading's
+=PROPERTIES= drawer. If a =CUSTOM_ID= exists, ~org-store-link~ use it
+as-is.
+
+This make the resulting link a combination of the =denote:= link type,
+pointing to the identifier of the current file, plus the value of the
+heading's =CUSTOM_ID=, such as:
+
+- =[[denote:20240118T060608][Some test]]=
+- =[[denote:20240118T060608::#h:eed0fb8e-4cc7-478f-acb6-f0aa1a8bffcd][Some test::Heading text]]=
+
+Both lead to the same Denote file, but the latter jumps to the heading
+with the given =CUSTOM_ID=. Notice that the link to the heading also
+has a different description, which includes the heading text.
+
+The value of the =CUSTOM_ID= is determined by the Org user option
+~org-id-method~. The sample shown above uses the default UUID
+infrastructure.
+
+If ~denote-org-store-link-to-heading~ is set to a nil value, the
+command ~org-store-link~ only stores links to the Denote file (using
+its identifier), but not to the given heading. This is what Denote was
+doing in versions prior to =3.0.0=.
+
+Note that the optional extension =denote-org-extras.el= defines the command
+~denote-org-extras-link-to-heading~, which always links to a file+heading
+regardless of the aforementioned user option ([[#h:fc1ad245-ec08-41be-8d1e-7153d99daf02][Insert link to an Org file with a further pointer to a heading]]).
+
+[ This feature only works in Org mode files, as other file types do
+  not have a linking mechanism that handles unique identifiers for
+  headings or other patterns to jump to. If ~org-store-link~ is
+  invoked in one such file, it captures only the Denote identifier of
+  the file, even if this user option is set to a non-nil value. ]
+
+** Insert link to an Org file with a further pointer to a heading
+:PROPERTIES:
+:CUSTOM_ID: h:fc1ad245-ec08-41be-8d1e-7153d99daf02
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+#+findex: denote-org-extras-link-to-heading
+As part of the optional =denote-org-extras.el= extension, the command
+~denote-org-extras-link-to-heading~ prompts for a link to an Org file
+and then asks for a heading therein, using minibuffer completion. Once
+the user provides input at the two prompts, the command inserts a link
+at point which has the following pattern: =[[denote:IDENTIFIER::#ORG-HEADING-CUSTOM-ID]][File title::Heading text]]=.
+
+Because only Org files can have links to individual headings, the
+command ~denote-org-extras-link-to-heading~ prompts only for Org files
+(i.e. files which include the =.org= extension). Remember that Denote
+works with many file types ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+This feature is similar to the concept of the user option ~denote-org-store-link-to-heading~
+([[#h:d99de1fb-b1b7-4a74-8667-575636a4d6a4][The ~denote-org-store-link-to-heading~ user option]]). It is, however,
+interactive and differs in the directionality of the action. With that
+user option, the command ~org-store-link~ will generate a =CUSTOM_ID=
+for the current heading (or capture the value of one as-is), giving
+the user the option to then call ~org-insert-link~ wherever they see
+fit. By contrast, the command ~denote-org-extras-link-to-heading~
+prompts for a file, then a heading, and inserts the link at point.
 
 ** Insert links matching a regexp
 :PROPERTIES:
@@ -2753,103 +2910,6 @@ Sources for ~tmr~:
     + GitLab: <https://gitlab.com/protesilaos/tmr>
 + Mailing list: <https://lists.sr.ht/~protesilaos/tmr>
 
-** Create a note with the region's contents
-:PROPERTIES:
-:CUSTOM_ID: h:2f8090f1-50af-4965-9771-d5a91a0a87bd
-:END:
-
-#+findex: denote-region
-The command ~denote-region~ takes the contents of the active region
-and then calls the ~denote~ command.  Once a new note is created, it
-inserts the contents of the region therein.  This is useful to
-quickly elaborate on some snippet of text or capture it for future
-reference.
-
-#+vindex: denote-region-after-new-note-functions
-When the ~denote-region~ command is called with an active region, it
-finalises its work by calling ~denote-region-after-new-note-functions~.
-This is an abnormal hook, meaning that the functions added to it are
-called with arguments.  The arguments are two, representing the
-beginning and end positions of the newly inserted text.
-
-A common use-case for Org mode users is to call the command
-~org-insert-structure-template~ after a region is inserted.  Emacs
-will thus prompt for a structure template, such as the one
-corresponding to a source block.  In this case the function added to
-~denote-region-after-new-note-functions~ does not actually need
-aforementioned arguments: it can simply declare those as ignored by
-prefixing the argument names with an underscore (an underscore is
-enough, but it is better to include a name for clarity).  For example,
-the following will prompt for a structure template as soon as
-~denote-region~ is done:
-
-#+begin_src emacs-lisp
-(defun my-denote-region-org-structure-template (_beg _end)
-  (when (derived-mode-p 'org-mode)
-    (activate-mark)
-    (call-interactively 'org-insert-structure-template)))
-
-(add-hook 'denote-region-after-new-note-functions #'my-denote-region-org-structure-template)
-#+end_src
-
-Remember that ~denote-region-after-new-note-functions~ are not called
-if ~denote-region~ is used without an active region.
-
-** Split an Org subtree into its own note
-:PROPERTIES:
-:CUSTOM_ID: h:d0c7cb79-21e5-4176-a6af-f4f68578c8dd
-:END:
-
-With Org files in particular, it is common to have nested headings
-which could be split off into their own standalone notes.  In Org
-parlance, an entry with all its subheadings is a "subtree".  With the
-following code, the user places the point inside the heading they want
-to split off and invokes the command ~my-denote-org-extract-subtree~.
-It will create a note using the heading's text and tags for the new
-file.  The contents of the subtree become the contents of the new note
-and are removed from the old one.
-
-#+begin_src emacs-lisp
-(defun my-denote-org-extract-subtree (&optional silo)
-  "Create new Denote note using current Org subtree.
-Make the new note use the Org file type, regardless of the value
-of `denote-file-type'.
-
-With an optional SILO argument as a prefix (\\[universal-argument]),
-ask user to select a SILO from `my-denote-silo-directories'.
-
-Use the subtree title as the note's title.  If available, use the
-tags of the heading are used as note keywords.
-
-Delete the original subtree."
-  (interactive
-   (list (when current-prefix-arg
-           (completing-read "Select a silo: " my-denote-silo-directories nil t))))
-  (if-let ((text (org-get-entry))
-           (heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)))
-      (let ((element (org-element-at-point))
-            (tags (org-get-tags))
-            (denote-user-enforced-denote-directory silo))
-        (delete-region (org-entry-beginning-position)
-                       (save-excursion (org-end-of-subtree t) (point)))
-        (denote heading
-                tags
-                'org
-                nil
-                (or
-                 ;; Check PROPERTIES drawer for :created: or :date:
-                 (org-element-property :CREATED element)
-                 (org-element-property :DATE element)
-                 ;; Check the subtree for CLOSED
-                 (org-element-property :raw-value
-                                       (org-element-property :closed element))))
-        (insert text))
-    (user-error "No subtree to extract; aborting")))
-#+end_src
-
-Have a different workflow?  Feel welcome to discuss it in any of our
-official channels ([[#h:1ebe4865-c001-4747-a6f2-0fe45aad71cd][Contributing]]).
-
 ** Narrow the list of files in Dired
 :PROPERTIES:
 :CUSTOM_ID: h:ea173a01-69ef-4574-89a7-6e60ede02f13
@@ -3783,6 +3843,13 @@ might change them without further notice.
 + Function ~denote-keywords-combine~ :: Combine =KEYWORDS= list of
   strings into a single string. Keywords are separated by the
   underscore character, per the Denote file-naming scheme.
+
+#+findex: denote-parse-date
++ Function ~denote-parse-date~ :: Return =DATE= as an appropriate
+  value for the ~denote~ command. If =DATE= is a list, assume it is
+  consistent with ~current-date~ or related and return it as-is. If
+  =DATE= is a non-empty string, try to convert it with ~date-to-time~.
+  If =DATE= is none of the above, return ~current-time~.
 
 #+findex: denote-directory
 + Function ~denote-directory~ :: Return path of the variable

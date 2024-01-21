@@ -362,6 +362,49 @@ and/or when the user invokes the command `denote-date'."
   :package-version '(denote . "0.6.0")
   :type 'boolean)
 
+(defcustom denote-org-store-link-to-heading t
+  "Determine whether `org-store-link' links to the current Org heading.
+
+When non-nil store link to the current Org heading inside the
+Denote file.  If the heading does not have a CUSTOM_ID, create it
+and include it in its PROPERTIES drawer.  If a CUSTOM_ID exists,
+take it as-is.
+
+Make the resulting link a combination of the `denote:' link type,
+pointing to the identifier of the current file, plus the value of
+the heading's CUSTOM_ID, such as:
+
+- [[denote:20240118T060608][Some test]]
+- [[denote:20240118T060608::#h:eed0fb8e-4cc7-478f][Some test::Heading text]]
+
+Both lead to the same Denote file, but the latter jumps to the
+heading with the given CUSTOM_ID.  Notice that the link to the
+heading also has a different description, which includes the
+heading text.
+
+The value of the CUSTOM_ID is determined by the Org user option
+`org-id-method'.  The sample shown above uses the default UUID
+infrastructure (though I deleted a few characters to not get
+complaints from the byte compiler about long lines in the doc
+string...).
+
+If this user option is set to nil, only store links to the Denote
+file (using its identifier), but not to the given heading.  This
+is what Denote was doing in versions prior to 3.0.0.
+
+What `org-store-link' does is merely collect a link.  To actually
+insert it, use the command `org-insert-link'.
+
+[ This feature only works in Org mode files, as other file types
+  do not have a linking mechanism that handles unique identifiers
+  for headings or other patterns to jump to.  If `org-store-link'
+  is invoked in one such file, it captures only the Denote
+  identifier of the file, even if this user option is set to a
+  non-nil value.  ]"
+  :group 'denote
+  :package-version '(denote . "3.0.0")
+  :type 'boolean)
+
 (defcustom denote-templates nil
   "Alist of content templates for new notes.
 A template is arbitrary text that Denote will add to a newly
@@ -591,6 +634,15 @@ things accordingly.")
         `(metadata (category . ,category))
       (complete-with-action action candidates string pred))))
 
+(defun denote--completion-table-no-sort (category candidates)
+  "Pass appropriate metadata CATEGORY to completion CANDIDATES.
+Like `denote--completion-table' but also disable sorting."
+  (lambda (string pred action)
+    (if (eq action 'metadata)
+        `(metadata (category . ,category)
+                   (display-sort-function . ,#'identity))
+      (complete-with-action action candidates string pred))))
+
 (defun denote--default-directory-is-silo-p ()
   "Return path to silo if `default-directory' is a silo."
   (when-let ((dir-locals (dir-locals-find-file default-directory))
@@ -666,6 +718,14 @@ leading and trailing hyphen."
     "-\\{2,\\}" "-"
     (replace-regexp-in-string "_\\|\s+" "-" str))))
 
+(defun denote--remove-dot-characters (str)
+  "Remove the dot character from STR."
+  (replace-regexp-in-string "\\." "" str))
+
+(defun denote--trim-right-token-characters (str)
+  "Remove =, - and _ from the end of STR."
+  (string-trim-right str "[=_-]+"))
+
 (defun denote--replace-consecutive-token-characters (str)
   "Replace consecutive characters with a single one in STR.
 Spaces, underscores and equal signs are replaced with a single
@@ -695,7 +755,9 @@ used as the keywords separator in file names."
                            (funcall (or slug-function #'denote-sluggify-keyword) str)))
                          ((eq component 'signature)
                           (funcall (or slug-function #'denote-sluggify-signature) str)))))
-    (denote--replace-consecutive-token-characters str-slug)))
+    (denote--trim-right-token-characters
+     (denote--replace-consecutive-token-characters
+      (denote--remove-dot-characters str-slug)))))
 
 (make-obsolete
  'denote-letter-case
@@ -1021,7 +1083,12 @@ With optional OMIT-CURRENT, do not include the current Denote
 file in the returned list."
   (denote-directory-files nil omit-current nil))
 
-(defvar denote--file-history nil
+(define-obsolete-variable-alias
+  'denote--file-history
+  'denote-file-history
+  "3.0.0")
+
+(defvar denote-file-history nil
   "Minibuffer history of `denote-file-prompt'.")
 
 (defun denote-file-prompt (&optional files-matching-regexp)
@@ -1029,7 +1096,7 @@ file in the returned list."
 With optional FILES-MATCHING-REGEXP, filter the candidates per
 the given regular expression."
   (let ((files (denote-directory-files files-matching-regexp :omit-current)))
-    (completing-read "Select note: " files nil nil nil 'denote--file-history)))
+    (completing-read "Select note: " files nil nil nil 'denote-file-history)))
 
 ;;;; Keywords
 
@@ -1071,7 +1138,12 @@ the keywords component of a Denote file name.  STRING is the same
 as the return value of `denote-retrieve-filename-keywords'."
   (string-join (split-string string "_" :omit-nulls "_") ","))
 
-(defvar denote--keyword-history nil
+(define-obsolete-variable-alias
+  'denote--keyword-history
+  'denote-keyword-history
+  "3.0.0")
+
+(defvar denote-keyword-history nil
   "Minibuffer history of inputted keywords.")
 
 (defun denote--keywords-crm (keywords &optional prompt initial)
@@ -1082,7 +1154,7 @@ initial input."
   (delete-dups
    (completing-read-multiple
     (format-prompt (or prompt "File keywords") nil)
-    keywords nil nil initial 'denote--keyword-history)))
+    keywords nil nil initial 'denote-keyword-history)))
 
 (defun denote-keywords-prompt (&optional prompt-text initial-keywords)
   "Prompt for one or more keywords.
@@ -1115,10 +1187,10 @@ Denote file-naming scheme."
   (string-join keywords "_"))
 
 (defun denote--keywords-add-to-history (keywords)
-  "Append KEYWORDS to `denote--keyword-history'."
+  "Append KEYWORDS to `denote-keyword-history'."
   (mapc
    (lambda (kw)
-     (add-to-history 'denote--keyword-history kw))
+     (add-to-history 'denote-keyword-history kw))
    (delete-dups keywords)))
 
 ;;;; File types
@@ -1772,6 +1844,24 @@ where the former does not read dates without a time component."
   (let ((datetime (denote--date-add-current-time date)))
     (date-to-time datetime)))
 
+(defun denote-parse-date (date)
+  "Return DATE as an appropriate value for the `denote' command.
+
+- If DATE is a list, assume it is consistent with `current-date'
+  or related and return it as-is.
+
+- If DATE is a non-empty string, try to convert it with
+  `date-to-time'.
+
+- If DATE is none of the above, return `current-time'."
+  (cond
+   ((listp date)
+    date)
+   ((and (stringp date) (not (string-empty-p date)))
+    (denote--valid-date date))
+   (t
+    (current-time))))
+
 (defun denote--buffer-file-names ()
   "Return file names of Denote buffers."
   (delq nil
@@ -1814,17 +1904,22 @@ increment it 1 second at a time until an available id is found."
 
 (make-obsolete 'denote-barf-duplicate-id nil "2.1.0")
 
-(defvar denote--command-prompt-history nil
+(define-obsolete-variable-alias
+  'denote--command-prompt-history
+  'denote-command-prompt-history
+  "3.0.0")
+
+(defvar denote-command-prompt-history nil
   "Minibuffer history for `denote-command-prompt'.")
 
 (defun denote-command-prompt ()
   "Prompt for command among `denote-commands-for-new-notes'."
-  (let ((default (car denote--command-prompt-history)))
+  (let ((default (car denote-command-prompt-history)))
     (intern
      (completing-read
       (format-prompt "Run note-creating Denote command" default)
       denote-commands-for-new-notes nil :require-match
-      nil 'denote--command-prompt-history default))))
+      nil 'denote-command-prompt-history default))))
 
 ;;;;; The `denote' command and its prompts
 
@@ -1880,7 +1975,7 @@ The path of the newly created file is returned."
          (or force-ignore-region denote-ignore-region-in-denote-command))
         (denote-title-prompt-current-default
          (if force-use-file-prompt-as-default-title
-             (when denote--file-history (pop denote--file-history))
+             (when denote-file-history (pop denote-file-history))
            denote-title-prompt-current-default))
         (path))
     (if in-background
@@ -1944,9 +2039,7 @@ When called from Lisp, all arguments are optional.
   (let* ((title (or title ""))
          (file-type (denote--valid-file-type (or file-type denote-file-type)))
          (kws (denote-keywords-sort keywords))
-         (date (if (or (null date) (string-empty-p date))
-                   (current-time)
-                 (denote--valid-date date)))
+         (date (denote-parse-date date))
          (id (denote--find-first-unused-id
               (format-time-string denote-id-format date)
               (denote--get-all-used-ids)))
@@ -1962,7 +2055,12 @@ When called from Lisp, all arguments are optional.
     (denote--keywords-add-to-history keywords)
     (run-hooks 'denote-after-new-note-hook)))
 
-(defvar denote--title-history nil
+(define-obsolete-variable-alias
+  'denote--title-history
+  'denote-title-history
+  "3.0.0")
+
+(defvar denote-title-history nil
   "Minibuffer history of `denote-title-prompt'.")
 
 (defun denote-title-prompt (&optional default-title prompt-text)
@@ -1988,10 +2086,15 @@ histories between sessions."
            map)))
     (completing-read
      (format-prompt (or prompt-text "File title") denote-title-prompt-current-default)
-     denote--title-history
-     nil nil default-title 'denote--title-history denote-title-prompt-current-default)))
+     denote-title-history
+     nil nil default-title 'denote-title-history denote-title-prompt-current-default)))
 
-(defvar denote--file-type-history nil
+(define-obsolete-variable-alias
+  'denote--file-type-history
+  'denote-file-type-history
+  "3.0.0")
+
+(defvar denote-file-type-history nil
   "Minibuffer history of `denote-file-type-prompt'.")
 
 (defun denote-file-type-prompt ()
@@ -2001,9 +2104,14 @@ Note that a non-nil value other than `text', `markdown-yaml', and
 here for clarity."
   (completing-read
    "Select file type: " (denote--file-type-keys) nil t
-   nil 'denote--file-type-history))
+   nil 'denote-file-type-history))
 
-(defvar denote--date-history nil
+(define-obsolete-variable-alias
+  'denote--date-history
+  'denote-date-history
+  "3.0.0")
+
+(defvar denote-date-history nil
   "Minibuffer history of `denote-date-prompt'.")
 
 (declare-function org-read-date "org" (&optional with-time to-time from-string prompt default-time default-input inactive))
@@ -2024,7 +2132,7 @@ Use Org's more advanced date selection utility if the user option
         (format-time-string "%Y-%m-%d %H:%M:%S" time))
     (read-string
      "DATE and TIME for note (e.g. 2022-06-16 14:30): "
-     nil 'denote--date-history)))
+     nil 'denote-date-history)))
 
 (defun denote-prompt-for-date-return-id ()
   "Use `denote-date-prompt' and return it as `denote-id-format'."
@@ -2032,19 +2140,24 @@ Use Org's more advanced date selection utility if the user option
    denote-id-format
    (denote--valid-date (denote-date-prompt))))
 
-(defvar denote--subdir-history nil
+(define-obsolete-variable-alias
+  'denote--subdir-history
+  'denote-subdirectory-history
+  "3.0.0")
+
+(defvar denote-subdirectory-history nil
   "Minibuffer history of `denote-subdirectory-prompt'.")
 
 ;; Making it a completion table is useful for packages that read the
 ;; metadata, such as `marginalia' and `embark'.
 (defun denote--subdirs-completion-table (dirs)
   "Match DIRS as a completion table."
-  (let* ((def (car denote--subdir-history))
+  (let* ((def (car denote-subdirectory-history))
          (table (denote--completion-table 'file dirs))
          (prompt (if def
                      (format "Select subdirectory [%s]: " def)
                    "Select subdirectory: ")))
-    (completing-read prompt table nil t nil 'denote--subdir-history def)))
+    (completing-read prompt table nil t nil 'denote-subdirectory-history def)))
 
 (defun denote-subdirectory-prompt ()
   "Prompt for subdirectory of the variable `denote-directory'.
@@ -2055,7 +2168,12 @@ packages such as `marginalia' and `embark')."
          (dirs (push root subdirs)))
     (denote--subdirs-completion-table dirs)))
 
-(defvar denote--template-history nil
+(define-obsolete-variable-alias
+  'denote--template-history
+  'denote-template-history
+  "3.0.0")
+
+(defvar denote-template-history nil
   "Minibuffer history of `denote-template-prompt'.")
 
 (defun denote-template-prompt ()
@@ -2065,10 +2183,15 @@ packages such as `marginalia' and `embark')."
      (intern
       (completing-read
        "Select template KEY: " (mapcar #'car templates)
-       nil t nil 'denote--template-history))
+       nil t nil 'denote-template-history))
      templates)))
 
-(defvar denote--signature-history nil
+(define-obsolete-variable-alias
+  'denote--signature-history
+  'denote-signature-history
+  "3.0.0")
+
+(defvar denote-signature-history nil
   "Minibuffer history of `denote-signature-prompt'.")
 
 (defun denote-signature-prompt (&optional default-signature prompt-text)
@@ -2095,10 +2218,15 @@ histories between sessions."
            map)))
     (completing-read
      (format-prompt (or prompt-text "Provide signature") nil)
-     denote--signature-history
-     nil nil default-signature 'denote--signature-history)))
+     denote-signature-history
+     nil nil default-signature 'denote-signature-history)))
 
-(defvar denote--files-matching-regexp-hist nil
+(define-obsolete-variable-alias
+  'denote--files-matching-regexp-hist
+  'denote-files-matching-regexp-history
+  "3.0.0")
+
+(defvar denote-files-matching-regexp-history nil
   "Minibuffer history of `denote-files-matching-regexp-prompt'.")
 
 (defun denote-files-matching-regexp-prompt (&optional prompt-text)
@@ -2106,7 +2234,7 @@ histories between sessions."
 With optional PROMPT-TEXT use it instead of a generic prompt."
   (read-regexp
    (format-prompt (or prompt-text "Match files with the given REGEXP") nil)
-   nil 'denote--files-matching-regexp-hist))
+   nil 'denote-files-matching-regexp-history))
 
 ;;;;; Convenience commands as `denote' variants
 
@@ -2220,8 +2348,8 @@ Set the `denote-title-prompt-current-default' to the last input.
 This is what makes commands such as `denote-open-or-create' or
 `denote-link-or-create' get what the user initially typed as the
 default value for the title of the new note to be created."
-  (let ((denote-title-prompt-current-default (when denote--file-history
-                                               (pop denote--file-history))))
+  (let ((denote-title-prompt-current-default (when denote-file-history
+                                               (pop denote-file-history))))
     (call-interactively command)))
 
 ;;;###autoload
@@ -3194,16 +3322,16 @@ file is returned as the description.")
 (defun denote-link-description-with-signature-and-title (file region-text)
   "Return description from FILE as \"signature   title\".
 
-If REGION-TEXT is not empty (or nil), the description is the text
-of the active region instead.
+If REGION-TEXT is non-nil, the description is the text of the
+active region instead.
 
 The format is specified in variable
-`denote--link-signature-format'. If a signature is not present,
+`denote--link-signature-format'.  If a signature is not present,
 only the title is returned."
   (let* ((file-type (denote-filetype-heuristics file))
          (signature (denote-retrieve-filename-signature file))
          (title (denote--retrieve-title-or-filename file file-type)))
-    (cond ((and region-text (not (string-empty-p region-text)))
+    (cond (region-text
            region-text)
           (signature
            (format denote--link-signature-format signature title))
@@ -3247,7 +3375,10 @@ With optional ID-ONLY as a non-nil argument, such as with a
 universal prefix (\\[universal-argument]), insert links with just
 the identifier and no further description.  In this case, the
 link format is always [[denote:IDENTIFIER]].  If the DESCRIPTION
-is empty, the link is also as if ID-ONLY were non-nil.
+is empty, the link is also as if ID-ONLY were non-nil.  The
+default value of `denote-link-description-function' returns an
+empty string when the region is empty.  Thus, the link will have
+no description in this case.
 
 When called from Lisp, FILE is a string representing a full file
 system path.  FILE-TYPE is a symbol as described in
@@ -3316,7 +3447,12 @@ function."
           (push file found-files))))
     found-files))
 
-(defvar denote-link--find-file-history nil
+(define-obsolete-variable-alias
+  'denote-link--find-file-history
+  'denote-link-find-file-history
+  "3.0.0")
+
+(defvar denote-link-find-file-history nil
   "History for `denote-find-link'.")
 
 (defun denote-link--find-file-prompt (files)
@@ -3326,7 +3462,7 @@ function."
     (completing-read
      "Find linked file: "
      (denote--completion-table 'file file-names)
-     nil t nil 'denote-link--find-file-history)))
+     nil t nil 'denote-link-find-file-history)))
 
 (defun denote-link-return-links (&optional file)
   "Return list of links in current or optional FILE.
@@ -3970,19 +4106,48 @@ interface by first selecting the `denote:' hyperlink type."
 (declare-function org-link-store-props "ol.el" (&rest plist))
 (defvar org-store-link-plist)
 
+(declare-function org-entry-put "org" (pom property value))
+(declare-function org-entry-get "org" (pom property &optional inherit literal-nil))
+(declare-function org-id-new "org-id" (&optional prefix))
+
+(defun denote-link-ol-get-id ()
+  "Get the CUSTOM_ID of the current entry.
+If the entry already has a CUSTOM_ID, return it as-is, else
+create a new one."
+  (let* ((pos (point))
+         (id (org-entry-get pos "CUSTOM_ID")))
+    (if (and id (stringp id) (string-match-p "\\S-" id))
+        id
+      (setq id (org-id-new "h"))
+      (org-entry-put pos "CUSTOM_ID" id)
+      id)))
+
+(declare-function org-get-heading "org" (no-tags no-todo no-priority no-comment))
+
+(defun denote-link-ol-get-heading ()
+  "Get current Org heading text."
+  (org-get-heading :no-tags :no-todo :no-priority :no-comment))
+
 ;;;###autoload
 (defun denote-link-ol-store ()
-  "Handler for `org-store-link' adding support for denote: links."
+  "Handler for `org-store-link' adding support for denote: links.
+Also see the user option `denote-org-store-link-to-heading'."
   (when-let ((file (buffer-file-name))
              ((denote-file-is-note-p file))
              (file-type (denote-filetype-heuristics file))
              (file-id (denote-retrieve-filename-identifier file))
              (file-title (denote--retrieve-title-or-filename file file-type)))
-    (org-link-store-props
-     :type "denote"
-     :description file-title
-     :link (concat "denote:" file-id))
-    org-store-link-plist))
+    (let ((heading-links (and denote-org-store-link-to-heading (derived-mode-p 'org-mode))))
+      (org-link-store-props
+       :type "denote"
+       :description
+       (if heading-links
+           (format "%s::%s" file-title (denote-link-ol-get-heading))
+         file-title)
+       :link (if heading-links
+                 (format "denote:%s::#%s" file-id (denote-link-ol-get-id))
+               (concat "denote:" file-id)))
+      org-store-link-plist)))
 
 ;;;###autoload
 (defun denote-link-ol-export (link description format)
