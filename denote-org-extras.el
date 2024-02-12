@@ -131,27 +131,42 @@ This can be used as the value for the DATE argument of the
 
 ;;;###autoload
 (defun denote-org-extras-extract-org-subtree ()
-  "Create new Denote note using the current Org subtree.
+  "Create new Denote note using the current Org subtree as input.
 Remove the subtree from its current file and move its contents
-into the new Denote file (a subtree is a heading with all of its
+into a new Denote file (a subtree is a heading with all of its
 contents, including subheadings).
 
 Take the text of the subtree's top level heading and use it as
 the title of the new note.
 
 If the heading has any tags, use them as the keywords of the new
-note.  If the Org file has any #+filetags use them as well.  Else
-do not include any keywords.
+note.  If the Org file has any #+filetags use them as well (Org's
+filetags are inherited by the headings).  If none of these are
+true and the user option `denote-prompts' includes an entry for
+keywords, then prompt for keywords.  Else do not include any
+keywords.
 
 If the heading has a PROPERTIES drawer, retain it for further
 review.
 
-If the heading's PROPERTIES drawer includes a DATE or CREATED or
-CLOSED property with a timestamp value, use that to derive the
-date (or date and time) of the new note (if there is only a date,
-the time is taken as 00:00).  If more than one of these
-properties is present, the order of preference is DATE, followed
-by CREATED, followed by CLOSED.
+If the heading's PROPERTIES drawer includes a DATE or CREATED
+property, or there exists a CLOSED statement with a timestamp
+value, use that to derive the date (or date and time) of the new
+note (if there is only a date, the time is taken as 00:00).  If
+more than one of these is present, the order of preference is
+DATE, then CREATED, then CLOSED.  If none of these is present,
+use the current time.  If the `denote-prompts' includes an entry
+for a date, then prompt for a date at this stage (also see
+`denote-date-prompt-use-org-read-date').
+
+For the rest, consult the value of the user option
+`denote-prompts' in the following scenaria:
+
+- Optionally prompt for a subdirectory, otherwise produce the new
+  note in the variable `denote-directory'.
+
+- Optionally prompt for a file signature, otherwise do not use
+  one.
 
 Make the new note an Org file regardless of the value of
 `denote-file-type'."
@@ -161,10 +176,19 @@ Make the new note an Org file regardless of the value of
   (if-let ((text (org-get-entry))
            (heading (denote-link-ol-get-heading)))
       (let ((tags (org-get-tags))
-            (date (denote-org-extras--get-heading-date)))
+            (date (denote-org-extras--get-heading-date))
+            subdirectory
+            signature)
+        (dolist (prompt denote-prompts)
+          (pcase prompt
+            ('keywords (when (not tags)
+                         (setq tags (denote-keywords-prompt))))
+            ('subdirectory (setq subdirectory (denote-subdirectory-prompt)))
+            ('date (when (not date) (setq date (denote-date-prompt))))
+            ('signature (setq signature (denote-signature-prompt)))))
         (delete-region (org-entry-beginning-position)
                        (save-excursion (org-end-of-subtree t) (point)))
-        (denote heading tags 'org nil date)
+        (denote heading tags 'org subdirectory date nil signature)
         (insert text))
     (user-error "No subtree to extract; aborting")))
 

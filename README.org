@@ -6,7 +6,7 @@
 #+startup: content
 #+macro: stable-version 2.2.0
 #+macro: release-date 2023-12-10
-#+macro: development-version 2.3.0-dev
+#+macro: development-version 3.0.0-dev
 #+export_file_name: denote.texi
 #+texinfo_filename: denote.info
 #+texinfo_dir_category: Emacs misc features
@@ -551,18 +551,30 @@ The text of the subtree's heading becomes the =#+title= of the new
 note. Everything else is inserted as-is.
 
 If the heading has any tags, they are used as the keywords of the new
-note. If the Org file has any =#+filetags= they are taken as well.
-Else the new note has no keywords ([[#h:ad4dde4a-8e88-470a-97ae-e7b9d4b41fb4][Add or remove keywords interactively]]).
+note. If the Org file has any =#+filetags= they are taken as well
+(Org's =#+filetags= are inherited by the headings). If none of these
+are true and the user option ~denote-prompts~ includes an entry for
+keywords, then ~denote-org-extras-extract-org-subtree~ prompts for
+keywords. Else the new note has no keywords ([[#h:ad4dde4a-8e88-470a-97ae-e7b9d4b41fb4][Add or remove keywords interactively]]).
 
 If the heading has a =PROPERTIES= drawer, it is retained for further
 review.
 
-If the heading's =PROPERTIES= drawer includes a =DATE= or =CREATED= or
-=CLOSED= property with a timestamp value, it is used to derive the date
-(or date and time) of the new note (if there is only a date, the time
-is taken as 00:00). If more than one of these properties is present,
-the order of preference is =DATE=, followed by =CREATED=, followed by
-=CLOSED=.
+If the heading's =PROPERTIES= drawer includes a =DATE= or =CREATED=
+property, or there exists a =CLOSED= statement with a timestamp value,
+use that to derive the date (or date and time) of the new note (if
+there is only a date, the time is taken as 00:00). If more than one of
+these is present, the order of preference is =DATE=, then =CREATED=,
+then =CLOSED=. If none of these is present, the current time is used.
+If the ~denote-prompts~ includes an entry for a date, then the command
+prompts for a date at this stage (also see ~denote-date-prompt-use-org-read-date~).
+
+For the rest, it consults the value of the user option
+~denote-prompts~ in the following scenaria:
+
+- To optionally prompt for a subdirectory, otherwise it produces the
+  new note in the ~denote-directory~.
+- To optionally prompt for a file signature, otherwise to not use any.
 
 The new note is an Org file regardless of the user option
 ~denote-file-type~.
@@ -3929,12 +3941,20 @@ might change them without further notice.
   strings into a single string. Keywords are separated by the
   underscore character, per the Denote file-naming scheme.
 
+#+findex: denote-valid-date-p
++ Function ~denote-valid-date-p~ :: Return =DATE= as a valid date. A
+  valid =DATE= is a value that can be parsed by either ~decode-time~
+  or ~date-to-time~ .Those functions signal an error if =DATE= is a
+  value they do not recognise. If =DATE= is nil, return nil.
+  [ Part of {{{development-version}}}. ]
+
 #+findex: denote-parse-date
 + Function ~denote-parse-date~ :: Return =DATE= as an appropriate
-  value for the ~denote~ command. If =DATE= is a list, assume it is
-  consistent with ~current-date~ or related and return it as-is. If
-  =DATE= is a non-empty string, try to convert it with ~date-to-time~.
-  If =DATE= is none of the above, return ~current-time~.
+  value for the ~denote~ command. Pass =DATE= through
+  ~denote-valid-date-p~ and use its return value. If either that or
+  =DATE= is nil, return ~current-time~. [ The ~denote-valid-date-p~ is
+  the new name of ~denote--valid-date~, with enhanced functionality.
+  Done as part of {{{development-version}}}. ]
 
 #+findex: denote-directory
 + Function ~denote-directory~ :: Return path of the variable
@@ -4067,6 +4087,12 @@ might change them without further notice.
 #+findex: denote-retrieve-filename-signature
 + Function ~denote-retrieve-filename-signature~ :: Extract signature
   from =FILE= name, if present, else return nil.
+
+#+findex: denote-get-identifier
++ Function ~denote-get-identifier~ :: Convert =DATE= into a Denote
+  identifier using ~denote-id-format~. =DATE= is parsed by
+  ~denote-valid-date-p~. If =DATE= is nil, use the current time.
+  [ Part of {{{development-version}}}. ]
 
 #+findex: denote-create-unique-file-identifier
 + Function ~denote-create-unique-file-identifier~ :: Create a new unique
@@ -4327,11 +4353,6 @@ might change them without further notice.
   an identifier-only link in its context.  The format of such links is
   ~denote-id-only-link-format~.
 
-#+findex: denote-surround-with-quotes
-+ Function ~denote-surround-with-quotes~ :: Surround string =S= with
-  quotes.  This can be used in ~denote-file-types~ to format front
-  mattter.
-
 #+findex: denote-date-org-timestamp
 + Function ~denote-date-org-timestamp~ :: Format =DATE= using the Org
   inactive timestamp notation.
@@ -4353,6 +4374,19 @@ might change them without further notice.
 + Function ~denote-trim-whitespace-then-quotes~ :: Trim whitespace
   then quotes around string =S=.  This can be used in
   ~denote-file-types~ to format front mattter.
+
+#+findex: denote-format-string-for-org-front-matter
++ Function ~denote-format-string-for-org-front-matter~ :: Return
+  string =S= as-is for Org or plain text front matter. If =S= is not a
+  string, return an empty string. [ Part of {{{development-version}}}. ]
+
+#+findex: denote-format-string-for-md-front-matter
++ Function ~denote-format-string-for-md-front-matter~ :: Surround
+  string =S= with quotes. If =S= is not a string, return a literal
+  emptry string. This can be used in ~denote-file-types~ to format
+  front mattter. [ Revised as part of {{{development-version}}} and
+  renamed from ~denote-surround-with-quotes~ to
+  ~denote-format-string-for-md-front-matter~. ]
 
 #+findex: denote-format-keywords-for-md-front-matter
 + Function ~denote-format-keywords-for-md-front-matter~ :: Format

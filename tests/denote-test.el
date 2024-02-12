@@ -182,6 +182,14 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
                 (member ".org.age" extensions)
                 (member ".txt.age" extensions)))))
 
+(ert-deftest denote-test--denote-surround-with-quotes ()
+  "Test that `denote-surround-with-quotes' returns a string in quotes."
+  (should (and (equal (denote-surround-with-quotes "test") "\"test\"")
+               (equal (denote-surround-with-quotes "") "\"\"")
+               (equal (denote-surround-with-quotes nil) "\"\"")
+               (equal (denote-surround-with-quotes 'wrong) "\"\"")
+               (equal (denote-surround-with-quotes '(wrong)) "\"\""))))
+
 (ert-deftest denote-test--denote--format-front-matter ()
   "Test that `denote--format-front-matter' formats front matter correctly."
   (should (and (equal (denote--format-front-matter "" "" '("") "" 'text)
@@ -279,7 +287,7 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
 (ert-deftest denote-test--denote-format-file-name ()
   "Test that `denote-format-file-name' returns all expected paths."
   (let* ((title "Some test")
-         (id (format-time-string denote-id-format (denote--valid-date "2023-11-28 05:53:11")))
+         (id (format-time-string denote-id-format (denote-valid-date-p "2023-11-28 05:53:11")))
          (denote-directory "/tmp/test-denote")
          (kws '("one" "two")))
     (should-error (denote-format-file-name
@@ -351,6 +359,15 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
     (should (equal (denote-format-file-name
                     (denote-directory)
                     id
+                    nil
+                    nil
+                    (denote--file-extension 'org)
+                    nil)
+                   "/tmp/test-denote/20231128T055311.org"))
+
+    (should (equal (denote-format-file-name
+                    (denote-directory)
+                    id
                     kws
                     title
                     (denote--file-extension 'org)
@@ -395,6 +412,14 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
    (and (equal (denote-convert-file-name-keywords-to-crm "_denote_keywords_testing") "denote,keywords,testing")
         (equal (denote-convert-file-name-keywords-to-crm "_denote") "denote")
         (equal (denote-convert-file-name-keywords-to-crm "") ""))))
+
+(ert-deftest denote-test--denote-get-identifier ()
+  "Test that `denote-get-identifier' returns an identifier."
+  (should (and (equal (denote-get-identifier) (format-time-string denote-id-format (current-time)))
+               (equal (denote-get-identifier "2024-02-01 10:34") "20240201T103400")
+               (equal (denote-get-identifier 1705644188) "20240119T080308")
+               (equal (denote-get-identifier '(26026 4251)) "20240119T080307")))
+  (should-error (denote-get-identifier "Invalid date")))
 
 ;;;; denote-journal-extras.el
 

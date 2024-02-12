@@ -1237,10 +1237,19 @@ It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
 ID.  Advanced users are advised to consult Info node `(denote)
 Change the front matter format'.")
 
-(defun denote-surround-with-quotes (s)
+(define-obsolete-function-alias
+  'denote-surround-with-quotes
+  'denote-format-string-for-md-front-matter
+  "3.0.0")
+
+(defun denote-format-string-for-md-front-matter (s)
   "Surround string S with quotes.
+If S is not a string, return a literal emptry string.
+
 This can be used in `denote-file-types' to format front mattter."
-  (format "%S" s))
+  (if (stringp s)
+      (format "%S" s)
+    "\"\""))
 
 (defun denote-trim-whitespace (s)
   "Trim whitespace around string S.
@@ -1256,6 +1265,11 @@ This can be used in `denote-file-types' to format front mattter."
   "Trim whitespace then quotes around string S.
 This can be used in `denote-file-types' to format front mattter."
   (denote--trim-quotes (denote-trim-whitespace s)))
+
+(defun denote-format-string-for-org-front-matter (s)
+  "Return string S as-is for Org or plain text front matter.
+If S is not a string, return an empty string."
+  (if (stringp s) s ""))
 
 (defun denote-format-keywords-for-md-front-matter (keywords)
   "Format front matter KEYWORDS for markdown file type.
@@ -1290,7 +1304,7 @@ Consult the `denote-file-types' for how this is used."
      :date-function denote-date-org-timestamp
      :front-matter denote-org-front-matter
      :title-key-regexp "^#\\+title\\s-*:"
-     :title-value-function identity
+     :title-value-function denote-format-string-for-org-front-matter
      :title-value-reverse-function denote-trim-whitespace
      :keywords-key-regexp "^#\\+filetags\\s-*:"
      :keywords-value-function denote-format-keywords-for-org-front-matter
@@ -1302,7 +1316,7 @@ Consult the `denote-file-types' for how this is used."
      :date-function denote-date-rfc3339
      :front-matter denote-yaml-front-matter
      :title-key-regexp "^title\\s-*:"
-     :title-value-function denote-surround-with-quotes
+     :title-value-function denote-format-string-for-md-front-matter
      :title-value-reverse-function denote-trim-whitespace-then-quotes
      :keywords-key-regexp "^tags\\s-*:"
      :keywords-value-function denote-format-keywords-for-md-front-matter
@@ -1314,7 +1328,7 @@ Consult the `denote-file-types' for how this is used."
      :date-function denote-date-rfc3339
      :front-matter denote-toml-front-matter
      :title-key-regexp "^title\\s-*="
-     :title-value-function denote-surround-with-quotes
+     :title-value-function denote-format-string-for-md-front-matter
      :title-value-reverse-function denote-trim-whitespace-then-quotes
      :keywords-key-regexp "^tags\\s-*="
      :keywords-value-function denote-format-keywords-for-md-front-matter
@@ -1326,7 +1340,7 @@ Consult the `denote-file-types' for how this is used."
      :date-function denote-date-iso-8601
      :front-matter denote-text-front-matter
      :title-key-regexp "^title\\s-*:"
-     :title-value-function identity
+     :title-value-function denote-format-string-for-org-front-matter
      :title-value-reverse-function denote-trim-whitespace
      :keywords-key-regexp "^tags\\s-*:"
      :keywords-value-function denote-format-keywords-for-text-front-matter
@@ -1481,6 +1495,17 @@ for new note creation.  The default is `org'.")
   "Return all `denote-file-types' keys."
   (delete-dups (mapcar #'car denote-file-types)))
 
+(defun denote--format-front-matter (title date keywords id filetype)
+  "Front matter for new notes.
+
+TITLE, DATE, and ID are all strings or functions that return a
+string.  KEYWORDS is a list of strings.  FILETYPE is one of the
+values of `denote-file-type'."
+  (let* ((fm (denote--front-matter filetype))
+         (title (denote--format-front-matter-title title filetype))
+         (kws (denote--format-front-matter-keywords keywords filetype)))
+    (if fm (format fm title date kws id) "")))
+
 (defun denote--get-title-line-from-front-matter (title file-type)
   "Retrieve title line from front matter based on FILE-TYPE.
 Format TITLE in the title line.  The returned line does not
@@ -1523,6 +1548,14 @@ To create a new one, refer to the function
   (or (denote-retrieve-filename-identifier file)
       (error "Cannot find `%s' as a file with a Denote identifier" file)))
 
+(defun denote-get-identifier (&optional date)
+  "Convert DATE into a Denote identifier using `denote-id-format'.
+DATE is parsed by `denote-valid-date-p'.  If DATE is nil, use the
+current time."
+  (format-time-string
+   denote-id-format
+   (when date (denote-valid-date-p date))))
+
 (defun denote-create-unique-file-identifier (file used-ids &optional date)
   "Generate a unique identifier for FILE not in USED-IDS hash-table.
 
@@ -1541,7 +1574,7 @@ To only return an existing identifier, refer to the function
   (let ((id (cond
              (date (denote-prompt-for-date-return-id))
              ((denote--file-attributes-time file))
-             (t (format-time-string denote-id-format)))))
+             (t (denote-get-identifier)))))
     (denote--find-first-unused-id id used-ids)))
 
 (define-obsolete-function-alias
@@ -1724,9 +1757,9 @@ which case it is not added to the base file name."
    ((not (string-match-p denote-id-regexp id))
     (error "ID `%s' does not match `denote-id-regexp'" id)))
   (let ((file-name (concat dir-path id)))
-    (when (not (string-empty-p signature))
+    (when (and signature (not (string-empty-p signature)))
       (setq file-name (concat file-name "==" (denote-sluggify 'signature signature))))
-    (when (not (string-empty-p title))
+    (when (and title (not (string-empty-p title)))
       (setq file-name (concat file-name "--" (denote-sluggify 'title title))))
     (when keywords
       (setq file-name (concat file-name "__" (denote-keywords-combine (denote-sluggify-keywords keywords)))))
@@ -1741,17 +1774,6 @@ which case it is not added to the base file name."
 Apply `denote-sluggify' to KEYWORDS."
   (let ((kws (denote-sluggify-keywords keywords)))
     (funcall (denote--keywords-value-function file-type) kws)))
-
-(defun denote--format-front-matter (title date keywords id filetype)
-  "Front matter for new notes.
-
-TITLE, DATE, and ID are all strings or functions that return a
-string.  KEYWORDS is a list of strings.  FILETYPE is one of the
-values of `denote-file-type'."
-  (let* ((fm (denote--front-matter filetype))
-         (title (denote--format-front-matter-title title filetype))
-         (kws (denote--format-front-matter-keywords keywords filetype)))
-    (if fm (format fm title date kws id) "")))
 
 (defun denote--path (title keywords dir id file-type signature)
   "Return path to new file.
@@ -1835,28 +1857,28 @@ where the former does not read dates without a time component."
       (format "%s %s" date (format-time-string "%H:%M:%S" (current-time)))
     date))
 
-(defun denote--valid-date (date)
-  "Return DATE if parsed by `date-to-time', else signal error."
-  (let ((datetime (denote--date-add-current-time date)))
-    (date-to-time datetime)))
+(define-obsolete-function-alias
+  'denote--valid-date
+  'denote-valid-date-p
+  "3.0.0")
+
+(defun denote-valid-date-p (date)
+  "Return DATE as a valid date.
+A valid DATE is a value that can be parsed by either
+`decode-time' or `date-to-time'.  Those functions signal an error
+if DATE is a value they do not recognise.
+
+If DATE is nil, return nil."
+  (if (and (or (numberp date) (listp date))
+           (decode-time date))
+      date
+    (date-to-time (denote--date-add-current-time date))))
 
 (defun denote-parse-date (date)
   "Return DATE as an appropriate value for the `denote' command.
-
-- If DATE is non-nil and a list, assume it is consistent with
-  `current-date' or related and return it as-is.
-
-- If DATE is a non-empty string, try to convert it with
-  `date-to-time'.
-
-- If DATE is none of the above, return `current-time'."
-  (cond
-   ((and date (listp date))
-    date)
-   ((and (stringp date) (not (string-empty-p date)))
-    (denote--valid-date date))
-   (t
-    (current-time))))
+Pass DATE through `denote-valid-date-p' and use its return value.
+If either that or DATE is nil, return `current-time'."
+  (or (denote-valid-date-p date)) (current-time))
 
 (defun denote--buffer-file-names ()
   "Return file names of Denote buffers."
@@ -1895,7 +1917,7 @@ USED-IDS is a hash-table of all used IDs.  If ID is already used,
 increment it 1 second at a time until an available id is found."
   (let ((current-id id))
     (while (gethash current-id used-ids)
-      (setq current-id (format-time-string denote-id-format (time-add (date-to-time current-id) 1))))
+      (setq current-id (denote-get-identifier (time-add (date-to-time current-id) 1))))
     current-id))
 
 (make-obsolete 'denote-barf-duplicate-id nil "2.1.0")
@@ -2035,7 +2057,7 @@ When called from Lisp, all arguments are optional.
          (kws (denote-keywords-sort keywords))
          (date (denote-parse-date date))
          (id (denote--find-first-unused-id
-              (format-time-string denote-id-format date)
+              (denote-get-identifier date)
               (denote--get-all-used-ids)))
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
                         (file-name-as-directory subdirectory)
@@ -2124,9 +2146,7 @@ Use Org's more advanced date selection utility if the user option
 
 (defun denote-prompt-for-date-return-id ()
   "Use `denote-date-prompt' and return it as `denote-id-format'."
-  (format-time-string
-   denote-id-format
-   (denote--valid-date (denote-date-prompt))))
+  (denote-get-identifier (denote-date-prompt)))
 
 (defvar denote-subdirectory-history nil
   "Minibuffer history of `denote-subdirectory-prompt'.")
@@ -2452,9 +2472,7 @@ the file type is assumed to be the first of `denote-file-types'."
 
 (defun denote--file-attributes-time (file)
   "Return `file-attribute-modification-time' of FILE as identifier."
-  (format-time-string
-   denote-id-format
-   (file-attribute-modification-time (file-attributes file))))
+  (denote-get-identifier (file-attribute-modification-time (file-attributes file))))
 
 (defun denote--revert-dired (buf)
   "Revert BUF if appropriate.
@@ -4226,9 +4244,9 @@ Consult the manual for template samples."
   (let* ((title (or title ""))
          (date (if (or (null date) (string-empty-p date))
                    (current-time)
-                 (denote--valid-date date)))
+                 (denote-valid-date-p date)))
          (id (denote--find-first-unused-id
-              (format-time-string denote-id-format date)
+              (denote-get-identifier date)
               (denote--get-all-used-ids)))
          (keywords (denote-keywords-sort keywords))
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
@@ -4238,7 +4256,7 @@ Consult the manual for template samples."
          (signature (or signature ""))
          (front-matter (denote--format-front-matter
                         title (denote--date nil 'org) keywords
-                        (format-time-string denote-id-format nil) 'org)))
+                        (denote-get-identifier) 'org)))
     (setq denote-last-path
           (denote--path title keywords directory id 'org signature))
     (denote--keywords-add-to-history keywords)
