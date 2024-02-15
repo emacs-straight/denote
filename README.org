@@ -825,7 +825,7 @@ file, with the following contents:
 ;;;
 ;;;     (info "(emacs) Directory Variables")
 
-((nil . ((denote-directory . default-directory))))
+((nil . ((denote-directory . "/path/to/silo/"))))
 #+end_src
 
 When inside the directory that contains this =.dir-locals.el= file, all
@@ -871,7 +871,7 @@ silo-specific value.  For example, this one changes the
 ;;;
 ;;;     (info "(emacs) Directory Variables")
 
-((nil . ((denote-directory . default-directory)
+((nil . ((denote-directory . "/path/to/silo/")
          (denote-known-keywords . ("food" "drink")))))
 #+end_src
 
@@ -882,7 +882,7 @@ This one is like the above, but also disables ~denote-infer-keywords~:
 ;;;
 ;;;     (info "(emacs) Directory Variables")
 
-((nil . ((denote-directory . default-directory)
+((nil . ((denote-directory . "/path/to/silo/")
          (denote-known-keywords . ("food" "drink"))
          (denote-infer-keywords . nil))))
 #+end_src
@@ -895,30 +895,12 @@ modes, we can do something like this:
 ;;;
 ;;;     (info "(emacs) Directory Variables")
 
-((nil . ((denote-directory . default-directory)
+((nil . ((denote-directory . "/path/to/silo/")
          (denote-known-keywords . ("food" "drink"))
          (denote-infer-keywords . nil)))
  (org-mode . ((org-hide-emphasis-markers . t)
               (org-hide-macro-markers . t)
               (org-hide-leading-stars . t))))
-#+end_src
-
-IMPORTANT If your silo contains sub-directories of notes, you
-should replace ~default-directory~ in the above examples with an
-absolute path to your silo directory, otherwise links from files
-within the sub-directories cannot be made to files in the parent
-directory. For example:
-
-#+begin_src emacs-lisp
-;;; Directory Local Variables.  For more information evaluate:
-;;;
-;;;     (info "(emacs) Directory Variables")
-  ((nil . ((denote-directory . "~/my-silo")
-           (denote-known-keywords . ("food" "drink"))
-           (denote-infer-keywords . nil)))
-   (org-mode . ((org-hide-emphasis-markers . t)
-                (org-hide-macro-markers . t)
-                (org-hide-leading-stars . t))))
 #+end_src
 
 As not all user options have a "safe" local value, Emacs will ask the
@@ -955,7 +937,6 @@ read the video's path when called from there (e.g. by using Emacs'
 
 [[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directory silos for notes]].
 
-#+vindex: denote-user-enforced-denote-directory
 There are cases where the user (i) wants to maintain multiple silos
 and (ii) prefers an interactive way to switch between them without
 going through Dired.  Since this is specific to the user's workflow,
@@ -992,7 +973,7 @@ added to the user's Denote configuration:
          (intern (completing-read
                   "Run command in silo: "
                   my-denote-commands-for-silos nil t))))
-  (let ((denote-user-enforced-denote-directory silo))
+  (let ((denote-directory silo))
     (call-interactively command)))
 #+end_src
 
@@ -1000,12 +981,14 @@ With this in place, =M-x my-denote-pick-silo-then-command= will use
 minibuffer completion to select a silo among the predefined options
 and then ask for the command to run in that context.
 
-Note the use of the variable ~denote-user-enforced-denote-directory~.
-This variable is specially meant for custom commands to select
-silos. When it is set, it overrides the global default value of
-~denote-directory~ as well as the value provided by the
-=.dir-locals.el= file. Use it only when writing wrapper functions like
-~my-denote-pick-silo-then-command~.
+Note that =let= binding ~denote-directory~ can be used in custom
+commands and other wrapper functions to override the global default
+value of ~denote-directory~ to select silos.
+
+To see another example of a wrapper function that =let= binds
+~denote-directory~, see:
+
+[[#h:d0c7cb79-21e5-4176-a6af-f4f68578c8dd][Extending Denote: Split an Org subtree into its own note]].
 
 *** The =denote-silo-extras.el=
 :PROPERTIES:
@@ -1132,6 +1115,10 @@ part of the user's longer-term storage.  While Denote does not manage
 such files (e.g. doesn't create links to them), it already has all the
 mechanisms to facilitate the task of renaming them.
 
+#+vindex: denote-after-rename-file-hook
+All renaming commands run the ~denote-after-rename-file-hook~ after a
+succesful operation. [ Part of {{{development-version}}}. ]
+
 Apart from renaming files, Denote can also rename only the buffer.
 The idea is that the underlying file name is correct but it can be
 easier to use shorter buffer names when displaying them on the mode
@@ -1144,107 +1131,144 @@ line or switching between then with commands like ~switch-to-buffer~.
 :CUSTOM_ID: h:7cc9e000-806a-48da-945c-711bbc7426b0
 :END:
 
+[ Revised as part of {{{development-version}}} to honour the value of
+  the user option ~denote-prompts~ where that makes sense ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]).  
+  This version also broadens the scope of the user option
+  ~denote-rename-no-confirm~, such that it automatically saves the
+  affcted buffers, post-rename. ]
+
 #+findex: denote-rename-file
 The ~denote-rename-file~ command renames a file and updates existing
 front matter if appropriate. It is possible to do the same with
 multiple files ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
 
-If in Dired, consider =FILE= to be the one at point, else prompt with
-minibuffer completion for one. When called from Lisp, =FILE= is a
-filesystem path represented as a string.
+It always renames the file where it is located in the file system:
+it never moves it to another directory.
 
-If =FILE= has a Denote-compliant identifier, retain it while updating
-the =TITLE=, =KEYWORDS=, and =SIGNATURE= components of the file name.
+If in Dired, it considers =FILE= to be the one at point, else it
+prompts with minibuffer completion for one. When called from Lisp,
+=FILE= is a file system path represented as a string.
 
-Else create an identifier based on the following conditions:
+If =FILE= has a Denote-compliant identifier, it retains it while
+updating components of the file name referenced by the user option
+~denote-prompts~ ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]). By default, these are
+the =TITLE= and =KEYWORDS=. The =SIGNATURE= is another one. When
+called from Lisp, =TITLE= and =SIGNATURE= are strings, while
+=KEYWORDS= is a list of strings.
 
-1. If optional =ASK-DATE= is non-nil (such as with a prefix argument),
-   prompt for a date and use it to derive the identifier.
+If there is no identifier, ~denote-rename-file~ creates an identifier
+based on the following conditions:
 
-2. If optional =ASK-DATE= is nil (this is the case without a prefix
-   argument), use the file attributes to determine the last modified
-   date and format it as an identifier.
+1. If the ~denote-prompts~ includes an entry for date prompts, then it
+   prompts for =DATE= and takes its input to produce a new identifier. For
+   use in Lisp, =DATE= must conform with ~denote-valid-date-p~.
 
-3. As a fallback, derive an identifier from the current time.
+2. If =DATE= is nil (e.g. when ~denote-prompts~ does not include a
+   date entry), it uses the file attributes to determine the last
+   modified date of =FILE= and formats it as an identifier.
 
-4. If the resulting identifier is not unique among the files in the
-   variable ~denote-directory~, increment it such that it becomes
-   unique.
+3. As a fallback, it derives an identifier from the current date and
+   time.
 
-Add =TITLE= to =FILE=. In interactive use, prompt for user input and
-retrieve the default =TITLE= value from a line starting with a title
-field in the file's contents, depending on the given file type ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]).
-Else, use the file name as a default value at the minibuffer prompt.
-=TITLE= is a string.
+4. At any rate, if the resulting identifier is not unique among the
+   files in the variable ~denote-directory~, it increments it such
+   that it becomes unique.
 
-Add =SIGNATURE= to =FILE=. In interactive use, prompt for =SIGNATURE=,
-using an existing one as the default value at the minibuffer prompt.
-=SIGNATURE= is a string.
+In interactive use, and assuming ~denote-prompts~ includes a title
+entry, the ~denote-rename-file~ makes the =TITLE= prompt have
+prefilled text in the minibuffer that consists of the current title of
+=FILE=. The current title is either retrieved from the front matter
+(such as the =#+title= in Org) or from the file name.
 
-Add =KEYWORDS= to =FILE=. In interactive use, prompt for =KEYWORDS=.
-More than one keyword can be inserted when separated by the
-`crm-sepator' (normally a comma). =KEYWORDS= is a list of strings.
-When called interactively, an empty input is converted to an empty list
-of keywords.
+The command does the same for the =SIGNATURE= prompt, subject to
+~denote-prompts~, by prefilling the minibuffer with the current
+signature of =FILE=, if any.
 
-Read the file type extension (like =.txt=) from the underlying file
-and preserve it through the renaming process. Files that have no
-extension are left without one.
+Same principle for the =KEYWORDS= prompt: it converts the keywords in
+the file name into a comma-separated string and prefills the minibuffer
+with it (the =KEYWORDS= prompt accepts more than one keywords, each
+separated by a comma, else the ~crm-sepator~).
 
-Renaming only occurs relative to the current directory. Files are not
-moved between directories.
+For all prompts, the ~denote-rename-file~ interprets an empty input as
+an instruction to remove that file name component. For example, if a
+=TITLE= prompt is available and =FILE= is =20240211T093531--some-title__keyword1.org=
+then it renames =FILE= to =20240211T093531__keyword1.org=. For
+interactive use, this also means that if a prompt is missing from the
+~denote-prompts~ the corresponding file name component will be removed
+during the renaming process (e.g. a ~denote-prompts~ without an entry
+for keywords is the same as passing an empty/nil =KEYWORDS= argument,
+thus removing the keywords of the file).
 
-As a final step after the =FILE=, =TITLE=, =KEYWORDS=, and =SIGNATURE=
-are collected, ask for confirmation, showing the difference between
-old and new file names.
+[ NOTE: Please check with your minibuffer user interface how to
+  provide an empty input. The Emacs default setup accepts the empty
+  minibuffer contents as they are, though popular packages like
+  ~vertico~ use the first available completion candidate instead. For
+  ~vertico~, the user must either move one up to select the prompt and
+  then type =RET= there with empty contents, or use the command
+  ~vertico-exit-input~ with empty contents. That Vertico command is
+  bound to =M-RET= as of this writing on 2024-02-13 08:08 +0200. ]
 
-Do not ask for confirmation if the ~denote-rename-no-confirm~ option
-is set to a non-nil value ([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]).
+When renaming =FILE=, the command reads its file type extension (like
+=.org=) and preserves it through the renaming process. Files that have
+no extension are left without one.
 
-If the =FILE= has Denote-style front matter for the =TITLE= and
-=KEYWORDS=, ask to rewrite their values in order to reflect the new
-input (this step always requires confirmation and the underlying
-buffer is not saved, so consider invoking ~diff-buffer-with-file~ to
-double-check the effect). The rewrite of the =TITLE= and =KEYWORDS= in
+As a final step, it asks for confirmation, showing the difference
+between old and new file names. It does not ask for confirmation if
+the user option ~denote-rename-no-confirm~ is set to a non-nil value
+([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]).
+
+If =FILE= has front matter for =TITLE= and =KEYWORDS=,
+~denote-rename-file~ asks to rewrite their values in order to reflect
+the new input, unless ~denote-rename-no-confirm~ is non-nil. When the
+~denote-rename-no-confirm~ is nil (the default), the underlying buffer
+is not saved, giving the user the change to invoking ~diff-buffer-with-file~ to
+double-check the effect. The rewrite of the =TITLE= and =KEYWORDS= in
 the front matter should not affect the rest of the front matter.
 
 If the file does not have front matter but is among the supported file
-types (per ~denote-file-type~), add front matter at the top of it and
-leave the buffer unsaved for further inspection.
+types (per ~denote-file-type~), the ~denote-rename-file~ adds front
+matter to the top of it and leaves the buffer unsaved for further
+inspection. It actually saves the buffer if ~denote-rename-no-confirm~
+is non-nil ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]).
 
-For the front matter of each file type, refer to the variables:
-
-- ~denote-org-front-matter~
-- ~denote-text-front-matter~
-- ~denote-toml-front-matter~
-- ~denote-yaml-front-matter~
-
-This command is intended to (i) rename existing Denote notes while
-updating their title and keywords in the front matter, (ii) convert
+This command is intended to (i) rename Denote files, (ii) convert
 existing supported file types to Denote notes, and (ii) rename
-non-note files (e.g. PDF) that can benefit from Denote's file-naming
+non-note files (e.g. =PDF=) that can benefit from Denote's file-naming
 scheme.
+
+For a version of this command that works with multiple files
+one-by-one, use ~denote-dired-rename-files~ ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
 
 *** The ~denote-rename-no-confirm~ option
 :PROPERTIES:
 :CUSTOM_ID: h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7
 :END:
 
+[ Revised as part of {{{development-version}}} to save the underlying
+  buffer. The assumption is that the user who opts in to this feature is
+  familiar with the Denote renaming operation and knows it is reliable. ]
+
+#+vindex: denote-rename-no-confirm
+The user option ~denote-rename-no-confirm~ makes ~denote-rename-file~
+not prompt for confirmation and save buffers outright ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
+
 The default behaviour of the ~denote-rename-file~ command is to ask
 for an affirmative answer as a final step before changing the file
 name and, where relevant, inserting or updating the corresponding
-front matter ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
+front matter. It also does not save the affected file's buffer to let
+the user inspect and confirm the changes (such as by invoking the
+command ~diff-buffer-with-file~).
 
-Remember that ~denote-rename-file~ does not save the underlying buffer
-it modifies. It leaves it unsaved so that the user can review what
-happened, such as by invoking the command ~diff-buffer-with-file~.
+With this user option bound to a non-nil value, buffers are saved as
+well. The assumption is that the user who opts in to this feature is
+familiar with the ~denote-rename-file~ operation and knows it is
+reliable.
 
 Specialised commands that build on top of ~denote-rename-file~ may
 internally bind this user option to a non-nil value in order to
 perform their operation (e.g. ~denote-dired-rename-files~ goes through
 each marked Dired file, prompting for the information to use, but
-carries out the renaming without asking for confirmation (buffers
-remain unsaved)).
+carries out the renaming without asking for confirmation ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]])).
 
 ** Rename a single file based on its front matter
 :PROPERTIES:
@@ -1306,8 +1330,17 @@ the like.
 :CUSTOM_ID: h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde
 :END:
 
+[ Revised as part of {{{development-version}}} to honour the value of
+  the user option ~denote-prompts~ where that makes sense ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]). ]
+
+[ As part of {{{development-version}}} the
+~denote-dired-rename-marked-files~ is an alias for
+~denote-dired-rename-files~. ]
+
 #+findex: denote-dired-rename-files
-The command ~denote-dired-rename-files~ renames the files that are
+#+findex: denote-dired-rename-marked-files
+The command ~denote-dired-rename-files~ (alias
+~denote-dired-rename-marked-files~) renames the files that are
 marked in a Dired buffer. Its behaviour is similar to the
 ~denote-rename-file~ in that it prompts for a title, keywords, and
 signature ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]). It does so over each marked file,
@@ -1322,14 +1355,13 @@ check the command ~denote-dired-rename-marked-files-with-keywords~.
 - [[#h:f365ff7e-2140-4e14-a92f-666ae97382a4][Rename by writing only keywords]]
 - [[#h:ea5673cd-e6ca-4c42-a066-07dc6c9d57f8][Rename multiple files based on their front matter]]
 
-[ As part of {{{development-version}}} the
-  ~denote-dired-rename-marked-files~ is an alias for
-  ~denote-dired-rename-files~. ]
-
 ** Rename multiple files at once by asking only for keywords
 :PROPERTIES:
 :CUSTOM_ID: h:f365ff7e-2140-4e14-a92f-666ae97382a4
 :END:
+
+[ Revised as part of {{{development-version}}} to honour the value of
+  the user option ~denote-prompts~ where that makes sense ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]). ]
 
 #+findex: denote-dired-rename-marked-files-with-keywords
 The ~denote-dired-rename-marked-files-with-keywords~ command renames
@@ -1355,11 +1387,12 @@ so by writing keywords to them. Specifically, it does the following:
   is recognized as a Denote note (per the ~denote-file-type~ user
   option), such that it includes the new keywords.
 
-[ Note that the affected buffers are not saved. Users can thus check
-  them to confirm that the new front matter does not cause any
-  problems (e.g. with the ~diff-buffer-with-file~ command). Multiple
-  buffers can be saved in one go with ~save-some-buffers~ (read its
-  doc string). ]
+[ Note that the affected buffers are not saved, unless the user option
+  ~denote-rename-no-confirm~ is non-nil. Users can thus check them to
+  confirm that the new front matter does not cause any problems (e.g.
+  with the ~diff-buffer-with-file~ command). Multiple buffers can be
+  saved in one go with the command ~save-some-buffers~ (read its doc
+  string). ]
 
 ** Rename multiple files based on their front matter
 :PROPERTIES:
@@ -3716,6 +3749,7 @@ Everything is in place to set up the package.
 (setq denote-prompts '(title keywords))
 (setq denote-excluded-directories-regexp nil)
 (setq denote-excluded-keywords-regexp nil)
+(setq denote-rename-no-confirm nil) ; Set to t if you are familiar with `denote-rename-file'
 
 ;; Pick dates, where relevant, with Org's advanced interface:
 (setq denote-date-prompt-use-org-read-date t)
@@ -3956,7 +3990,7 @@ might change them without further notice.
   ~denote-directory~ as a proper directory, also because it accepts a
   directory-local value for what we internally refer to as "silos"
   ([[#h:15719799-a5ff-4e9a-9f10-4ca03ef8f6c5][Maintain separate directories for notes]]).  Custom Lisp code can
-  ~let~ bind the value of the variable ~denote-user-enforced-denote-directory~
+  ~let~ bind the value of the variable ~denote-directory~
   to override what this function returns.
 
 #+findex: denote-directory-files
@@ -4219,17 +4253,22 @@ might change them without further notice.
   note after ~denote-rename-file~ (or related) The =FILE=, =TITLE=,
   =KEYWORDS=, and =FILE-TYPE= arguments are given by the renaming
   command and are used to construct new front matter values if
-  appropriate. With optional =NO-CONFIRM=, do not prompt to confirm the
-  rewriting of the front matter. Otherwise produce a ~y-or-n-p~ prompt
-  to that effect.
+  appropriate. With optional =NO-CONFIRM=, do not prompt to confirm
+  the rewriting of the front matter. Otherwise produce a ~y-or-n-p~
+  prompt to that effect. With optional =NO-CONFIRM=, save the buffer
+  after performing the rewrite. Otherwise leave it unsaved for
+  furthter review by the user. [ The =NO-CONFIRM= saves the buffer as
+  part of {{{development-version}}}. ]
 
 #+findex: denote-rewrite-keywords
 + Function ~denote-rewrite-keywords~ :: Rewrite =KEYWORDS= in =FILE=
-  outright according to =FILE-TYPE=.  Do the same as
+  outright according to =FILE-TYPE=. Do the same as
   ~denote-rewrite-front-matter~ for keywords, but do not ask for
-  confirmation.  This is for use in ~denote-keywords-add~,
-  ~denote-keywords-remove~, ~denote-dired-rename-marked-files-with-keywords~,
-  or related.
+  confirmation. With optional =SAVE-BUFFER=, save the buffer
+  corresponding to =FILE=. This function is for use in the commands
+  ~denote-keywords-add~, ~denote-keywords-remove~,
+  ~denote-dired-rename-files~, or related. [ The =SAVE-BUFFER= saves
+  the buffer as part of {{{development-version}}}. ]
 
 #+findex: denote-update-dired-buffers
 + Function ~denote-update-dired-buffers~ :: Update Dired buffers of
@@ -5061,18 +5100,18 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   l-o-l-h (Lincoln), maxbrieiev, mentalisttraceur, relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
-  Schmitt, Aleksandr Vityazev, Alfredo Borrás, Ashton Wiersdorf,
-  Benjamin Kästner, Claudiu Tănăselia, Colin McLear, Damien Cassou,
-  Elias Storms, Federico Stilman, Florian, Frédéric Willem Frank
-  Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler, Jack Baty, Jay
+  Schmitt, Aleksandr Vityazev, Alex Hirschfeld, Alfredo Borrás, Ashton
+  Wiersdorf, Benjamin Kästner, Claudiu Tănăselia, Colin McLear, Damien
+  Cassou, Elias Storms, Federico Stilman, Florian, Frédéric Willem
+  Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler, Jack Baty, Jay
   Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
   Jonathan Sahar, Johan Bolmsjö, Jousimies, Juanjo Presa, Kai von
   Fintel, Kaushal Modi, M. Hadi Timachi, Mark Olson, Mirko Hernandez,
   Niall Dooley, Paul van Gelder, Peter Prevos, Peter Smith, Suhail
   Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
   Taoufik, TJ Stankus, Viktor Haag, Wade Mealing, Yi Liu, Ypot,
-  atanasj, babusri, doolio, drcxd, hpgisler, pRot0ta1p, rbenit68,
-  relict007, sienic, sundar bp.
+  atanasj, babusri, doolio, drcxd, fingerknight, hpgisler, pRot0ta1p,
+  rbenit68, relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
