@@ -1136,7 +1136,7 @@ line or switching between then with commands like ~switch-to-buffer~.
 :END:
 
 [ Revised as part of {{{development-version}}} to honour the value of
-  the user option ~denote-prompts~ where that makes sense ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]).  
+  the user option ~denote-prompts~ where that makes sense ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]).
   This version also broadens the scope of the user option
   ~denote-rename-no-confirm~, such that it automatically saves the
   affcted buffers, post-rename. ]
@@ -4604,38 +4604,36 @@ us get a better sense of the specifics.
 :CUSTOM_ID: h:1ebe4865-c001-4747-a6f2-0fe45aad71cd
 :END:
 
-Denote is a GNU ELPA package.  As such, any significant change to the
-code requires copyright assignment to the Free Software Foundation (more
-below).
+Denote is a GNU ELPA package. As such, any significant change to the
+code requires copyright assignment to the Free Software Foundation
+(more below).
 
 You do not need to be a programmer to contribute to this package.
 Sharing an idea or describing a workflow is equally helpful, as it
 teaches us something we may not know and might be able to cover either
-by extending Denote or expanding this manual ([[#h:044a6a0f-e382-4013-8279-8bf4e64e73c0][Things to do]]).  If you
-prefer to write a blog post, make sure you share it with us: we can add
-a section herein referencing all such articles.  Everyone gets
-acknowledged ([[#h:f8126820-3b59-49fa-bcc2-73bd60132bb9][Acknowledgements]]).  There is no such thing as an
-"insignificant contribution"---they all matter.
+by extending Denote or expanding this manual. If you prefer to write a
+blog post, make sure you share it with us: we can add a section herein
+referencing all such articles. Everyone gets acknowledged
+([[#h:f8126820-3b59-49fa-bcc2-73bd60132bb9][Acknowledgements]]). There is no such thing as an "insignificant
+contribution"---they all matter.
 
-+ Package name (GNU ELPA): =denote=
++ Package name (GNU ELPA): ~denote~
 + Official manual: <https://protesilaos.com/emacs/denote>
 + Change log: <https://protesilaos.com/emacs/denote-changelog>
-+ Git repo on SourceHut: <https://git.sr.ht/~protesilaos/denote>
-  - Mirrors:
-    + GitHub: <https://github.com/protesilaos/denote>
-    + GitLab: <https://gitlab.com/protesilaos/denote>
-+ Mailing list: <https://lists.sr.ht/~protesilaos/denote>
++ Git repositories:
+  + GitHub: <https://github.com/protesilaos/denote>
+  + GitLab: <https://gitlab.com/protesilaos/denote>
 
 If our public media are not suitable, you are welcome to contact me
 (Protesilaos) in private: <https://protesilaos.com/contact>.
 
-Copyright assignment is a prerequisite to sharing code.  It is a simple
-process.  Check the request form below (please adapt it accordingly).
+Copyright assignment is a prerequisite to sharing code. It is a simple
+process. Check the request form below (please adapt it accordingly).
 You must write an email to the address mentioned in the form and then
-wait for the FSF to send you a legal agreement.  Sign the document and
-file it back to them.  This could all happen via email and take about a
-week.  You are encouraged to go through this process.  You only need to
-do it once.  It will allow you to make contributions to Emacs in
+wait for the FSF to send you a legal agreement. Sign the document and
+file it back to them. This could all happen via email and take about a
+week. You are encouraged to go through this process. You only need to
+do it once. It will allow you to make contributions to Emacs in
 general.
 
 #+begin_example text
@@ -4682,41 +4680,67 @@ so far?]
 
 #+end_example
 
-* Things to do
+** Wishlist of what we can do to extend Denote
 :PROPERTIES:
 :CUSTOM_ID: h:044a6a0f-e382-4013-8279-8bf4e64e73c0
 :END:
 
-Denote should work well for what is described in this manual.  Though we
-can always do better.  This is a non-exhaustive list with some
-low-priority ideas you may want to help with ([[#h:1ebe4865-c001-4747-a6f2-0fe45aad71cd][Contributing]]).
+These are various ideas to extend Denote. Whether they should be in
+the core package or a separate extension is something we can discuss.
+I, Protesilaos, am happy to help anyone who wants to do any of this.
 
-- Support mutually-exclusive sets of tags.  For example, a =home=
-  keyword would preclude =work=.  Personally, I am not a fan of such
-  arrangements as there may be a case where something applies to both
-  ends of this prefigured binary.  Though we can think about it.
+- denote-consult.el :: This can be a separate package that enhances or
+  replaces the various prompts we have for files (and maybe more) by
+  using the ~consult~ package. Consult provides the preview mechanism
+  and can probably be used for more things, such as to define a source
+  for Denote-only buffers in the ~consult-buffer~ command. If we need
+  to tweak things in =denote.el=, I am happy to do it. For example, we
+  could have a ~denote-file-prompt-function~ variable, which would
+  default to ~denote-file-prompt~ (what we currently have) and would
+  also such a hypothetical package to easily plug into what we have.
 
-- Add command that expands the identifier in links to a full file name.
-  This would be useful for some sort of "export" operation where the
-  absolute file path is necessary and where the Denote linking mechanism
-  is not available.  Though this could be handled by the exporter, by
-  doing something like what ~denote-find-link~ does.
+- denote-embark.el :: Provide integration with the ~embark~ package.
+  This can be for doing something with the identifier/link at point.
+  For example, it could provide an action to produce backlinks for the
+  identifier/file we are linking to, not just the current one.
 
-- Add command that rewrites full names in links, if they are invalid.
-  This would complement the renaming mechanism.  Personally, I think old
-  titles in links are not a problem, because they show you what was true
-  at the time and are usually relevant to their context.  Again though,
-  it is an option worth exploring.
+- denote-transient.el :: The ~transient~ package is built into Emacs
+  29 (Denote supports Emacs 28 though). We can use it to define an
+  alternative to what we have for the menu bar. Perhaps this interface
+  can used to toggle various options, such as to call ~denote~ with a
+  different set of prompts.
 
-- Ensure integration between =denote:= links and the =embark= package.
-  The idea is to allow Embark to understand the Denote buttons are links
-  to files and correctly infer the absolute path.  I am not sure what a
-  user would want to do with this, but maybe there are some interesting
-  possibilities.
+- A ~denote-directories~ user option :: This can be either an
+  extension of the ~denote-directory~ (accept a list of file paths
+  value) or a new variable. The idea is to let the user define
+  separate Denote directories which do know about the presence of each
+  other (unlike silos). This way, a user can have an entry in
+  =~/Documents/notes/= link to something =~/Git/projects/= and
+  everything work as if the ~denote-directory~ is set to the =~/=
+  (with the status quo as of 2024-02-18 08:27 +0200).
 
-You are welcome to suggest more ideas.  If they do not broaden the scope
-of Denote, they can be added to denote.el.  Otherwise we might think of
-extensions to the core package.
+- Signatures before identifiers :: This is probably going to increase
+  the complixity of =denote.el= and may not be worth pursuing. But
+  just to explore the idea: we could have an option to rearrange file
+  names such that the signature appears before the identifier. If we
+  can do this in a smart way, we can probably extend the principle for
+  all file name components. Again though, this may be too complex and
+  not worth doing.
+
+- Encode the day in the identifier :: The idea is to use some coded
+  reference for Monday, Tuesday, etc. instead of having the generic
+  =T= in the identifier. For example, Monday is =A= so the identifier
+  for it is something like =20240219A101522= instead of what we now
+  have as =20240219T101522=. The old method should still be supported.
+  Apart from changing a few regular expressions, this does not seem
+  too complex to me. We would need a user option to opt in to such a
+  feature. Then tweak the relevant parts. The tricky issue is to
+  define a mapping of day names to letters/symbols that works for
+  everyone. Do all countries have a seven-day week, for example? We
+  need something universally applicable here.
+
+Anything else? You are welcome to discuss these and/or add to the
+list.
 
 * Publications about Denote
 :PROPERTIES:
@@ -5198,9 +5222,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter
   Prevos, Philip Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan
   Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-  Manerikar, Wesley Harvey, arsaber101, ezchi, leinfink (Henrik),
-  l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-  relict007.
+  Manerikar, Wesley Harvey, arsaber101, ezchi, jarofromel, leinfink
+  (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+  mentalisttraceur, relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Hirschfeld, Alfredo Borrás, Ashton
