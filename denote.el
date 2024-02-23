@@ -3424,13 +3424,20 @@ See the `:link' property of `denote-file-types'."
 ;; subject to feedback.  I think the signature should be better
 ;; disambiguated in this context, although the double space is a good
 ;; start.
-(defvar denote--link-signature-format "%s  %s"
+(define-obsolete-variable-alias
+  'denote--link-signature-format
+  'denote-link-signature-format
+  "3.0.0")
+
+(defvar denote-link-signature-format "%s  %s"
   "Format of link description for `denote-link-with-signature'.")
 
+;; TODO 2024-02-22: Consider documenting this, such as:
+;; <https://github.com/protesilaos/denote/issues/255#issuecomment-1949634482>.
 (defvar denote-link-description-function #'denote-link-description-with-signature-and-title
   "Function to use to create the description of links.
 
-The function specified should takes a FILE argument and should
+The function specified should take a FILE argument and should
 return the description as a string.  By default, the title of the
 file is returned as the description.")
 
@@ -3441,22 +3448,24 @@ file is returned as the description.")
    file
    (denote--get-active-region-content)))
 
-(defun denote-link-description-with-signature-and-title (file region-text)
-  "Return description from FILE as \"signature   title\".
+(defun denote-link-description-with-signature-and-title (file &optional region-text)
+  "Return link description for FILE.
 
-If REGION-TEXT is non-nil, the description is the text of the
-active region instead.
+With optional REGION-TEXT as a string, make that the description.
+Otherwise, produce a description as follows:
 
-The format is specified in variable
-`denote--link-signature-format'.  If a signature is not present,
-only the title is returned."
+- If FILE as a signature, then use the `denote-link-signature-format'.
+  By default, this looks like \"signature   title\".
+
+- If FILE does not have a signature, then use its title as the
+  description."
   (let* ((file-type (denote-filetype-heuristics file))
          (signature (denote-retrieve-filename-signature file))
          (title (denote--retrieve-title-or-filename file file-type)))
     (cond (region-text
            region-text)
           (signature
-           (format denote--link-signature-format signature title))
+           (format denote-link-signature-format signature title))
           (t
            (format "%s" title)))))
 
