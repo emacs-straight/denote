@@ -690,7 +690,11 @@ Like `denote--completion-table' but also disable sorting."
   "Return path of variable `denote-directory' as a proper directory.
 Custom Lisp code can `let' bind the variable `denote-directory'
 to override what this function returns."
-  ;; TODO 2024-02-09: Remove this condition eventually.
+  ;; NOTE 2024-02-09: We may want to remove this condition eventually.
+  ;; The reason is that we want to stop supporting the dir-local
+  ;; values of `default-directory' or `local' in favour of just
+  ;; specifying a string.  I don't think we can delete this altogether
+  ;; though, as it will break existing configurations.
   (if-let (((or (eq denote-directory 'default-directory) (eq denote-directory 'local)))
            (silo-dir (denote--default-directory-is-silo-p)))
       silo-dir
@@ -2467,13 +2471,12 @@ variable `denote-directory'."
     (cond
      ((derived-mode-p 'dired-mode)
       (dired-rename-file old-name new-name nil))
-     ;; FIXME 2023-11-03: The `vc-rename-file' requires the file to be
+     ;; NOTE 2024-02-25: The `vc-rename-file' requires the file to be
      ;; saved, but our convention is to not save the buffer after
      ;; changing front matter unless we absolutely have to (allows
      ;; users to do `diff-buffer-with-file', for example).
-
-     ;; ((vc-backend old-name)
-     ;;  (vc-rename-file old-name new-name))
+     ((and denote-save-buffer-after-creation (not (buffer-modified-p)) (vc-backend old-name))
+      (vc-rename-file old-name new-name))
      (t
       (rename-file old-name new-name nil)))
     (when-let ((buffer (find-buffer-visiting old-name)))
@@ -3836,7 +3839,12 @@ Expand `denote-link-backlinks-display-buffer-action'."
    buf
    `(,@denote-link-backlinks-display-buffer-action)))
 
-(defun denote-backlinks-next (n)
+(define-obsolete-function-alias
+  'denote-backlinks-next
+  'denote-backlinks-mode-next
+  "3.0.0")
+
+(defun denote-backlinks-mode-next (n)
   "Use appropriate command for forward motion in backlinks buffer.
 With N as a numeric argument, move to the Nth button from point.
 A nil value of N is understood as 1.
@@ -3853,7 +3861,12 @@ matching identifiers."
       (xref-next-line)
     (forward-button n)))
 
-(defun denote-backlinks-prev (n)
+(define-obsolete-function-alias
+  'denote-backlinks-prev
+  'denote-backlinks-mode-previous
+  "3.0.0")
+
+(defun denote-backlinks-mode-previous (n)
   "Use appropriate command for backward motion in backlinks buffer.
 With N as a numeric argument, move to the Nth button from point.
 A nil value of N is understood as 1.
@@ -3872,13 +3885,14 @@ matching identifiers."
 
 (defvar denote-backlinks-mode-map
   (let ((m (make-sparse-keymap)))
-    (define-key m "n" #'denote-backlinks-next)
-    (define-key m "p" #'denote-backlinks-prev)
+    (define-key m "n" #'denote-backlinks-mode-next)
+    (define-key m "p" #'denote-backlinks-mode-previous)
     (define-key m "g" #'revert-buffer)
     m)
   "Keymap for `denote-backlinks-mode'.")
 
 (define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
+  :interactive nil
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
     (font-lock-add-keywords nil denote-faces-file-name-keywords t))
@@ -4358,9 +4372,6 @@ the standard front matter we define."
 
 (defvar denote-last-path nil "Store last path.")
 
-;; TODO 2023-12-08: Maybe create a distinct variable
-;; `denote-org-capture-prompts' instead of reusing `denote-prompts'.
-
 ;;;###autoload
 (defun denote-org-capture ()
   "Create new note through `org-capture-templates'.
@@ -4414,11 +4425,6 @@ Consult the manual for template samples."
 ;; TODO 2023-12-02: Maybe simplify `denote-org-capture-with-prompts'
 ;; by passing a single PROMPTS that is the same value as `denote-prompts'?
 
-;; TODO 2023-12-02: The `denote-org-capture-with-prompts' is missing a
-;; signature argument, but nobody has asked for it.  I think
-;; refactoring it per the above TODO is better, anyway.  But maybe do
-;; this after version 2.2.0 is out.
-
 ;;;###autoload
 (defun denote-org-capture-with-prompts (&optional title keywords subdirectory date template)
   "Like `denote-org-capture' but with optional prompt parameters.
@@ -4459,6 +4465,10 @@ option `denote-templates'."
 (add-hook 'org-capture-after-finalize-hook #'denote-org-capture-delete-empty-file)
 
 ;;;; Denote extension "modules"
+
+;; TODO 2024-02-25: I think these do not belong in denote.el.  We
+;; should have another file, like "denote-modules.el" for users who
+;; want to opt into these features.
 
 (defvar denote-modules-available
   '(project (project-find-functions . denote-project-find)
