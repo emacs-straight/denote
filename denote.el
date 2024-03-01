@@ -1113,12 +1113,36 @@ file in the returned list."
 (defalias 'denote--file-history 'denote-file-history
   "Compatibility alias for `denote-file-history'.")
 
+;; NOTE 2024-02-29: Based on `project--read-file-cpd-relative' from
+;; the built-in project.el
 (defun denote-file-prompt (&optional files-matching-regexp)
   "Prompt for file with identifier in variable `denote-directory'.
 With optional FILES-MATCHING-REGEXP, filter the candidates per
 the given regular expression."
-  (let ((files (denote-directory-files files-matching-regexp :omit-current)))
-    (completing-read "Select note: " files nil nil nil 'denote-file-history)))
+  (when-let ((all-files (denote-directory-files files-matching-regexp :omit-current)))
+    (let* ((common-parent-directory
+            (let ((common-prefix (try-completion "" all-files)))
+              (if (> (length common-prefix) 0)
+                  (file-name-directory common-prefix))))
+           (cpd-length (length common-parent-directory))
+           (prompt (if (zerop cpd-length)
+                       "Select note: "
+                     (format "Select note in %s: " common-parent-directory)))
+           (included-cpd (when (member common-parent-directory all-files)
+                           (setq all-files
+                                 (delete common-parent-directory all-files))
+                           t))
+           (substrings (mapcar (lambda (s) (substring s cpd-length)) all-files))
+           (_ (when included-cpd
+                (setq substrings (cons "./" substrings))))
+           (new-collection (denote--completion-table 'file substrings))
+           (relname (completing-read prompt new-collection nil nil nil 'denote-file-history))
+           (absname (expand-file-name relname common-parent-directory)))
+      ;; NOTE 2024-02-29: This delete and add feels awkward.  I wish
+      ;; we could tell `completing-read' to just leave this up to us.
+      (setq denote-file-history (delete relname denote-file-history))
+      (add-to-history 'denote-file-history absname)
+      absname)))
 
 ;;;; Keywords
 
@@ -1173,7 +1197,7 @@ keywords.  With optional INITIAL, add it to the minibuffer as
 initial input."
   (delete-dups
    (completing-read-multiple
-    (format-prompt (or prompt "File keywords") nil)
+    (format-prompt (or prompt "New file KEYWORDS") nil)
     keywords nil nil initial 'denote-keyword-history)))
 
 (defun denote-keywords-prompt (&optional prompt-text initial-keywords)
@@ -2012,7 +2036,8 @@ The path of the newly created file is returned."
          (or force-ignore-region denote-ignore-region-in-denote-command))
         (denote-title-prompt-current-default
          (if force-use-file-prompt-as-default-title
-             (when denote-file-history (pop denote-file-history))
+             (when denote-file-history
+               (file-name-nondirectory (pop denote-file-history)))
            denote-title-prompt-current-default))
         (path))
     (if in-background
@@ -2098,31 +2123,15 @@ When called from Lisp, all arguments are optional.
 (defalias 'denote--title-history 'denote-title-history
   "Compatibility alias for `denote-title-history'.")
 
-(defun denote-title-prompt (&optional default-title prompt-text)
+(defun denote-title-prompt (&optional initial-title prompt-text)
   "Prompt for title string.
 
-With optional DEFAULT-TITLE use it as the initial minibuffer
+With optional INITIAL-TITLE use it as the initial minibuffer
 text.  With optional PROMPT-TEXT use it in the minibuffer instead
-of the default prompt.
-
-Previous inputs at this prompt are available for minibuffer
-completion.  Consider `savehist-mode' to persist minibuffer
-histories between sessions."
-  ;; NOTE 2023-10-27: By default SPC performs completion in the
-  ;; minibuffer.  We do not want that, as the user should be able to
-  ;; input an arbitrary string, while still performing completion
-  ;; against their input history.
-  (minibuffer-with-setup-hook
-      (lambda ()
-        (use-local-map
-         (let ((map (make-composed-keymap
-                     nil (current-local-map))))
-           (define-key map (kbd "SPC") nil)
-           map)))
-    (completing-read
-     (format-prompt (or prompt-text "File title") denote-title-prompt-current-default)
-     denote-title-history
-     nil nil default-title 'denote-title-history denote-title-prompt-current-default)))
+of the default prompt."
+  (read-string
+   (format-prompt (or prompt-text "New file TITLE") denote-title-prompt-current-default)
+   initial-title 'denote-title-history denote-title-prompt-current-default))
 
 (defvar denote-file-type-history nil
   "Minibuffer history of `denote-file-type-prompt'.")
@@ -2217,32 +2226,16 @@ packages such as `marginalia' and `embark')."
 (defalias 'denote--signature-history 'denote-signature-history
   "Compatibility alias for `denote-signature-history'.")
 
-(defun denote-signature-prompt (&optional default-signature prompt-text)
+(defun denote-signature-prompt (&optional initial-signature prompt-text)
   "Prompt for signature string.
-With optional DEFAULT-SIGNATURE use it as the initial minibuffer
+With optional INITIAL-SIGNATURE use it as the initial minibuffer
 text.  With optional PROMPT-TEXT use it in the minibuffer instead
-of the default prompt.
-
-Previous inputs at this prompt are available for minibuffer
-completion.  Consider `savehist-mode' to persist minibuffer
-histories between sessions."
-  (when (and default-signature (string-empty-p default-signature))
-    (setq default-signature nil))
-  ;; NOTE 2023-10-27: By default SPC performs completion in the
-  ;; minibuffer.  We do not want that, as the user should be able to
-  ;; input an arbitrary string, while still performing completion
-  ;; against their input history.
-  (minibuffer-with-setup-hook
-      (lambda ()
-        (use-local-map
-         (let ((map (make-composed-keymap
-                     nil (current-local-map))))
-           (define-key map (kbd "SPC") nil)
-           map)))
-    (completing-read
-     (format-prompt (or prompt-text "Provide signature") nil)
-     denote-signature-history
-     nil nil default-signature 'denote-signature-history)))
+of the default prompt."
+  (when (and initial-signature (string-empty-p initial-signature))
+    (setq initial-signature nil))
+  (read-string
+   (format-prompt (or prompt-text "New file SIGNATURE") nil)
+   initial-signature 'denote-signature-history))
 
 (defvar denote-files-matching-regexp-history nil
   "Minibuffer history of `denote-files-matching-regexp-prompt'.")
@@ -2988,7 +2981,7 @@ the buffer unsaved for further review.
 If the user option `denote-rename-no-confirm' is non-nil,
 interpret it the same way as SAVE-BUFFER, making SAVE-BUFFER
 reduntant."
-  (interactive (list (denote-keywords-prompt) current-prefix-arg))
+  (interactive (list (denote-keywords-prompt "Add KEYWORDS") current-prefix-arg))
   ;; A combination of if-let and let, as we need to take into account
   ;; the scenario in which there are no keywords yet.
   (if-let ((file (buffer-file-name))
@@ -3078,12 +3071,22 @@ Note that this command is useful only for existing Denote notes.
 If the user needs to convert a generic text file to a Denote
 note, they can use one of the command which first rename the file
 to make it comply with our file-naming scheme and then add the
-relevant front matter."
+relevant front matter.
+
+[ NOTE: Please check with your minibuffer user interface how to
+  provide an empty input.  The Emacs default setup accepts the
+  empty minibuffer contents as they are, though popular packages
+  like `vertico' use the first available completion candidate
+  instead.  For `vertico', the user must either move one up to
+  select the prompt and then type RET there with empty contents,
+  or use the command `vertico-exit-input' with empty contents.
+  That Vertico command is bound to M-RET as of this writing on
+  2024-02-29 09:24 +0200. ]"
   (interactive
    (list
     (buffer-file-name)
-    (denote-title-prompt)
-    (denote-keywords-sort (denote-keywords-prompt))))
+    (denote-title-prompt nil "Add TITLE (empty to ignore)")
+    (denote-keywords-sort (denote-keywords-prompt "Add KEYWORDS (empty to ignore)"))))
   (when-let ((denote-file-is-writable-and-supported-p file)
              (id (denote-retrieve-filename-identifier file))
              (file-type (denote-filetype-heuristics file)))
@@ -3724,7 +3727,7 @@ consists of just the identifier.  Else try to also include the
 file's title.  This has the same meaning as in `denote-link'."
   (interactive
    (let* ((target (denote-file-prompt)))
-     (unless (file-exists-p target)
+     (unless (and target (file-exists-p target))
        (setq target (denote--command-with-features #'denote :use-file-prompt-as-def-title :ignore-region :save :in-background)))
      (list target current-prefix-arg)))
   (unless (and (buffer-file-name) (denote-file-has-supported-extension-p (buffer-file-name)))
@@ -3895,8 +3898,7 @@ matching identifiers."
   :interactive nil
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords t))
-  (add-hook 'project-find-functions #'denote-project-find nil t))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
 
 (defun denote-link--prepare-backlinks (fetcher _alist)
   "Create backlinks' buffer for the current note.
@@ -3966,8 +3968,7 @@ default, it will show up below the current window."
   (let ((file (buffer-file-name)))
     (when (denote-file-is-writable-and-supported-p file)
       (let* ((id (denote-retrieve-filename-identifier-with-error file))
-             (xref-show-xrefs-function #'denote-link--prepare-backlinks)
-             (project-find-functions #'denote-project-find))
+             (xref-show-xrefs-function #'denote-link--prepare-backlinks))
         (xref--show-xrefs
          (apply-partially #'xref-matches-in-files id
                           (denote-directory-files nil :omit-current :text-only))
@@ -4463,269 +4464,6 @@ option `denote-templates'."
     (delete-file denote-last-path)))
 
 (add-hook 'org-capture-after-finalize-hook #'denote-org-capture-delete-empty-file)
-
-;;;; Denote extension "modules"
-
-;; TODO 2024-02-25: I think these do not belong in denote.el.  We
-;; should have another file, like "denote-modules.el" for users who
-;; want to opt into these features.
-
-(defvar denote-modules-available
-  '(project (project-find-functions . denote-project-find)
-            xref    (xref-backend-functions . denote--xref-backend)
-            ffap    (denote-module-ffap-enable . denote-module-ffap-disable))
-  "Denote modules currently built-in with Denote.
-This variable is a plist.  Each module is represented as a pair
-of a property name and its value being a cons cell; thus a module
-is written in either the following forms:
-
-    NAME (HOOK . FUNCTION\)
-    NAME (FUNCTION . FUNCTION\)
-
-NAME, HOOK, FUNCTION are symbols.
-
-When a HOOK-FUNCTION pair is used, `denote-modules-enable'
-function will add FUNCTION to HOOK and `denote-modules-disable'
-function will remove FUNCTION from HOOK.  Generally, it should be
-possible to set HOOK-FUNCTION modules locally.
-
-When a FUNCTION-FUNCTION pair is used, the first FUNCTION must be
-an enable function and the second, its corresponding disable
-function to undo the former.  They are both called with no
-arguments.  For FUNCTION-FUNCTION modules, in some cases, it may
-not be possible to enable a module locally.  In these cases, some
-parts of a module may be enabled globally even when local minor
-mode function `denote-modules-mode' is called.
-
-NOTES for future development to add new modules:
-
-It is important that FUNCTION must be defined and loaded before
-`denote-modules-enable' and `denote-moduel-disable' (the new
-functions probably should be written in the source code lines
-before these enable/disable functions)")
-
-(defvar denote-module-ffap-last-enabled nil
-  "Value of `ffap-next-regexp' beofe ffap module was last enabled.
-It is used by `denote-module-ffap-disable' to undo the value
-the module previoulsy set.")
-
-(defvar denote-modules-last-enabled nil
-  "Denote modules set last time.
-It is used by `denote-modules-enable' and
-`denote-moduules-disable' to undo the modules enabled last time.")
-
-;; defvars to placate the compilers
-(defvar denote-modules)
-(defvar ffap-next-regexp)
-(defvar ffap-alist)
-
-(defun denote-module-ffap-disable (&optional local)
-  "Disable Denote integration with `ffap'.
-This function is meant to be set as a pair function with
-`denote-module-ffap-enable' in `denote-modules-available'.
-
-When LOCAL is non-nil, enable only for the local buffer as
-much as possible.  Currently, `ffap-alist' is only disabled
-globally."
-  (require 'ffap)
-  (setq ffap-alist (rassq-delete-all  #'denote-get-relative-path-by-id ffap-alist))
-  (if local
-      (when denote-module-ffap-last-enabled
-        (setq-local ffap-next-regexp denote-module-ffap-last-enabled))
-    ;; Reset `ffap-next-regexp' only when there is last-active.  Nil
-    ;; means it is in the loading process of denote
-    (when denote-module-ffap-last-enabled
-      (setq ffap-next-regexp denote-module-ffap-last-enabled))))
-
-(defun denote-module-ffap-enable (&optional local)
-  "Enable Denote integration with `ffap'.
-This function is meant to be set as a pair function with
-`denote-module-ffap-disable' in `denote-modules-available'.
-
-When LOCAL is non-nil, enable only for the local buffer as much
-as possible.  Currently, `'ffap-alist' is only enabled globally."
-  (require 'ffap)
-  (if local (setq-local denote-module-ffap-last-active ffap-next-regexp)
-    (setq denote-module-ffap-last-enabled ffap-next-regexp)
-    (add-to-list 'ffap-alist (cons denote-id-regexp #'denote-get-relative-path-by-id)))
-  (if local
-      (setq-local ffap-next-regexp (concat ffap-next-regexp "\\|" denote-id-regexp))
-    (setq ffap-next-regexp (concat ffap-next-regexp "\\|" denote-id-regexp))))
-
-(defun denote-modules-disable (modules &optional local)
-  "Disable Denote integration MODULES.
-This function is meant to be used by `denote-modules-enable',
-which calls this function, passgin `denote-modules-last-enable'
-as MODULES to undo the modules currently active.
-
-When LOCAL is non-nil, disable MODULES locally, where possible.
-
-Refer to document string of `denote-modules-available'."
-  (dolist (module modules)
-    (let* ((module-def (plist-get denote-modules-available module))
-           (hook (car module-def))
-           (func (cdr module-def)))
-      ;; If HOOK is a function, it's a setup function and FUNC is its
-      ;; teardown counterpart.
-      (if (functionp hook) (funcall func local)
-        (remove-hook hook func local)))))
-
-(defun denote-modules-enable (modules &optional local)
-  "Enable MODULES set in `denote-modules'.
-When LOCAL is non-nil, it tries to enable them only locally.
-Whether this is possible or not depends on the module in
-question.
-
-Refer to document string of `denote-modules-available'."
-  (denote-modules-disable denote-modules-last-enabled)
-  (dolist (module modules)
-    (let* ((module-def (plist-get denote-modules-available module))
-           (hook (car module-def))
-           (func (cdr module-def)))
-      ;; If HOOK is a function, it's a setup function and FUNC is its
-      ;; teardown counterpart.
-      (if (functionp hook) (funcall hook local)
-        (add-hook hook func nil local))))
-  (if local (setq denote-modules-last-enabled modules)
-    (setq denote-modules-last-enabled modules)))
-
-;;;###autoload
-(define-minor-mode denote-modules-mode
-  "Enable Denote integration modules locally.
-Set modules to be enabled in `denote-modules' and activate the
-minor mode, either globally or locally.  The selected modules are
-enabled only when the minor mode is active."
-  :global nil
-  :init-value nil
-  (if denote-modules-mode
-      (denote-modules-enable denote-modules :local)
-    (denote-modules-disable denote-modules-last-enabled :local)))
-
-;;;###autoload
-(define-minor-mode denote-modules-global-mode
-  "Enable Denote integration modules globally.
-Set modules to be enabled in `denote-modules' and activate the
-minor mode, either globally or locally.  The selected modules are
-enabled only when the minor mode is active."
-  :global t
-  :init-value nil
-  (if denote-modules-global-mode
-      (denote-modules-enable denote-modules)
-    (denote-modules-disable denote-modules-last-enabled)))
-
-(defun denote-modules-set (symbol value)
-  "Set SYMBOL and VALUE for `denote-modules' upon customizing.
-Enable the modules set when `denote-modules-mode' or
-`denote-modules-global-mode' is active.  If not, this function
-does not enable them automatically.  Manually call the minor mode
-globally or locally or set it in your configuration.
-
-It is meant to be used `defcustom' of `denote-modules', thus when
-the minor mode is active, changing the modules in the `customize'
-UI will be effective immediately."
-  (set symbol value)
-  (when (or denote-modules-global-mode denote-modules-mode)
-    (denote-modules-enable value)))
-
-(defcustom denote-modules nil
-  "User-selected Denote modules.
-The selected modules are a list of NAME (symbols), and each
-module enables integration with another Emacs built-in feature.
-See `denote-modules-available' for the modules currently
-available.  Set this user option as a list of NAME; for example:
-
-    (project xref ffap)
-
-When customized in Customize UI, it presents a set of checkboxes,
-each box checked adds NAME of the module to the list.
-
-Modules are automatically enabled only when either
-`denote-modules-mode' or `denote-modules-global-mode' is active.
-If not, setting the modules does not enable or disable them
-automatically.  Manually call the minor mode globally or locally
-or set it in your configuration."
-  :group 'denote
-  :set #'denote-modules-set
-  :package-version '(denote . "1.2.0")
-  :type
-  '(set (const :tag "Project integration" project)
-        (const :tag "Xref integration " xref)
-        (const :tag "Integration with find-file-at-point `ffap'" ffap)))
-
-;;;; project.el integration
-;;   This is also used by xref integration
-
-(cl-defmethod project-root ((project (head denote)))
-  "Denote's implementation of `project-root' method from `project'.
-Return current variable `denote-directory' as the root of the
-current denote PROJECT."
-  (cdr project))
-
-(cl-defmethod project-files ((_project (head denote)) &optional _dirs)
-  "Denote's implementation of `project-files' method from `project'.
-Return all files that have an identifier for the current denote
-PROJECT.  The return value may thus include file types that are
-not implied by `denote-file-type'.  To limit the return value to
-text files, use the function `denote-directory-files' with a
-non-nil `text-only' parameter."
-  (denote-directory-files))
-
-(defun denote-project-find (dir)
-  "Return project instance if DIR is part of variable `denote-directory'.
-The format of project instance is aligned with `project-try-vc'
-defined in `project'."
-  (let ((dir (expand-file-name dir)) ; canonicalize current directory name
-        (root (denote-directory)))
-    (when (or (file-equal-p dir root) ; currently at `denote-directory'
-              (string-prefix-p root dir)) ; or its subdirectory
-      (cons 'denote root))))
-
-;;;; Xref integration
-;;   Set `xref-backend-functions' like this.
-;;     (add-hook 'xref-backend-functions #'denote--xref-backend)
-;;
-;;   You can tell xref-references not to prompt by adding the following:
-;;     (add-to-list 'xref-prompt-for-identifier #'xref-find-references
-;;     :append)
-
-(defun denote--xref-backend ()
-  "Return denote if `default-directory' is in denote directory."
-  (when (denote--dir-in-denote-directory-p default-directory)
-    'denote))
-
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'denote)))
-  "Return the \"thing\" at point.
-The same logic as `elisp-mode'.  The \"thing\" is assumed to be a
-Denote identifier, but can be any word.  The method checks this
-and errors and if the word at point is not a Denote identifier."
-  (let ((bounds (bounds-of-thing-at-point 'word)))
-    (and bounds
-         (let ((id (buffer-substring-no-properties
-                    (car bounds) (cdr bounds))))
-           (if (string-match-p denote-id-regexp id)
-               ;; Use a property to transport the location of the identifier.
-               (propertize id 'pos (car bounds))
-             (user-error "%s is not a Denote identifier" id))))))
-
-(cl-defmethod xref-backend-definitions ((_backend (eql 'denote)) identifier)
-  "Return xref for the note IDENTIFIER points to."
-  (when-let ((file (denote-get-path-by-id identifier)))
-    (if (file-equal-p file (buffer-file-name (current-buffer)))
-        (user-error "Identifier points to the current buffer")
-      ;; Without the message, Xref will report that the ID does not
-      ;; exist, which is incorrect in this case.
-      (list (xref-make nil (xref-make-file-location file 0 0))))))
-
-(cl-defmethod xref-backend-references ((_backend (eql 'denote)) identifier)
-  "Return list of xrefs where IDENTIFIER is referenced.
-This include the definition itself."
-  (xref-matches-in-files identifier (denote-directory-files nil nil :text-only)))
-
-(cl-defmethod xref-backend-identifier-completion-table ((_backend
-                                                         (eql 'denote)))
-  "Return list of Denote identifers as completion table."
-
-  (mapcar #'denote-retrieve-filename-identifier (denote-directory-files)))
 
 (provide 'denote)
 ;;; denote.el ends here

@@ -4266,16 +4266,21 @@ might change them without further notice.
 
 #+findex: denote-signature-prompt
 + Function ~denote-signature-prompt~ :: Prompt for signature string.
-  With optional =DEFAULT-SIGNATURE= use it as the initial minibuffer
+  With optional =INITIAL-SIGNATURE= use it as the initial minibuffer
   text. With optional =PROMPT-TEXT= use it in the minibuffer instead
-  of the default prompt. Previous inputs at this prompt are available
-  for minibuffer completion. Consider ~savehist-mode~ to persist
-  minibuffer histories between sessions.
+  of the default prompt. [ Revised as part of {{{development-version}}}
+  to no longer provide completion against its previous input history.
+  The reason is that those inputs are not always reliable (I have seen
+  cases where the minibuffer UI adds text properties, for example,
+  which would then embedded into the string we were showing). ]
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file with identifier in
   variable ~denote-directory~.  With optional =FILES-MATCHING-REGEXP=,
-  filter the candidates per the given regular expression.
+  filter the candidates per the given regular expression. [ As part of
+  {{{development-version}}}, completion candidates have a relative
+  file path, but the return value and what is stored in the minibuffer
+  history is still the full file system path. ]
 
 #+findex: denote-keywords-prompt
 + Function ~denote-keywords-prompt~ :: Prompt for one or more keywords.
@@ -4288,11 +4293,13 @@ might change them without further notice.
 
 #+findex: denote-title-prompt
 + Function ~denote-title-prompt~ :: Prompt for title string. With
-  optional =DEFAULT-TITLE= use it as the initial minibuffer text. With
+  optional =INITIAL-TITLE= use it as the initial minibuffer text. With
   optional =PROMPT-TEXT= use it in the minibuffer instead of the
-  default prompt. Previous inputs at this prompt are available for
-  minibuffer completion. Consider ~savehist-mode~ to persist
-  minibuffer histories between sessions.
+  default prompt. [ Revised as part of {{{development-version}}} to no
+  longer provide completion against its previous input history. The
+  reason is that  those inputs are not always reliable (I have seen
+  cases where the minibuffer UI adds text properties, for example,
+  which would then embedded into the string we were showing). ]
 
 #+vindex: denote-title-prompt-current-default
 + Variable ~denote-title-prompt-current-default~ :: Currently bound
@@ -5256,9 +5263,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Fintel, Kaushal Modi, M. Hadi Timachi, Mark Olson, Mirko Hernandez,
   Niall Dooley, Paul van Gelder, Peter Prevos, Peter Smith, Suhail
   Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
-  Taoufik, TJ Stankus, Viktor Haag, Wade Mealing, Yi Liu, Ypot,
-  atanasj, babusri, doolio, drcxd, fingerknight, hpgisler, pRot0ta1p,
-  rbenit68, relict007, sienic, sundar bp.
+  Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Wade Mealing, Yi
+  Liu, Ypot, atanasj, babusri, doolio, drcxd, fingerknight, hpgisler,
+  pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
