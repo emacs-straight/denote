@@ -126,7 +126,7 @@
 (define-obsolete-variable-alias
  'denote-user-enforced-denote-directory
  'denote-directory
- "3.0.0")
+ "2.3.0")
 
 ;;;###autoload (put 'denote-directory 'safe-local-variable (lambda (val) (or (stringp val) (eq val 'local) (eq val 'default-directory))))
 (defcustom denote-directory (expand-file-name "~/Documents/notes/")
@@ -152,7 +152,7 @@ note.
 If this user option is set to a non-nil value, such buffers are
 saved automatically."
   :group 'denote
-  :package-version '(denote . "3.0.0")
+  :package-version '(denote . "2.3.0")
   :type 'boolean)
 
 (defcustom denote-known-keywords
@@ -272,7 +272,9 @@ Finally, this user option only affects the interactive use of the
 ad-hoc interactive actions that do not change the default
 behaviour of the `denote' command, users can invoke these
 convenience commands: `denote-type', `denote-subdirectory',
-`denote-date', `denote-template', `denote-signature'."
+`denote-date', `denote-template', `denote-signature'.
+
+Also see `denote-history-completion-in-prompts'."
   :group 'denote
   :package-version '(denote . "2.0.0")
   :link '(info-link "(denote) The denote-prompts option")
@@ -396,7 +398,7 @@ string...).
 
 If this user option is set to nil, only store links to the Denote
 file (using its identifier), but not to the given heading.  This
-is what Denote was doing in versions prior to 3.0.0.
+is what Denote was doing in versions prior to 2.3.0.
 
 What `org-store-link' does is merely collect a link.  To actually
 insert it, use the command `org-insert-link'.
@@ -408,7 +410,7 @@ insert it, use the command `org-insert-link'.
   identifier of the file, even if this user option is set to a
   non-nil value.  ]"
   :group 'denote
-  :package-version '(denote . "3.0.0")
+  :package-version '(denote . "2.3.0")
   :type 'boolean)
 
 (defcustom denote-templates nil
@@ -477,7 +479,7 @@ to perform their operation (e.g. `denote-dired-rename-files' goes
 through each marked Dired file, prompting for the information to
 use, but carries out the renaming without asking for confirmation)."
   :group 'denote
-  :package-version '(denote . "3.0.0")
+  :package-version '(denote . "2.3.0")
   :type 'boolean)
 
 (defcustom denote-excluded-directories-regexp nil
@@ -516,6 +518,7 @@ internally, such as `denote-signature' and `denote-type' (check
 the default value of the user option `denote-commands-for-new-notes')."
   :group 'denote
   :package-version '(denote . "2.1.0")
+  :link '(info-link "(denote) Standard note creation")
   :type 'hook)
 
 (defcustom denote-after-rename-file-hook nil
@@ -527,7 +530,8 @@ This affects the behaviour of the commands `denote-rename-file',
 `denote-keywords-add', `denote-keywords-remove', and any other
 command that builds on top of them."
   :group 'denote
-  :package-version '(denote . "3.0.0")
+  :package-version '(denote . "2.3.0")
+  :link '(info-link "(denote) Renaming files")
   :type 'hook)
 
 (defcustom denote-region-after-new-note-functions nil
@@ -555,6 +559,50 @@ structure template as soon as `denote-region' is done:
   :package-version '(denote . "2.1.0")
   :link '(info-link "(denote) Create a note with the region's contents")
   :type 'hook)
+
+(defvar denote-prompts-with-history-as-completion
+  '(denote-title-prompt denote-signature-prompt denote-files-matching-regexp-prompt)
+  "Prompts that conditionally perform completion against their history.
+
+These are minibuffer prompts that ordinarily accept a free form string
+input, as opposed to matching against a predefined set.
+
+These prompts can optionally perform completion against their own
+minibuffer history when the user option `denote-history-completion-in-prompts'
+is set to a non-nil value.")
+
+(defcustom denote-history-completion-in-prompts t
+  "Toggle history completion in all `denote-prompts-with-history-as-completion'.
+
+When this user option is set to a non-nil value, use minibuffer history
+entries as completion candidates in `denote-prompts-with-history-as-completion'.
+Those will show previous inputs from their respective history as
+possible values to select, either to (i) re-insert them verbatim or (ii)
+with the intent to edit further (depending on the minibuffer user
+interface, one can select a candidate with TAB without exiting the
+minibuffer, as opposed to what RET normally does by selecting and
+exiting).
+
+When this user option is set to a nil value, all of the
+`denote-prompts-with-history-as-completion' do not use minibuffer
+completion: they just prompt for a string of characters.  Their
+history is still available through all the standard ways of retrieving
+minibuffer history, such as with the command `previous-history-element'.
+
+History completion still allows arbitrary values to be provided as
+input: they do not have to match the available minibuffer completion
+candidates.
+
+Note that some prompts, like `denote-keywords-prompt', always use
+minibuffer completion, due to the specifics of their data.
+
+[ Consider enabling the built-in `savehist-mode' to persist minibuffer
+  histories between sessions.]
+
+Also see `denote-prompts'."
+  :type 'boolean
+  :package-version '(denote . "2.3.0")
+  :group 'denote)
 
 (defcustom denote-commands-for-new-notes
   '(denote
@@ -602,7 +650,7 @@ use `denote-sluggify-title', `denote-sluggify-keyword' and
 (make-obsolete
  'denote-file-name-letter-casing
  'denote-file-name-slug-functions
- "3.0.0")
+ "2.3.0")
 
 (defvar denote-file-name-deslug-functions
   '((title . denote-desluggify-title)
@@ -786,7 +834,7 @@ used as the keywords separator in file names."
 (make-obsolete
  'denote-letter-case
  'denote-sluggify
- "3.0.0")
+ "2.3.0")
 
 (defun denote--slug-put-equals (str)
   "Replace spaces and underscores with equals signs in STR.
@@ -816,7 +864,7 @@ any leading and trailing signs."
 (make-obsolete
  'denote-sluggify-and-join
  'denote-sluggify-keyword
- "3.0.0")
+ "2.3.0")
 
 (defun denote-sluggify-keywords (keywords)
   "Sluggify KEYWORDS, which is a list of strings."
@@ -1288,7 +1336,7 @@ Change the front matter format'.")
 (define-obsolete-function-alias
   'denote-surround-with-quotes
   'denote-format-string-for-md-front-matter
-  "3.0.0")
+  "2.3.0")
 
 (defun denote-format-string-for-md-front-matter (s)
   "Surround string S with quotes.
@@ -1909,7 +1957,7 @@ where the former does not read dates without a time component."
 (define-obsolete-function-alias
   'denote--valid-date
   'denote-valid-date-p
-  "3.0.0")
+  "2.3.0")
 
 (defun denote-valid-date-p (date)
   "Return DATE as a valid date.
@@ -1987,6 +2035,14 @@ increment it 1 second at a time until an available id is found."
       nil 'denote-command-prompt-history default))))
 
 ;;;;; The `denote' command and its prompts
+
+(defun denote--prompt-with-completion-p (fn)
+  "Return non-nil if FN prompt should perform completion.
+FN is one among `denote-prompts-with-history-as-completion' and performs
+completion when the user option `denote-history-completion-in-prompts'
+is non-nil."
+  (and denote-history-completion-in-prompts
+       (memq fn denote-prompts-with-history-as-completion)))
 
 (defvar denote-ignore-region-in-denote-command nil
   "If non-nil, the region is ignored by the `denote' command.
@@ -2123,15 +2179,40 @@ When called from Lisp, all arguments are optional.
 (defalias 'denote--title-history 'denote-title-history
   "Compatibility alias for `denote-title-history'.")
 
+(defmacro denote--with-conditional-completion (fn prompt history &optional initial-value default-value)
+  "Produce body of FN that may perform completion.
+Use PROMPT, HISTORY, INITIAL-VALUE, and DEFAULT-VALUE as arguments for
+the given minibuffer prompt."
+  `(if (denote--prompt-with-completion-p ,fn)
+       ;; NOTE 2023-10-27: By default SPC performs completion in the
+       ;; minibuffer.  We do not want that, as the user should be able to
+       ;; input an arbitrary string, while still performing completion
+       ;; against their input history.
+       (minibuffer-with-setup-hook
+           (lambda ()
+             (use-local-map
+              (let ((map (make-composed-keymap nil (current-local-map))))
+                (define-key map (kbd "SPC") nil)
+                map)))
+         (completing-read ,prompt ,history nil nil ,initial-value ',history ,default-value))
+     (read-string ,prompt ,initial-value ',history ,default-value)))
+
 (defun denote-title-prompt (&optional initial-title prompt-text)
   "Prompt for title string.
 
 With optional INITIAL-TITLE use it as the initial minibuffer
 text.  With optional PROMPT-TEXT use it in the minibuffer instead
-of the default prompt."
-  (read-string
+of the default prompt.
+
+Previous inputs at this prompt are available for minibuffer completion
+if the user option `denote-history-completion-in-prompts' is set to a
+non-nil value."
+  (denote--with-conditional-completion
+   'denote-title-prompt
    (format-prompt (or prompt-text "New file TITLE") denote-title-prompt-current-default)
-   initial-title 'denote-title-history denote-title-prompt-current-default))
+   denote-title-history
+   initial-title
+   denote-title-prompt-current-default))
 
 (defvar denote-file-type-history nil
   "Minibuffer history of `denote-file-type-prompt'.")
@@ -2230,12 +2311,18 @@ packages such as `marginalia' and `embark')."
   "Prompt for signature string.
 With optional INITIAL-SIGNATURE use it as the initial minibuffer
 text.  With optional PROMPT-TEXT use it in the minibuffer instead
-of the default prompt."
+of the default prompt.
+
+Previous inputs at this prompt are available for minibuffer completion
+if the user option `denote-history-completion-in-prompts' is set to a
+non-nil value."
   (when (and initial-signature (string-empty-p initial-signature))
     (setq initial-signature nil))
-  (read-string
+  (denote--with-conditional-completion
+   'denote-signature-prompt
    (format-prompt (or prompt-text "New file SIGNATURE") nil)
-   initial-signature 'denote-signature-history))
+   denote-signature-history
+   initial-signature))
 
 (defvar denote-files-matching-regexp-history nil
   "Minibuffer history of `denote-files-matching-regexp-prompt'.")
@@ -2246,9 +2333,10 @@ of the default prompt."
 (defun denote-files-matching-regexp-prompt (&optional prompt-text)
   "Prompt for REGEXP to filter Denote files by.
 With optional PROMPT-TEXT use it instead of a generic prompt."
-  (read-regexp
+  (denote--with-conditional-completion
+   'denote-files-matching-regexp-prompt
    (format-prompt (or prompt-text "Match files with the given REGEXP") nil)
-   nil 'denote-files-matching-regexp-history))
+   denote-files-matching-regexp-history))
 
 ;;;;; Convenience commands as `denote' variants
 
@@ -3433,7 +3521,7 @@ See the `:link' property of `denote-file-types'."
 (define-obsolete-variable-alias
   'denote--link-signature-format
   'denote-link-signature-format
-  "3.0.0")
+  "2.3.0")
 
 (defvar denote-link-signature-format "%s  %s"
   "Format of link description for `denote-link-with-signature'.")
@@ -3845,7 +3933,7 @@ Expand `denote-link-backlinks-display-buffer-action'."
 (define-obsolete-function-alias
   'denote-backlinks-next
   'denote-backlinks-mode-next
-  "3.0.0")
+  "2.3.0")
 
 (defun denote-backlinks-mode-next (n)
   "Use appropriate command for forward motion in backlinks buffer.
@@ -3867,7 +3955,7 @@ matching identifiers."
 (define-obsolete-function-alias
   'denote-backlinks-prev
   'denote-backlinks-mode-previous
-  "3.0.0")
+  "2.3.0")
 
 (defun denote-backlinks-mode-previous (n)
   "Use appropriate command for backward motion in backlinks buffer.
