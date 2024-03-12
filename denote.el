@@ -155,15 +155,18 @@ saved automatically."
   :package-version '(denote . "2.3.0")
   :type 'boolean)
 
+;;;###autoload (put 'denote-known-keywords 'safe-local-variable (lambda (val) (or (listp val) (null val))))
 (defcustom denote-known-keywords
   '("emacs" "philosophy" "politics" "economics")
   "List of strings with predefined keywords for `denote'.
 Also see user options: `denote-infer-keywords',
 `denote-sort-keywords', `denote-file-name-slug-functions'."
   :group 'denote
+  :safe (lambda (val) (or (listp val) (null val)))
   :package-version '(denote . "0.1.0")
   :type '(repeat string))
 
+;;;###autoload (put 'denote-infer-keywords 'safe-local-variable (lambda (val) (or val (null val))))
 (defcustom denote-infer-keywords t
   "Whether to infer keywords from existing notes' file names.
 
@@ -189,6 +192,7 @@ are specific to the given silo.
 For advanced Lisp usage, the function `denote-keywords' returns
 the appropriate list of strings."
   :group 'denote
+  :safe (lambda (val) (or val (null val)))
   :package-version '(denote . "0.1.0")
   :type 'boolean)
 
@@ -1693,7 +1697,7 @@ Return matched keywords as a single string."
       (match-string 1 filename))))
 
 (defun denote-retrieve-filename-title (file)
-  "Extract Denote title component from FILE name, else return an empty string."
+  "Extract Denote title component from FILE name, else return nil."
   (let ((filename (file-name-nondirectory file)))
     (when (string-match denote-title-regexp filename)
       (match-string 1 filename))))
@@ -3263,6 +3267,45 @@ and seconds."
   :group 'denote-faces
   :package-version '(denote . "0.1.0"))
 
+(defface denote-faces-year '((t :inherit denote-faces-date))
+  "Face for file name year in Dired buffers.
+This is the part of the identifier that covers the year, month, and day."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
+(defface denote-faces-month '((t :inherit denote-faces-date))
+  "Face for file name month in Dired buffers.
+This is the part of the identifier that covers the year, month, and day."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
+(defface denote-faces-day '((t :inherit denote-faces-date))
+  "Face for file name day in Dired buffers.
+This is the part of the identifier that covers the year, month, and day."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
+(defface denote-faces-hour '((t :inherit denote-faces-date))
+  "Face for file name hours in Dired buffers.
+This is the part of the identifier that covers the hours, minutes,
+and seconds."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
+(defface denote-faces-minute '((t :inherit denote-faces-date))
+  "Face for file name minutes in Dired buffers.
+This is the part of the identifier that covers the hours, minutes,
+and seconds."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
+(defface denote-faces-second '((t :inherit denote-faces-date))
+  "Face for file name seconds in Dired buffers.
+This is the part of the identifier that covers the hours, minutes,
+and seconds."
+  :group 'denote-faces
+  :package-version '(denote . "2.3.0"))
+
 (defface denote-faces-extension '((t :inherit shadow))
   "Face for file extension type in Dired buffers."
   :group 'denote-faces
@@ -3295,7 +3338,9 @@ and seconds."
 
 (defvar denote-faces--file-name-regexp
   (concat "\\(?11:[\t\s]+\\|.*/\\)?"
-          "\\(?1:[0-9]\\{8\\}\\)\\(?10:T\\)\\(?2:[0-9]\\{6\\}\\)"
+          "\\(?1:[0-9]\\{4\\}\\)\\(?12:[0-9]\\{2\\}\\)\\(?13:[0-9]\\{2\\}\\)"
+          "\\(?10:T\\)"
+          "\\(?2:[0-9]\\{2\\}\\)\\(?14:[0-9]\\{2\\}\\)\\(?15:[0-9]\\{2\\}\\)"
           "\\(?:\\(?3:==\\)\\(?4:[^.]*?\\)\\)?"
           "\\(?:\\(?5:--\\)\\(?6:[^.]*?\\)\\)?"
           "\\(?:\\(?7:__\\)\\(?8:[^.]*?\\)\\)?"
@@ -3305,9 +3350,13 @@ and seconds."
 (defconst denote-faces-file-name-keywords
   `((,denote-faces--file-name-regexp
      (11 'denote-faces-subdirectory nil t)
-     (1 'denote-faces-date)
+     (1 'denote-faces-year nil t)
+     (12 'denote-faces-month nil t)
+     (13 'denote-faces-day nil t)
      (10 'denote-faces-time-delimiter nil t)
-     (2 'denote-faces-time)
+     (2 'denote-faces-hour nil t)
+     (14 'denote-faces-minute nil t)
+     (15 'denote-faces-second nil t)
      (3 'denote-faces-delimiter nil t)
      (4 'denote-faces-signature nil t)
      (5 'denote-faces-delimiter nil t)
