@@ -2505,20 +2505,20 @@ See the format of `denote-file-types'."
 
 (defun denote-filetype-heuristics (file)
   "Return likely file type of FILE.
-Use the file extension to detect the file type of the file.
+If in the process of `org-capture', consider the file type to be that of
+Org.  Otherwise, use the file extension to detect the file type of FILE.
 
-If more than one file type correspond to this file extension, use
-the first file type for which the key-title-kegexp matches in the
-file or, if none matches, use the first type with this file
-extension in `denote-file-type'.
+If more than one file type correspond to this file extension, use the
+first file type for which the :title-key-regexp in `denote-file-types'
+matches in the file.
 
-If no file types in `denote-file-types' has the file extension,
-the file type is assumed to be the first of `denote-file-types'."
+If no file type in `denote-file-types' has the file extension,
+the file type is assumed to be the first one in `denote-file-types'."
   (if (denote--file-type-org-capture-p)
       'org
     (let* ((extension (denote-get-file-extension-sans-encryption file))
            (types (denote--file-types-with-extension extension)))
-      (cond ((not types)
+      (cond ((null types)
              (caar denote-file-types))
             ((= (length types) 1)
              (caar types))
@@ -2596,8 +2596,8 @@ in a Denote note.
 For the purposes of this test, FILE is a Denote note when it
 contains a title line, a keywords line or both."
   (and (denote--front-matter file-type)
-       (denote--regexp-in-file-p (denote--title-key-regexp file-type) file)
-       (denote--regexp-in-file-p (denote--keywords-key-regexp file-type) file)))
+       (or (denote--regexp-in-file-p (denote--title-key-regexp file-type) file)
+           (denote--regexp-in-file-p (denote--keywords-key-regexp file-type) file))))
 
 (defun denote-rewrite-keywords (file keywords file-type &optional save-buffer)
   "Rewrite KEYWORDS in FILE outright according to FILE-TYPE.
@@ -3659,12 +3659,12 @@ system path.  FILE-TYPE is a symbol as described in
 treats the active region specially, is up to it."
   (interactive
    (let* ((file (denote-file-prompt))
-          (file-type (when (buffer-file-name)
-                       (denote-filetype-heuristics (buffer-file-name))))
+          (file-type (when buffer-file-name
+                       (denote-filetype-heuristics buffer-file-name)))
           (description (when (file-exists-p file)
                          (denote--link-get-description file))))
        (list file file-type description current-prefix-arg)))
-  (unless (and (buffer-file-name) (denote-file-has-supported-extension-p (buffer-file-name)))
+  (unless (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name))
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
     (user-error "The linked file does not exist"))
@@ -3963,6 +3963,31 @@ To be assigned to `markdown-follow-link-functions'."
 
 ;;;;; Backlinks' buffer
 
+(cl-defmethod project-root ((project (head denote)))
+  "Denote's implementation of `project-root' method from `project'.
+Return current variable `denote-directory' as the root of the
+current denote PROJECT."
+  (cdr project))
+
+(cl-defmethod project-files ((_project (head denote)) &optional _dirs)
+  "Denote's implementation of `project-files' method from `project'.
+Return all files that have an identifier for the current denote
+PROJECT.  The return value may thus include file types that are
+not implied by `denote-file-type'.  To limit the return value to
+text files, use the function `denote-directory-files' with a
+non-nil `text-only' parameter."
+  (denote-directory-files))
+
+(defun denote-project-find (dir)
+  "Return project instance if DIR is part of variable `denote-directory'.
+The format of project instance is aligned with `project-try-vc'
+defined in `project'."
+  (let ((dir (expand-file-name dir))
+        (root (denote-directory)))
+    (when (or (file-equal-p dir root)
+              (string-prefix-p root dir))
+      (cons 'denote root))))
+
 (define-button-type 'denote-link-backlink-button
   'follow-link t
   'action #'denote-link--backlink-find-file
@@ -4035,7 +4060,8 @@ matching identifiers."
   :interactive nil
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords t))
+  (add-hook 'project-find-functions #'denote-project-find nil t))
 
 (defun denote-link--prepare-backlinks (fetcher _alist)
   "Create backlinks' buffer for the current note.
@@ -4105,7 +4131,8 @@ default, it will show up below the current window."
   (let ((file (buffer-file-name)))
     (when (denote-file-is-writable-and-supported-p file)
       (let* ((id (denote-retrieve-filename-identifier-with-error file))
-             (xref-show-xrefs-function #'denote-link--prepare-backlinks))
+             (xref-show-xrefs-function #'denote-link--prepare-backlinks)
+             (project-find-functions #'denote-project-find))
         (xref--show-xrefs
          (apply-partially #'xref-matches-in-files id
                           (denote-directory-files nil :omit-current :text-only))
