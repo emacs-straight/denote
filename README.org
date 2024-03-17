@@ -1224,6 +1224,12 @@ The command does the same for the =SIGNATURE= prompt, subject to
 ~denote-prompts~, by prefilling the minibuffer with the current
 signature of =FILE=, if any.
 
+In interactive use, if =FILE= has a signature, ~denote-rename-file~
+produces a =SIGNATURE= prompt regardless of the value of ~denote-prompts~.
+This way, notes created with the ~denote-signature~ command, or
+equivalent, as a derogation from the norm imposed by ~denote-prompt~,
+do not necessarily lose their signature.
+
 Same principle for the =KEYWORDS= prompt: it converts the keywords in
 the file name into a comma-separated string and prefills the minibuffer
 with it (the =KEYWORDS= prompt accepts more than one keywords, each
@@ -4322,6 +4328,15 @@ might change them without further notice.
 #+findex: denote-retrieve-filename-signature
 + Function ~denote-retrieve-filename-signature~ :: Extract signature
   from =FILE= name, if present, else return nil.
+
+#+findex: denote-retrieve-title-or-filename
++ Function ~denote-retrieve-title-or-filename~ :: Return appropriate
+  title for =FILE= given its =TYPE=. Try to find the value of the
+  title in the front matter of FILE, otherwise use its file name. This
+  is a wrapper for ~denote-retrieve-front-matter-title-value~ and
+  =denote-retrieve-filename-title=. [ This was known as the private
+  function ~denote--retrieve-title-or-filename~. It is made public as
+  part of {{{development-version}}}. ]
 
 #+findex: denote-get-identifier
 + Function ~denote-get-identifier~ :: Convert =DATE= into a Denote
