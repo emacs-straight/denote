@@ -155,14 +155,14 @@ saved automatically."
   :package-version '(denote . "2.3.0")
   :type 'boolean)
 
-;;;###autoload (put 'denote-known-keywords 'safe-local-variable (lambda (val) (or (listp val) (null val))))
+;;;###autoload (put 'denote-known-keywords 'safe-local-variable #'listp)
 (defcustom denote-known-keywords
   '("emacs" "philosophy" "politics" "economics")
   "List of strings with predefined keywords for `denote'.
 Also see user options: `denote-infer-keywords',
 `denote-sort-keywords', `denote-file-name-slug-functions'."
   :group 'denote
-  :safe (lambda (val) (or (listp val) (null val)))
+  :safe #'listp
   :package-version '(denote . "0.1.0")
   :type '(repeat string))
 
@@ -623,7 +623,7 @@ and `denote-link-after-creating-with-command'."
   :link '(info-link "(denote) Choose which commands to prompt for")
   :type '(repeat symbol))
 
-(defvar denote-file-name-slug-functions
+(defcustom denote-file-name-slug-functions
   '((title . denote-sluggify-title)
     (signature . denote-sluggify-signature)
     (keyword . denote-sluggify-keyword))
@@ -649,7 +649,22 @@ of the front matter.
 
 By default, if a function is not specified for a component, we
 use `denote-sluggify-title', `denote-sluggify-keyword' and
-`denote-sluggify-signature'.")
+`denote-sluggify-signature'.
+
+Remember that deviating from the default file-naming scheme of Denote
+will make things harder to search in the future, as files can/will have
+permutations that create uncertainty.  The sluggification scheme and
+concomitant restrictions we impose by default are there for a very good
+reason: they are the distillation of years of experience.  Here we give
+you what you wish, but bear in mind it may not be what you need.  You
+have been warned."
+  :group 'denote
+  :package-version '(denote . "2.3.0")
+  :link '(info-link "(denote) User-defined sluggification of file name components")
+  :type '(alist :key (choice (const title)
+                             (const signature)
+                             (const keyword))
+                :value function))
 
 (make-obsolete
  'denote-file-name-letter-casing
@@ -2753,29 +2768,22 @@ minibuffer that consists of the current title of FILE.  The
 current title is either retrieved from the front matter (such as
 the #+title in Org) or from the file name.
 
-Do the same for the SIGNATURE prompt, subject to `denote-prompts', by
-prefilling the minibuffer with the current signature of FILE, if any.
-
-In interactive use, if FILE has a signature, produce a SIGNATURE prompt
-regardless of the value of `denote-prompts'.  This way, notes created
-with the `denote-signature' command, or equivalent, as a derogation from
-the norm imposed by `denote-prompt', do not necessarily lose their
-signature.
+Do the same for the SIGNATURE prompt, subject to `denote-prompts',
+by prefilling the minibuffer with the current signature of FILE,
+if any.
 
 Same principle for the KEYWORDS prompt: convert the keywords in
 the file name into a comma-separated string and prefill the
 minibuffer with it (the KEYWORDS prompt accepts more than one
-keywords, each separated by a comma, else the `crm-sepator').
+keywords, each separated by a comma, else the `crm-separator').
 
 For all prompts, interpret an empty input as an instruction to
 remove that file name component.  For example, if a TITLE prompt
 is available and FILE is 20240211T093531--some-title__keyword1.org
-then rename FILE to 20240211T093531__keyword1.org.  For
-interactive use, this also means that if a prompt is missing from
-the `denote-prompts' the corresponding file name component will
-be removed during the renaming process (e.g.  a `denote-prompts'
-without an entry for keywords is the same as passing an empty/nil
-KEYWORDS argument, thus removing the keywords of the file).
+then rename FILE to 20240211T093531__keyword1.org.
+
+If a file name component is present, but there is no entry for it in
+`denote-prompts', keep it as-is.
 
 [ NOTE: Please check with your minibuffer user interface how to
   provide an empty input.  The Emacs default setup accepts the
@@ -2831,33 +2839,35 @@ one-by-one, use `denote-dired-rename-files'."
    (let* ((file (denote--rename-dired-file-or-prompt))
           (file-type (denote-filetype-heuristics file))
           (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
-          (args (make-vector 4 nil)))
+          (date nil)
+          (title (denote-retrieve-title-or-filename file file-type))
+          (keywords (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) "")))
+          (signature (or (denote-retrieve-filename-signature file) "")))
      (dolist (prompt denote-prompts)
        (pcase prompt
          ('title
-          (aset args 0 (denote-title-prompt
-                        (denote-retrieve-title-or-filename file file-type)
-                        (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
+          (setq title (denote-title-prompt
+                       title
+                       (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
          ('keywords
-          (aset args 1 (denote-keywords-prompt
-                        (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
-                        (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) "")))))
+          (setq keywords (denote-keywords-prompt
+                          (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
+                          keywords)))
          ('signature
-          (aset args 2 (denote-signature-prompt
-                        (or (denote-retrieve-filename-signature file) "")
-                        (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
+          (setq signature (denote-signature-prompt
+                           signature
+                           (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
          ('date
           (unless (denote-file-has-identifier-p file)
-            (aset args 3 (denote-date-prompt))))))
-     (when (denote-file-has-signature-p file)
-       (aset args 2 (denote-signature-prompt
-                     (or (denote-retrieve-filename-signature file) "")
-                     (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
-     (append (vector file) args nil)))
+            (setq date (denote-date-prompt))))))
+     (list file title keywords signature date)))
+  (setq keywords (denote-keywords-sort
+                  (if (stringp keywords)
+                      (split-string keywords "," :omit-nulls)
+                    keywords)))
   (let* ((dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file)
                  (denote-create-unique-file-identifier file (denote--get-all-used-ids) date)))
-         (keywords (denote-keywords-sort keywords))
          ;; TODO 2024-02-13: Should we derive the extension from the
          ;; `denote-file-type-prompt' if we are conforming with the
          ;; `denote-prompts'?
@@ -2886,42 +2896,46 @@ setting `denote-rename-no-confirm' to a non-nil value)."
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files)))
       (let ((used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
-                        (denote--get-all-used-ids)))
-            (date-p (memq 'date denote-prompts))
-            (title-p (memq 'title denote-prompts))
-            (keywords-p (memq 'keywords denote-prompts))
-            (signature-p (memq 'signature denote-prompts)))
+                        (denote--get-all-used-ids))))
         (dolist (file marks)
           (let* ((file-type (denote-filetype-heuristics file))
                  (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
                  (dir (file-name-directory file))
-                 (id (or (when date-p
-                           (denote-prompt-for-date-return-id))
-                         (denote-retrieve-filename-identifier file)
+                 (id (or (denote-retrieve-filename-identifier file)
                          (denote-create-unique-file-identifier file used-ids)))
-                 (title (when title-p
-                          (denote-title-prompt
-                           (denote-retrieve-title-or-filename file file-type)
-                           (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
-                 (keywords (when keywords-p
-                             (denote-keywords-sort
-                              (denote-keywords-prompt
-                               (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
-                               (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) ""))))))
-                 (signature (when (or signature-p (denote-file-has-signature-p file))
-                              (denote-signature-prompt
-                               (or (denote-retrieve-filename-signature file) "")
-                               (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
-                 (extension (denote-get-file-extension file))
-                 (new-name (denote-format-file-name dir id keywords title extension signature)))
-            (denote-rename-file-and-buffer file new-name)
-            (when (denote-file-is-writable-and-supported-p new-name)
-              (if (denote--edit-front-matter-p new-name file-type)
-                  (denote-rewrite-front-matter new-name title keywords file-type :no-confirm)
-                (denote--add-front-matter new-name title keywords id file-type :save-buffer)))
-            (run-hooks 'denote-after-rename-file-hook)
-            (when used-ids
-              (puthash id t used-ids))))
+                 (title (denote-retrieve-title-or-filename file file-type))
+                 (keywords (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) "")))
+                 (signature (or (denote-retrieve-filename-signature file) ""))
+                 (extension (denote-get-file-extension file)))
+            (dolist (prompt denote-prompts)
+              (pcase prompt
+                ('title
+                 (setq title (denote-title-prompt
+                              title
+                              (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
+                ('keywords
+                 (setq keywords (denote-keywords-prompt
+                                 (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
+                                 keywords)))
+                ('signature
+                 (setq signature (denote-signature-prompt
+                                  signature
+                                  (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
+                ('date
+                 (setq id (denote-prompt-for-date-return-id)))))
+            (setq keywords (denote-keywords-sort
+                            (if (stringp keywords)
+                                (split-string keywords "," :omit-nulls)
+                              keywords)))
+            (let ((new-name (denote-format-file-name dir id keywords title extension signature)))
+              (denote-rename-file-and-buffer file new-name)
+              (when (denote-file-is-writable-and-supported-p new-name)
+                (if (denote--edit-front-matter-p new-name file-type)
+                    (denote-rewrite-front-matter new-name title keywords file-type :no-confirm)
+                  (denote--add-front-matter new-name title keywords id file-type :save-buffer)))
+              (run-hooks 'denote-after-rename-file-hook)
+              (when used-ids
+                (puthash id t used-ids)))))
         (denote-update-dired-buffers))
     (user-error "No marked files; aborting")))
 
@@ -3114,7 +3128,7 @@ Run `denote-after-rename-file-hook' as a final step."
 (defun denote--keywords-delete-prompt (keywords)
   "Prompt for one or more KEYWORDS.
 In the case of multiple entries, those are separated by the
-`crm-sepator', which typically is a comma.  In such a case, the
+`crm-separator', which typically is a comma.  In such a case, the
 output is sorted with `string-collate-lessp'."
   (let ((choice (denote--keywords-crm keywords "Keywords to remove")))
     (if denote-sort-keywords
