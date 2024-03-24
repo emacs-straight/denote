@@ -671,24 +671,6 @@ have been warned."
  'denote-file-name-slug-functions
  "2.3.0")
 
-(defvar denote-file-name-deslug-functions
-  '((title . denote-desluggify-title)
-    (signature . denote-desluggify-signature)
-    (keyword . denote-desluggify-keyword))
-  "Specify the method Denote uses to reverse the process of `denote-sluggify'.
-
-Since `denote-sluggify' is destructive, this is just an attempt
-to get back a more human-friendly component.  This is useful when
-you want to retrieve a title or signature from the file name and
-display it as the default input in commands such as
-`denote-rename-file'.
-
-See the documentation of `denote-file-name-slug-functions'.
-
-By default, if a function is not specified for a component, we
-use `denote-desluggify-title', `denote-desluggify-keyword' and
-`denote-desluggify-signature'.")
-
 ;;;; Main variables
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
@@ -890,38 +872,6 @@ any leading and trailing signs."
   (mapcar (lambda (keyword)
             (denote-sluggify 'keyword keyword))
           keywords))
-
-(defun denote-desluggify (component str)
-  "Attempt to reverse the process of `denote-sluggify' for STR on COMPONENT.
-
-Apply the function specified in `denote-file-name-deslug-function'
-to COMPONENT which is one of `title', `signature', `keyword'."
-  (let ((deslug-function (alist-get component denote-file-name-deslug-functions)))
-    (cond ((eq component 'title)
-           (funcall (or deslug-function #'denote-desluggify-title) str))
-          ((eq component 'keyword)
-           (funcall (or deslug-function #'denote-desluggify-keyword) str))
-          ((eq component 'signature)
-           (funcall (or deslug-function #'denote-desluggify-signature) str)))))
-
-(defun denote-desluggify-title (str)
-  "Upcase first char in STR and dehyphenate STR, inverting `denote-sluggify'.
-The intent of this function is to be used on individual strings,
-such as the TITLE component of a Denote file name, but not on the
-entire file name."
-  (let ((str (replace-regexp-in-string "-" " " str)))
-    (aset str 0 (upcase (aref str 0)))
-    str))
-
-;; NOTE 2024-01-01: This is not used for now.
-(defun denote-desluggify-signature (str)
-  "Reverse of `denote-sluggify-signature' for STR."
-  str)
-
-;; NOTE 2023-12-25: This is not used for now.
-(defun denote-desluggify-keyword (str)
-  "Reverse of `denote-sluggify-keyword' for STR."
-  str)
 
 (defun denote--file-empty-p (file)
   "Return non-nil if FILE is empty."
@@ -1182,19 +1132,23 @@ file in the returned list."
 
 ;; NOTE 2024-02-29: Based on `project--read-file-cpd-relative' from
 ;; the built-in project.el
-(defun denote-file-prompt (&optional files-matching-regexp)
+(defun denote-file-prompt (&optional files-matching-regexp prompt-text)
   "Prompt for file with identifier in variable `denote-directory'.
 With optional FILES-MATCHING-REGEXP, filter the candidates per
-the given regular expression."
+the given regular expression.
+
+With optional PROMPT-TEXT, use it instead of the default call to
+\"Select NOTE\"."
   (when-let ((all-files (denote-directory-files files-matching-regexp :omit-current)))
     (let* ((common-parent-directory
             (let ((common-prefix (try-completion "" all-files)))
               (if (> (length common-prefix) 0)
                   (file-name-directory common-prefix))))
            (cpd-length (length common-parent-directory))
+           (prompt-prefix (or prompt-text "Select NOTE"))
            (prompt (if (zerop cpd-length)
-                       "Select note: "
-                     (format "Select note in %s: " common-parent-directory)))
+                       (format "%s: " prompt-prefix)
+                     (format "%s in %s: " prompt-prefix common-parent-directory)))
            (included-cpd (when (member common-parent-directory all-files)
                            (setq all-files
                                  (delete common-parent-directory all-files))
@@ -1813,9 +1767,8 @@ This is a wrapper for `denote-retrieve-front-matter-title-value' and
            (title (denote-retrieve-front-matter-title-value file type))
            ((not (string-blank-p title))))
       title
-    (if-let ((title (denote-retrieve-filename-title file)))
-        (denote-desluggify 'title title)
-      (file-name-base file))))
+    (or (denote-retrieve-filename-title file)
+        (file-name-base file))))
 
 (defun denote--retrieve-location-in-xrefs (identifier)
   "Return list of xrefs for IDENTIFIER with their respective location.
@@ -2704,8 +2657,8 @@ Throw error if FILE is not regular, else return FILE."
   (or (dired-get-filename nil t)
       (let* ((file (buffer-file-name))
              (format (if file
-                         (format "Rename file Denote-style [%s]: " file)
-                       "Rename file Denote-style: "))
+                         (format "Rename FILE Denote-style [%s]: " file)
+                       "Rename FILE Denote-style: "))
              (selected-file (read-file-name format nil file t nil)))
         (if (or (file-directory-p selected-file)
                 (not (file-regular-p selected-file)))
@@ -3768,7 +3721,7 @@ system path.  FILE-TYPE is a symbol as described in
 `denote-file-type'.  DESCRIPTION is a string.  Whether the caller
 treats the active region specially, is up to it."
   (interactive
-   (let* ((file (denote-file-prompt))
+   (let* ((file (denote-file-prompt nil "Link to FILE"))
           (file-type (when buffer-file-name
                        (denote-filetype-heuristics buffer-file-name)))
           (description (when (file-exists-p file)
