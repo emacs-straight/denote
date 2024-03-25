@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 2.2.4
+;; Version: 2.3.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -197,9 +197,15 @@ the appropriate list of strings."
   :type 'boolean)
 
 (defcustom denote-prompts '(title keywords)
-  "Specify the prompts of the `denote' command for interactive use.
+  "Specify the prompts followed by relevant Denote commands.
 
-The value is a list of symbols, which includes any of the following:
+Commands that prompt for user input to construct a Denote file name
+include, but are not limited to: `denote', `denote-signature',
+`denote-type', `denote-date', `denote-subdirectory',
+`denote-rename-file', `denote-dired-rename-files'.
+
+The value of this user option is a list of symbols, which includes any
+of the following:
 
 - `title': Prompt for the title of the new note.
 
@@ -272,15 +278,13 @@ When in doubt, always include the `title' and `keywords'
 prompts (the default style).
 
 Finally, this user option only affects the interactive use of the
-`denote' command (advanced users can call it from Lisp).  For
-ad-hoc interactive actions that do not change the default
-behaviour of the `denote' command, users can invoke these
-convenience commands: `denote-type', `denote-subdirectory',
-`denote-date', `denote-template', `denote-signature'.
+`denote' or other relevant commands (advanced users can call it from
+Lisp).  In Lisp usage, the behaviour is always what the caller
+specifies, based on the supplied arguments.
 
 Also see `denote-history-completion-in-prompts'."
   :group 'denote
-  :package-version '(denote . "2.0.0")
+  :package-version '(denote . "2.3.0")
   :link '(info-link "(denote) The denote-prompts option")
   :type '(radio (const :tag "Use no prompts" nil)
                 (set :tag "Available prompts" :greedy t
@@ -404,8 +408,9 @@ If this user option is set to nil, only store links to the Denote
 file (using its identifier), but not to the given heading.  This
 is what Denote was doing in versions prior to 2.3.0.
 
-What `org-store-link' does is merely collect a link.  To actually
-insert it, use the command `org-insert-link'.
+What `org-store-link' does is merely collect a link.  To actually insert
+it, use the command `org-insert-link'.  Note tha `org-capture' uses
+`org-store-link' internally when it needs to store a link.
 
 [ This feature only works in Org mode files, as other file types
   do not have a linking mechanism that handles unique identifiers
@@ -2333,8 +2338,8 @@ With optional PROMPT-TEXT use it instead of a generic prompt."
 (defun denote-type ()
   "Create note while prompting for a file type.
 
-This is the equivalent to calling `denote' when `denote-prompts'
-is set to \\='(file-type title keywords)."
+This is the equivalent of calling `denote' when `denote-prompts'
+has the `file-type' prompt appended to its existing prompts."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts (denote--add-prompts '(file-type))))
@@ -2352,8 +2357,8 @@ that plus the time: 2022-06-16 14:30.  When the user option
 `denote-date-prompt-use-org-read-date' is non-nil, the date
 prompt uses the more powerful Org+calendar system.
 
-This is the equivalent to calling `denote' when `denote-prompts'
-is set to \\='(date title keywords)."
+This is the equivalent of calling `denote' when `denote-prompts'
+has the `date' prompt appended to its existing prompts."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts (denote--add-prompts '(date))))
@@ -2369,8 +2374,8 @@ is set to \\='(date title keywords)."
 Available candidates include the value of the variable
 `denote-directory' and any subdirectory thereof.
 
-This is equivalent to calling `denote' when `denote-prompts' is
-set to \\='(subdirectory title keywords)."
+This is the equivalent of calling `denote' when `denote-prompts'
+has the `subdirectory' prompt appended to its existing prompts."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts (denote--add-prompts '(subdirectory))))
@@ -2387,8 +2392,8 @@ Available candidates include the keys in the `denote-templates'
 alist.  The value of the selected key is inserted in the newly
 created note after the front matter.
 
-This is equivalent to calling `denote' when `denote-prompts' is
-set to \\='(template title keywords)."
+This is the equivalent of calling `denote' when `denote-prompts'
+has the `template' prompt appended to its existing prompts."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts (denote--add-prompts '(template))))
@@ -2401,8 +2406,8 @@ set to \\='(template title keywords)."
 (defun denote-signature ()
   "Create note while prompting for a file signature.
 
-This is the equivalent to calling `denote' when `denote-prompts'
-is set to \\='(signature title keywords)."
+This is the equivalent of calling `denote' when `denote-prompts'
+has the `signature' prompt appended to its existing prompts."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts (denote--add-prompts '(signature))))
@@ -4026,31 +4031,6 @@ To be assigned to `markdown-follow-link-functions'."
 
 ;;;;; Backlinks' buffer
 
-(cl-defmethod project-root ((project (head denote)))
-  "Denote's implementation of `project-root' method from `project'.
-Return current variable `denote-directory' as the root of the
-current denote PROJECT."
-  (cdr project))
-
-(cl-defmethod project-files ((_project (head denote)) &optional _dirs)
-  "Denote's implementation of `project-files' method from `project'.
-Return all files that have an identifier for the current denote
-PROJECT.  The return value may thus include file types that are
-not implied by `denote-file-type'.  To limit the return value to
-text files, use the function `denote-directory-files' with a
-non-nil `text-only' parameter."
-  (denote-directory-files))
-
-(defun denote-project-find (dir)
-  "Return project instance if DIR is part of variable `denote-directory'.
-The format of project instance is aligned with `project-try-vc'
-defined in `project'."
-  (let ((dir (expand-file-name dir))
-        (root (denote-directory)))
-    (when (or (file-equal-p dir root)
-              (string-prefix-p root dir))
-      (cons 'denote root))))
-
 (define-button-type 'denote-link-backlink-button
   'follow-link t
   'action #'denote-link--backlink-find-file
@@ -4123,8 +4103,7 @@ matching identifiers."
   :interactive nil
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords t))
-  (add-hook 'project-find-functions #'denote-project-find nil t))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
 
 (defun denote-link--prepare-backlinks (fetcher _alist)
   "Create backlinks' buffer for the current note.
@@ -4142,8 +4121,18 @@ ALIST is not used in favour of using
          (file-type (denote-filetype-heuristics file))
          (id (denote-retrieve-filename-identifier-with-error file))
          (buf (format "*denote-backlinks to %s*" id))
+         ;; We retrieve results in absolute form and change the absolute
+         ;; path to a relative path a few lines below. We could add a
+         ;; suitable function to project-find-functions and the results
+         ;; would be automatically in relative form, but eventually
+         ;; notes may not be all under a common directory (or project).
+         (xref-file-name-display 'abs)
          (xref-alist (xref--analyze (funcall fetcher)))
          (dir (denote-directory)))
+    ;; Change the GROUP of each item in xref-alist to a relative path
+    (mapc (lambda (x)
+            (setf (car x) (denote-get-file-name-relative-to-denote-directory (car x))))
+          xref-alist)
     (with-current-buffer (get-buffer-create buf)
       (setq-local default-directory dir)
       (erase-buffer)
@@ -4194,8 +4183,7 @@ default, it will show up below the current window."
   (let ((file (buffer-file-name)))
     (when (denote-file-is-writable-and-supported-p file)
       (let* ((id (denote-retrieve-filename-identifier-with-error file))
-             (xref-show-xrefs-function #'denote-link--prepare-backlinks)
-             (project-find-functions #'denote-project-find))
+             (xref-show-xrefs-function #'denote-link--prepare-backlinks))
         (xref--show-xrefs
          (apply-partially #'xref-matches-in-files id
                           (denote-directory-files nil :omit-current :text-only))
