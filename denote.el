@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 2.3.0
+;; Version: 2.3.1
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -2481,7 +2481,7 @@ See the format of `denote-file-types'."
               denote-file-types))
 
 (defun denote--file-type-org-capture-p ()
-  "Return Org `denote-file-type' if this is an `org-capture' buffer."
+  "Return non-nil if this is an `org-capture' buffer."
   (and (bound-and-true-p org-capture-mode)
        (derived-mode-p 'org-mode)
        (string-match-p "\\`CAPTURE.*\\.org" (buffer-name))))
@@ -2497,8 +2497,9 @@ matches in the file.
 
 If no file type in `denote-file-types' has the file extension,
 the file type is assumed to be the first one in `denote-file-types'."
-  (if (denote--file-type-org-capture-p)
-      'org
+  (cond
+   ((denote--file-type-org-capture-p) 'org)
+   (file
     (let* ((extension (denote-get-file-extension-sans-encryption file))
            (types (denote--file-types-with-extension extension)))
       (cond ((null types)
@@ -2510,7 +2511,7 @@ the file type is assumed to be the first one in `denote-file-types'."
                        (lambda (type)
                          (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
                        types))
-                 (caar types)))))))
+                 (caar types))))))))
 
 (defun denote--file-attributes-time (file)
   "Return `file-attribute-modification-time' of FILE as identifier."
@@ -3727,12 +3728,11 @@ system path.  FILE-TYPE is a symbol as described in
 treats the active region specially, is up to it."
   (interactive
    (let* ((file (denote-file-prompt nil "Link to FILE"))
-          (file-type (when buffer-file-name
-                       (denote-filetype-heuristics buffer-file-name)))
+          (file-type (denote-filetype-heuristics buffer-file-name))
           (description (when (file-exists-p file)
                          (denote--link-get-description file))))
        (list file file-type description current-prefix-arg)))
-  (unless (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name))
+  (unless (or file-type (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
     (user-error "The linked file does not exist"))
