@@ -1150,7 +1150,7 @@ With optional PROMPT-TEXT, use it instead of the default call to
               (if (> (length common-prefix) 0)
                   (file-name-directory common-prefix))))
            (cpd-length (length common-parent-directory))
-           (prompt-prefix (or prompt-text "Select NOTE"))
+           (prompt-prefix (or prompt-text "Select FILE"))
            (prompt (if (zerop cpd-length)
                        (format "%s: " prompt-prefix)
                      (format "%s in %s: " prompt-prefix common-parent-directory)))
@@ -2213,7 +2213,7 @@ Note that a non-nil value other than `text', `markdown-yaml', and
 `markdown-toml' falls back to an Org file type.  We use `org'
 here for clarity."
   (completing-read
-   "Select file type: " (denote--file-type-keys) nil t
+   "Select file TYPE: " (denote--file-type-keys) nil t
    nil 'denote-file-type-history))
 
 (defvar denote-date-history nil
@@ -2259,8 +2259,8 @@ Use Org's more advanced date selection utility if the user option
   (let* ((def (car denote-subdirectory-history))
          (table (denote--completion-table 'file dirs))
          (prompt (if def
-                     (format "Select subdirectory [%s]: " def)
-                   "Select subdirectory: ")))
+                     (format "Select SUBDIRECTORY [%s]: " def)
+                   "Select SUBDIRECTORY: ")))
     (completing-read prompt table nil t nil 'denote-subdirectory-history def)))
 
 (defun denote-subdirectory-prompt ()
@@ -2284,7 +2284,7 @@ packages such as `marginalia' and `embark')."
     (alist-get
      (intern
       (completing-read
-       "Select template KEY: " (mapcar #'car templates)
+       "Select TEMPLATE key: " (mapcar #'car templates)
        nil t nil 'denote-template-history))
      templates)))
 
@@ -3886,7 +3886,7 @@ However, for this command the creation of the note happens in the
 background and the user may miss the step of saving their buffer.
 We thus have to save the buffer in order to (i) establish valid
 links, and (ii) retrieve whatever front matter from the target
-file."
+file.  Though see `denote-save-buffer-after-creation'."
   (interactive "P")
   (unless (or (denote--file-type-org-capture-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
