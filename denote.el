@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 2.3.4
+;; Version: 2.3.5
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -4631,7 +4631,9 @@ Consult the manual for template samples."
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
                         (file-name-as-directory subdirectory)
                       (denote-directory)))
-         (template (or (alist-get template denote-templates) ""))
+         (template (if (stringp template)
+                       template
+                     (or (alist-get template denote-templates) "")))
          (signature (or signature ""))
          (front-matter (denote--format-front-matter
                         title (denote--date nil 'org) keywords
