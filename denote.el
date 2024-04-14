@@ -1193,7 +1193,7 @@ with an underscore.
 
 If PATH has no such keywords, return nil."
   (when-let ((kws (denote-retrieve-filename-keywords path)))
-    (split-string kws "_")))
+    (split-string kws "_" :omit-nulls)))
 
 (defun denote--inferred-keywords ()
   "Extract keywords from `denote-directory-files'.
@@ -1873,13 +1873,6 @@ Apply `denote-sluggify' to KEYWORDS."
   (let ((kws (denote-sluggify-keywords keywords)))
     (funcall (denote--keywords-value-function file-type) kws)))
 
-(defun denote--path (title keywords dir id file-type signature)
-  "Return path to new file.
-Use ID, TITLE, KEYWORDS, FILE-TYPE and SIGNATURE to construct
-path to DIR."
-  (denote-format-file-name
-   dir id keywords title (denote--file-extension file-type) signature))
-
 ;; Adapted from `org-hugo--org-date-time-to-rfc3339' in the `ox-hugo'
 ;; package: <https://github.com/kaushalmodi/ox-hugo>.
 (defun denote-date-rfc3339 (date)
@@ -1908,11 +1901,12 @@ path to DIR."
       (denote-date-org-timestamp date)))))
 
 (defun denote--prepare-note (title keywords date id directory file-type template signature)
-  "Prepare a new note file.
+  "Prepare a new note file and return its path.
 
 Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
 TEMPLATE, and SIGNATURE should be valid for note creation."
-  (let* ((path (denote--path title keywords directory id file-type signature))
+  (let* ((path (denote-format-file-name
+                directory id keywords title (denote--file-extension file-type) signature))
          (buffer (find-file path))
          (header (denote--format-front-matter
                   title (denote--date date file-type) keywords
@@ -1920,7 +1914,8 @@ TEMPLATE, and SIGNATURE should be valid for note creation."
                   file-type)))
     (with-current-buffer buffer
       (insert header)
-      (insert template))))
+      (insert template))
+    path))
 
 (defun denote--dir-in-denote-directory-p (directory)
   "Return non-nil if DIRECTORY is in variable `denote-directory'."
@@ -1936,9 +1931,12 @@ returned."
                ((stringp filetype) (intern filetype))
                ((symbolp filetype) filetype)
                (t (error "The `%s' is neither a string nor a symbol" filetype)))))
-    (if (memq type (denote--file-type-keys))
-        type
-      (caar denote-file-types))))
+    (cond ((memq type (denote--file-type-keys))
+           type)
+          ((null denote-file-types)
+           (user-error "At least one file type must be defined in `denote-file-types' to create a note"))
+          (t
+           (caar denote-file-types)))))
 
 (defun denote--date-add-current-time (date)
   "Add current time to DATE, if necessary.
@@ -2109,7 +2107,8 @@ The path of the newly created file is returned."
 (defun denote (&optional title keywords file-type subdirectory date template signature)
   "Create a new note with the appropriate metadata and file name.
 
-Run the `denote-after-new-note-hook' after creating the new note.
+Run the `denote-after-new-note-hook' after creating the new note
+and return its path.
 
 When called interactively, the metadata and file name are prompted
 according to the value of `denote-prompts'.
@@ -2168,11 +2167,12 @@ When called from Lisp, all arguments are optional.
          (template (if (stringp template)
                        template
                      (or (alist-get template denote-templates) "")))
-         (signature (or signature "")))
-    (denote--prepare-note title kws date id directory file-type template signature)
+         (signature (or signature ""))
+         (note-path (denote--prepare-note title kws date id directory file-type template signature)))
     (when denote-save-buffer-after-creation (save-buffer))
     (denote--keywords-add-to-history keywords)
-    (run-hooks 'denote-after-new-note-hook)))
+    (run-hooks 'denote-after-new-note-hook)
+    note-path))
 
 (defvar denote-title-history nil
   "Minibuffer history of `denote-title-prompt'.")
@@ -2494,11 +2494,12 @@ See the format of `denote-file-types'."
                 (string-equal (plist-get (cdr type) :extension) extension))
               denote-file-types))
 
-(defun denote--file-type-org-capture-p ()
-  "Return non-nil if this is an `org-capture' buffer."
-  (and (bound-and-true-p org-capture-mode)
-       (derived-mode-p 'org-mode)
-       (string-match-p "\\`CAPTURE.*\\.org" (buffer-name))))
+(defun denote--file-type-org-extra-p ()
+  "Return non-nil if this is an `org-capture' or Org Note buffer."
+  (and (derived-mode-p 'org-mode)
+       (or (and (bound-and-true-p org-capture-mode)
+                (string-match-p "\\`CAPTURE.*\\.org" (buffer-name)))
+           (string-match-p "\\`\\*Org Note\\*" (buffer-name)))))
 
 (defun denote-filetype-heuristics (file)
   "Return likely file type of FILE.
@@ -2512,7 +2513,7 @@ matches in the file.
 If no file type in `denote-file-types' has the file extension,
 the file type is assumed to be the first one in `denote-file-types'."
   (cond
-   ((denote--file-type-org-capture-p) 'org)
+   ((denote--file-type-org-extra-p) 'org)
    (file
     (let* ((extension (denote-get-file-extension-sans-encryption file))
            (types (denote--file-types-with-extension extension)))
@@ -2814,7 +2815,7 @@ one-by-one, use `denote-dired-rename-files'."
           (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
           (date nil)
           (title (denote-retrieve-title-or-filename file file-type))
-          (keywords (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) "")))
+          (keywords (denote-extract-keywords-from-path file))
           (signature (or (denote-retrieve-filename-signature file) "")))
      (dolist (prompt denote-prompts)
        (pcase prompt
@@ -2825,7 +2826,7 @@ one-by-one, use `denote-dired-rename-files'."
          ('keywords
           (setq keywords (denote-keywords-prompt
                           (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
-                          keywords)))
+                          (string-join keywords ","))))
          ('signature
           (setq signature (denote-signature-prompt
                            signature
@@ -2834,13 +2835,11 @@ one-by-one, use `denote-dired-rename-files'."
           (unless (denote-file-has-identifier-p file)
             (setq date (denote-date-prompt))))))
      (list file title keywords signature date)))
-  (setq keywords (denote-keywords-sort
-                  (if (stringp keywords)
-                      (split-string keywords "," :omit-nulls)
-                    keywords)))
   (let* ((dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file)
                  (denote-create-unique-file-identifier file (denote--get-all-used-ids) date)))
+         (title (or title ""))
+         (keywords (denote-keywords-sort keywords))
          ;; TODO 2024-02-13: Should we derive the extension from the
          ;; `denote-file-type-prompt' if we are conforming with the
          ;; `denote-prompts'?
@@ -2877,7 +2876,7 @@ setting `denote-rename-no-confirm' to a non-nil value)."
                  (id (or (denote-retrieve-filename-identifier file)
                          (denote-create-unique-file-identifier file used-ids)))
                  (title (denote-retrieve-title-or-filename file file-type))
-                 (keywords (denote-convert-file-name-keywords-to-crm (or (denote-retrieve-filename-keywords file) "")))
+                 (keywords (denote-extract-keywords-from-path file))
                  (signature (or (denote-retrieve-filename-signature file) ""))
                  (extension (denote-get-file-extension file)))
             (dolist (prompt denote-prompts)
@@ -2889,18 +2888,15 @@ setting `denote-rename-no-confirm' to a non-nil value)."
                 ('keywords
                  (setq keywords (denote-keywords-prompt
                                  (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
-                                 keywords)))
+                                 (string-join keywords ","))))
                 ('signature
                  (setq signature (denote-signature-prompt
                                   signature
                                   (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
                 ('date
                  (setq id (denote-prompt-for-date-return-id)))))
-            (setq keywords (denote-keywords-sort
-                            (if (stringp keywords)
-                                (split-string keywords "," :omit-nulls)
-                              keywords)))
-            (let ((new-name (denote-format-file-name dir id keywords title extension signature)))
+            (let* ((keywords (denote-keywords-sort keywords))
+                   (new-name (denote-format-file-name dir id keywords title extension signature)))
               (denote-rename-file-and-buffer file new-name)
               (when (denote-file-is-writable-and-supported-p new-name)
                 (if (denote--edit-front-matter-p new-name file-type)
@@ -2919,6 +2915,65 @@ setting `denote-rename-no-confirm' to a non-nil value)."
 
 (defalias 'denote-dired-rename-marked-files 'denote-dired-rename-files
   "Alias for `denote-dired-rename-files'.")
+
+(defun denote-keywords--combine (combination-type user-input-keywords keywords)
+  "COMBINATION-TYPE is either `:add', `:remove' or `:replace'.
+
+USER-INPUT-KEYWORDS are new keywords collected from the end-user.
+KEYWORDS are the existing keywords for the underlying file.
+
+This function is an internal implementation function."
+  (cond
+   ((eq combination-type :add)
+    (denote-keywords-sort
+     (delete-dups
+      (append user-input-keywords keywords))))
+
+   ((eq combination-type :replace)
+    (denote-keywords-sort user-input-keywords))
+
+   ((eq combination-type :remove)
+    (denote-keywords-sort
+     (dolist (k user-input-keywords keywords)
+       (setq keywords (delete k keywords)))))
+
+   (t
+    (error "Unknown operation in denote-keywords--combine: %s"
+           combination-type))))
+
+(defun denote-dired-rename-marked-files--change-keywords (combination-type keywords-prompt)
+  "COMBINATION-TYPE is either `:add', `:remove' or `:replace'.
+
+KEYWORDS-PROMPT is the prompt we show the end-user, when taking keywords
+as input.
+
+This function is an internal implementation function."
+  (if-let ((marks (dired-get-marked-files)))
+      (let ((user-input-keywords (denote-keywords-prompt keywords-prompt))
+            (used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
+                        (denote--get-all-used-ids))))
+        (dolist (file marks)
+          (let* ((dir (file-name-directory file))
+                 (id (or (denote-retrieve-filename-identifier file)
+                         (denote-create-unique-file-identifier file used-ids)))
+                 (signature (or (denote-retrieve-filename-signature file) ""))
+                 (file-type (denote-filetype-heuristics file))
+                 (title (denote-retrieve-title-or-filename file file-type))
+                 (extension (denote-get-file-extension file))
+                 (keywords (split-string (or (denote-retrieve-filename-keywords file) "")
+                                         "_" :omit-nulls "_"))
+                 (new-keywords (denote-keywords--combine combination-type user-input-keywords keywords))
+                 (new-name (denote-format-file-name dir id new-keywords title extension signature)))
+            (denote-rename-file-and-buffer file new-name)
+            (when (denote-file-is-writable-and-supported-p new-name)
+              (if (denote--edit-front-matter-p new-name file-type)
+                  (denote-rewrite-keywords new-name new-keywords file-type denote-rename-no-confirm)
+                (denote--add-front-matter new-name title new-keywords id file-type denote-rename-no-confirm)))
+            (run-hooks 'denote-after-rename-file-hook)
+            (when used-ids
+              (puthash id t used-ids))))
+        (denote-update-dired-buffers))
+    (user-error "No marked files; aborting")))
 
 ;;;###autoload
 (defun denote-dired-rename-marked-files-with-keywords ()
@@ -2952,33 +3007,32 @@ Run the `denote-after-rename-file-hook' after renaming is done.
   check them to confirm that the new front matter does not cause
   any problems (e.g. with the `diff-buffer-with-file' command).
   Multiple buffers can be saved in one go with the command
-  `save-some-buffers' (read its doc string).  ]"
+  `save-some-buffers' (read its doc string).  ]
+
+Also see the specialized commands to only add or remove keywords:
+
+- `denote-dired-rename-marked-files-add-keywords'.
+- `denote-dired-rename-marked-files-remove-keywords'."
   (declare (interactive-only t))
   (interactive nil dired-mode)
-  (if-let ((marks (dired-get-marked-files)))
-      (let ((keywords (denote-keywords-sort
-                       (denote-keywords-prompt "Rename marked files with KEYWORDS, overwriting existing (empty to ignore/remove)")))
-            (used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
-                        (denote--get-all-used-ids))))
-        (dolist (file marks)
-          (let* ((dir (file-name-directory file))
-                 (id (or (denote-retrieve-filename-identifier file)
-                         (denote-create-unique-file-identifier file used-ids)))
-                 (signature (or (denote-retrieve-filename-signature file) ""))
-                 (file-type (denote-filetype-heuristics file))
-                 (title (denote-retrieve-title-or-filename file file-type))
-                 (extension (denote-get-file-extension file))
-                 (new-name (denote-format-file-name dir id keywords title extension signature)))
-            (denote-rename-file-and-buffer file new-name)
-            (when (denote-file-is-writable-and-supported-p new-name)
-              (if (denote--edit-front-matter-p new-name file-type)
-                  (denote-rewrite-keywords new-name keywords file-type denote-rename-no-confirm)
-                (denote--add-front-matter new-name title keywords id file-type denote-rename-no-confirm)))
-            (run-hooks 'denote-after-rename-file-hook)
-            (when used-ids
-              (puthash id t used-ids))))
-        (denote-update-dired-buffers))
-    (user-error "No marked files; aborting")))
+  (denote-dired-rename-marked-files--change-keywords
+   :replace "Rename marked files with KEYWORDS, overwriting existing (empty to ignore/remove)"))
+
+;;;###autoload
+(defun denote-dired-rename-marked-files-add-keywords ()
+  "Like `denote-dired-rename-marked-files-with-keywords' to only add keywords."
+  (declare (interactive-only t))
+  (interactive nil dired-mode)
+  (denote-dired-rename-marked-files--change-keywords
+   :add "Add KEYWORDS to marked files"))
+
+;;;###autoload
+(defun denote-dired-rename-marked-files-remove-keywords ()
+  "Like `denote-dired-rename-marked-files-with-keywords' to only remove keywords."
+  (declare (interactive-only t))
+  (interactive nil dired-mode)
+  (denote-dired-rename-marked-files--change-keywords
+   :remove "Remove KEYWORDS from marked files"))
 
 ;;;###autoload
 (defun denote-rename-file-using-front-matter (file &optional no-confirm save-buffer)
@@ -3727,7 +3781,7 @@ treats the active region specially, is up to it."
           (description (when (file-exists-p file)
                          (denote--link-get-description file))))
        (list file file-type description current-prefix-arg)))
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
@@ -3759,7 +3813,7 @@ For more advanced uses with Lisp, refer to the `denote-link'
 function."
   (declare (interactive-only t))
   (interactive)
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (let* ((file (denote-file-prompt "="))
@@ -3883,7 +3937,7 @@ We thus have to save the buffer in order to (i) establish valid
 links, and (ii) retrieve whatever front matter from the target
 file.  Though see `denote-save-buffer-after-creation'."
   (interactive "P")
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (let* ((type (denote-filetype-heuristics (buffer-file-name)))
@@ -3903,7 +3957,7 @@ Optional ID-ONLY has the same meaning as in the command
    (list
     (denote-command-prompt)
     current-prefix-arg))
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (let* ((type (denote-filetype-heuristics (buffer-file-name)))
@@ -3934,7 +3988,7 @@ file's title.  This has the same meaning as in `denote-link'."
      (unless (and target (file-exists-p target))
        (setq target (denote--command-with-features #'denote :use-file-prompt-as-def-title :ignore-region :save :in-background)))
      (list target current-prefix-arg)))
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (denote-link target
@@ -4139,7 +4193,7 @@ ALIST is not used in favour of using
       (setq overlay-arrow-position nil)
       (denote-backlinks-mode)
       (goto-char (point-min))
-      (when-let  ((title (denote-retrieve-front-matter-title-value file file-type))
+      (when-let  ((title (denote-retrieve-title-or-filename file file-type))
                   (heading (format "Backlinks to %S (%s)" title id))
                   (l (length heading)))
         (insert (format "%s\n%s\n\n" heading (make-string l ?-))))
@@ -4180,14 +4234,12 @@ The placement of the backlinks' buffer is controlled by the user
 option `denote-link-backlinks-display-buffer-action'.  By
 default, it will show up below the current window."
   (interactive)
-  (let ((file (buffer-file-name)))
-    (when (denote-file-is-writable-and-supported-p file)
-      (let* ((id (denote-retrieve-filename-identifier-with-error file))
+  (when-let ((id (denote-retrieve-filename-identifier-with-error buffer-file-name))
              (xref-show-xrefs-function #'denote-link--prepare-backlinks))
-        (xref--show-xrefs
-         (apply-partially #'xref-matches-in-files id
-                          (denote-directory-files nil :omit-current :text-only))
-         nil)))))
+    (xref--show-xrefs
+     (apply-partially #'xref-matches-in-files id
+                      (denote-directory-files nil :omit-current :text-only))
+     nil)))
 
 (define-obsolete-function-alias
   'denote-link-show-backlinks-buffer
@@ -4258,7 +4310,7 @@ inserts links with just the identifier."
    (list
     (denote-files-matching-regexp-prompt "Insert links matching REGEXP")
     current-prefix-arg))
-  (unless (or (denote--file-type-org-capture-p)
+  (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (let ((file-type (denote-filetype-heuristics (buffer-file-name))))
@@ -4330,15 +4382,19 @@ This command is meant to be used from a Dired buffer."
          (denote-link--buffer-prompt file-names)))))
     current-prefix-arg)
    dired-mode)
-  (if (null files)
-      (user-error "No note files to link to")
-    (when (y-or-n-p (format "Create links at point in %s?" buffer))
-      (with-current-buffer buffer
-        (insert (denote-link--prepare-links
-                 files
-                 (denote-filetype-heuristics (buffer-file-name))
-                 id-only))
-        (denote-link-buttonize-buffer)))))
+  (when (null files)
+    (user-error "No note files to link to"))
+  (with-current-buffer buffer
+    (unless (or (denote--file-type-org-capture-p)
+                (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
+      (user-error "The buffer's file type is not recognized by Denote")))
+  (when (y-or-n-p (format "Create links at point in %s?" buffer))
+    (with-current-buffer buffer
+      (insert (denote-link--prepare-links
+               files
+               (denote-filetype-heuristics (buffer-file-name))
+               id-only))
+      (denote-link-buttonize-buffer))))
 
 ;;;;; Define menu
 
@@ -4639,7 +4695,7 @@ Consult the manual for template samples."
                         title (denote--date nil 'org) keywords
                         (denote-get-identifier) 'org)))
     (setq denote-last-path
-          (denote--path title keywords directory id 'org signature))
+          (denote-format-file-name directory id keywords title ".org" signature))
     (denote--keywords-add-to-history keywords)
     (concat front-matter template denote-org-capture-specifiers))))
 
