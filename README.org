@@ -2425,6 +2425,20 @@ Reproducing it here for the sake of convenience:
         (window-width . 0.3)))
 #+end_src
 
+*** Backlinks for Org headings
+:PROPERTIES:
+:CUSTOM_ID: h:604bf92a-908a-485c-98b8-37ccae559afd
+:END:
+
+[ This is part of {{{development-version}}}. ]
+
+The optional =denote-org-extras.el= can produce Denote links to
+individual headings ([[#h:fc1ad245-ec08-41be-8d1e-7153d99daf02][Insert link to an Org file with a further pointer to a heading]]).
+It is then possible to produce a corresponding backlinks buffer with
+the command ~denote-org-extras-backlinks-for-heading~. The resulting
+buffer behaves the same way as the standard backlinks buffer we
+provide ([[#h:c73f1f68-e214-49d5-b369-e694f6a5d708][The backlinks' buffer]]).
+
 ** Writing metanotes
 :PROPERTIES:
 :CUSTOM_ID: h:6060a7e6-f179-4d42-a9de-a9968aaebecc
@@ -4156,13 +4170,6 @@ might change them without further notice.
   ~denote-known-keywords~.  Else use only the latter set of keywords
   ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]).
 
-#+findex: denote-convert-file-name-keywords-to-crm
-+ Function ~denote-convert-file-name-keywords-to-crm~ :: Make =STRING=
-  with keywords readable by ~completing-read-multiple~. =STRING=
-  consists of underscore-separated words, as those appear in the
-  keywords component of a Denote file name. =STRING= is the same as
-  the return value of ~denote-retrieve-filename-keywords~.
-
 #+findex: denote-keywords-sort
 + Function ~denote-keywords-sort~ :: Sort =KEYWORDS= if
   ~denote-sort-keywords~ is non-nil.  =KEYWORDS= is a list of strings,
@@ -4354,16 +4361,7 @@ might change them without further notice.
 #+findex: denote-retrieve-front-matter-keywords-value
 + Function ~denote-retrieve-front-matter-keywords-value~ :: Return keywords value
   from =FILE= front matter per =FILE-TYPE=. The return value is a list
-  of strings. To get a combined string the way it would appear in a
-  Denote file name, use ~denote-retrieve-front-matter-keywords-value-as-string~.
-
-#+findex: denote-retrieve-front-matter-keywords-value-as-string
-+ Function ~denote-retrieve-front-matter-keywords-value-as-string~ :: Return
-  keywords value from =FILE= front matter per =FILE-TYPE=. The return
-  value is a string, with the underscrore as a separator between
-  individual keywords. To get a list of strings instead, use
-  ~denote-retrieve-front-matter-keywords-value~ (the current function uses that
-  internally).
+  of strings.
 
 #+findex: denote-retrieve-front-matter-keywords-line
 + Function ~denote-retrieve-front-matter-keywords-line~ :: Return keywords line
@@ -5357,15 +5355,16 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Schmitt, Aleksandr Vityazev, Alex Hirschfeld, Alfredo Borrás, Ashton
   Wiersdorf, Benjamin Kästner, Claudiu Tănăselia, Colin McLear, Damien
   Cassou, Elias Storms, Federico Stilman, Florian, Frédéric Willem
-  Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler, Jack Baty, Jay
-  Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
-  Jonathan Sahar, Johan Bolmsjö, Jousimies, Juanjo Presa, Kai von
-  Fintel, Kaushal Modi, M. Hadi Timachi, Mark Olson, Mirko Hernandez,
-  Niall Dooley, Paul van Gelder, Peter Prevos, Peter Smith, Suhail
-  Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
-  Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Wade Mealing, Yi
-  Liu, Ypot, atanasj, babusri, doolio, drcxd, fingerknight, hpgisler,
-  mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
+  Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler Harold Ollivier,
+  Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy
+  Friesen, Jonathan Sahar, Johan Bolmsjö, Jousimies, Juanjo Presa, Kai
+  von Fintel, Kaushal Modi, M. Hadi Timachi, Mark Olson, Mirko
+  Hernandez, Niall Dooley, Paul van Gelder, Peter Prevos, Peter Smith,
+  Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven
+  Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Wade
+  Mealing, Yi Liu, Ypot, atanasj, babusri, doolio, drcxd,
+  fingerknight, hpgisler, mentalisttraceur, pRot0ta1p, rbenit68,
+  relict007, sienic, sundar bp.
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
