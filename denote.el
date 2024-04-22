@@ -3601,7 +3601,9 @@ also enable it in all subdirectories."
 
 (defcustom denote-link-backlinks-display-buffer-action
   '((display-buffer-reuse-window display-buffer-below-selected)
-    (window-height . fit-window-to-buffer))
+    (window-height . fit-window-to-buffer)
+    (dedicated . t)
+    (preserve-size . (t . t)))
   "The action used to display the current file's backlinks buffer.
 
 The value has the form (FUNCTION . ALIST), where FUNCTION is
@@ -3613,18 +3615,19 @@ Sample configuration to display the buffer in a side window on
 the left of the Emacs frame:
 
     (setq denote-link-backlinks-display-buffer-action
-          (quote ((display-buffer-reuse-window
-                   display-buffer-in-side-window)
+          (quote ((display-buffer-reuse-window display-buffer-in-side-window)
                   (side . left)
                   (slot . 99)
-                  (window-width . 0.3))))
+                  (window-width . 0.3)
+                  (dedicated . t)
+                  (preserve-size . (t . t)))))
 
 See Info node `(elisp) Displaying Buffers' for more details
 and/or the documentation string of `display-buffer'."
   :type '(cons (choice (function :tag "Display Function")
                        (repeat :tag "Display Functions" function))
                alist)
-  :package-version '(denote . "0.1.0")
+  :package-version '(denote . "3.0.0")
   :group 'denote-link)
 
 ;;;;; Link to note
@@ -4139,39 +4142,33 @@ matching identifiers."
   (unless denote-backlinks-show-context
     (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
 
-(defun denote-link--prepare-backlinks (query &optional alist)
-  "Create backlinks' buffer for the current note matching QUERY.
-Optional ALIST is what `denote-link-backlinks-display-buffer-action' has
-as its value or equivalent."
+(defun denote-link--prepare-backlinks (query &optional buffer-name display-buffer-action)
+  "Create backlinks' buffer called BUFFER-NAME for the current file matching QUERY.
+
+Optional DISPLAY-BUFFER-ACTION is a `display-buffer' action and
+concomitant alist, such as `denote-link-backlinks-display-buffer-action'."
   (let* ((inhibit-read-only t)
          (file (buffer-file-name))
-         (file-type (denote-filetype-heuristics file))
-         (buf (format "*denote-backlinks to %s*" query))
          ;; We retrieve results in absolute form and change the
          ;; absolute path to a relative path a few lines below. We
          ;; could add a suitable function and the results would be
          ;; automatically in relative form, but eventually notes may
          ;; not be all under a common directory (or project).
          (xref-file-name-display 'abs)
-         (xref-alist (xref--analyze
-                      (funcall
-                       (apply-partially #'xref-matches-in-files query
-                                        (denote-directory-files nil :omit-current :text-only)))))
+         (xref-alist (xref--analyze (xref-matches-in-files query (denote-directory-files nil :omit-current :text-only))))
          (dir (denote-directory)))
+    (unless xref-alist
+      (error "No backlinks for query `%s'" query))
     ;; Change the GROUP of each item in xref-alist to a relative path
     (mapc (lambda (x)
             (setf (car x) (denote-get-file-name-relative-to-denote-directory (car x))))
           xref-alist)
-    (with-current-buffer (get-buffer-create buf)
+    (with-current-buffer (get-buffer-create buffer-name)
       (setq-local default-directory dir)
       (erase-buffer)
       (setq overlay-arrow-position nil)
       (denote-backlinks-mode)
       (goto-char (point-min))
-      (when-let ((title (denote-retrieve-title-or-filename file file-type))
-                 (heading (format "Backlinks to %S (%s)" title query))
-                 (l (length heading)))
-        (insert (format "%s\n%s\n\n" heading (make-string l ?-))))
       (if denote-backlinks-show-context
           (xref--insert-xrefs xref-alist)
         (mapc (lambda (x)
@@ -4184,30 +4181,37 @@ as its value or equivalent."
                   (lambda (_ignore-auto _noconfirm)
                     (when-let ((buffer-file-name file))
                       (denote-link--prepare-backlinks query)))))
-    (denote-link--display-buffer buf alist)))
+    (denote-link--display-buffer buffer-name display-buffer-action)))
 
 (define-obsolete-function-alias
   'denote-link-backlinks
   'denote-backlinks
   "2.0.0")
 
+(defun denote--backlinks-get-buffer-name (file id)
+  "Format a buffer name for `denote-backlinks'.
+Use FILE to detect a suitable title with which to name the buffer.  Else
+use the ID."
+  (if-let ((type (denote-filetype-heuristics file))
+           (title (denote-retrieve-title-value file type)))
+      (format "*Denote FILE backlinks for %S*" title)
+    (format "*Denote FILE backlinks for %s*" id)))
+
 ;;;###autoload
 (defun denote-backlinks ()
   "Produce a buffer with backlinks to the current note.
 
-The backlinks' buffer shows the file name of the note linking to
-the current note, as well as the context of each link.
+Show the names of files linking to the current file.  Include the
+context of each link if the user option `denote-backlinks-show-context'
+is non-nil.
 
-File names are fontified by Denote if the user option
-`denote-link-fontify-backlinks' is non-nil.  If this user option
-is nil, the buffer is fontified by Xref.
-
-The placement of the backlinks' buffer is controlled by the user
-option `denote-link-backlinks-display-buffer-action'.  By
-default, it will show up below the current window."
+Place the buffer below the current window or wherever the user option
+`denote-link-backlinks-display-buffer-action' specifies."
   (interactive)
-  (when-let ((id (denote-retrieve-filename-identifier-with-error buffer-file-name)))
-    (denote-link--prepare-backlinks id)))
+  (if-let ((file buffer-file-name))
+      (when-let ((id (denote-retrieve-filename-identifier-with-error file)))
+        (denote-link--prepare-backlinks id (denote--backlinks-get-buffer-name file id)))
+    (user-error "Buffer `%s' is not associated with a file" (current-buffer))))
 
 (define-obsolete-function-alias
   'denote-link-show-backlinks-buffer

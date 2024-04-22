@@ -78,6 +78,9 @@ the current file."
 
 (defun denote-org-extras-format-link-with-heading (file heading-id description)
   "Prepare link to FILE with HEADING-ID using DESCRIPTION."
+  (when (region-active-p)
+    (setq description (buffer-substring-no-properties (region-beginning) (region-end)))
+    (denote--delete-active-region-content))
   (format "[[denote:%s::#%s][%s]]"
           (denote-retrieve-filename-identifier file)
           heading-id
@@ -127,6 +130,10 @@ Also see `denote-org-extras-backlinks-for-heading'."
       (concat (denote-retrieve-filename-identifier-with-error file) "::#" heading-id)
     (error "No CUSTOM_ID for heading at point in file `%s'" file)))
 
+(defun denote-org-extras--get-backlinks-buffer-name (text)
+  "Format a buffer name for `denote-org-extras-backlinks-for-heading' with TEXT."
+  (format "*Denote HEADING backlinks for %S*" text))
+
 ;;;###autoload
 (defun denote-org-extras-backlinks-for-heading ()
   "Produce backlinks for the current heading.
@@ -135,8 +142,9 @@ that for the details.
 
 Also see `denote-org-extras-link-to-heading'."
   (interactive)
-  (when-let ((heading-id (denote-org-extras--get-file-id-and-heading-id buffer-file-name)))
-    (denote-link--prepare-backlinks heading-id)))
+  (when-let ((heading-id (denote-org-extras--get-file-id-and-heading-id buffer-file-name))
+             (heading-text (substring-no-properties (denote-link-ol-get-heading))))
+    (denote-link--prepare-backlinks heading-id (denote-org-extras--get-backlinks-buffer-name heading-text))))
 
 ;;;; Extract subtree into its own note
 
