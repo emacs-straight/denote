@@ -537,12 +537,15 @@ variants which you can then assign to keys, invoke with =M-x=, or add
 to the list of commands available at the ~denote-command-prompt~
 ([[#h:98c732ac-da0e-4ebd-a0e3-5c47f9075e51][Choose which commands to prompt for]]).
 
-*** The ~denote-save-buffer-after-creation~ option
+*** The ~denote-save-buffers~ option
 :PROPERTIES:
 :CUSTOM_ID: h:bf80f4cd-6f56-4f7c-a991-8573161e4511
 :END:
 
-#+vindex: denote-save-buffer-after-creation
+[ As part of {{{development-version}}}, the user option
+  ~denote-save-buffer-after-creation~ is renamed to ~denote-save-buffers~. ]
+
+#+vindex: denote-save-buffers
 The user option ~denote-save-buffer-after-creation~ controls whether
 commands that create new notes save their buffer outright.
 
@@ -552,8 +555,13 @@ the chance to review the text before writing it to a file. The user
 may choose to delete the unsaved buffer, thus not creating a new note
 ([[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffer-after-creation~ option]]).
 
-If ~denote-save-buffer-after-creation~ is set to a non-nil value, such
-buffers are saved automatically.
+This option also applies to notes affected by the renaming commands
+(~denote-rename-file~ and related).
+
+If this user option is set to a non-nil value, such buffers are saved
+automatically. The assumption is that the user who opts in to this
+feature is familiar with the ~denote-rename-file~ operation (or
+related) and knows it is reliable ([[#h:532e8e2a-9b7d-41c0-8f4b-3c5cbb7d4dca][Renaming files]]).
 
 *** The ~denote-date-prompt-use-org-read-date~ option
 :PROPERTIES:
@@ -1168,6 +1176,9 @@ line or switching between then with commands like ~switch-to-buffer~.
 :CUSTOM_ID: h:7cc9e000-806a-48da-945c-711bbc7426b0
 :END:
 
+[ Revised as part of {{{development-version}}} to respect the user
+  options ~denote-rename-confirmations~ and ~denote-save-buffers~. ]
+
 #+findex: denote-rename-file
 The ~denote-rename-file~ command renames a file and updates existing
 front matter if appropriate. It is possible to do the same with
@@ -1240,24 +1251,24 @@ When renaming =FILE=, the command reads its file type extension (like
 =.org=) and preserves it through the renaming process. Files that have
 no extension are left without one.
 
-As a final step, it asks for confirmation, showing the difference
-between old and new file names. It does not ask for confirmation if
-the user option ~denote-rename-no-confirm~ is set to a non-nil value
-([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]).
+As a final step, ask for confirmation, showing the difference
+between old and new file names.  Do not ask for confirmation if
+the user option ~denote-rename-confirmations~ does not contain
+the symbol ~modify-file-name~ ([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-confirmations~ option]]).
 
-If =FILE= has front matter for =TITLE= and =KEYWORDS=,
-~denote-rename-file~ asks to rewrite their values in order to reflect
-the new input, unless ~denote-rename-no-confirm~ is non-nil. When the
-~denote-rename-no-confirm~ is nil (the default), the underlying buffer
-is not saved, giving the user the change to invoking ~diff-buffer-with-file~ to
-double-check the effect. The rewrite of the =TITLE= and =KEYWORDS= in
-the front matter should not affect the rest of the front matter.
+If =FILE= has front matter for =TITLE= and =KEYWORDS=, ask to rewrite
+their values in order to reflect the new input, unless
+~denote-rename-confirmations~ lacks ~rewrite-front-matter~. When the
+~denote-save-buffers~ is nil (the default), do not save the underlying
+buffer, thus giving the user the option to double-check the result,
+such as by invoking the command ~diff-buffer-with-file~. The rewrite
+of the =TITLE= and =KEYWORDS= in the front matter should not affect
+the rest of the front matter.
 
 If the file does not have front matter but is among the supported file
-types (per ~denote-file-type~), the ~denote-rename-file~ adds front
-matter to the top of it and leaves the buffer unsaved for further
-inspection. It actually saves the buffer if ~denote-rename-no-confirm~
-is non-nil ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]).
+types (per ~denote-file-type~), add front matter to the top of it and
+leave the buffer unsaved for further inspection ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]). Save
+the buffer if ~denote-save-buffers~ is non-nil ([[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]]).
 
 This command is intended to (i) rename Denote files, (ii) convert
 existing supported file types to Denote notes, and (ii) rename
@@ -1267,35 +1278,37 @@ scheme.
 For a version of this command that works with multiple files
 one-by-one, use ~denote-dired-rename-files~ ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde][Rename multiple files interactively]]).
 
-*** The ~denote-rename-no-confirm~ option
+*** The ~denote-rename-confirmations~ option
 :PROPERTIES:
 :CUSTOM_ID: h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7
 :END:
 
-#+vindex: denote-rename-no-confirm
-The user option ~denote-rename-no-confirm~ makes all commands that
-rename files not prompt for confirmation and save buffers outright ([[#h:532e8e2a-9b7d-41c0-8f4b-3c5cbb7d4dca][Renaming files]]).
+[ As part of {{{development-version}}} the ~denote-rename-no-confirm~
+  is deprecated and superseded by the more flexible ~denote-rename-confirmations~. ]
 
-This affects the behaviour of the commands ~denote-rename-file~,
-~denote-dired-rename-files~, ~denote-rename-file-using-front-matter~,
-~denote-dired-rename-marked-files-with-keywords~,
-~denote-dired-rename-marked-files-using-front-matter~,
-~denote-keywords-add~, ~denote-keywords-remove~, and any other command
-that builds on top of them.
+#+vindex: denote-rename-confirmations
+The user option ~denote-rename-confirmations~ controls what kind of
+confirmation renaming commands ask for ([[#h:532e8e2a-9b7d-41c0-8f4b-3c5cbb7d4dca][Renaming files]]).  Its value is
+a list of symbols.
+
+The value is either nil, in which case no confirmation is ever
+requested, or a list of symbols among the following:
+
+- ~modify-file-name~ means that renaming commands will ask for
+  confirmation before modifying the file name.
+
+- ~rewrite-front-matter~ means that renaming commands will ask for
+  confirmation before rewritting the front matter.
+
+- ~add-front-matter~ means that renaming commands will ask for
+  confirmation before adding new front matter to the file.
 
 The default behaviour of the ~denote-rename-file~ command (and others
 like it) is to ask for an affirmative answer as a final step before
 changing the file name and, where relevant, inserting or updating the
-corresponding front matter. It also does not save the affected file's
-buffer to let the user inspect and confirm the changes (such as by
-invoking the command ~diff-buffer-with-file~).
+corresponding front matter.
 
-With this user option bound to a non-nil value, buffers are saved as
-well. The assumption is that the user who opts in to this feature is
-familiar with the ~denote-rename-file~ (or related) operation and
-knows it is reliable.
-
-Specialised commands that build on top of ~denote-rename-file~ (or
+Specialized commands that build on top of ~denote-rename-file~ (or
 related) may internally bind this user option to a non-nil value in
 order to perform their operation (e.g. ~denote-dired-rename-files~
 goes through each marked Dired file, prompting for the information to
@@ -1373,16 +1386,16 @@ the like.
 
 #+findex: denote-dired-rename-files
 #+findex: denote-dired-rename-marked-files
-The command ~denote-dired-rename-files~ (alias
-~denote-dired-rename-marked-files~) renames the files that are
-marked in a Dired buffer. Its behaviour is similar to the
-~denote-rename-file~ in that it prompts for a title, keywords, and
-signature ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]). It does so over each marked file,
-renaming one after the other.
+The command ~denote-dired-rename-files~ (alias ~denote-dired-rename-marked-files~)
+renames the files that are marked in a Dired buffer. Its behaviour is
+similar to the ~denote-rename-file~ in that it prompts for a title,
+keywords, and signature ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]). It does so over each
+marked file, renaming one after the other.
 
 Unlike ~denote-rename-file~, the command ~denote-dired-rename-files~
 does not ask to confirm the changes made to the files: it performs
-them outright. This is done to make it easier to rename multiple files
+them outright (same as setting ~denote-rename-confirmations~ to a nil
+value). This is done to make it easier to rename multiple files
 without having to confirm each step. For an even more direct approach,
 check the command ~denote-dired-rename-marked-files-with-keywords~.
 
@@ -1483,6 +1496,9 @@ difference between old and new file names.
 :CUSTOM_ID: h:ad4dde4a-8e88-470a-97ae-e7b9d4b41fb4
 :END:
 
+[ Revised as part of {{{development-version}}} to respect the user
+  options ~denote-rename-confirmations~ and ~denote-save-buffers~. ]
+
 #+findex: denote-keywords-add
 #+findex: denote-keywords-remove
 The commands ~denote-keywords-add~ and ~denote-keywords-remove~
@@ -1497,10 +1513,11 @@ Similarly, the ~denote-keywords-remove~ removes one or more keywords
 from the list of existing keywords and then renames the file
 accordingly.
 
-Both commands accept an optional prefix argument to automatically save
-the buffer. Similarly, they both interpret a non-nil value for the
-user option ~denote-rename-no-confirm~ the same as the prefix argument
-([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]).
+Both commands respect the values of ~denote-rename-confirmations~ and
+~denote-save-buffers~:
+
+- [[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-confirmations~ option]].
+- [[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]].
 
 Furthermore, both commands call the ~denote-after-rename-file-hook~ as
 a final step after carrying out their task.
@@ -1514,6 +1531,9 @@ Aliases for these commands are: ~denote-rename-add-keywords~ and
 :PROPERTIES:
 :CUSTOM_ID: h:b08a350f-b269-47ed-8c2a-b8ecf1b63c7f
 :END:
+
+[ Revised as part of {{{development-version}}} to respect the user
+  option ~denote-rename-confirmations~. ]
 
 #+findex: denote-rename-add-signature
 #+findex: denote-rename-remove-signature
@@ -1530,11 +1550,10 @@ The ~denote-rename-remove-signature~ uses the same file prompt as
 above. It performs its action only if the selected file has a
 signature. Otherwise, it does nothing.
 
-Both commands ask for confirmation before carrying out their action.
-They do so unless the user option ~denote-rename-no-confirm~ is set to
-a non-nil value ([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-no-confirm~ option]]). They also
-both take care to reload any Dired buffers and run the
-~denote-after-rename-file-hook~ as a final step.
+Both commands respect the value of ~denote-rename-confirmations~
+([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename--confirmations~ option]]). They also both take care
+to reload any Dired buffers and run the ~denote-after-rename-file-hook~
+as a final step.
 
 ** Faces used by rename commands
 :PROPERTIES:
@@ -2154,7 +2173,7 @@ fit. By contrast, the command ~denote-org-extras-link-to-heading~
 prompts for a file, then a heading, and inserts the link at point.
 
 Just as with files, it is possible to show backlinks for the given
-heading ([[#h:604bf92a-908a-485c-98b8-37ccae559afd][Backlinks for Org headings]]). [ Part of {{{development-version}}}. ] 
+heading ([[#h:604bf92a-908a-485c-98b8-37ccae559afd][Backlinks for Org headings]]). [ Part of {{{development-version}}}. ]
 
 ** Insert links matching a regexp
 :PROPERTIES:
@@ -2292,7 +2311,7 @@ this end, Denote provides two convenience commands:
   ~denote-link~ ([[#h:5e5e3370-12ab-454f-ba09-88ff44214324][Adding a single link]]).
 
   IMPORTANT NOTE: Normally, ~denote~ does not save the buffer it
-  produces for the new note ([[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffer-after-creation~ option]]). 
+  produces for the new note ([[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffer-after-creation~ option]]).
   This is a safety precaution to not write to disk unless the user
   wants it (e.g. the user may choose to kill the buffer, thus
   cancelling the creation of the note). However, for this command the
@@ -3969,7 +3988,7 @@ Everything is in place to set up the package.
 
 ;; Remember to check the doc strings of those variables.
 (setq denote-directory (expand-file-name "~/Documents/notes/"))
-(setq denote-save-buffer-after-creation nil)
+(setq denote-save-buffers nil)
 (setq denote-known-keywords '("emacs" "philosophy" "politics" "economics"))
 (setq denote-infer-keywords t)
 (setq denote-sort-keywords t)
@@ -3977,7 +3996,7 @@ Everything is in place to set up the package.
 (setq denote-prompts '(title keywords))
 (setq denote-excluded-directories-regexp nil)
 (setq denote-excluded-keywords-regexp nil)
-(setq denote-rename-no-confirm nil) ; Set to t if you are familiar with `denote-rename-file'
+(setq denote-rename-confirmations '(rewrite-front-matter modify-file-name))
 
 ;; Pick dates, where relevant, with Org's advanced interface:
 (setq denote-date-prompt-use-org-read-date t)
@@ -4460,8 +4479,11 @@ might change them without further notice.
   and ~embark~).
 
 #+findex: denote-rename-file-prompt
-+ Function ~denote-rename-file-prompt~ :: Prompt to rename file named
-  =OLD-NAME= to =NEW-NAME=.
+- Function ~denote-rename-file-prompt~ :: Prompt to rename file named
+  =OLD-NAME= to =NEW-NAME=. If ~denote-rename-confirmations~ does not
+  contain ~modify-file-name~, return t without prompting. [ Revised as
+  part of {{{development-version}}} to conform with the user option
+  ~denote-rename-confirmations~. ]
 
 #+findex: denote-rename-file-and-buffer
 + Function ~denote-rename-file-and-buffer~ :: Rename file named
@@ -4472,11 +4494,18 @@ might change them without further notice.
   note after ~denote-rename-file~ (or related) The =FILE=, =TITLE=,
   =KEYWORDS=, and =FILE-TYPE= arguments are given by the renaming
   command and are used to construct new front matter values if
-  appropriate. With optional =NO-CONFIRM=, do not prompt to confirm
-  the rewriting of the front matter. Otherwise produce a ~y-or-n-p~
-  prompt to that effect. With optional =NO-CONFIRM=, save the buffer
-  after performing the rewrite. Otherwise leave it unsaved for
-  furthter review by the user.
+  appropriate. If ~denote-rename-confirmations~ contains
+  ~rewrite-front-matter~, prompt to confirm the rewriting of the front
+  matter. Otherwise produce a ~y-or-n-p~ prompt to that effect. [
+  Revised as part of {{{development-version}}} to conform with the
+  user option ~denote-rename-confirmations~. ]
+
+#+findex: denote-add-front-matter-prompt
++ Function ~denote-add-front-matter-prompt~ :: Prompt to add a
+  front-matter to =FILE=. Return non-nil if a new front matter should
+  be added. If ~denote-rename-confirmations~ does not contain
+  ~add-front-matter~, return t without prompting. [ Part of
+  {{{development-version}}}. ]
 
 #+findex: denote-rewrite-keywords
 + Function ~denote-rewrite-keywords~ :: Rewrite =KEYWORDS= in =FILE=
@@ -5347,19 +5376,19 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 + Author/maintainer :: Protesilaos Stavrou.
 
 + Contributions to code or the manual :: Abin Simon, Adam Růžička,
-  Alan Schmitt, Ashton Wiersdorf, Benjamin Kästner, Bruno Boal,
-  Charanjit Singh, Clemens Radermacher, Colin McLear, Damien Cassou,
-  Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna D.,
-  Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jean-Charles
-  Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner,
-  Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kostas Andreadis,
-  Kristoffer Balintona, Kyle Meyer, Marc Fargas, Matthew Lemon, Noboru
-  Ota (nobiot), Norwid Behrnd, Peter Prevos, Philip Kaludercic,
-  Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan Thesing,
-  Thibaut Benjamin, Tomasz Hołubowicz, Vedang Manerikar, Wesley
-  Harvey, Zhenxu Xu, arsaber101, ezchi, jarofromel, leinfink (Henrik),
-  l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-  pmenair, relict007.
+  Alan Schmitt, Alexandre Rousseau, Ashton Wiersdorf, Benjamin
+  Kästner, Bruno Boal, Charanjit Singh, Clemens Radermacher, Colin
+  McLear, Damien Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron,
+  Florian, Glenna D., Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack
+  Baty, Jean-Charles Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou,
+  Joseph Turner, Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kostas
+  Andreadis, Kristoffer Balintona, Kyle Meyer, Marc Fargas, Matthew
+  Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter Prevos, Philip
+  Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
+  Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
+  Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, ezchi, jarofromel,
+  leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+  mentalisttraceur, pmenair, relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Hirschfeld, Alfredo Borrás, Ashton
