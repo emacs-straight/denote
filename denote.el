@@ -124,9 +124,9 @@
 ;; About the autoload: (info "(elisp) File Local Variables")
 
 (define-obsolete-variable-alias
- 'denote-user-enforced-denote-directory
- 'denote-directory
- "2.3.0")
+  'denote-user-enforced-denote-directory
+  'denote-directory
+  "2.3.0")
 
 ;;;###autoload (put 'denote-directory 'safe-local-variable (lambda (val) (or (stringp val) (eq val 'local) (eq val 'default-directory))))
 (defcustom denote-directory (expand-file-name "~/Documents/notes/")
@@ -711,13 +711,13 @@ The note's ID is derived from the date and time of its creation.")
 (defconst denote-id-regexp "\\([0-9]\\{8\\}\\)\\(T[0-9]\\{6\\}\\)"
   "Regular expression to match `denote-id-format'.")
 
-(defconst denote-signature-regexp "==\\([^.]*?\\)\\(--.*\\|__.*\\|\\..*\\)*$"
+(defconst denote-signature-regexp "==\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|\\..*\\)*$"
   "Regular expression to match the SIGNATURE field in a file name.")
 
-(defconst denote-title-regexp "--\\([^.]*?\\)\\(--.*\\|__.*\\|\\..*\\)*$"
+(defconst denote-title-regexp "--\\([^.]*?\\)\\(==.*\\|__.*\\|\\..*\\)*$"
   "Regular expression to match the TITLE field in a file name.")
 
-(defconst denote-keywords-regexp "__\\([^.]*?\\)\\(--.*\\|__.*\\|\\..*\\)*$"
+(defconst denote-keywords-regexp "__\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|\\..*\\)*$"
   "Regular expression to match the KEYWORDS field in a file name.")
 
 (defconst denote-excluded-punctuation-regexp "[][{}!@#$%^&*()=+'\"?,.\|;:~`‘’“”/]*"
@@ -821,23 +821,32 @@ leading and trailing hyphen."
     (replace-regexp-in-string "_\\|\s+" "-" str))))
 
 (defun denote--remove-dot-characters (str)
-  "Remove the dot character from STR."
+  "Remove dot characters from STR."
   (replace-regexp-in-string "\\." "" str))
 
-(defun denote--trim-right-token-characters (str)
-  "Remove =, - and _ from the end of STR."
-  (string-trim-right str "[=_-]+"))
+(defun denote--trim-right-token-characters (str component)
+  "Remove =, - and _ from the end of STR.
+The removal is done only if necessary according to COMPONENT."
+  (if (eq component 'title)
+      (string-trim-right str "[=_]+")
+    (string-trim-right str "[=_-]+")))
 
-(defun denote--replace-consecutive-token-characters (str)
+(defun denote--replace-consecutive-token-characters (str component)
   "Replace consecutive characters with a single one in STR.
-Spaces, underscores and equal signs are replaced with a single
-one in str."
-  (replace-regexp-in-string
-   "-\\{2,\\}" "-"
-   (replace-regexp-in-string
-    "_\\{2,\\}" "_"
+Hyphens, underscores and equal signs are replaced with a single
+one in str, if necessary according to COMPONENT."
+  ;; -- are allowed in titles
+  (if (eq component 'title)
+      (replace-regexp-in-string
+       "_\\{2,\\}" "_"
+       (replace-regexp-in-string
+        "=\\{2,\\}" "=" str))
     (replace-regexp-in-string
-     "=\\{2,\\}" "=" str))))
+     "-\\{2,\\}" "-"
+     (replace-regexp-in-string
+      "_\\{2,\\}" "_"
+      (replace-regexp-in-string
+       "=\\{2,\\}" "=" str)))))
 
 (defun denote-sluggify (component str)
   "Make STR an appropriate slug for file name COMPONENT.
@@ -845,9 +854,10 @@ one in str."
 Apply the function specified in `denote-file-name-slug-function'
 to COMPONENT which is one of `title', `signature', `keyword'.  If
 the resulting string still contains consecutive -,_ or =, they
-are replaced by a single occurence of the character.  If
-COMPONENT is `keyword', remove underscores from STR as they are
-used as the keywords separator in file names."
+are replaced by a single occurence of the character, if necessary
+according to COMPONENT.  If COMPONENT is `keyword', remove
+underscores from STR as they are used as the keywords separator
+in file names."
   (let* ((slug-function (alist-get component denote-file-name-slug-functions))
          (str-slug (cond ((eq component 'title)
                           (funcall (or slug-function #'denote-sluggify-title) str))
@@ -859,7 +869,7 @@ used as the keywords separator in file names."
                           (funcall (or slug-function #'denote-sluggify-signature) str)))))
     (denote--trim-right-token-characters
      (denote--replace-consecutive-token-characters
-      (denote--remove-dot-characters str-slug)))))
+      (denote--remove-dot-characters str-slug) component) component)))
 
 (make-obsolete
  'denote-letter-case
@@ -1007,7 +1017,7 @@ are not backups."
     (lambda (file)
       (and (denote-file-has-identifier-p file)
            (not (backup-file-name-p file))))
-      (denote--directory-all-files-recursively))))
+    (denote--directory-all-files-recursively))))
 
 (defun denote-directory-files (&optional files-matching-regexp omit-current text-only)
   "Return list of absolute file paths in variable `denote-directory'.
@@ -1113,7 +1123,7 @@ something like .org even if the actual file extension is
   (let ((files
          (seq-filter
           (lambda (file)
-            (string-prefix-p id (file-name-nondirectory file)))
+            (string= id (denote-retrieve-filename-identifier file)))
           (denote-directory-files))))
     (if (length< files 2)
         (car files)
@@ -1652,8 +1662,13 @@ current time."
    denote-id-format
    (when date (denote-valid-date-p date))))
 
-(defun denote-create-unique-file-identifier (file used-ids &optional date)
-  "Generate a unique identifier for FILE not in USED-IDS hash-table.
+(defvar denote--used-ids nil
+  "Hash table of used identifiers.
+This variable should be set only for the duration of a command.
+It should stay nil otherwise.")
+
+(defun denote-create-unique-file-identifier (file &optional date)
+  "Generate a unique identifier for FILE.
 
 The conditions are as follows:
 
@@ -1669,10 +1684,10 @@ The conditions are as follows:
 To only return an existing identifier, refer to the function
 `denote-retrieve-filename-identifier'."
   (let ((id (cond
-              (date (denote-get-identifier date))
-              ((denote--file-attributes-time file))
-              (t (denote-get-identifier)))))
-    (denote--find-first-unused-id id used-ids)))
+             (date (denote-get-identifier date))
+             ((denote--file-attributes-time file))
+             (t (denote-get-identifier)))))
+    (denote--find-first-unused-id id)))
 
 (define-obsolete-function-alias
   'denote-retrieve-or-create-file-identifier
@@ -1754,16 +1769,16 @@ The return value is a list of strings."
       (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
 
 (defalias 'denote-retrieve-title-value 'denote-retrieve-front-matter-title-value
- "Alias for `denote-retrieve-front-matter-title-value'.")
+  "Alias for `denote-retrieve-front-matter-title-value'.")
 
 (defalias 'denote-retrieve-title-line 'denote-retrieve-front-matter-title-line
- "Alias for `denote-retrieve-front-matter-title-line'.")
+  "Alias for `denote-retrieve-front-matter-title-line'.")
 
 (defalias 'denote-retrieve-keywords-value 'denote-retrieve-front-matter-keywords-value
- "Alias for `denote-retrieve-front-matter-keywords-value'.")
+  "Alias for `denote-retrieve-front-matter-keywords-value'.")
 
 (defalias 'denote-retrieve-keywords-line 'denote-retrieve-front-matter-keywords-line
- "Alias for `denote-retrieve-front-matter-keywords-line'.")
+  "Alias for `denote-retrieve-front-matter-keywords-line'.")
 
 (define-obsolete-function-alias
   'denote--retrieve-title-or-filename
@@ -1986,7 +2001,7 @@ If either that or DATE is nil, return `current-time'."
   "Return non-nil if IDENTIFIER already exists."
   (seq-some
    (lambda (file)
-     (string-prefix-p identifier (file-name-nondirectory file)))
+     (string= identifier (denote-retrieve-filename-identifier file)))
    (append (denote-directory-files) (denote--buffer-file-names))))
 
 (defun denote--get-all-used-ids ()
@@ -2002,11 +2017,12 @@ It checks files in variable `denote-directory' and active buffer files."
         (puthash id t ids)))
     ids))
 
-(defun denote--find-first-unused-id (id used-ids)
-  "Return the first unused id starting at ID from USED-IDS.
-USED-IDS is a hash-table of all used IDs.  If ID is already used,
-increment it 1 second at a time until an available id is found."
-  (let ((current-id id))
+(defun denote--find-first-unused-id (id)
+  "Return the first unused id starting at ID.
+If ID is already used, increment it 1 second at a time until an
+available id is found."
+  (let ((used-ids (or denote--used-ids (denote--get-all-used-ids)))
+        (current-id id))
     (while (gethash current-id used-ids)
       (setq current-id (denote-get-identifier (time-add (date-to-time current-id) 1))))
     current-id))
@@ -2152,9 +2168,7 @@ When called from Lisp, all arguments are optional.
          (file-type (denote--valid-file-type (or file-type denote-file-type)))
          (kws (denote-keywords-sort keywords))
          (date (denote-parse-date date))
-         (id (denote--find-first-unused-id
-              (denote-get-identifier date)
-              (denote--get-all-used-ids)))
+         (id (denote--find-first-unused-id (denote-get-identifier date)))
          (directory (if (denote--dir-in-denote-directory-p subdirectory)
                         (file-name-as-directory subdirectory)
                       (denote-directory)))
@@ -2839,7 +2853,7 @@ one-by-one, use `denote-dired-rename-files'."
      (list file title keywords signature date)))
   (let* ((dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file)
-                 (denote-create-unique-file-identifier file (denote--get-all-used-ids) date)))
+                 (denote-create-unique-file-identifier file date)))
          (title (or title ""))
          (keywords (denote-keywords-sort keywords))
          ;; TODO 2024-02-13: Should we derive the extension from the
@@ -2873,14 +2887,14 @@ setting `denote-rename-confirmations' to a nil value)."
   (declare (interactive-only t))
   (interactive nil dired-mode)
   (if-let ((marks (dired-get-marked-files)))
-      (let ((used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
-                        (denote--get-all-used-ids))))
+      (let ((denote--used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
+                                (denote--get-all-used-ids))))
         (dolist (file marks)
           (let* ((file-type (denote-filetype-heuristics file))
                  (file-in-prompt (propertize (file-relative-name file) 'face 'denote-faces-prompt-current-name))
                  (dir (file-name-directory file))
                  (id (or (denote-retrieve-filename-identifier file)
-                         (denote-create-unique-file-identifier file used-ids)))
+                         (denote-create-unique-file-identifier file)))
                  (title (denote-retrieve-title-or-filename file file-type))
                  (keywords (denote-extract-keywords-from-path file))
                  (signature (or (denote-retrieve-filename-signature file) ""))
@@ -2913,8 +2927,8 @@ setting `denote-rename-confirmations' to a nil value)."
                 (with-current-buffer (find-file-noselect new-name)
                   (save-buffer)))
               (run-hooks 'denote-after-rename-file-hook)
-              (when used-ids
-                (puthash id t used-ids)))))
+              (when denote--used-ids
+                (puthash id t denote--used-ids)))))
         (denote-update-dired-buffers))
     (user-error "No marked files; aborting")))
 
@@ -2953,12 +2967,12 @@ as input.
 This function is an internal implementation function."
   (if-let ((marks (dired-get-marked-files)))
       (let ((user-input-keywords (denote-keywords-prompt keywords-prompt))
-            (used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
-                        (denote--get-all-used-ids))))
+            (denote--used-ids (unless (seq-every-p #'denote-file-has-identifier-p marks)
+                                (denote--get-all-used-ids))))
         (dolist (file marks)
           (let* ((dir (file-name-directory file))
                  (id (or (denote-retrieve-filename-identifier file)
-                         (denote-create-unique-file-identifier file used-ids)))
+                         (denote-create-unique-file-identifier file)))
                  (signature (or (denote-retrieve-filename-signature file) ""))
                  (file-type (denote-filetype-heuristics file))
                  (title (denote-retrieve-title-or-filename file file-type))
@@ -2979,8 +2993,8 @@ This function is an internal implementation function."
               (with-current-buffer (find-file-noselect new-name)
                 (save-buffer)))
             (run-hooks 'denote-after-rename-file-hook)
-            (when used-ids
-              (puthash id t used-ids))))
+            (when denote--used-ids
+              (puthash id t denote--used-ids))))
         (denote-update-dired-buffers))
     (user-error "No marked files; aborting")))
 
@@ -3201,7 +3215,7 @@ Also see `denote-rename-remove-signature'."
          (keywords (when keywords-string (split-string keywords-string "_" :omit-nulls "_")))
          (dir (file-name-directory file))
          (id (or (denote-retrieve-filename-identifier file)
-                 (denote-create-unique-file-identifier file (denote--get-all-used-ids))))
+                 (denote-create-unique-file-identifier file)))
          (extension (denote-get-file-extension file))
          (new-name (denote-format-file-name dir id keywords title extension signature)))
     (when (denote-rename-file-prompt file new-name)
@@ -3230,7 +3244,7 @@ Also see `denote-rename-add-signature'."
            (keywords (when keywords-string (split-string keywords-string "_" :omit-nulls "_")))
            (dir (file-name-directory file))
            (id (or (denote-retrieve-filename-identifier file)
-                   (denote-create-unique-file-identifier file (denote--get-all-used-ids))))
+                   (denote-create-unique-file-identifier file)))
            (extension (denote-get-file-extension file))
            (new-name (denote-format-file-name dir id keywords title extension nil)))
       (when (denote-rename-file-prompt file new-name)
@@ -3753,7 +3767,7 @@ treats the active region specially, is up to it."
           (file-type (denote-filetype-heuristics buffer-file-name))
           (description (when (file-exists-p file)
                          (denote--link-get-description file))))
-       (list file file-type description current-prefix-arg)))
+     (list file file-type description current-prefix-arg)))
   (unless (or (denote--file-type-org-extra-p)
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
@@ -3810,7 +3824,7 @@ function."
         found-files)
     (dolist (file files)
       (dolist (i (denote-link--collect-identifiers regexp))
-        (when (string-prefix-p i (file-name-nondirectory file))
+        (when (string= i (denote-retrieve-filename-identifier file))
           (push file found-files))))
     found-files))
 
@@ -4184,7 +4198,7 @@ concomitant alist, such as `denote-link-backlinks-display-buffer-action'."
 Use FILE to detect a suitable title with which to name the buffer.  Else
 use the ID."
   (if-let ((type (denote-filetype-heuristics file))
-           (title (denote-retrieve-title-value file type)))
+           (title (denote-retrieve-front-matter-title-value file type)))
       (format "*Denote FILE backlinks for %S*" title)
     (format "*Denote FILE backlinks for %s*" id)))
 
@@ -4463,7 +4477,7 @@ This command is meant to be used from a Dired buffer."
   "Resolve LINK to target file, with or without additioanl query terms.
 With optional FULL-DATA return a list in the form of (path id query)."
   (let* ((query (and (string-match "::\\(.*\\)\\'" link)
-                      (match-string 1 link)))
+                     (match-string 1 link)))
          (id (if (and query (not (string-empty-p query)))
                  (substring link 0 (match-beginning 0))
                link))
@@ -4630,37 +4644,35 @@ Consult the manual for template samples."
     (dolist (prompt denote-prompts)
       (pcase prompt
         ('title (setq title (denote-title-prompt
-                              (when (use-region-p)
-                                (buffer-substring-no-properties
-                                 (region-beginning)
-                                 (region-end))))))
+                             (when (use-region-p)
+                               (buffer-substring-no-properties
+                                (region-beginning)
+                                (region-end))))))
         ('keywords (setq keywords (denote-keywords-prompt)))
         ('subdirectory (setq subdirectory (denote-subdirectory-prompt)))
         ('date (setq date (denote-date-prompt)))
         ('template (setq template (denote-template-prompt)))
         ('signature (setq signature (denote-signature-prompt)))))
-  (let* ((title (or title ""))
-         (date (if (or (null date) (string-empty-p date))
-                   (current-time)
-                 (denote-valid-date-p date)))
-         (id (denote--find-first-unused-id
-              (denote-get-identifier date)
-              (denote--get-all-used-ids)))
-         (keywords (denote-keywords-sort keywords))
-         (directory (if (denote--dir-in-denote-directory-p subdirectory)
-                        (file-name-as-directory subdirectory)
-                      (denote-directory)))
-         (template (if (stringp template)
-                       template
-                     (or (alist-get template denote-templates) "")))
-         (signature (or signature ""))
-         (front-matter (denote--format-front-matter
-                        title (denote--date nil 'org) keywords
-                        (denote-get-identifier) 'org)))
-    (setq denote-last-path
-          (denote-format-file-name directory id keywords title ".org" signature))
-    (denote--keywords-add-to-history keywords)
-    (concat front-matter template denote-org-capture-specifiers))))
+    (let* ((title (or title ""))
+           (date (if (or (null date) (string-empty-p date))
+                     (current-time)
+                   (denote-valid-date-p date)))
+           (id (denote--find-first-unused-id (denote-get-identifier date)))
+           (keywords (denote-keywords-sort keywords))
+           (directory (if (denote--dir-in-denote-directory-p subdirectory)
+                          (file-name-as-directory subdirectory)
+                        (denote-directory)))
+           (template (if (stringp template)
+                         template
+                       (or (alist-get template denote-templates) "")))
+           (signature (or signature ""))
+           (front-matter (denote--format-front-matter
+                          title (denote--date nil 'org) keywords
+                          (denote-get-identifier) 'org)))
+      (setq denote-last-path
+            (denote-format-file-name directory id keywords title ".org" signature))
+      (denote--keywords-add-to-history keywords)
+      (concat front-matter template denote-org-capture-specifiers))))
 
 ;; TODO 2023-12-02: Maybe simplify `denote-org-capture-with-prompts'
 ;; by passing a single PROMPTS that is the same value as `denote-prompts'?
