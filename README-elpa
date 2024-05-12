@@ -5074,6 +5074,10 @@ section 15.13
         a list of strings.  Consult the `denote-file-types' for how this
         is used.
 
+  Function `denote-select-linked-file-prompt'
+        Prompt for linked file among `FILES'. [ Made publicly available
+        as part of 3.0.0-dev. ]
+
   Function `denote-link-return-links'
         Return list of links in current or optional `FILE'.  Also see
         `denote-link-return-backlinks'.
