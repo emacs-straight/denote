@@ -4746,11 +4746,10 @@ section 15.13
         Extract signature from `FILE' name, if present, else return nil.
 
   Function `denote-retrieve-title-or-filename'
-        Return appropriate title for `FILE' given its `TYPE'. Try to
-        find the value of the title in the front matter of FILE,
-        otherwise use its file name. This is a wrapper for
-        `denote-retrieve-front-matter-title-value' and
-        `denote-retrieve-filename-title'.
+        Return appropriate title for `FILE' given its `TYPE'. This is a
+        wrapper for `denote-retrieve-front-matter-title-value' and
+        `denote-retrieve-filename-title'. [ Simplified as part of
+        3.0.0-dev to only be a wrapper as its doc string suggests. ]
 
   Function `denote-get-identifier'
         Convert `DATE' into a Denote identifier using
@@ -4806,11 +4805,25 @@ section 15.13
         ([The `denote-history-completion-in-prompts' option]).
 
   Function `denote-file-prompt'
-        Prompt for file with identifier in variable
-        `denote-directory'. With optional `FILES-MATCHING-REGEXP',
-        filter the candidates per the given regular expression. With
-        optional `PROMPT-TEXT', use it instead of the default select a
-        file.
+        Prompt for file in variable `denote-directory'. With optional
+        `FILES-MATCHING-REGEXP', filter the candidates per the given
+        regular expression. With optional `PROMPT-TEXT', use it instead
+        of the default call to select a file.  With optional
+        `NO-REQUIRE-MATCH' accept the given input as-is. If it does not
+        match a file, return nil. See `denote-file-or-action-prompt' for
+        how this is intended to be used. Unless `NO-REQUIRE-MATCH' is
+        non-nil, return the absolute path to the matching file. [
+        Revised as part of 3.0.0-dev to include the new
+        `NO-REQUIRE-MATCH' parameter. This is to simplify how we use the
+        various “… or create” commands internally. ]
+
+  Function `denote-file-or-action-prompt'
+        Like `denote-file-prompt' but accept the user input as-is. If
+        the input does not match a file completely, return the
+        input. Otherwise, return the file. The optional
+        `FILES-MATCHING-REGEXP' and `PROMPT-TEXT' have the same meaning
+        as `denote-file-prompt' and are passed to it. [ Part of
+        3.0.0-dev. ]
 
   Function `denote-keywords-prompt'
         Prompt for one or more keywords.  Read entries as separate when
@@ -5862,7 +5875,7 @@ section 15.13
         Peter Prevos, Peter Smith, Suhail Singh, Shreyas Ragavan, Stefan
         Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick
         (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj,
-        babusri, doolio, drcxd, fingerknight, hpgisler,
+        babusri, doolio, duli, drcxd, fingerknight, hpgisler,
         mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic, sundar
         bp.
 
