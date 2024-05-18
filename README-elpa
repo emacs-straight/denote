@@ -1703,7 +1703,8 @@ Table of Contents
   extras to their front matter that we would not want to touch.
 
   If in Dired, `denote-change-file-type-and-front-matter' operates on
-  the file at point, else it prompts with minibuffer completion for one.
+  the file at point, else the current file, else it prompts with
+  minibuffer completion for one.
 
   The title of the file is retrieved from a line starting with a title
   field in the file’s front matter, depending on the previous file type
