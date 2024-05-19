@@ -1739,36 +1739,28 @@ Subroutine of `denote--file-with-temp-buffer'."
        (goto-char (point-min))
        ,@body)))
 
-(defun denote-retrieve-front-matter-title-value (file file-type)
-  "Return title value from FILE front matter per FILE-TYPE."
-  (when file-type
-    (denote--file-with-temp-buffer file
-      (when (re-search-forward (denote--title-key-regexp file-type) nil t 1)
-        (funcall (denote--title-value-reverse-function file-type)
-                 (buffer-substring-no-properties (point) (line-end-position)))))))
+(defmacro denote--define-retrieve-front-matter (component scope)
+  "Define a function to retrieve front matter for COMPONENT given SCOPE.
+The COMPONENT is one of the file name components that has a
+corresponding front matter entry.  SCOPE is a symbol of either `value'
+or `line', referring to what the function should retrieve."
+  (declare (indent 1))
+  `(defun ,(intern (format "denote-retrieve-front-matter-%s-%s" component scope)) (file file-type)
+     (when file-type
+       (denote--file-with-temp-buffer file
+         (when (re-search-forward (,(intern (format "denote--%s-key-regexp" component)) file-type) nil t 1)
+           ,(cond
+             ((eq scope 'value)
+              `(funcall (,(intern (format "denote--%s-value-reverse-function" component)) file-type)
+                        (buffer-substring-no-properties (point) (line-end-position))))
+             ((eq scope 'line)
+              '(buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+             (t (error "`%s' is not a known scope" scope))))))))
 
-(defun denote-retrieve-front-matter-title-line (file file-type)
-  "Return title line from FILE front matter per FILE-TYPE."
-  (when file-type
-    (denote--file-with-temp-buffer file
-      (when (re-search-forward (denote--title-key-regexp file-type) nil t 1)
-        (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
-
-(defun denote-retrieve-front-matter-keywords-value (file file-type)
-  "Return keywords value from FILE front matter per FILE-TYPE.
-The return value is a list of strings."
-  (when file-type
-    (denote--file-with-temp-buffer file
-      (when (re-search-forward (denote--keywords-key-regexp file-type) nil t 1)
-        (funcall (denote--keywords-value-reverse-function file-type)
-                 (buffer-substring-no-properties (point) (line-end-position)))))))
-
-(defun denote-retrieve-front-matter-keywords-line (file file-type)
-  "Return keywords line from FILE front matter per FILE-TYPE."
-  (when file-type
-    (denote--file-with-temp-buffer file
-      (when (re-search-forward (denote--keywords-key-regexp file-type) nil t 1)
-        (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
+(denote--define-retrieve-front-matter title value)
+(denote--define-retrieve-front-matter title line)
+(denote--define-retrieve-front-matter keywords value)
+(denote--define-retrieve-front-matter keywords line)
 
 (defalias 'denote-retrieve-title-value 'denote-retrieve-front-matter-title-value
   "Alias for `denote-retrieve-front-matter-title-value'.")
@@ -1922,8 +1914,8 @@ TEMPLATE, and SIGNATURE should be valid for note creation."
                   title (denote--date date file-type) keywords
                   id
                   file-type)))
-    (when (file-regular-p buffer)
-      (user-error "A file named `%s' already exists" buffer))
+    (when (file-regular-p path)
+      (user-error "A file named `%s' already exists" path))
     (with-current-buffer buffer
       (insert header)
       (insert template))
@@ -3074,7 +3066,7 @@ edited in the front matter.  Denote considers the file name to be
 the source of truth in this case to avoid potential breakage with
 typos and the like.
 
-The values of `denote-nename-confirmations' and
+The values of `denote-rename-confirmations' and
 `denote-save-buffers' are respected.
 
 The identifier of the file, if any, is never modified even if it
@@ -3323,37 +3315,131 @@ and seconds."
   :group 'denote-faces
   :package-version '(denote . "2.1.0"))
 
-(defvar denote-faces--file-name-regexp
-  (concat "\\(?11:[\t\s]+\\|.*/\\)?"
-          "\\(?1:[0-9]\\{4\\}\\)\\(?12:[0-9]\\{2\\}\\)\\(?13:[0-9]\\{2\\}\\)"
-          "\\(?10:T\\)"
-          "\\(?2:[0-9]\\{2\\}\\)\\(?14:[0-9]\\{2\\}\\)\\(?15:[0-9]\\{2\\}\\)"
-          "\\(?:\\(?3:==\\)\\(?4:[^.]*?\\)\\)?"
-          "\\(?:\\(?5:--\\)\\(?6:[^.]*?\\)\\)?"
-          "\\(?:\\(?7:__\\)\\(?8:[^.]*?\\)\\)?"
-          "\\(?9:\\..*\\)?$")
-  "Regexp of file names for fontification.")
+;; The following matchers must obey the doc of `font-lock-keywords':
+;;   - Have one parameter, the limit of the search
+;;   - Set match-data (and restore it on failure)
+;;   - Move point after the match (or restore it on failure).
+;;   - Return t on success and nil on failure. re-search-forward returns (point) on success. It may be better to do the same.
 
-(defconst denote-faces-file-name-keywords
-  `((,denote-faces--file-name-regexp
-     (11 'denote-faces-subdirectory nil t)
+(defun denote-faces-dired-file-name-matcher (limit)
+  "Find the file name in a Dired line, not looking beyond LIMIT."
+  (let ((initial-match-data (match-data))
+        (initial-point (point)))
+    (if (and (re-search-forward "^.+$" limit t) ; A non-empty line
+             (dired-move-to-filename))          ; ... with a file name
+        (let ((beginning-point (point)))
+          (goto-char (match-end 0))
+          (set-match-data (list beginning-point (match-end 0)))
+          (point))
+      (goto-char initial-point)
+      (set-match-data initial-match-data)
+      nil)))
+
+(defun denote-faces-directory-matcher (limit)
+  "Match the directory in a Dired line, not looking beyond LIMIT."
+  (let ((initial-match-data (match-data))
+        (initial-point (point)))
+    (if (re-search-forward "\\(?1:.*/\\)[^/]*$" limit t)
+        (progn
+          (goto-char (match-end 1))
+          (set-match-data (list (match-beginning 1) (match-end 1)))
+          (point))
+      (goto-char initial-point)
+      (set-match-data initial-match-data)
+      nil)))
+
+(defun denote-faces-signature-matcher (limit)
+  "Match the signature in a Dired line, not looking beyond LIMIT."
+  (let ((initial-match-data (match-data))
+        (initial-point (point)))
+    (if (or (re-search-forward "==\\(?1:[^/]*?\\)\\(@@\\|--\\|__\\|==\\|\\.\\)[^/]*$" limit t)
+            (re-search-forward "==\\(?1:[^/]*\\)$" limit t))
+        (progn
+          (goto-char (match-end 1))
+          (set-match-data (list (match-beginning 1) (match-end 1)))
+          (point))
+      (goto-char initial-point)
+      (set-match-data initial-match-data)
+      nil)))
+
+(defun denote-faces-title-matcher (limit)
+  "Match the title in a Dired line, not looking beyond LIMIT."
+  (let ((initial-match-data (match-data))
+        (initial-point (point)))
+    (if (or (re-search-forward "--\\(?1:[^/]*?\\)\\(@@\\|__\\|==\\|\\.\\)[^/]*$" limit t)
+            (re-search-forward "--\\(?1:[^/]*\\)$" limit t))
+        (progn
+          (goto-char (match-end 1))
+          (set-match-data (list (match-beginning 1) (match-end 1)))
+          (point))
+      (goto-char initial-point)
+      (set-match-data initial-match-data)
+      nil)))
+
+(defun denote-faces-keywords-matcher (limit)
+  "Match the keywords in a Dired line, not looking beyond LIMIT."
+  (let ((initial-match-data (match-data))
+        (initial-point (point)))
+    (if (or (re-search-forward "__\\(?1:[^/]*?\\)\\(@@\\|--\\|__\\|==\\|\\.\\)[^/]*$" limit t)
+            (re-search-forward "__\\(?1:[^/]*\\)$" limit t))
+        (progn
+          (goto-char (match-end 1))
+          (set-match-data (list (match-beginning 1) (match-end 1)))
+          (point))
+      (goto-char initial-point)
+      (set-match-data initial-match-data)
+      nil)))
+
+(defconst denote-faces-matchers
+  `((denote-faces-directory-matcher
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-subdirectory nil t))
+    ;; Identifier anywhere in the file name.
+    ("\\(?1:[0-9]\\{4\\}\\)\\(?2:[0-9]\\{2\\}\\)\\(?3:[0-9]\\{2\\}\\)\\(?7:T\\)\\(?4:[0-9]\\{2\\}\\)\\(?5:[0-9]\\{2\\}\\)\\(?6:[0-9]\\{2\\}\\)"
+     (goto-char (match-beginning 0)) ; pre-form, executed before looking for the first identifier
+     (goto-char (match-end 0))       ; post-form, executed after all matches (identifiers here) are found
      (1 'denote-faces-year nil t)
-     (12 'denote-faces-month nil t)
-     (13 'denote-faces-day nil t)
-     (10 'denote-faces-time-delimiter nil t)
-     (2 'denote-faces-hour nil t)
-     (14 'denote-faces-minute nil t)
-     (15 'denote-faces-second nil t)
-     (3 'denote-faces-delimiter nil t)
-     (4 'denote-faces-signature nil t)
-     (5 'denote-faces-delimiter nil t)
-     (6 'denote-faces-title nil t)
-     (7 'denote-faces-delimiter nil t)
-     (8 'denote-faces-keywords nil t)
-     (9 'denote-faces-extension nil t )))
+     (2 'denote-faces-month nil t)
+     (3 'denote-faces-day nil t)
+     (4 'denote-faces-hour nil t)
+     (5 'denote-faces-minute nil t)
+     (6 'denote-faces-second nil t)
+     (7 'denote-faces-delimiter nil t))
+    ;; Title
+    (denote-faces-title-matcher
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-title nil t))
+    ;; Keywords
+    (denote-faces-keywords-matcher
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-keywords nil t))
+    ;; Signature
+    (denote-faces-signature-matcher
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-signature nil t))
+    ;; Delimiters
+    ("\\(@@\\|--\\|__\\|==\\)"
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-delimiter nil t))
+    ;; Extension
+    ("\\..*$"
+     (goto-char (match-beginning 0))
+     (goto-char (match-end 0))
+     (0 'denote-faces-extension nil t)))
+  "Matchers for fontification of file names.")
+
+(defconst denote-faces-file-name-keywords-for-dired
+  `((denote-faces-dired-file-name-matcher ,@denote-faces-matchers))
   "Keywords for fontification of file names.")
 
-(make-obsolete-variable 'denote-faces-file-name-keywords-for-backlinks nil "2.2.0")
+(defconst denote-faces-file-name-keywords-for-backlinks
+  `(("^.+$" ,@denote-faces-matchers))
+  "Keywords for fontification of file names.")
 
 (defface denote-faces-prompt-old-name '((t :inherit error))
   "Face for the old name shown in the prompt of `denote-rename-file' etc."
@@ -3408,13 +3494,13 @@ Otherwise `denote-dired-directories' works only with exact matches."
   ;; None of them could be unset upon disabling `denote-dired-mode'.
   ;; As such, I am using the `when' here.
   (when (derived-mode-p 'dired-mode)
-    (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords-for-dired t)))
 
 (defun denote-dired-remove-font-lock (&rest _)
   "Remove `denote-faces-file-name-keywords' from font lock keywords."
   ;; See NOTE in `denote-dired-add-font-lock'.
   (when (derived-mode-p 'dired-mode)
-    (font-lock-remove-keywords nil denote-faces-file-name-keywords)))
+    (font-lock-remove-keywords nil denote-faces-file-name-keywords-for-dired)))
 
 (declare-function wdired-change-to-wdired-mode "wdired")
 (declare-function wdired-finish-edit "wdired")
@@ -4013,7 +4099,7 @@ matching identifiers."
   :interactive nil
   "Major mode for backlinks buffers."
   (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords t)))
+    (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t)))
 
 (defun denote-link--prepare-backlinks (query &optional files-matching-regexp buffer-name display-buffer-action)
   "Create backlinks' buffer called BUFFER-NAME for the current file matching QUERY.

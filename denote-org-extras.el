@@ -73,7 +73,7 @@ the current file."
   (with-current-buffer (find-file-noselect file)
     (save-excursion
       (goto-char (point-min))
-      (forward-line line)
+      (forward-line (1- line))
       (cons (denote-link-ol-get-heading) (denote-link-ol-get-id)))))
 
 (defun denote-org-extras-format-link-with-heading (file heading-id description)
