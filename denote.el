@@ -247,15 +247,14 @@ of the following:
   content, which is added after the front matter.
 
 - `signature': Prompts for an arbitrary string that can be used
-  to establish a sequential relationship between files (e.g. 1,
-  1a, 1b, 1b1, 1b2, ...).  Signatures have no strictly defined
-  function and are up to the user to apply as they see fit.  One
-  use-case is to implement Niklas Luhmann's Zettelkasten system
-  for a sequence of notes (Folgezettel).  Signatures are not
-  included in a file's front matter.  They are reserved solely
-  for creating a sequence in a file listing, at least for the
-  time being.  To insert a link that includes the signature, use
-  the command `denote-link-with-signature'.
+  to qualify the note according to the user's methodology.
+  Signatures have no strictly defined function and are up to the
+  user to apply as they see fit.  One use-case is to implement
+  Niklas Luhmann's Zettelkasten system for a sequence of notes
+  (Folgezettel).  Signatures are not included in a file's front
+  matter.  They are reserved solely for creating a structure in a
+  file listing.  To insert a link that includes the signature,
+  use the command `denote-link-with-signature'.
 
 The prompts occur in the given order.
 
@@ -289,7 +288,10 @@ Finally, this user option only affects the interactive use of the
 Lisp).  In Lisp usage, the behaviour is always what the caller
 specifies, based on the supplied arguments.
 
-Also see `denote-history-completion-in-prompts'."
+Also see `denote-history-completion-in-prompts'.
+
+To change the order of the file name components, refer to
+`denote-file-name-components-order'."
   :group 'denote
   :package-version '(denote . "2.3.0")
   :link '(info-link "(denote) The denote-prompts option")
@@ -302,6 +304,74 @@ Also see `denote-history-completion-in-prompts'."
                      (const :tag "Subdirectory" subdirectory)
                      (const :tag "Template" template)
                      (const :tag "Signature" signature))))
+
+(defcustom denote-file-name-components-order '(identifier signature title keywords)
+  "Specify the order of the file name components.
+
+The value is a list of the following symbols:
+
+- `identifier': This is the combination of the date and time.  When it
+  is the first on the list, it looks like \"20240519T073456\" and does
+  not have a component separator of its own due its unambiguous format.
+  When it is placed anywhere else in the file name, it is prefixed with
+  \"@@\", so it looks like \"@@20240519T073456\".
+
+- `signature': This is an arbitrary string that can be used to qualify
+  the file in some way, according to the user's methodology (e.g. to add
+  a sequence to notes).  The string is always prefixed with the \"==\"
+  to remain unambiguous.
+
+- `title': This is an arbitrary string which describes the file.  It is
+  always prefixed with \"--\" to be unambiguous.
+
+- `keywords': This is a series of one or more words that succinctly
+  group the file.  Multiple keywords are separated by an underscore
+  prefixed to each of them.  The file name component is always prefixed
+  with \"__\".
+
+All four symbols must appear exactly once.  Duplicates are ignored.  Any
+missing symbol is added automatically.
+
+Some examples:
+
+    (setq denote-file-name-components-order
+       \\='(identifier signature title keywords))
+    => 20240519T07345==hello--this-is-the-title__denote_testing.org
+
+    (setq denote-file-name-components-order
+       \\='(signature identifier title keywords))
+    => ==hello@@20240519T07345--this-is-the-title__denote_testing.org
+
+    (setq denote-file-name-components-order
+       \\='(title signature identifier keywords))
+    => --this-is-the-title==hello@@20240519T07345__denote_testing.org
+
+    (setq denote-file-name-components-order
+       \\='(keywords title signature identifier))
+    => __denote_testing--this-is-the-title==hello@@20240519T07345.org
+
+Also see the user option `denote-prompts', which affects which
+components are actually used in the order specified herein.
+
+Before deciding on this, please consider the longer-term implications
+of file names with varying patterns. Consistency makes things
+predictable and thus easier to find. So pick one order and never touch
+it again. When in doubt, leave the default file-naming scheme as-is."
+  :group 'denote
+  :package-version '(denote . "3.0.0")
+  ;; FIXME 2024-05-19: This technically works to display the user
+  ;; option in the Custom buffer and to show its current value, though
+  ;; it does not allow the user to modify it graphically: they have to
+  ;; switch to the Lisp expression.  Find a way to present an
+  ;; interface that lets the user reorder those elements.
+  ;;
+  ;; Still, making this a defcustom helps with discoverability, as
+  ;; well as with the use of `setopt' and related.
+  :type '(list
+          (const :tag "Identifier component (date and time)" identifier)
+          (const :tag "File signature (text to qualify a file)" signature)
+          (const :tag "The title of the file" title)
+          (const :tag "Keywords of the file" keywords)))
 
 (defcustom denote-sort-keywords t
   "Whether to sort keywords in new files.
@@ -825,35 +895,34 @@ leading and trailing hyphen."
   (replace-regexp-in-string "\\." "" str))
 
 (defun denote--trim-right-token-characters (str component)
-  "Remove =, - and _ from the end of STR.
+  "Remove =, -, _ and @ from the end of STR.
 The removal is done only if necessary according to COMPONENT."
   (if (eq component 'title)
-      (string-trim-right str "[=_]+")
-    (string-trim-right str "[=_-]+")))
+      (string-trim-right str "[=@_]+")
+    (string-trim-right str "[=@_-]+")))
 
 (defun denote--replace-consecutive-token-characters (str component)
   "Replace consecutive characters with a single one in STR.
-Hyphens, underscores and equal signs are replaced with a single
-one in str, if necessary according to COMPONENT."
-  ;; -- are allowed in titles
-  (if (eq component 'title)
+Hyphens, underscores, equal signs and at signs are replaced with
+a single one in str, if necessary according to COMPONENT."
+  (let ((str (replace-regexp-in-string
+              "_\\{2,\\}" "_"
+              (replace-regexp-in-string
+               "=\\{2,\\}" "="
+               (replace-regexp-in-string
+                "@\\{2,\\}" "@" str)))))
+    ;; -- are allowed in titles when the default sluggification is disabled
+    (if (eq component 'title)
+        str
       (replace-regexp-in-string
-       "_\\{2,\\}" "_"
-       (replace-regexp-in-string
-        "=\\{2,\\}" "=" str))
-    (replace-regexp-in-string
-     "-\\{2,\\}" "-"
-     (replace-regexp-in-string
-      "_\\{2,\\}" "_"
-      (replace-regexp-in-string
-       "=\\{2,\\}" "=" str)))))
+       "-\\{2,\\}" "-" str))))
 
 (defun denote-sluggify (component str)
   "Make STR an appropriate slug for file name COMPONENT.
 
 Apply the function specified in `denote-file-name-slug-function'
 to COMPONENT which is one of `title', `signature', `keyword'.  If
-the resulting string still contains consecutive -,_ or =, they
+the resulting string still contains consecutive -,_,= or @, they
 are replaced by a single occurence of the character, if necessary
 according to COMPONENT.  If COMPONENT is `keyword', remove
 underscores from STR as they are used as the keywords separator
@@ -1642,8 +1711,10 @@ contain the newline."
 To create a new one, refer to the function
 `denote-create-unique-file-identifier'."
   (let ((filename (file-name-nondirectory file)))
-    (if (string-match (concat "\\`" denote-id-regexp) filename)
-        (match-string-no-properties 0 filename))))
+    (cond ((string-match (concat "\\`" denote-id-regexp) filename)
+           (match-string-no-properties 0 filename))
+          ((string-match (concat "@@\\(?1:" denote-id-regexp "\\)") filename)
+           (match-string-no-properties 1 filename)))))
 
 ;; TODO 2023-12-08: Maybe we can only use
 ;; `denote-retrieve-filename-identifier' and remove this function.
@@ -1856,14 +1927,23 @@ which case it is not added to the base file name."
     (error "ID must not be an empty string"))
    ((not (string-match-p denote-id-regexp id))
     (error "ID `%s' does not match `denote-id-regexp'" id)))
-  (let ((file-name (concat dir-path id)))
-    (when (and signature (not (string-empty-p signature)))
-      (setq file-name (concat file-name "==" (denote-sluggify 'signature signature))))
-    (when (and title (not (string-empty-p title)))
-      (setq file-name (concat file-name "--" (denote-sluggify 'title title))))
-    (when keywords
-      (setq file-name (concat file-name "__" (denote-keywords-combine (denote-sluggify-keywords keywords)))))
-    (concat file-name extension)))
+  (let ((file-name "")
+        (components (seq-union denote-file-name-components-order
+                               '(identifier signature title keywords))))
+    (dolist (component components)
+      (cond ((and (eq component 'identifier) id (not (string-empty-p id)))
+             (setq file-name (concat file-name "@@" id)))
+            ((and (eq component 'title) title (not (string-empty-p title)))
+             (setq file-name (concat file-name "--" (denote-sluggify 'title title))))
+            ((and (eq component 'keywords) keywords)
+             (setq file-name (concat file-name "__" (denote-keywords-combine (denote-sluggify-keywords keywords)))))
+            ((and (eq component 'signature) signature (not (string-empty-p signature)))
+             (setq file-name (concat file-name "==" (denote-sluggify 'signature signature))))))
+    (setq file-name (concat file-name extension))
+    ;; Do not prepend identifier with @@ if it is the first component.
+    (when (string-prefix-p "@@" file-name)
+      (setq file-name (substring file-name 2)))
+    (concat dir-path file-name)))
 
 (defun denote--format-front-matter-title (title file-type)
   "Format TITLE according to FILE-TYPE for the file's front matter."
