@@ -2375,28 +2375,37 @@ section 5.4
 ────────────────────────
 
   The `denote-link' command inserts a link at point to a file specified
-  at the minibuffer prompt ([The `denote-org-store-link-to-heading' user
-  option]).  Links are formatted depending on the file type of the
-  current note. In Org and plain text buffers, links are formatted thus:
-  `[[denote:IDENTIFIER][DESCRIPTION]]'. While in Markdown they are
-  expressed as `[DESCRIPTION](denote:IDENTIFIER)'.
+  at the minibuffer prompt. Links are formatted depending on the file
+  type of the current note. In Org and plain text buffers, links are
+  formatted thus: `[[denote:IDENTIFIER][DESCRIPTION]]'. While in
+  Markdown they are expressed as `[DESCRIPTION](denote:IDENTIFIER)'.
+
+  [ We optionally support links to Org headings ([The
+    `denote-org-store-link-to-heading' user option]).  Other file types
+    do not have the features of Org, so we cannot generalise this. ]
 
   When `denote-link' is called with a prefix argument (`C-u' by
-  default), it formats links like `[[denote:IDENTIFIER]]'.  The user
-  might prefer its simplicity.
+  default), it formats links like `[[denote:IDENTIFIER]]', regardless of
+  file type. The user might prefer its simplicity.
 
-  By default, the description of the link is taken from the signature of
-  the file, if present, and the target file’s front matter’s title or,
-  if that is not available, from the file name.  If the region is
-  active, its text is used as the link’s description instead.  If the
-  active region has no text, the inserted link uses just the identifier,
-  as with the `C-u' prefix mentioned above.
+  By default, the description of the link is determined thus:
+
+  • If the region is active, its text becomes the description of the
+    link. In other words, the region text becomes the link.
+  • If the region is active but has no text, the description is empty
+    and so the link is formatted the same way as if using the `C-u'
+    prefix argument.
+  • If there is no region active, the description consists of the target
+    file’s signature and title ([Insert link to file with
+    signature]). The title is retrieved either from the front matter or
+    the file name.
+  • If the target file has no signature, the title is used.
 
   Inserted links are automatically buttonized and remain active for as
-  long as the buffer is available.  In Org this is handled by the major
+  long as the buffer is available. In Org this is handled by the major
   mode: the `denote:' hyperlink type works exactly like the standard
-  `file:'.  In Markdown and plain text, Denote performs the
-  buttonization of those links.  To buttonize links in existing files
+  `file:' type. In Markdown and plain text, Denote performs the
+  buttonization of those links. To buttonize links in existing files
   while visiting them, the user must add this snippet to their setup (it
   already excludes Org):
 
@@ -2408,7 +2417,28 @@ section 5.4
   case the user needs it.
 
   Links are created only for files which qualify as a “note” for our
-  purposes ([Linking notes]).
+  purposes ([Linking notes]). Users who need to link to Denote files
+  from anywhere, can write a simple command to that effect:
+
+  ┌────
+  │ (defun my-denote-link-global (file file-type description &optional id-only)
+  │   "Like the `denote-link', but works in any buffer.
+  │ The FILE, FILE-TYPE, DESCRIPTION, and ID-ONLY have the same meaning as
+  │ in `denote-link'."
+  │   (interactive
+  │    (let* ((file (denote-file-prompt nil "Link to FILE"))
+  │ 	  (file-type (denote-filetype-heuristics buffer-file-name))
+  │ 	  (description (when (file-exists-p file)
+  │ 			 (denote--link-get-description file))))
+  │      (list file file-type description current-prefix-arg)))
+  │   (unless (file-exists-p file)
+  │     (user-error "The linked file does not exists"))
+  │   (let ((beg (point)))
+  │     (denote--delete-active-region-content)
+  │     (insert (denote-format-link file description file-type id-only))
+  │     (unless (derived-mode-p 'org-mode)
+  │       (make-button beg (point) 'type 'denote-link-button))))
+  └────
 
   Links are styled with the `denote-faces-link' face, which looks
   exactly like an ordinary link by default.  This is just a convenience
@@ -2424,6 +2454,8 @@ section 5.4
 
 
 [The `denote-org-store-link-to-heading' user option] See section 7.2
+
+[Insert link to file with signature] See section 7.5
 
 [Linking notes] See section 7
 
@@ -2597,7 +2629,10 @@ section 7.3
   note]]'.
 
   For more advanced uses, refer to the doc string of the `denote-link'
-  function.
+  function ([Adding a single link]).
+
+
+[Adding a single link] See section 7.1
 
 
 7.6 Insert links from marked files in Dired
@@ -5917,20 +5952,20 @@ section 15.13
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
-        Hirschfeld, Alfredo Borrás, Ashton Wiersdorf, Benjamin Kästner,
-        Claudiu Tănăselia, Colin McLear, Damien Cassou, Elias Storms,
-        Federico Stilman, Florian, Frédéric Willem Frank Ehmsen, Glenna
-        D., Guo Yong, Hanspeter Gisler Harold Ollivier, Jack Baty, Jay
-        Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
-        Jonathan Sahar, Johan Bolmsjö, Jousimies, Juanjo Presa, Julian
-        Hoch, Kai von Fintel, Kaushal Modi, Kolmas, M. Hadi Timachi,
-        Maikol Solis, Mark Olson, Mirko Hernandez, Niall Dooley, Paul
-        van Gelder, Peter Prevos, Peter Smith, Suhail Singh, Shreyas
-        Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
-        Stankus, Vick (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot,
-        atanasj, babusri, doolio, duli, drcxd, fingerknight, hpgisler,
-        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic, sundar
-        bp.
+        Hirschfeld, Alexis Purslane, Alfredo Borrás, Ashton Wiersdorf,
+        Benjamin Kästner, Claudiu Tănăselia, Colin McLear, Damien
+        Cassou, Elias Storms, Federico Stilman, Florian, Frédéric Willem
+        Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler Harold
+        Ollivier, Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jens
+        Östlund, Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö,
+        Jousimies, Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal
+        Modi, Kolmas, M. Hadi Timachi, Maikol Solis, Mark Olson, Mirko
+        Hernandez, Niall Dooley, Paul van Gelder, Peter Prevos, Peter
+        Smith, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer
+        Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor
+        Haag, Wade Mealing, Yi Liu, Ypot, atanasj, babusri, doolio,
+        duli, drcxd, fingerknight, hpgisler, mentalisttraceur,
+        pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.

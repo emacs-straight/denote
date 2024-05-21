@@ -2048,16 +2048,22 @@ A valid DATE is a value that can be parsed by either
 `decode-time' or `date-to-time'.  Those functions signal an error
 if DATE is a value they do not recognise.
 
-If DATE is nil, return nil."
-  (if (and (or (numberp date) (listp date))
-           (decode-time date))
-      date
-    (date-to-time (denote--date-add-current-time date))))
+If DATE is nil or an empty string, return nil."
+  (cond ((null date)
+         nil)
+        ((and (stringp date) (string-empty-p date))
+         nil)
+        ((and (or (numberp date) (listp date))
+              (decode-time date))
+         date)
+        (t
+         (date-to-time (denote--date-add-current-time date)))))
 
 (defun denote-parse-date (date)
   "Return DATE as an appropriate value for the `denote' command.
 Pass DATE through `denote-valid-date-p' and use its return value.
-If either that or DATE is nil, return `current-time'."
+If either that or DATE is nil or an empty string, return
+`current-time'."
   (or (denote-valid-date-p date) (current-time)))
 
 (defun denote--buffer-file-names ()
@@ -2186,8 +2192,129 @@ The path of the newly created file is returned."
       (setq path (buffer-file-name)))
     path))
 
+(defvar denote-use-title nil
+  "The title to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the title will always be the same
+and the title prompt will be skipped.")
+
+(defvar denote-use-keywords nil
+  "The keywords to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the keywords will always be the same
+and the keywords prompt will be skipped.")
+
+(defvar denote-use-signature nil
+  "The signature to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the signaturew will always be the same
+and the signature prompt will be skipped.")
+
+(defvar denote-use-file-type nil
+  "The title to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the file type will always be the
+same.")
+
+(defvar denote-use-directory nil
+  "The directory to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the directory will always be the
+same.")
+
+(defvar denote-use-date nil
+  "The date to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the date will always be the same
+and the date prompt will be skipped.")
+
+(defvar denote-use-template nil
+  "The template to be used in a note creation command.
+See the documentation of `denote' for acceptable values.  This variable
+is ignored if nil.
+
+Only ever `let' bind this, otherwise the template will always be the same
+and the template prompt will be skipped.")
+
+(defun denote--creation-get-note-data-from-prompts ()
+  "Retrieve the data necessary for note creation.
+
+The data elements are: title, keywords, file-type, directory,
+date, template and signature.
+
+It is retrieved from prompts according to `denote-prompts' and
+from `denote-use-*' variables.  For example, if
+`denote-use-title' is set to a title, then no prompts happen for
+the title and the value of `denote-use-title' will be used
+instead."
+  (let (title keywords file-type directory date template signature)
+    (dolist (prompt denote-prompts)
+      (pcase prompt
+        ('title (unless denote-use-title
+                  (setq title (denote-title-prompt
+                               (when (and (not denote-ignore-region-in-denote-command)
+                                          (use-region-p))
+                                 (buffer-substring-no-properties
+                                  (region-beginning)
+                                  (region-end)))))))
+        ('keywords (unless denote-use-keywords
+                     (setq keywords (denote-keywords-prompt))))
+        ('file-type (unless denote-use-file-type
+                      (setq file-type (denote-file-type-prompt))))
+        ('subdirectory (unless denote-use-directory
+                         (setq directory (denote-subdirectory-prompt))))
+        ('date (unless denote-use-date
+                 (setq date (denote-date-prompt))))
+        ('template (unless denote-use-template
+                     (setq template (denote-template-prompt))))
+        ('signature (unless denote-use-signature
+                      (setq signature (denote-signature-prompt))))))
+    (list title keywords file-type directory date template signature)))
+
+(defun denote--creation-prepare-note-data (title keywords file-type directory date template signature)
+  "Return parameters in a valid form for file creation.
+
+The data is: TITLE, KEYWORDS, FILE-TYPE, DIRECTORY, DATE,
+TEMPLATE and SIGNATURE.
+
+If a `denote-use-*' variable is set for a data, its value is used
+instead of that of the parameter."
+  (let* (;; Handle the `denote-use-*' variables
+         (title (or denote-use-title title))
+         (keywords (or denote-use-keywords keywords))
+         (file-type (or denote-use-file-type file-type))
+         (directory (or denote-use-directory directory))
+         (date (or denote-use-date date))
+         (template (or denote-use-template template))
+         (signature (or denote-use-signature signature))
+         ;; Make the data valid
+         (title (or title ""))
+         (file-type (denote--valid-file-type (or file-type denote-file-type)))
+         (keywords (denote-keywords-sort keywords))
+         (date (denote-parse-date date))
+         (directory (if (denote--dir-in-denote-directory-p directory)
+                        (file-name-as-directory directory)
+                      (denote-directory)))
+         (template (if (stringp template)
+                       template
+                     (or (alist-get template denote-templates) "")))
+         (signature (or signature "")))
+    (list title keywords file-type directory date template signature)))
+
 ;;;###autoload
-(defun denote (&optional title keywords file-type subdirectory date template signature)
+(defun denote (&optional title keywords file-type directory date template signature)
   "Create a new note with the appropriate metadata and file name.
 
 Run the `denote-after-new-note-hook' after creating the new note
@@ -2205,10 +2332,10 @@ When called from Lisp, all arguments are optional.
 
 - FILE-TYPE is a symbol among those described in `denote-file-type'.
 
-- SUBDIRECTORY is a string representing the path to either the
+- DIRECTORY is a string representing the path to either the
   value of the variable `denote-directory' or a subdirectory
   thereof.  The subdirectory must exist: Denote will not create
-  it.  If SUBDIRECTORY does not resolve to a valid path, the
+  it.  If DIRECTORY does not resolve to a valid path, the
   variable `denote-directory' is used instead.
 
 - DATE is a string representing a date like 2022-06-30 or a date
@@ -2220,36 +2347,11 @@ When called from Lisp, all arguments are optional.
   inserted to the newly created buffer after the front matter.
 
 - SIGNATURE is a string or a function returning a string."
-  (interactive
-   (let ((args (make-vector 7 nil)))
-     (dolist (prompt denote-prompts)
-       (pcase prompt
-         ('title (aset args 0 (denote-title-prompt
-                               (when (and (not denote-ignore-region-in-denote-command)
-                                          (use-region-p))
-                                 (buffer-substring-no-properties
-                                  (region-beginning)
-                                  (region-end))))))
-         ('keywords (aset args 1 (denote-keywords-prompt)))
-         ('file-type (aset args 2 (denote-file-type-prompt)))
-         ('subdirectory (aset args 3 (denote-subdirectory-prompt)))
-         ('date (aset args 4 (denote-date-prompt)))
-         ('template (aset args 5 (denote-template-prompt)))
-         ('signature (aset args 6 (denote-signature-prompt)))))
-     (append args nil)))
-  (let* ((title (or title ""))
-         (file-type (denote--valid-file-type (or file-type denote-file-type)))
-         (kws (denote-keywords-sort keywords))
-         (date (denote-parse-date date))
-         (id (denote--find-first-unused-id (denote-get-identifier date)))
-         (directory (if (denote--dir-in-denote-directory-p subdirectory)
-                        (file-name-as-directory subdirectory)
-                      (denote-directory)))
-         (template (if (stringp template)
-                       template
-                     (or (alist-get template denote-templates) "")))
-         (signature (or signature ""))
-         (note-path (denote--prepare-note title kws date id directory file-type template signature)))
+  (interactive (denote--creation-get-note-data-from-prompts))
+  (pcase-let* ((`(,title ,keywords ,file-type ,directory ,date ,template ,signature)
+                (denote--creation-prepare-note-data title keywords file-type directory date template signature))
+               (id (denote--find-first-unused-id (denote-get-identifier date)))
+               (note-path (denote--prepare-note title keywords date id directory file-type template signature)))
     (when denote-save-buffers (save-buffer))
     (denote--keywords-add-to-history keywords)
     (run-hooks 'denote-after-new-note-hook)
@@ -3711,9 +3813,16 @@ The format of such links is `denote-id-only-link-format'."  )
 FILE-TYPE and ID-ONLY are used to get the format of the link.
 See the `:link' property of `denote-file-types'."
   (format
-   (if (or id-only (null description) (string-empty-p description))
-       denote-id-only-link-format
-     (denote--link-format file-type))
+   (cond
+    ((or id-only (null description) (string-empty-p description))
+     denote-id-only-link-format)
+    ;; NOTE 2024-05-20: If there is no file type, we want to use the
+    ;; Org format because it is still a usable link with the help of
+    ;; the command `org-open-at-point-global'.
+    ((null file-type)
+     (denote--link-format 'org))
+    (t
+     (denote--link-format file-type)))
    (denote-retrieve-filename-identifier file)
    description))
 
@@ -3768,34 +3877,29 @@ This is useful as the value of the user option
 (defun denote-link (file file-type description &optional id-only)
   "Create link to FILE note in variable `denote-directory' with DESCRIPTION.
 
-When called interactively, prompt for FILE using completion.  In
-this case, derive FILE-TYPE from the current buffer.
+When called interactively, prompt for FILE using completion.  In this
+case, derive FILE-TYPE from the current buffer.  FILE-TYPE is used to
+determine the format of the link.
 
-The DESCRIPTION is returned by the function specified in variable
-`denote-link-description-function'.  If the region is active, its
-content is deleted and can be used as the description of the
-link.  The default value of `denote-link-description-function'
-returns the content of the active region, if any, else the title
-of the linked file is used as the description.  The title comes
-either from the front matter or the file name.  Note that if you
-change the default value of `denote-link-description-function',
-make sure to use the `region-text' parameter.  Regardless of the
-value of this user option, `denote-link' will always replace the
-content of the active region.
+Return the DESCRIPTION of the link in the format specified by
+`denote-link-description-function'.  The default value of that variable,
+`denote-link-description-with-signature-and-title', uses the active
+region as the DESCRIPTION, or the FILE signature in addition to its
+title, or the FILE title.
 
-With optional ID-ONLY as a non-nil argument, such as with a
-universal prefix (\\[universal-argument]), insert links with just
-the identifier and no further description.  In this case, the
-link format is always [[denote:IDENTIFIER]].  If the DESCRIPTION
-is empty, the link is also as if ID-ONLY were non-nil.  The
-default value of `denote-link-description-function' returns an
-empty string when the region is empty.  Thus, the link will have
-no description in this case.
+With optional ID-ONLY as a non-nil argument, such as with a universal
+prefix (\\[universal-argument]), insert links with just the identifier
+and no further description.  In this case, the link format is always
+[[denote:IDENTIFIER]].
 
-When called from Lisp, FILE is a string representing a full file
-system path.  FILE-TYPE is a symbol as described in
-`denote-file-type'.  DESCRIPTION is a string.  Whether the caller
-treats the active region specially, is up to it."
+If the DESCRIPTION is empty, format the link the same as with ID-ONLY.
+
+When called from Lisp, FILE is a string representing a full file system
+path.  FILE-TYPE is a symbol as described in `denote-file-type'.
+DESCRIPTION is a string.  Whether the caller treats the active region
+specially, is up to it.
+
+Also see `denote-link-with-signature'."
   (interactive
    (let* ((file (denote-file-prompt nil "Link to FILE"))
           (file-type (denote-filetype-heuristics buffer-file-name))
@@ -3807,7 +3911,7 @@ treats the active region specially, is up to it."
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
     (user-error "The linked file does not exist"))
-  (let* ((beg (point)))
+  (let ((beg (point)))
     (denote--delete-active-region-content)
     (insert (denote-format-link file description file-type id-only))
     (unless (derived-mode-p 'org-mode)
@@ -4680,41 +4784,21 @@ especially for the desired output of the
 text).
 
 Consult the manual for template samples."
-  (let (title keywords subdirectory date template signature)
-    (dolist (prompt denote-prompts)
-      (pcase prompt
-        ('title (setq title (denote-title-prompt
-                             (when (use-region-p)
-                               (buffer-substring-no-properties
-                                (region-beginning)
-                                (region-end))))))
-        ('keywords (setq keywords (denote-keywords-prompt)))
-        ('subdirectory (setq subdirectory (denote-subdirectory-prompt)))
-        ('date (setq date (denote-date-prompt)))
-        ('template (setq template (denote-template-prompt)))
-        ('signature (setq signature (denote-signature-prompt)))))
-    (let* ((title (or title ""))
-           (date (if (or (null date) (string-empty-p date))
-                     (current-time)
-                   (denote-valid-date-p date)))
-           (id (denote--find-first-unused-id (denote-get-identifier date)))
-           (keywords (denote-keywords-sort keywords))
-           (directory (if (denote--dir-in-denote-directory-p subdirectory)
-                          (file-name-as-directory subdirectory)
-                        (denote-directory)))
-           (template (if (stringp template)
-                         template
-                       (or (alist-get template denote-templates) "")))
-           (signature (or signature ""))
-           (front-matter (denote--format-front-matter
-                          title (denote--date nil 'org) keywords
-                          (denote-get-identifier) 'org)))
-      (setq denote-last-path
-            (denote-format-file-name directory id keywords title ".org" signature))
-      (when (file-regular-p denote-last-path)
-        (user-error "A file named `%s' already exists" denote-last-path))
-      (denote--keywords-add-to-history keywords)
-      (concat front-matter template denote-org-capture-specifiers))))
+  (pcase-let* ((denote-prompts (remove 'file-type denote-prompts)) ; Do not prompt for file-type. We use org.
+               (`(,title ,keywords _ ,directory ,date ,template ,signature)
+                (denote--creation-get-note-data-from-prompts))
+               (`(,title ,keywords _ ,directory ,date ,template ,signature)
+                (denote--creation-prepare-note-data title keywords 'org directory date template signature))
+               (id (denote--find-first-unused-id (denote-get-identifier date)))
+               (front-matter (denote--format-front-matter
+                              title (denote--date nil 'org) keywords
+                              (denote-get-identifier) 'org)))
+    (setq denote-last-path
+          (denote-format-file-name directory id keywords title ".org" signature))
+    (when (file-regular-p denote-last-path)
+      (user-error "A file named `%s' already exists" denote-last-path))
+    (denote--keywords-add-to-history keywords)
+    (concat front-matter template denote-org-capture-specifiers)))
 
 ;; TODO 2023-12-02: Maybe simplify `denote-org-capture-with-prompts'
 ;; by passing a single PROMPTS that is the same value as `denote-prompts'?
