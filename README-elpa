@@ -51,6 +51,7 @@ Table of Contents
 .. 7. Maintain separate directory silos for notes
 ..... 1. Use custom commands to select a silo
 ..... 2. The `denote-silo-extras.el'
+..... 3. Make Org export work with silos
 .. 8. Exclude certain directories from all operations
 .. 9. Exclude certain keywords from being inferred
 .. 10. Use Denote commands from the menu bar or context menu
@@ -1259,6 +1260,68 @@ Table of Contents
 [Maintain separate directory silos for notes] See section 3.7
 
 [Points of entry] See section 3
+
+
+3.7.3 Make Org export work with silos
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The Org export infrastructure is designed to ignore directory-local
+  variables. This means that Denote silos, which depend on setting the
+  local value of the variable `denote-directory', do not work as
+  intended ([Maintain separate directory silos for notes]). More
+  specifically, the Denote links do not resolve to the right file,
+  because their path is changed during the export process.
+
+  I brought this to the attention of the Org maintainer. The guidance
+  from their side is to use the `#+bind' keyword to specify a local
+  value for the `denote-directory':
+  <https://lists.gnu.org/archive/html/emacs-orgmode/2024-06/msg00206.html>.
+  The prerequisite is to set `org-export-allow-bind-keywords' to a
+  non-nil value:
+
+  ┌────
+  │ (setq org-export-allow-bind-keywords t)
+  └────
+
+  I do not think this is an elegant solution, but here are two possible
+  ways to go about it, anyway:
+
+  1. Manually add the `#+bind' keyword to each file you want to export.
+     It has to be like this:
+
+     ┌────
+     │ #+bind: denote-directory "/path/to/silo/"
+     └────
+
+  2. Alternatively, you can make the Org front matter that Denote uses
+     for new files automatically include the `#+bind' keyword with its
+     desired value. Here is a complete `.dir-locals.el' which (i)
+     defines the silo and (ii) modifies the `denote-org-front-matter'
+     accordingly:
+
+     ┌────
+     │    ;;; Directory Local Variables.  For more information evaluate:
+     │    ;;;
+     │    ;;;     (info "(emacs) Directory Variables")
+     │ 
+     │    ((nil . ((denote-directory . "/path/to/silo/")
+     │ 	    (denote-org-front-matter . 
+     │ 	     "#+title:      %s
+     │ #+date:       %s
+     │ #+filetags:   %s
+     │ #+identifier: %s
+     │ #+bind:       denote-directory \"/path/to/silo/\"
+     │ \n"))))
+     └────
+
+     [ Note that if you are reading the Org source of this manual, you
+       need to use the command `org-edit-special' on the above code
+       blocks before copying the code. This is because Org automatically
+       prepends a comma to disambiguate those entries from actual
+       keywords of the current file. ]
+
+
+[Maintain separate directory silos for notes] See section 3.7
 
 
 3.8 Exclude certain directories from all operations
@@ -5963,8 +6026,8 @@ section 15.13
         Hernandez, Niall Dooley, Paul van Gelder, Peter Prevos, Peter
         Smith, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer
         Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor
-        Haag, Wade Mealing, Yi Liu, Ypot, atanasj, babusri, doolio,
-        duli, drcxd, fingerknight, hpgisler, mentalisttraceur,
+        Haag, Wade Mealing, Yi Liu, Ypot, atanasj, azegas, babusri,
+        doolio, duli, drcxd, fingerknight, hpgisler, mentalisttraceur,
         pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
 
   Special thanks to Peter Povinec who helped refine the file-naming
