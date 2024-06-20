@@ -2950,29 +2950,29 @@ renaming commands."
          (title (or (denote-retrieve-title-or-filename file file-type) ""))
          (keywords (denote-extract-keywords-from-path file))
          (signature (or (denote-retrieve-filename-signature file) "")))
-     (dolist (prompt denote-prompts)
-       (pcase prompt
-         ('title
-          (setq title (denote-title-prompt
-                       title
-                       (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
-         ('keywords
-          (setq keywords (denote-keywords-prompt
-                          (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
-                          (string-join keywords ","))))
-         ('signature
-          (setq signature (denote-signature-prompt
-                           signature
-                           (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
-         ('date
-          ;; TODO: We currently prompt only if the current file has no
-          ;; identifier. Eventually, we may want to allow modifying the
-          ;; date/id. Then, it will be better to prompt according to
-          ;; `denote-prompts`, like other components (ie remove this
-          ;; condition).
-          (unless (denote-file-has-identifier-p file)
-            (setq date (denote-date-prompt))))))
-     (list title keywords signature date)))
+    (dolist (prompt denote-prompts)
+      (pcase prompt
+        ('title
+         (setq title (denote-title-prompt
+                      title
+                      (format "Rename `%s' with TITLE (empty to remove)" file-in-prompt))))
+        ('keywords
+         (setq keywords (denote-keywords-prompt
+                         (format "Rename `%s' with KEYWORDS (empty to remove)" file-in-prompt)
+                         (string-join keywords ","))))
+        ('signature
+         (setq signature (denote-signature-prompt
+                          signature
+                          (format "Rename `%s' with SIGNATURE (empty to remove)" file-in-prompt))))
+        ('date
+         ;; TODO: We currently prompt only if the current file has no
+         ;; identifier. Eventually, we may want to allow modifying the
+         ;; date/id. Then, it will be better to prompt according to
+         ;; `denote-prompts`, like other components (ie remove this
+         ;; condition).
+         (unless (denote-file-has-identifier-p file)
+           (setq date (denote-date-prompt))))))
+    (list title keywords signature date)))
 
 ;;;###autoload
 (defun denote-rename-file (file &optional title keywords signature date)
@@ -3828,12 +3828,14 @@ argument.
 Also see `denote-id-only-link-in-context-regexp'.")
 
 (defvar denote-org-link-in-context-regexp
-  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]" "\\[.*?]]")
+  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]" "\\["
+          "\\(?2:" ".*?" "\\)" "]]")
   "Regexp to match an Org link in its context.
 The format of such links is `denote-org-link-format'.")
 
 (defvar denote-md-link-in-context-regexp
-  (concat "\\[.*?]" "(denote:"  "\\(?1:" denote-id-regexp "\\)" ")")
+  (concat "\\[" "\\(?2:" ".*?" "\\)" "]"
+          "(denote:"  "\\(?1:" denote-id-regexp "\\)" ")")
   "Regexp to match a Markdown link in its context.
 The format of such links is `denote-md-link-format'.")
 
@@ -3946,11 +3948,8 @@ Also see `denote-link-with-signature'."
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
     (user-error "The linked file does not exist"))
-  (let ((beg (point)))
-    (denote--delete-active-region-content)
-    (insert (denote-format-link file description file-type id-only))
-    (unless (derived-mode-p 'org-mode)
-      (make-button beg (point) 'type 'denote-link-button))))
+  (denote--delete-active-region-content)
+  (insert (denote-format-link file description file-type id-only)))
 
 (define-obsolete-function-alias
   'denote-link-insert-link
@@ -4161,33 +4160,6 @@ file's title.  This has the same meaning as in `denote-link'."
 
 ;;;;; Link buttons
 
-;; Evaluate: (info "(elisp) Button Properties")
-;;
-;; Button can provide a help-echo function as well, but I think we might
-;; not need it.
-(define-button-type 'denote-link-button
-  'follow-link t
-  'face 'denote-faces-link
-  'action #'denote-link--find-file-at-button)
-
-(autoload 'thing-at-point-looking-at "thingatpt")
-
-(defun denote-link--link-at-point-string ()
-  "Return identifier at point."
-  (when (or (thing-at-point-looking-at denote-id-only-link-in-context-regexp)
-            (thing-at-point-looking-at denote-md-link-in-context-regexp)
-            (thing-at-point-looking-at denote-org-link-in-context-regexp)
-            ;; Meant to handle the case where a link is broken by
-            ;; `fill-paragraph' into two lines, in which case it
-            ;; buttonizes only the "denote:ID" part.  Example:
-            ;;
-            ;; [[denote:20220619T175212][This is a
-            ;; test]]
-            ;;
-            ;; Maybe there is a better way?
-            (thing-at-point-looking-at "\\[\\(denote:.*\\)]"))
-    (match-string-no-properties 0)))
-
 ;; NOTE 2022-06-15: I add this as a variable for advanced users who may
 ;; prefer something else.  If there is demand for it, we can make it a
 ;; defcustom, but I think it would be premature at this stage.
@@ -4203,35 +4175,10 @@ file's title.  This has the same meaning as in `denote-link'."
          (file (denote-get-path-by-id id)))
     (funcall denote-link-button-action file)))
 
-;;;###autoload
-(defun denote-link-buttonize-buffer (&optional beg end)
-  "Make denote: links actionable buttons in the current buffer.
-
-Buttonization applies to the plain text and Markdown file types,
-per the user option `denote-file-types'.  It will not do anything
-in `org-mode' buffers, as buttons already work there.  If you do
-not use Markdown or plain text, then you do not need this.
-
-Links work when they point to a file inside the variable
-`denote-directory'.
-
-To buttonize links automatically add this function to the
-`find-file-hook'.  Or call it interactively for on-demand
-buttonization.
-
-When called from Lisp, with optional BEG and END as buffer
-positions, limit the process to the region in-between."
-  (interactive)
-  (when (and (not (derived-mode-p 'org-mode))
-             buffer-file-name
-             (denote-file-has-identifier-p buffer-file-name))
-    (save-excursion
-      (goto-char (or beg (point-min)))
-      (while (re-search-forward denote-id-regexp end t)
-        (when-let ((string (denote-link--link-at-point-string))
-                   (beg (match-beginning 0))
-                   (end (match-end 0)))
-          (make-button beg end 'type 'denote-link-button))))))
+(make-obsolete
+ 'denote-link-buttonize-buffer
+ 'denote-fontify-links-mode
+ "Use the `denote-fontify-links-mode', as it works better than buttonization. Since 3.0.0")
 
 (defun denote-link-markdown-follow (link)
   "Function to open Denote file present in LINK.
@@ -4242,6 +4189,104 @@ To be assigned to `markdown-follow-link-functions'."
 
 (eval-after-load 'markdown-mode
   '(add-hook 'markdown-follow-link-functions #'denote-link-markdown-follow))
+
+;;;;; Link fontification
+
+;; TODO 2024-06-19: We need to bind RET and maybe even C-c C-o to a
+;; command that opens the link at point.  Then we may also rename this
+;; keymap.
+(defvar denote-link-mouse-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [mouse-2] #'denote-link-open-at-mouse)
+    (define-key map [mouse-3] #'denote-link-open-at-mouse)
+    (define-key map [follow-link] 'mouse-face)
+    map)
+  "Keymap for mouse actions over fontified Denote links.")
+
+(defun denote-link-open-at-mouse (ev)
+  "Open Denote link for mouse EV click."
+  (interactive "e")
+  (mouse-set-point ev)
+  (if-let ((id (get-text-property (point) 'denote-link-id))
+           (path (denote-get-path-by-id id)))
+      (funcall denote-link-button-action path)
+    (error "Cannot resolve the link at point")))
+
+(defun denote-fontify-links (&optional limit)
+  "Fontify Denote links up until optional LIMIT.
+
+Implementation based on the function `org-activate-links'."
+  (catch :exit
+    (when-let ((type (denote-filetype-heuristics (buffer-file-name))))
+      (while (re-search-forward (denote--link-in-context-regexp type) limit t)
+        (save-match-data  ; to return the matches to font-lock
+          (let* ((start (match-beginning 0))
+                 (end (match-end 0))
+                 (visible-start (match-beginning 2))
+                 (visible-end (match-end 2))
+                 (id (match-string-no-properties 1))
+                 (path (denote-get-path-by-id id))
+                 (file-link (concat "file:" path)))
+            ;; FIXME 2024-06-19: Rewrite this (unless...let...if...)
+            ;; because it is hard to reason about. But it works, so no
+            ;; pressure.
+            (unless (let ((face (get-text-property
+                                 (max (1- start) (point-min)) 'face)))
+                      (if (consp face)
+                          (memq 'font-lock-comment-face face)
+                        (eq 'font-lock-comment-face face)))
+              (let* ((properties `(face denote-faces-link
+                                   mouse-face highlight
+                                              keymap ,denote-link-mouse-map
+                                              denote-link-id ,id
+                                              help-echo ,(or (denote-retrieve-title-or-filename path type)
+                                                             (concat "denote:" id))
+                                              htmlize-link (:uri ,file-link)
+                                              font-lock-multiline t))
+                     (non-sticky-props
+                      '(rear-nonsticky (mouse-face highlight keymap invisible intangible help-echo htmlize-link)))
+                     (face-property 'link)
+                     (hidden (append '(invisible t) properties)))
+                (remove-text-properties start end '(invisible nil))
+                (add-text-properties start visible-start hidden)
+                (add-face-text-property start end face-property)
+                (add-text-properties visible-start visible-end properties)
+                (add-text-properties visible-end end hidden)
+                (dolist (pos (list end visible-start visible-end))
+                  (add-text-properties (1- pos) pos non-sticky-props)))
+              (throw :exit t))))))      ; signal success
+    nil))
+
+(defun denote--get-link-file-path-at-point ()
+  "Return link to the Denote file path at point.
+To be used as a `thing-at' provider."
+  (when-let (id (get-text-property (point) 'denote-link-id))
+    (concat "file:" (denote-get-path-by-id id))))
+
+(defvar thing-at-point-provider-alist)
+
+;; FIXME 2024-06-19: We are missing a function that clean up all those
+;; properties when the mode is disabled.  Otherwise, we are left with
+;; invisible text, which looks broken.
+(define-minor-mode denote-fontify-links-mode
+  "A minor mode to fontify and fold Denote links."
+  :init-value nil
+  :global nil
+  :group 'denote
+  (unless (derived-mode-p 'org-mode)
+    (require 'thingatpt)
+    (if denote-fontify-links-mode
+        (progn
+          (font-lock-add-keywords nil '(denote-fontify-links))
+          (setq-local thing-at-point-provider-alist
+                      (append thing-at-point-provider-alist
+                              '((url . denote--get-link-file-path-at-point)))))
+      (font-lock-remove-keywords nil '(denote-fontify-links))
+      (setq-local thing-at-point-provider-alist
+                  (delete
+                   '(url . denote--get-link-file-path-at-point)
+                   thing-at-point-provider-alist)))
+    (font-lock-update)))
 
 ;;;;; Backlinks' buffer
 
@@ -4472,9 +4517,7 @@ inserts links with just the identifier."
   (let ((file-type (denote-filetype-heuristics (buffer-file-name))))
     (if-let ((files (denote-directory-files regexp :omit-current))
              (beg (point)))
-        (progn
-          (denote-link--insert-links files file-type id-only)
-          (denote-link-buttonize-buffer beg (point)))
+        (denote-link--insert-links files file-type id-only)
       (message "No links matching `%s'" regexp))))
 
 (defalias 'denote-link-insert-links-matching-regexp 'denote-add-links
@@ -4549,8 +4592,7 @@ This command is meant to be used from a Dired buffer."
       (insert (denote-link--prepare-links
                files
                (denote-filetype-heuristics (buffer-file-name))
-               id-only))
-      (denote-link-buttonize-buffer))))
+               id-only)))))
 
 ;;;;; Define menu
 

@@ -87,7 +87,8 @@ Table of Contents
 .. 9. Writing metanotes
 .. 10. Visiting linked files via the minibuffer
 .. 11. Convert `denote:' links to `file:' links
-.. 12. Miscellaneous information about links
+.. 12. Fontify links in non-Org buffers
+.. 13. Miscellaneous information about links
 ..... 1. Aliases for the linking commands
 ..... 2. The `denote-link-description-function' to format links
 8. Choose which commands to prompt for
@@ -2449,7 +2450,8 @@ section 5.4
 
   When `denote-link' is called with a prefix argument (`C-u' by
   default), it formats links like `[[denote:IDENTIFIER]]', regardless of
-  file type. The user might prefer its simplicity.
+  file type ([Fontify links in non-Org buffers]). The user might prefer
+  its simplicity.
 
   By default, the description of the link is determined thus:
 
@@ -2463,21 +2465,6 @@ section 5.4
     signature]). The title is retrieved either from the front matter or
     the file name.
   • If the target file has no signature, the title is used.
-
-  Inserted links are automatically buttonized and remain active for as
-  long as the buffer is available. In Org this is handled by the major
-  mode: the `denote:' hyperlink type works exactly like the standard
-  `file:' type. In Markdown and plain text, Denote performs the
-  buttonization of those links. To buttonize links in existing files
-  while visiting them, the user must add this snippet to their setup (it
-  already excludes Org):
-
-  ┌────
-  │ (add-hook 'find-file-hook #'denote-link-buttonize-buffer)
-  └────
-
-  The `denote-link-buttonize-buffer' is also an interactive function in
-  case the user needs it.
 
   Links are created only for files which qualify as a “note” for our
   purposes ([Linking notes]). Users who need to link to Denote files
@@ -2508,15 +2495,10 @@ section 5.4
   for the user/theme in case they want `denote:' links to remain
   distinct from other links.
 
-  In files whose major mode is `markdown-mode', the default key binding
-  `C-c C-o' (which calls the command `markdown-follow-thing-at-point')
-  correctly resolves `denote:' links. This method works in addition to
-  the `RET' key, which is made available by the aforementioned
-  buttonization. Interested users can refer to the function
-  `denote-link-markdown-follow' for the implementation details.
-
 
 [The `denote-org-store-link-to-heading' user option] See section 7.2
+
+[Fontify links in non-Org buffers] See section 7.12
 
 [Insert link to file with signature] See section 7.5
 
@@ -3045,10 +3027,50 @@ section 7.3
 section 7.3
 
 
-7.12 Miscellaneous information about links
+7.12 Fontify links in non-Org buffers
+─────────────────────────────────────
+
+  [ Part of 3.0.0-dev. ]
+
+  Denote links are automatically fontified in Org buffers ([Adding a
+  single link]).  This means that Org recognises the link and applies
+  the relevant properties to it to make it clickable/actionable. Other
+  major modes, such as `markdown-mode' (for `.md' files) or `text-mode'
+  (for `.txt' files) do not have this feature built into them. Users can
+  still get the same behaviour as with Org by activating the
+  `denote-fontify-links-mode'.
+
+  The `denote-fontify-links-mode' is a buffer-local minor mode. Users
+  can enable it automatically in all plain text files with something
+  like this:
+
+  ┌────
+  │ (add-hook 'text-mode-hook #'denote-fontify-links-mode)
+  └────
+
+  The `text-mode-hook' applies to all modes derived from `text-mode',
+  including `markdown-mode'. Though a more explicit setup does no harm:
+
+  ┌────
+  │ (add-hook 'markdown-mode-hook #'denote-fontify-links-mode)
+  └────
+
+  Because Org already recognises `denote:' links, the minor mode
+  `denote-fontify-links-mode' will do nothing in Org buffers.
+
+  In files whose major mode is `markdown-mode', the default key binding
+  `C-c C-o' (which calls the command `markdown-follow-thing-at-point')
+  correctly resolves `denote:' links. Interested users can refer to the
+  function `denote-link-markdown-follow' for the implementation details.
+
+
+[Adding a single link] See section 7.1
+
+
+7.13 Miscellaneous information about links
 ──────────────────────────────────────────
 
-7.12.1 Aliases for the linking commands
+7.13.1 Aliases for the linking commands
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   For convenience, the `denote-link' command has an alias called
@@ -3059,7 +3081,7 @@ section 7.3
   commands.
 
 
-7.12.2 The `denote-link-description-function' to format links
+7.13.2 The `denote-link-description-function' to format links
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-link-description-function' takes as its value
@@ -4588,7 +4610,7 @@ section 15.13
   │ 
   │ ;; If you use Markdown or plain text files (Org renders links as buttons
   │ ;; right away)
-  │ (add-hook 'find-file-hook #'denote-link-buttonize-buffer)
+  │ (add-hook 'text-mode-hook #'denote-fontify-links-mode)
   │ 
   │ ;; We use different ways to specify a path for demo purposes.
   │ (setq denote-dired-directories
@@ -5998,18 +6020,18 @@ section 15.13
         Protesilaos Stavrou.
 
   Contributions to code or the manual
-        Abin Simon, Adam Růžička, Alan Schmitt, Alexandre Rousseau,
-        Ashton Wiersdorf, Benjamin Kästner, Bruno Boal, Charanjit Singh,
-        Clemens Radermacher, Colin McLear, Damien Cassou, Eduardo
-        Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna D., Graham
-        Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jean-Charles
-        Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner,
-        Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kostas Andreadis,
-        Kristoffer Balintona, Kyle Meyer, Marc Fargas, Matthew Lemon,
-        Noboru Ota (nobiot), Norwid Behrnd, Peter Prevos, Philip
-        Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
-        Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-        Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, ezchi,
+        Abdul-Lateef Haji-Ali, Abin Simon, Adam Růžička, Alan Schmitt,
+        Alexandre Rousseau, Ashton Wiersdorf, Benjamin Kästner, Bruno
+        Boal, Charanjit Singh, Clemens Radermacher, Colin McLear, Damien
+        Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian,
+        Glenna D., Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty,
+        Jean-Charles Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou,
+        Joseph Turner, Jürgen Hötzel, Kaushal Modi, Kai von Fintel,
+        Kostas Andreadis, Kristoffer Balintona, Kyle Meyer, Marc Fargas,
+        Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter Prevos,
+        Philip Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan
+        Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz,
+        Vedang Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, ezchi,
         jarofromel, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
         maxbrieiev, mentalisttraceur, pmenair, relict007.
 
