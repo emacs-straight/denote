@@ -49,9 +49,11 @@ Table of Contents
 .. 5. Create a note with the region’s contents
 .. 6. Open an existing note or create it if missing
 .. 7. Maintain separate directory silos for notes
-..... 1. Use custom commands to select a silo
-..... 2. The `denote-silo-extras.el'
-..... 3. Make Org export work with silos
+..... 1. How to switch a silo
+..... 2. Use custom commands to select a silo
+..... 3. The `denote-silo-extras.el'
+..... 4. Make Org export work with silos
+..... 5. Make any Denote command work in a silo from anywhere
 .. 8. Exclude certain directories from all operations
 .. 9. Exclude certain keywords from being inferred
 .. 10. Use Denote commands from the menu bar or context menu
@@ -1059,9 +1061,9 @@ Table of Contents
   When inside the directory that contains this `.dir-locals.el' file,
   all Denote commands/functions for note creation, linking, the
   inference of available keywords, et cetera will use the silo as their
-  point of reference.  They will not read the global value of
-  `denote-directory'.  The global value of `denote-directory' is read
-  everywhere else except the silos.
+  point of reference ([How to switch a silo]). They will not read the
+  global value of `denote-directory'. The global value of
+  `denote-directory' is read everywhere else except the silos.
 
   [Use custom commands to select a silo].
 
@@ -1147,9 +1149,28 @@ Table of Contents
   sufficient.  The manual shall be expanded accordingly.
 
 
-[Use custom commands to select a silo] See section 3.7.1
+[How to switch a silo] See section 3.7.1
 
-3.7.1 Use custom commands to select a silo
+[Use custom commands to select a silo] See section 3.7.2
+
+3.7.1 How to switch a silo
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Switching to a silo directory will make all Denote commands use the
+  silo’s path as the `denote-directory', instead of the global value of
+  that variable ([Maintain separate directory silos for notes]). There
+  are three ways to switch to a silo:
+
+  1. Visit a file inside of that directory.
+  2. Use the `dired' command to open the directory in a buffer.
+  3. Use the command `cd' to select the directory without moving away
+     from the current buffer.
+
+
+[Maintain separate directory silos for notes] See section 3.7
+
+
+3.7.2 Use custom commands to select a silo
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ As part of version 2.1.0, the contents of this section are formally
@@ -1221,7 +1242,7 @@ Table of Contents
   [Extending Denote: Split an Org subtree into its own note].
 
 
-[The `denote-silo-extras.el'] See section 3.7.2
+[The `denote-silo-extras.el'] See section 3.7.3
 
 [Maintain separate directory silos for notes] See section 3.7
 
@@ -1229,7 +1250,7 @@ Table of Contents
 3.2
 
 
-3.7.2 The `denote-silo-extras.el'
+3.7.3 The `denote-silo-extras.el'
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-silo-extras.el' provides optional convenience functions
@@ -1263,7 +1284,7 @@ Table of Contents
 [Points of entry] See section 3
 
 
-3.7.3 Make Org export work with silos
+3.7.4 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Org export infrastructure is designed to ignore directory-local
@@ -1323,6 +1344,51 @@ Table of Contents
 
 
 [Maintain separate directory silos for notes] See section 3.7
+
+
+3.7.5 Make any Denote command work in a silo from anywhere
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Denote silos are instantiated with a directory-local value for the
+  `denote-directory' ([Maintain separate directory silos for
+  notes]). This means that all Denote commands will operate on the silo
+  when the user is inside of that directory ([How to switch a
+  silo]). Sometimes though, the user may not want to switch to the silo,
+  then call a Denote command, and finally switch away from the silo:
+  this context change can be done only for the duration of a command.
+
+  Here we show how easy it is to transiently bind the value of the
+  `denote-directory' to the path of a silo (well, any path for that
+  matter).
+
+  ┌────
+  │ (defun my-denote-journal-extras-new-or-existing-entry ()
+  │   "Like `denote-journal-extras-new-or-existing-entry' for my silo."
+  │   (interactive)
+  │   (let ((denote-directory "/path/to/silo/"))
+  │     (call-interactively 'denote-journal-extras-new-or-existing-entry)))
+  └────
+
+  All the user needs to do here is change the exact command that is
+  passed to the `call-interactively'. We use an example from the
+  journaling conveniences that we provide ([Keep a journal or diary]).
+
+  With this in place, the user can now call their own command, such as
+  the `my-denote-journal-extras-new-or-existing-entry' shown above, when
+  they need to write a note there without manually switching to the
+  silo. Of course, these commands can be assigned to key bindings for
+  greater convenience. For example:
+
+  ┌────
+  │ (define-key global-map (kbd "C-c n j") #'my-denote-journal-extras-new-or-existing-entry)
+  └────
+
+
+[Maintain separate directory silos for notes] See section 3.7
+
+[How to switch a silo] See section 3.7.1
+
+[Keep a journal or diary] See section 13
 
 
 3.8 Exclude certain directories from all operations
@@ -6049,8 +6115,9 @@ section 15.13
         Smith, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer
         Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor
         Haag, Wade Mealing, Yi Liu, Ypot, atanasj, azegas, babusri,
-        doolio, duli, drcxd, fingerknight, hpgisler, mentalisttraceur,
-        pRot0ta1p, rbenit68, relict007, sienic, sundar bp.
+        doolio, duli, drcxd, elge70, fingerknight, hpgisler,
+        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic, sundar
+        bp.
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
