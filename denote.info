@@ -1,4 +1,4 @@
-This is docZ15YWZ.info, produced by makeinfo version 6.8 from
+This is docwBCzPY.info, produced by makeinfo version 6.8 from
 denote.texi.
 
 Copyright (C) 2022-2024 Free Software Foundation, Inc.
@@ -20,7 +20,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docZ15YWZ.info,  Node: Top,  Next: Overview,  Up: (dir)
+File: docwBCzPY.info,  Node: Top,  Next: Overview,  Up: (dir)
 
 denote: Simple notes with an efficient file-naming scheme
 *********************************************************
@@ -44,11 +44,11 @@ customization options for the Emacs package called ‘denote’ (or
 it.
 
    The documentation furnished herein corresponds to stable version
-2.3.0, released on 2024-03-24.  Any reference to a newer feature which
+3.0.0, released on 2024-06-30.  Any reference to a newer feature which
 does not yet form part of the latest tagged commit, is explicitly marked
 as such.
 
-   Current development target is 3.0.0-dev.
+   Current development target is 3.1.0-dev.
 
    • Package name (GNU ELPA): ‘denote’
    • Official manual: <https://protesilaos.com/emacs/denote>
@@ -104,6 +104,7 @@ Points of entry
 * Create a note with the region's contents::
 * Open an existing note or create it if missing::
 * Maintain separate directory silos for notes::
+* Exclude certain files from file prompts::
 * Exclude certain directories from all operations::
 * Exclude certain keywords from being inferred::
 * Use Denote commands from the menu bar or context menu::
@@ -133,6 +134,7 @@ Renaming files
 * Rename multiple files at once by asking only for keywords::
 * Rename multiple files based on their front matter::
 * Rename a file by changing only its file type::
+* Rename a file by adding or removing a title interactively::
 * Rename a file by adding or removing keywords interactively::
 * Rename a file by adding or removing a signature interactively::
 * Faces used by rename commands::
@@ -249,7 +251,7 @@ Indices
 
 
 
-File: docZ15YWZ.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
+File: docwBCzPY.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
 
 1 Overview
 **********
@@ -329,7 +331,7 @@ acronyms, recursive or otherwise, of increasingly dubious utility like:
 Obligations, Tasks, and Engagements.
 
 
-File: docZ15YWZ.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
+File: docwBCzPY.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
 
 2 Points of entry
 *****************
@@ -343,6 +345,10 @@ subsequent sections.  Other more specialised commands exist as well,
 which one shall learn about as they read through this manual.  We do not
 want to overwhelm the user with options at this stage.
 
+   All these commands constructs the file name in accordance with the
+user option ‘denote-file-name-components-order’ (*note Change the order
+of file name components::).
+
 * Menu:
 
 * Standard note creation::
@@ -352,12 +358,13 @@ want to overwhelm the user with options at this stage.
 * Create a note with the region's contents::
 * Open an existing note or create it if missing::
 * Maintain separate directory silos for notes::
+* Exclude certain files from file prompts::
 * Exclude certain directories from all operations::
 * Exclude certain keywords from being inferred::
 * Use Denote commands from the menu bar or context menu::
 
 
-File: docZ15YWZ.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
+File: docwBCzPY.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
 
 2.1 Standard note creation
 ==========================
@@ -407,7 +414,7 @@ the alias ‘denote-create-note’.
 * The denote-date-prompt-use-org-read-date option::
 
 
-File: docZ15YWZ.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docwBCzPY.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.1 The ‘denote-prompts’ option
 ---------------------------------
@@ -500,7 +507,7 @@ Lisp).  In Lisp usage, the behaviour is always what the caller
 specifies, based on the supplied arguments.
 
 
-File: docZ15YWZ.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
+File: docwBCzPY.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
 
 2.1.2 The ‘denote-history-completion-in-prompts’ option
 -------------------------------------------------------
@@ -534,7 +541,7 @@ minibuffer completion, due to the specifics of their data.
 minibuffer histories between sessions.]
 
 
-File: docZ15YWZ.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docwBCzPY.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.3 The ‘denote-templates’ option
 -----------------------------------
@@ -595,7 +602,7 @@ welcome to ask for help if the information provided herein is not
 sufficient.  We shall expand the manual accordingly.
 
 
-File: docZ15YWZ.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
+File: docwBCzPY.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
 
 2.1.4 Convenience commands for note creation
 --------------------------------------------
@@ -743,16 +750,12 @@ Create note with a signature
      which commands to prompt for::).
 
 
-File: docZ15YWZ.info,  Node: The denote-save-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: Convenience commands for note creation,  Up: Standard note creation
+File: docwBCzPY.info,  Node: The denote-save-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: Convenience commands for note creation,  Up: Standard note creation
 
 2.1.5 The ‘denote-save-buffers’ option
 --------------------------------------
 
-[ As part of 3.0.0-dev, the user option
-‘denote-save-buffer-after-creation’ is renamed to ‘denote-save-buffers’.
-]
-
-   The user option ‘denote-save-buffer-after-creation’ controls whether
+The user option ‘denote-save-buffer-after-creation’ controls whether
 commands that create new notes save their buffer outright.
 
    The default behaviour of commands such as ‘denote’ (or related) is to
@@ -771,7 +774,7 @@ feature is familiar with the ‘denote-rename-file’ operation (or related)
 and knows it is reliable (*note Renaming files::).
 
 
-File: docZ15YWZ.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
+File: docwBCzPY.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
 
 2.1.6 The ‘denote-date-prompt-use-org-read-date’ option
 -------------------------------------------------------
@@ -786,7 +789,7 @@ method that is common in interactions with Org mode, can set the user
 option ‘denote-date-prompt-use-org-read-date’ to a non-nil value.
 
 
-File: docZ15YWZ.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
+File: docwBCzPY.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
 
 2.2 Create a note from the current Org subtree
 ==============================================
@@ -841,7 +844,7 @@ prompts for a date at this stage (also see
 ‘denote-file-type’.
 
 
-File: docZ15YWZ.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
+File: docwBCzPY.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
 
 2.3 Create note using Org capture
 =================================
@@ -889,7 +892,7 @@ the capture process works as intended, especially for the desired output
 of the ‘denote-org-capture-specifiers’.
 
 
-File: docZ15YWZ.info,  Node: Create note with specific prompts using Org capture,  Next: Create a note with the region's contents,  Prev: Create note using Org capture,  Up: Points of entry
+File: docwBCzPY.info,  Node: Create note with specific prompts using Org capture,  Next: Create a note with the region's contents,  Prev: Create note using Org capture,  Up: Points of entry
 
 2.4 Create note with specific prompts using Org capture
 =======================================================
@@ -975,7 +978,7 @@ treated the same as ‘:title’ or ‘t’).
                     :jump-to-captured t))
 
 
-File: docZ15YWZ.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
+File: docwBCzPY.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
 
 2.5 Create a note with the region’s contents
 ============================================
@@ -1013,7 +1016,7 @@ the following will prompt for a structure template as soon as
 if ‘denote-region’ is used without an active region.
 
 
-File: docZ15YWZ.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
+File: docwBCzPY.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
 
 2.6 Open an existing note or create it if missing
 =================================================
@@ -1053,7 +1056,7 @@ or creating a new one (*note Link to a note or create it if missing:
 Link to an existing note or create a new one.).
 
 
-File: docZ15YWZ.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain directories from all operations,  Prev: Open an existing note or create it if missing,  Up: Points of entry
+File: docwBCzPY.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain files from file prompts,  Prev: Open an existing note or create it if missing,  Up: Points of entry
 
 2.7 Maintain separate directory silos for notes
 ===============================================
@@ -1171,7 +1174,7 @@ not sufficient.  The manual shall be expanded accordingly.
 * Make any Denote command work in a silo from anywhere::
 
 
-File: docZ15YWZ.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docwBCzPY.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.7.1 How to switch a silo
 --------------------------
@@ -1187,7 +1190,7 @@ There are three ways to switch to a silo:
      from the current buffer.
 
 
-File: docZ15YWZ.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
+File: docwBCzPY.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
 
 2.7.2 Use custom commands to select a silo
 ------------------------------------------
@@ -1260,7 +1263,7 @@ value of ‘denote-directory’ to select silos.
 a note from the current Org subtree.
 
 
-File: docZ15YWZ.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docwBCzPY.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.7.3 The ‘denote-silo-extras.el’
 ---------------------------------
@@ -1289,7 +1292,7 @@ second prompt asks for a Denote note-creation command to call from
 inside that silo (*note Points of entry::).
 
 
-File: docZ15YWZ.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
+File: docwBCzPY.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
 
 2.7.4 Make Org export work with silos
 -------------------------------------
@@ -1344,7 +1347,7 @@ ways to go about it, anyway:
      of the current file.  ]
 
 
-File: docZ15YWZ.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
+File: docwBCzPY.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
 
 2.7.5 Make any Denote command work in a silo from anywhere
 ----------------------------------------------------------
@@ -1381,9 +1384,29 @@ convenience.  For example:
      (define-key global-map (kbd "C-c n j") #'my-denote-journal-extras-new-or-existing-entry)
 
 
-File: docZ15YWZ.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
+File: docwBCzPY.info,  Node: Exclude certain files from file prompts,  Next: Exclude certain directories from all operations,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
 
-2.8 Exclude certain directories from all operations
+2.8 Exclude certain files from file prompts
+===========================================
+
+The user option ‘denote-excluded-files-regexp’ is a regular expression
+that matches files names which should be excluded from all Denote file
+prompts.  Such prompts are present when linking to a file with one of
+the many commands, like ‘denote-link’ (*note Linking notes::), or when
+trying to open a file that may or may not exist (*note Open an existing
+note or create it if missing::).
+
+   Functions that check for files include ‘denote-directory-files’ and
+‘denote-file-prompt’.
+
+   The match is performed with ‘string-match-p’.
+
+   *note For developers or advanced users::.
+
+
+File: docwBCzPY.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Exclude certain files from file prompts,  Up: Points of entry
+
+2.9 Exclude certain directories from all operations
 ===================================================
 
 The user option ‘denote-excluded-directories-regexp’ instructs all
@@ -1406,10 +1429,10 @@ the available files in the value of the user option ‘denote-directory’
    *note For developers or advanced users::.
 
 
-File: docZ15YWZ.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
+File: docwBCzPY.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
 
-2.9 Exclude certain keywords from being inferred
-================================================
+2.10 Exclude certain keywords from being inferred
+=================================================
 
 The user option ‘denote-excluded-keywords-regexp’ omits keywords that
 match a regular expression from the list of inferred keywords.
@@ -1421,9 +1444,9 @@ prompts as completion candidates when the user option
    The match is performed with ‘string-match-p’.
 
 
-File: docZ15YWZ.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
+File: docwBCzPY.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
 
-2.10 Use Denote commands from the menu bar or context menu
+2.11 Use Denote commands from the menu bar or context menu
 ==========================================================
 
 Denote registers a submenu for the ‘menu-bar-mode’.  Users will find the
@@ -1442,7 +1465,7 @@ Denote entry for it by adding the following to their configuration file:
      (add-hook 'context-menu-functions #'denote-context-menu)
 
 
-File: docZ15YWZ.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
+File: docwBCzPY.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
 
 3 Renaming files
 ****************
@@ -1467,7 +1490,9 @@ such files (e.g.  doesn’t create links to them), it already has all the
 mechanisms to facilitate the task of renaming them.
 
    All renaming commands run the ‘denote-after-rename-file-hook’ after a
-succesful operation.
+succesful operation.  They also construct the file name in accordance
+with the user option ‘denote-file-name-components-order’ (*note Change
+the order of file name components::).
 
    Apart from renaming files, Denote can also rename only the buffer.
 The idea is that the underlying file name is correct but it can be
@@ -1484,20 +1509,18 @@ or switching between then with commands like ‘switch-to-buffer’.
 * Rename multiple files at once by asking only for keywords::
 * Rename multiple files based on their front matter::
 * Rename a file by changing only its file type::
+* Rename a file by adding or removing a title interactively::
 * Rename a file by adding or removing keywords interactively::
 * Rename a file by adding or removing a signature interactively::
 * Faces used by rename commands::
 
 
-File: docZ15YWZ.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
 
 3.1 Rename a single file
 ========================
 
-[ Revised as part of 3.0.0-dev to respect the user options
-‘denote-rename-confirmations’ and ‘denote-save-buffers’.  ]
-
-   The ‘denote-rename-file’ command renames a file and updates existing
+The ‘denote-rename-file’ command renames a file and updates existing
 front matter if appropriate.  It is possible to do the same with
 multiple files (*note Rename multiple files interactively::).
 
@@ -1588,6 +1611,12 @@ and leave the buffer unsaved for further inspection (*note Front
 matter::).  Save the buffer if ‘denote-save-buffers’ is non-nil (*note
 The denote-save-buffers option::).
 
+   Construct the file name in accordance with the user option
+‘denote-file-name-components-order’ (*note Change the order of file name
+components::).
+
+   Run the ‘denote-after-rename-file-hook’ after renaming ‘FILE’.
+
    This command is intended to (i) rename Denote files, (ii) convert
 existing supported file types to Denote notes, and (ii) rename non-note
 files (e.g.  ‘PDF’) that can benefit from Denote’s file-naming scheme.
@@ -1601,15 +1630,12 @@ interactively::).
 * The denote-rename-confirmations option::
 
 
-File: docZ15YWZ.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
+File: docwBCzPY.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
 
 3.1.1 The ‘denote-rename-confirmations’ option
 ----------------------------------------------
 
-[ As part of 3.0.0-dev the ‘denote-rename-no-confirm’ is deprecated and
-superseded by the more flexible ‘denote-rename-confirmations’.  ]
-
-   The user option ‘denote-rename-confirmations’ controls what kind of
+The user option ‘denote-rename-confirmations’ controls what kind of
 confirmation renaming commands ask for (*note Renaming files::).  Its
 value is a list of symbols.
 
@@ -1638,7 +1664,7 @@ but carries out the renaming without asking for confirmation (*note
 Rename multiple files interactively::)).
 
 
-File: docZ15YWZ.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
 
 3.2 Rename a single file based on its front matter
 ==================================================
@@ -1699,8 +1725,12 @@ edited in the front matter: Denote considers the file name to be the
 source of truth in this case, to avoid potential breakage with typos and
 the like.
 
+   This command constructs the file name in accordance with the user
+option ‘denote-file-name-components-order’ (*note Change the order of
+file name components::).
+
 
-File: docZ15YWZ.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
 
 3.3 Rename multiple files interactively
 =======================================
@@ -1724,7 +1754,7 @@ command ‘denote-dired-rename-marked-files-with-keywords’.
    • *note Rename multiple files based on their front matter::
 
 
-File: docZ15YWZ.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
 
 3.4 Rename multiple files at once by asking only for keywords
 =============================================================
@@ -1759,14 +1789,18 @@ with the ‘diff-buffer-with-file’ command).  Multiple buffers can be
 saved in one go with the command ‘save-some-buffers’ (read its doc
 string).  ]
 
-   [ The following two commands are part of 3.0.0-dev.  ]
+   Construct the file name in accordance with the user option
+‘denote-file-name-components-order’ (*note Change the order of file name
+components::).
+
+   Run the ‘denote-after-rename-file-hook’ after the renaming is done.
 
    For more specialized versions of this command that only add or remove
 keywords, use ‘denote-dired-rename-marked-files-add-keywords’ and
 ‘denote-dired-rename-marked-files-remove-keywords’, respectively.
 
 
-File: docZ15YWZ.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
 
 3.5 Rename multiple files based on their front matter
 =====================================================
@@ -1786,7 +1820,7 @@ to rename them interactively (*note Rename multiple files
 interactively::).
 
 
-File: docZ15YWZ.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing a title interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
 
 3.6 Rename a file by changing only its file type
 ================================================
@@ -1812,73 +1846,120 @@ field in the file’s front matter, depending on the previous file type
    As a final step, the command asks for confirmation, showing the
 difference between old and new file names.
 
+   This command constructs the file name in accordance with the user
+option ‘denote-file-name-components-order’ (*note Change the order of
+file name components::).
+
 
-File: docZ15YWZ.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename a file by adding or removing a title interactively,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
 
-3.7 Rename a file by adding or removing keywords interactively
-==============================================================
+3.7 Rename a file by adding or removing a title interactively
+=============================================================
 
-[ Revised as part of 3.0.0-dev to respect the user options
-‘denote-rename-confirmations’ and ‘denote-save-buffers’.  ]
-
-   The commands ‘denote-keywords-add’ and ‘denote-keywords-remove’
-streamline the process of interactively updating a file’s keywords in
-the front matter and renaming it accordingly.
-
-   The ‘denote-keywords-add’ asks for keywords using the familiar
+The command ‘denote-rename-file-title’ streamlines the process of
+interactively adding or removing a title to/from a file, while changing
+its file name accordingly.  It asks for a title using the familiar
 minibuffer prompt (*note Standard note creation::).  It then renames the
-file (*note Rename a single file based on its front matter::).
-
-   Similarly, the ‘denote-keywords-remove’ removes one or more keywords
-from the list of existing keywords and then renames the file
-accordingly.
-
-   Both commands respect the values of ‘denote-rename-confirmations’ and
-‘denote-save-buffers’:
+file.  The command respect the values of ‘denote-rename-confirmations’
+and ‘denote-save-buffers’:
 
    • *note The denote-rename-confirmations option::.
    • *note The denote-save-buffers option::.
 
-   Furthermore, both commands call the ‘denote-after-rename-file-hook’
-as a final step after carrying out their task.
+   Technically, ‘denote-rename-file-title’ is a wrapper for
+‘denote-rename-file’, doing all the things that does (*note Rename a
+single file::).
 
-   Aliases for these commands are: ‘denote-rename-add-keywords’ and
-‘denote-rename-remove-keywords’.
+   Concretely, this command can add or remove a title in one go.  It
+does it by prepopulating the minibuffer prompt with the existing title.
+Users can then modify it.  An empty input means to remove the title
+altogether (*note The file-naming scheme::).
+
+   [ NOTE: Please check with your minibuffer user interface how to
+provide an empty input.  The Emacs default setup accepts the empty
+minibuffer contents as they are, though popular packages like ‘vertico’
+use the first available completion candidate instead.  For ‘vertico’,
+the user must either move one up to select the prompt and then type
+‘RET’ there with empty contents, or use the command ‘vertico-exit-input’
+with empty contents.  That Vertico command is bound to ‘M-RET’ as of
+this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: docZ15YWZ.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
+File: docwBCzPY.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by adding or removing a title interactively,  Up: Renaming files
 
-3.8 Rename a file by adding or removing a signature interactively
+3.8 Rename a file by adding or removing keywords interactively
+==============================================================
+
+The command ‘denote-rename-file-keywords’ streamlines the process of
+interactively adding or removing keywords to a file, while changing its
+file name and front matter accordingly.  It asks for keywords using the
+familiar minibuffer prompt (*note Standard note creation::).  It then
+renames the file (*note Rename a single file based on its front
+matter::).  The command respect the values of
+‘denote-rename-confirmations’ and ‘denote-save-buffers’:
+
+   • *note The denote-rename-confirmations option::.
+   • *note The denote-save-buffers option::.
+
+   Technically, ‘denote-rename-file-keywords’ is a wrapper for
+‘denote-rename-file’, doing all the things that does (*note Rename a
+single file::).
+
+   Concretely, this command can add or remove keywords in one go.  It
+does it by prepopulating the minibuffer prompt with the existing
+keywords.  Users can then use the ‘crm-separator’ (normally a comma), to
+write new keywords or edit what is in the prompt to rewrite them
+accordingly.  An empty input means to remove all keywords (*note The
+file-naming scheme::).
+
+   [ NOTE: Please check with your minibuffer user interface how to
+provide an empty input.  The Emacs default setup accepts the empty
+minibuffer contents as they are, though popular packages like ‘vertico’
+use the first available completion candidate instead.  For ‘vertico’,
+the user must either move one up to select the prompt and then type
+‘RET’ there with empty contents, or use the command ‘vertico-exit-input’
+with empty contents.  That Vertico command is bound to ‘M-RET’ as of
+this writing on 2024-06-30 10:37 +0300.  ]
+
+
+File: docwBCzPY.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
+
+3.9 Rename a file by adding or removing a signature interactively
 =================================================================
 
-[ Revised as part of 3.0.0-dev to respect the user option
-‘denote-rename-confirmations’.  ]
+The command ‘denote-rename-file-signature’ streamlines the process of
+interactively adding or removing a signature to/from a file, while
+changing its file name accordingly.  It asks for a signature using the
+familiar minibuffer prompt (*note Standard note creation::).  It then
+renames the file.  The command respect the values of
+‘denote-rename-confirmations’ and ‘denote-save-buffers’:
 
-   The commands ‘denote-rename-add-signature’ and
-‘denote-rename-remove-signature’ streamline the process of interactively
-adding or removing a signature from a given file (*note The file-naming
-scheme::).
+   • *note The denote-rename-confirmations option::.
+   • *note The denote-save-buffers option::.
 
-   The ‘denote-rename-add-signature’ prompts for a file and a signature.
-The default value for the file prompt is the file of the currently open
-buffer or the file-at-point in a Dired buffer.  The signature is an
-ordinary string, defaulting to the selected file’s signature, if any.
+   Technically, ‘denote-rename-file-signature’ is a wrapper for
+‘denote-rename-file’, doing all the things that does (*note Rename a
+single file::).
 
-   The ‘denote-rename-remove-signature’ uses the same file prompt as
-above.  It performs its action only if the selected file has a
-signature.  Otherwise, it does nothing.
+   Concretely, this command can add or remove a signature in one go.  It
+does it by prepopulating the minibuffer prompt with the existing
+signature.  Users can then modify it.  An empty input means to remove
+the signature altogether (*note The file-naming scheme::).
 
-   Both commands respect the value of ‘denote-rename-confirmations’
-(*note The ‘denote-rename--confirmations’ option: The
-denote-rename-confirmations option.).  They also both take care to
-reload any Dired buffers and run the ‘denote-after-rename-file-hook’ as
-a final step.
+   [ NOTE: Please check with your minibuffer user interface how to
+provide an empty input.  The Emacs default setup accepts the empty
+minibuffer contents as they are, though popular packages like ‘vertico’
+use the first available completion candidate instead.  For ‘vertico’,
+the user must either move one up to select the prompt and then type
+‘RET’ there with empty contents, or use the command ‘vertico-exit-input’
+with empty contents.  That Vertico command is bound to ‘M-RET’ as of
+this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: docZ15YWZ.info,  Node: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
+File: docwBCzPY.info,  Node: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
 
-3.9 Faces used by rename commands
-=================================
+3.10 Faces used by rename commands
+==================================
 
 These are the faces used by the various Denote rename commands to style
 or highlight the old/new/current file shown in the relevant minibuffer
@@ -1889,7 +1970,7 @@ prompts:
    • ‘denote-faces-prompt-old-name’
 
 
-File: docZ15YWZ.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
+File: docwBCzPY.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
 
 4 The file-naming scheme
 ************************
@@ -1994,17 +2075,15 @@ low-tech invention.
 * Features of the file-naming scheme for searching or filtering::
 
 
-File: docZ15YWZ.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
+File: docwBCzPY.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
 
 4.1 Change the order of file name components
 ============================================
 
-[ Part of 3.0.0-dev.  ]
-
-   Our standard file-naming scheme prescribes a specific order for the
-file name components (*note The file-naming scheme::).  Though we
-provide the user option ‘denote-file-name-components-order’ to let the
-user reorder them as they see fit.
+Our standard file-naming scheme prescribes a specific order for the file
+name components (*note The file-naming scheme::).  Though we provide the
+user option ‘denote-file-name-components-order’ to let the user reorder
+them as they see fit.
 
    The value of this user option is a list of the following symbols:
 
@@ -2054,7 +2133,7 @@ predictable and thus easier to find.  So pick one order and never touch
 it again.  When in doubt, leave the default file-naming scheme as-is.
 
 
-File: docZ15YWZ.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
+File: docwBCzPY.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
 
 4.2 Sluggification of file name components
 ==========================================
@@ -2103,7 +2182,7 @@ hackability and so users can deviate from the aforementioned (*note
 User-defined sluggification of file name components::).
 
 
-File: docZ15YWZ.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
+File: docwBCzPY.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
 
 4.3 User-defined sluggification of file name components
 =======================================================
@@ -2188,7 +2267,7 @@ you what you wish, but bear in mind it may not be what you need.  You
 have been warned.
 
 
-File: docZ15YWZ.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
+File: docwBCzPY.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
 
 4.4 Features of the file-naming scheme for searching or filtering
 =================================================================
@@ -2225,7 +2304,7 @@ interfere with the above: either set the user option
 at the relevant prompts.
 
 
-File: docZ15YWZ.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
+File: docwBCzPY.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
 
 5 Front matter
 **************
@@ -2296,7 +2375,7 @@ in the doc string of ‘format-time-string’..
 * Regenerate front matter::
 
 
-File: docZ15YWZ.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
+File: docwBCzPY.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
 
 5.1 Change the front matter format
 ==================================
@@ -2378,7 +2457,7 @@ are not yet sure what the user’s needs are.  Please provide feedback and
 we shall act accordingly.
 
 
-File: docZ15YWZ.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
+File: docwBCzPY.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
 
 5.2 Regenerate front matter
 ===========================
@@ -2408,7 +2487,7 @@ to make it comply with our file-naming scheme and then add the relevant
 front matter.
 
 
-File: docZ15YWZ.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
+File: docwBCzPY.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
 
 6 Linking notes
 ***************
@@ -2439,7 +2518,7 @@ recognised.
 * Miscellaneous information about links::
 
 
-File: docZ15YWZ.info,  Node: Adding a single link,  Next: The denote-org-store-link-to-heading user option,  Up: Linking notes
+File: docwBCzPY.info,  Node: Adding a single link,  Next: The denote-org-store-link-to-heading user option,  Up: Linking notes
 
 6.1 Adding a single link
 ========================
@@ -2500,7 +2579,7 @@ for the user/theme in case they want ‘denote:’ links to remain distinct
 from other links.
 
 
-File: docZ15YWZ.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: Adding a single link,  Up: Linking notes
+File: docwBCzPY.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: Adding a single link,  Up: Linking notes
 
 6.2 The ‘denote-org-store-link-to-heading’ user option
 ======================================================
@@ -2551,7 +2630,7 @@ in one such file, it captures only the Denote identifier of the file,
 even if this user option is set to a non-nil value.  ]
 
 
-File: docZ15YWZ.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
+File: docwBCzPY.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
 
 6.3 Insert link to an Org file with a further pointer to a heading
 ==================================================================
@@ -2580,10 +2659,10 @@ By contrast, the command ‘denote-org-extras-link-to-heading’ prompts for
 a file, then a heading, and inserts the link at point.
 
    Just as with files, it is possible to show backlinks for the given
-heading (*note Backlinks for Org headings::).  [ Part of 3.0.0-dev.  ]
+heading (*note Backlinks for Org headings::).
 
 
-File: docZ15YWZ.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
+File: docwBCzPY.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
 
 6.4 Insert links matching a regexp
 ==================================
@@ -2641,7 +2720,7 @@ show above is for interactive usage.
 purposes (*note Linking notes::).
 
 
-File: docZ15YWZ.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
+File: docwBCzPY.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
 
 6.5 Insert link to file with signature
 ======================================
@@ -2660,7 +2739,7 @@ note]]’.
 function (*note Adding a single link::).
 
 
-File: docZ15YWZ.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
+File: docwBCzPY.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
 
 6.6 Insert links from marked files in Dired
 ===========================================
@@ -2690,7 +2769,7 @@ a Dired buffer.
 for our purposes (*note Linking notes::).
 
 
-File: docZ15YWZ.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
+File: docwBCzPY.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
 
 6.7 Link to an existing note or create a new one
 ================================================
@@ -2772,7 +2851,7 @@ creating a new one (*note Open an existing note or create it if
 missing::).
 
 
-File: docZ15YWZ.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
+File: docwBCzPY.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
 
 6.8 The backlinks’ buffer
 =========================
@@ -2832,11 +2911,6 @@ backlinks?::
 minibuffer completion interface with the ‘denote-find-backlink’ command
 (*note Visiting linked files via the minibuffer::).
 
-   [ As part of 3.0.0-dev the value of the user option
-‘denote-link-backlinks-display-buffer-action’ is slightly modified to
-(i) make the buffer dedicated to its window and (ii) try to preserve its
-size during automatic recombinations of the frame’s layout.  ]
-
    The placement of the backlinks’ buffer is subject to the user option
 ‘denote-link-backlinks-display-buffer-action’.  Due to the nature of the
 underlying ‘display-buffer’ mechanism, this inevitably is a relatively
@@ -2859,14 +2933,12 @@ Reproducing it here for the sake of convenience:
 * Backlinks for Org headings::
 
 
-File: docZ15YWZ.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
+File: docwBCzPY.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
 
 6.8.1 Backlinks for Org headings
 --------------------------------
 
-[ This is part of 3.0.0-dev.  ]
-
-   The optional ‘denote-org-extras.el’ can produce Denote links to
+The optional ‘denote-org-extras.el’ can produce Denote links to
 individual headings (*note Insert link to an Org file with a further
 pointer to a heading::).  It is then possible to produce a corresponding
 backlinks buffer with the command
@@ -2875,7 +2947,7 @@ the same way as the standard backlinks buffer we provide (*note The
 backlinks' buffer::).
 
 
-File: docZ15YWZ.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
+File: docwBCzPY.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
 
 6.9 Writing metanotes
 =====================
@@ -2912,7 +2984,7 @@ serve in encapsulating knowledge, while current you will be equipped
 with the knowledge derived from the deliberate self-reflection.
 
 
-File: docZ15YWZ.info,  Node: Visiting linked files via the minibuffer,  Next: Convert denote links to file links,  Prev: Writing metanotes,  Up: Linking notes
+File: docwBCzPY.info,  Node: Visiting linked files via the minibuffer,  Next: Convert denote links to file links,  Prev: Writing metanotes,  Up: Linking notes
 
 6.10 Visiting linked files via the minibuffer
 =============================================
@@ -2934,7 +3006,7 @@ with only the files of the current minibuffer session).
 a dedicated buffer (*note The backlinks' buffer::).
 
 
-File: docZ15YWZ.info,  Node: Convert denote links to file links,  Next: Fontify links in non-Org buffers,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
+File: docwBCzPY.info,  Node: Convert denote links to file links,  Next: Fontify links in non-Org buffers,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
 
 6.11 Convert ‘denote:’ links to ‘file:’ links
 =============================================
@@ -2965,34 +3037,33 @@ Convert ‘file:’ links to ‘denote:’ links
      file system path and converts it into its identifier.
 
 
-File: docZ15YWZ.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to file links,  Up: Linking notes
+File: docwBCzPY.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to file links,  Up: Linking notes
 
 6.12 Fontify links in non-Org buffers
 =====================================
 
-[ Part of 3.0.0-dev.  ]
-
-   Denote links are automatically fontified in Org buffers (*note Adding
-a single link::).  This means that Org recognises the link and applies
-the relevant properties to it to make it clickable/actionable.  Other
-major modes, such as ‘markdown-mode’ (for ‘.md’ files) or ‘text-mode’
-(for ‘.txt’ files) do not have this feature built into them.  Users can
-still get the same behaviour as with Org by activating the
+Denote links are automatically fontified in Org buffers (*note Adding a
+single link::).  This means that Org recognises the link and applies the
+relevant properties to it to make it clickable/actionable.  Other major
+modes, such as ‘markdown-mode’ (for ‘.md’ files) or ‘text-mode’ (for
+‘.txt’ files) do not have this feature built into them.  Users can still
+get the same behaviour as with Org by activating the
 ‘denote-fontify-links-mode’.
 
    The ‘denote-fontify-links-mode’ is a buffer-local minor mode.  Users
-can enable it automatically in all plain text files with something like
-this:
+can enable it automatically in plain text files that correspond to
+denote notes with something like this:
 
-     (add-hook 'text-mode-hook #'denote-fontify-links-mode)
+     (add-hook 'text-mode-hook #'denote-fontify-links-mode-maybe)
 
    The ‘text-mode-hook’ applies to all modes derived from ‘text-mode’,
 including ‘markdown-mode’.  Though a more explicit setup does no harm:
 
-     (add-hook 'markdown-mode-hook #'denote-fontify-links-mode)
+     (add-hook 'markdown-mode-hook #'denote-fontify-links-mode-maybe)
 
-   Because Org already recognises ‘denote:’ links, the minor mode
-‘denote-fontify-links-mode’ will do nothing in Org buffers.
+   Because Org already recognises ‘denote:’ links, the function
+‘denote-fontify-links-mode-maybe’ will not enable the mode
+‘denote-fontify-links-mode’ in Org buffers.
 
    In files whose major mode is ‘markdown-mode’, the default key binding
 ‘C-c C-o’ (which calls the command ‘markdown-follow-thing-at-point’)
@@ -3000,7 +3071,7 @@ correctly resolves ‘denote:’ links.  Interested users can refer to the
 function ‘denote-link-markdown-follow’ for the implementation details.
 
 
-File: docZ15YWZ.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
+File: docwBCzPY.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
 
 6.13 Miscellaneous information about links
 ==========================================
@@ -3011,7 +3082,7 @@ File: docZ15YWZ.info,  Node: Miscellaneous information about links,  Prev: Fonti
 * The denote-link-description-function to format links::
 
 
-File: docZ15YWZ.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-function to format links,  Up: Miscellaneous information about links
+File: docwBCzPY.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-function to format links,  Up: Miscellaneous information about links
 
 6.13.1 Aliases for the linking commands
 ---------------------------------------
@@ -3024,7 +3095,7 @@ aliases is to offer alternative, more descriptive names of select
 commands.
 
 
-File: docZ15YWZ.info,  Node: The denote-link-description-function to format links,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
+File: docwBCzPY.info,  Node: The denote-link-description-function to format links,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
 
 6.13.2 The ‘denote-link-description-function’ to format links
 -------------------------------------------------------------
@@ -3038,7 +3109,7 @@ includes that as well, prepending it to the title.
 the description as a string.
 
 
-File: docZ15YWZ.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
+File: docwBCzPY.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
 
 7 Choose which commands to prompt for
 *************************************
@@ -3059,7 +3130,7 @@ custom command in the list (*note Write your own convenience
 commands::).
 
 
-File: docZ15YWZ.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
+File: docwBCzPY.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
 
 8 Fontification in Dired
 ************************
@@ -3126,7 +3197,7 @@ attachments for the notes Denote produces if you are writing Org notes
 and are using its standand attachments’ facility).
 
 
-File: docZ15YWZ.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
+File: docwBCzPY.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
 
 9 Automatically rename Denote buffers
 *************************************
@@ -3157,7 +3228,7 @@ to all programs.
 * The denote-rename-buffer-format option::
 
 
-File: docZ15YWZ.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
+File: docwBCzPY.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
 
 9.1 The ‘denote-rename-buffer-format’ option
 ============================================
@@ -3213,7 +3284,7 @@ prefix.  Examples:
 own function and assigning it to the ‘denote-rename-buffer-function’.
 
 
-File: docZ15YWZ.info,  Node: Use Org dynamic blocks,  Next: Sort files by component,  Prev: Automatically rename Denote buffers,  Up: Top
+File: docwBCzPY.info,  Node: Use Org dynamic blocks,  Next: Sort files by component,  Prev: Automatically rename Denote buffers,  Up: Top
 
 10 Use Org dynamic blocks
 *************************
@@ -3257,7 +3328,7 @@ Evaluate:
 * Org dynamic block to insert file contents::
 
 
-File: docZ15YWZ.info,  Node: Org dynamic blocks to insert links or backlinks,  Next: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
+File: docwBCzPY.info,  Node: Org dynamic blocks to insert links or backlinks,  Next: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
 
 10.1 Org dynamic blocks to insert links or backlinks
 ====================================================
@@ -3345,7 +3416,7 @@ otherwise the same:
 the ‘#+BEGIN’ line to update the block.
 
 
-File: docZ15YWZ.info,  Node: Org dynamic block to insert file contents,  Prev: Org dynamic blocks to insert links or backlinks,  Up: Use Org dynamic blocks
+File: docwBCzPY.info,  Node: Org dynamic block to insert file contents,  Prev: Org dynamic blocks to insert links or backlinks,  Up: Use Org dynamic blocks
 
 10.2 Org dynamic block to insert file contents
 ==============================================
@@ -3446,7 +3517,7 @@ parameters, which are described further below:
      purview).
 
 
-File: docZ15YWZ.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Use Org dynamic blocks,  Up: Top
+File: docwBCzPY.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Use Org dynamic blocks,  Up: Top
 
 11 Sort files by component
 **************************
@@ -3489,7 +3560,7 @@ everywhere before eliciting relevant feedback: once we add it, we are
 not going back.
 
 
-File: docZ15YWZ.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
+File: docwBCzPY.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
 
 12 Keep a journal or diary
 **************************
@@ -3579,7 +3650,7 @@ file’s identifier.
 * Journaling with a timer::
 
 
-File: docZ15YWZ.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
+File: docwBCzPY.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
 
 12.1 Journaling with a timer
 ============================
@@ -3644,7 +3715,7 @@ Practice makes perfect!
    • Mailing list: <https://lists.sr.ht/~protesilaos/tmr>
 
 
-File: docZ15YWZ.info,  Node: Minibuffer histories,  Next: Extending Denote,  Prev: Keep a journal or diary,  Up: Top
+File: docwBCzPY.info,  Node: Minibuffer histories,  Next: Extending Denote,  Prev: Keep a journal or diary,  Up: Top
 
 13 Minibuffer histories
 ***********************
@@ -3666,7 +3737,7 @@ configuration:
      (add-hook 'after-init-hook #'savehist-mode)
 
 
-File: docZ15YWZ.info,  Node: Extending Denote,  Next: Installation,  Prev: Minibuffer histories,  Up: Top
+File: docwBCzPY.info,  Node: Extending Denote,  Next: Installation,  Prev: Minibuffer histories,  Up: Top
 
 14 Extending Denote
 *******************
@@ -3695,7 +3766,7 @@ specialised third-party packages.  This section covers the details.
 * Avoid duplicate identifiers when exporting Denote notes::
 
 
-File: docZ15YWZ.info,  Node: Create a new note in any directory,  Next: Narrow the list of files in Dired,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Create a new note in any directory,  Next: Narrow the list of files in Dired,  Up: Extending Denote
 
 14.1 Create a new note in any directory
 =======================================
@@ -3719,7 +3790,7 @@ by its name with ‘M-x’.
          (call-interactively 'denote)))
 
 
-File: docZ15YWZ.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Create a new note in any directory,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Create a new note in any directory,  Up: Extending Denote
 
 14.2 Narrow the list of files in Dired
 ======================================
@@ -3777,7 +3848,7 @@ them from the current view.
        (dired-do-kill-lines))
 
 
-File: docZ15YWZ.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
 
 14.3 Use ‘dired-virtual-mode’ for arbitrary file listings
 =========================================================
@@ -3867,7 +3938,7 @@ it a try (I use ‘C-c C-e’).  In the produced buffer, activate the
 ‘dired-virtual-mode’.
 
 
-File: docZ15YWZ.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
 
 14.4 Use Embark to collect minibuffer candidates
 ================================================
@@ -3893,7 +3964,7 @@ same thing directly in Dired, since you also benefit from all the power
 of the minibuffer (*note Narrow the list of files in Dired::).
 
 
-File: docZ15YWZ.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
 
 14.5 Search file contents
 =========================
@@ -3934,7 +4005,7 @@ pass a regular expression to the ‘-e’ flag.
 use than the built-in commands.
 
 
-File: docZ15YWZ.info,  Node: Bookmark the directory with the notes,  Next: Use the denote-explore package to explore your notes,  Prev: Search file contents,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Bookmark the directory with the notes,  Next: Use the denote-explore package to explore your notes,  Prev: Search file contents,  Up: Extending Denote
 
 14.6 Bookmark the directory with the notes
 ==========================================
@@ -3961,7 +4032,7 @@ The package ‘consult-dir’ is an extension to ‘consult’ which provides
 useful extras for working with directories, including bookmarks.
 
 
-File: docZ15YWZ.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
 
 14.7 Use the ‘denote-explore’ package to explore your notes
 ===========================================================
@@ -3982,7 +4053,7 @@ Visualisations
 <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-File: docZ15YWZ.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Extending Denote
 
 14.8 Use the ‘citar-denote’ package for bibliography notes
 ==========================================================
@@ -4001,7 +4072,7 @@ ease.  The package’s documentation covers the details:
 <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-File: docZ15YWZ.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Extending Denote
 
 14.9 Use the ‘consult-notes’ package
 ====================================
@@ -4035,7 +4106,7 @@ option (*note Features of the file-naming scheme for searching or
 filtering::).
 
 
-File: docZ15YWZ.info,  Node: Use the denote-menu package,  Next: Treat your notes as a project,  Prev: Use the consult-notes package,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use the denote-menu package,  Next: Treat your notes as a project,  Prev: Use the consult-notes package,  Up: Extending Denote
 
 14.10 Use the ‘denote-menu’ package
 ===================================
@@ -4055,7 +4126,7 @@ them and to transition from the tabular list to Dired.  Its
 documentation expands on the technicalities.
 
 
-File: docZ15YWZ.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Use the denote-menu package,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Use the denote-menu package,  Up: Extending Denote
 
 14.11 Treat your notes as a project
 ===================================
@@ -4087,7 +4158,7 @@ package will get the job done (VC can work with other backends besides
 Git).
 
 
-File: docZ15YWZ.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
 
 14.12 Use the tree-based file prompt for select commands
 ========================================================
@@ -4126,7 +4197,7 @@ their own wrapper functions as shown in the following code block.
          (call-interactively #'denote-link)))
 
 
-File: docZ15YWZ.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
 
 14.13 Rename files with Denote in the Image Dired thumbnails buffer
 ===================================================================
@@ -4189,7 +4260,7 @@ can be used instead:
           (denote-rename-file-and-buffer file new-name))))
 
 
-File: docZ15YWZ.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
 
 14.14 Rename files with Denote using ‘dired-preview’
 ====================================================
@@ -4239,7 +4310,7 @@ We thus have:
          (user-error "No marked files; aborting")))
 
 
-File: docZ15YWZ.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
+File: docwBCzPY.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
 
 14.15 Avoid duplicate identifiers when exporting Denote notes
 =============================================================
@@ -4265,7 +4336,7 @@ create a new note using the file type they want on a case-by-case basis:
 * Export Denote notes with Markdown::
 
 
-File: docZ15YWZ.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docwBCzPY.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
 
 14.15.1 Export Denote notes with Org Mode
 -----------------------------------------
@@ -4362,7 +4433,7 @@ export purposes (*note Convert denote links to file links::).
      option (*note Exclude certain directories from all operations::).
 
 
-File: docZ15YWZ.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docwBCzPY.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
 
 14.15.2 Export Denote notes with Markdown
 -----------------------------------------
@@ -4378,7 +4449,7 @@ the documentation of their preferred processor to prevent the creation
 of duplicate Denote identifiers.
 
 
-File: docZ15YWZ.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
+File: docwBCzPY.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
 
 15 Installation
 ***************
@@ -4389,7 +4460,7 @@ File: docZ15YWZ.info,  Node: Installation,  Next: Sample configuration,  Prev: E
 * Manual installation::
 
 
-File: docZ15YWZ.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
+File: docwBCzPY.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
 
 15.1 GNU ELPA package
 =====================
@@ -4408,7 +4479,7 @@ archive.  Read:
 <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>.
 
 
-File: docZ15YWZ.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
+File: docwBCzPY.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
 
 15.2 Manual installation
 ========================
@@ -4435,7 +4506,7 @@ following commands in a shell prompt:
    Everything is in place to set up the package.
 
 
-File: docZ15YWZ.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
+File: docwBCzPY.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
 
 16 Sample configuration
 ***********************
@@ -4543,7 +4614,7 @@ File: docZ15YWZ.info,  Node: Sample configuration,  Next: For developers or adva
      (add-hook 'context-menu-functions #'denote-context-menu)
 
 
-File: docZ15YWZ.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
+File: docwBCzPY.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
 
 17 For developers or advanced users
 ***********************************
@@ -4673,14 +4744,15 @@ Function ‘denote-directory’
 
 Function ‘denote-directory-files’
      Return list of absolute file paths in variable ‘denote-directory’.
-     Files only need to have an identifier.  The return value may thus
-     include file types that are not implied by ‘denote-file-type’.
-     With optional ‘FILES-MATCHING-REGEXP’, restrict files to those
-     matching the given regular expression.  With optional
-     ‘OMIT-CURRENT’ as a non-nil value, do not include the current
-     Denote file in the returned list.  With optional ‘TEXT-ONLY’ as a
-     non-nil value, limit the results to text files that satisfy
-     ‘denote-file-is-note-p’.
+     Files that match ‘denote-excluded-files-regexp’ are excluded from
+     the list.  Files only need to have an identifier.  The return value
+     may thus include file types that are not implied by
+     ‘denote-file-type’.  With optional ‘FILES-MATCHING-REGEXP’,
+     restrict files to those matching the given regular expression.
+     With optional ‘OMIT-CURRENT’ as a non-nil value, do not include the
+     current Denote file in the returned list.  With optional
+     ‘TEXT-ONLY’ as a non-nil value, limit the results to text files
+     that satisfy ‘denote-file-is-note-p’.
 
 Function ‘denote-directory-subdirectories’
      Return list of subdirectories in variable ‘denote-directory’.  Omit
@@ -4708,8 +4780,7 @@ Function ‘denote-sluggify’
      still contains consecutive ‘-’,=_= or ‘=’, they are replaced by a
      single occurence of the character, if necessary according to
      ‘COMPONENT’.  If ‘COMPONENT’ is ‘keyword’, remove underscores from
-     ‘STR’ as they are used as the keywords separator in file names.  [
-     Revised as part of 3.0.0-dev.  ]
+     ‘STR’ as they are used as the keywords separator in file names.
 
 Function ‘denote-sluggify-keyword’
      Sluggify ‘STR’ while joining separate words.
@@ -4733,6 +4804,48 @@ Function ‘denote-filetype-heuristics’
      ‘denote-file-types’ matches in the file.
 
      Return nil if the file type is not recognized.
+
+Function ‘denote-use-date’
+     The date to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-directory’
+     The directory to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-file-type’
+     The file type to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-keywords’
+     The keywords to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-signature’
+     The signature to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-template’
+     The template to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
+
+Function ‘denote-use-title’
+     The title to be used in a note creation command.  See the
+     documentation of ‘denote’ for acceptable values.  This variable is
+     ignored if nil.  Only ever ‘let’ bind this, otherwise the title
+     will always be the same and the title prompt will be skipped.
 
 Function ‘denote-format-file-name’
      Format file name.  ‘DIR-PATH’, ‘ID’, ‘KEYWORDS’, ‘TITLE’,
@@ -4790,8 +4903,7 @@ Function ‘denote-retrieve-filename-signature’
 Function ‘denote-retrieve-title-or-filename’
      Return appropriate title for ‘FILE’ given its ‘TYPE’.  This is a
      wrapper for ‘denote-retrieve-front-matter-title-value’ and
-     ‘denote-retrieve-filename-title’.  [ Simplified as part of
-     3.0.0-dev to only be a wrapper as its doc string suggests.  ]
+     ‘denote-retrieve-filename-title’.
 
 Function ‘denote-get-identifier’
      Convert ‘DATE’ into a Denote identifier using ‘denote-id-format’.
@@ -4833,8 +4945,7 @@ Function ‘denote-add-prompts’
      Add list of ‘ADDITIONAL-PROMPTS’ to ‘denote-prompts’.  This is best
      done inside of a ‘let’ to create a wrapper function around
      ‘denote’, ‘denote-rename-file’, and generally any command that
-     consults the value of ‘denote-prompts’.  [ Made public as part of
-     3.0.0-dev.  ]
+     consults the value of ‘denote-prompts’.
 
 Function ‘denote-signature-prompt’
      Prompt for signature string.  With optional ‘INITIAL-SIGNATURE’ use
@@ -4846,15 +4957,13 @@ Function ‘denote-signature-prompt’
      option::).
 
 Function ‘denote-file-prompt’
-     Prompt for file in variable ‘denote-directory’.  With optional
-     ‘FILES-MATCHING-REGEXP’, filter the candidates per the given
-     regular expression.  With optional ‘PROMPT-TEXT’, use it instead of
-     the default call to select a file.  With optional
+     Prompt for file in variable ‘denote-directory’.  Files that match
+     ‘denote-excluded-files-regexp’ are excluded from the list.  With
+     optional ‘FILES-MATCHING-REGEXP’, filter the candidates per the
+     given regular expression.  With optional ‘PROMPT-TEXT’, use it
+     instead of the default call to select a file.  With optional
      ‘NO-REQUIRE-MATCH’ accept the given input as-is.  Return the
-     absolute path to the matching file.  [ Revised as part of 3.0.0-dev
-     to include the new ‘NO-REQUIRE-MATCH’ parameter.  This is to
-     simplify how we use the various “... or create” commands
-     internally.  ]
+     absolute path to the matching file.
 
 Function ‘denote-keywords-prompt’
      Prompt for one or more keywords.  Read entries as separate when
@@ -4922,8 +5031,7 @@ Function ‘denote-subdirectory-prompt’
 Function ‘denote-rename-file-prompt’
      Prompt to rename file named ‘OLD-NAME’ to ‘NEW-NAME’.  If
      ‘denote-rename-confirmations’ does not contain ‘modify-file-name’,
-     return t without prompting.  [ Revised as part of 3.0.0-dev to
-     conform with the user option ‘denote-rename-confirmations’.  ]
+     return t without prompting.
 
 Function ‘denote-rename-file-and-buffer’
      Rename file named ‘OLD-NAME’ to ‘NEW-NAME’, updating buffer name.
@@ -4935,15 +5043,12 @@ Function ‘denote-rewrite-front-matter’
      front matter values if appropriate.  If
      ‘denote-rename-confirmations’ contains ‘rewrite-front-matter’,
      prompt to confirm the rewriting of the front matter.  Otherwise
-     produce a ‘y-or-n-p’ prompt to that effect.  [ Revised as part of
-     3.0.0-dev to conform with the user option
-     ‘denote-rename-confirmations’.  ]
+     produce a ‘y-or-n-p’ prompt to that effect.
 
 Function ‘denote-add-front-matter-prompt’
      Prompt to add a front-matter to ‘FILE’.  Return non-nil if a new
      front matter should be added.  If ‘denote-rename-confirmations’
-     does not contain ‘add-front-matter’, return t without prompting.  [
-     Part of 3.0.0-dev.  ]
+     does not contain ‘add-front-matter’, return t without prompting.
 
 Function ‘denote-rewrite-keywords’
      Rewrite ‘KEYWORDS’ in ‘FILE’ outright according to ‘FILE-TYPE’.  Do
@@ -5115,8 +5220,7 @@ Function ‘denote-extract-keywords-from-front-matter’
      used.
 
 Function ‘denote-select-linked-file-prompt’
-     Prompt for linked file among ‘FILES’.  [ Made publicly available as
-     part of 3.0.0-dev.  ]
+     Prompt for linked file among ‘FILES’.
 
 Function ‘denote-link-return-links’
      Return list of links in current or optional ‘FILE’.  Also see
@@ -5149,7 +5253,7 @@ Variable ‘denote-link-description-function’
      returned as the description.
 
 
-File: docZ15YWZ.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
+File: docwBCzPY.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
 
 18 Troubleshoot Denote in a pristine environment
 ************************************************
@@ -5190,7 +5294,7 @@ we need to account for.  Whatever the case, this exercise helps us get a
 better sense of the specifics.
 
 
-File: docZ15YWZ.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
+File: docwBCzPY.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
 
 19 Contributing
 ***************
@@ -5274,7 +5378,7 @@ Emacs in general.
 * Wishlist of what we can do to extend Denote::
 
 
-File: docZ15YWZ.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
+File: docwBCzPY.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
 
 19.1 Wishlist of what we can do to extend Denote
 ================================================
@@ -5343,7 +5447,7 @@ Encode the day in the identifier
 list.
 
 
-File: docZ15YWZ.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
+File: docwBCzPY.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
 
 20 Publications about Denote
 ****************************
@@ -5404,7 +5508,7 @@ Denote, feel welcome to tell us about it (*note Contributing::).
      <https://github.com/summeremacs/howiuseemacs/blob/main/full-explanation-of-how-i-use-emacs.org>
 
 
-File: docZ15YWZ.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
+File: docwBCzPY.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
 
 21 Alternatives to Denote
 *************************
@@ -5488,7 +5592,7 @@ should not be mutually exclusive.
 * Alternative implementations and further reading::
 
 
-File: docZ15YWZ.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
+File: docwBCzPY.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
 
 21.1 Alternative implementations and further reading
 ====================================================
@@ -5525,7 +5629,7 @@ unsorted.
    [ Development note: help expand this list.  ]
 
 
-File: docZ15YWZ.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
+File: docwBCzPY.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
 
 22 Frequently Asked Questions
 *****************************
@@ -5549,7 +5653,7 @@ into the specifics of how Denote works.
 * Why do I get a double #+title in Doom Emacs?::
 
 
-File: docZ15YWZ.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
 22.1 Why develop Denote when PACKAGE already exists?
 ====================================================
@@ -5584,7 +5688,7 @@ package does not guarantee I get what I want in terms of workflow.
 choose whatever you want.
 
 
-File: docZ15YWZ.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
 
 22.2 Why not rely exclusively on Org?
 =====================================
@@ -5615,7 +5719,7 @@ documentation that needs to be exported to various formats, including
 this very manual.
 
 
-File: docZ15YWZ.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
 22.3 Why care about Unix tools when you use Emacs?
 ==================================================
@@ -5643,7 +5747,7 @@ computing and maintain a growing list of packages for it.  This is just
 me thinking long-term.
 
 
-File: docZ15YWZ.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
 
 22.4 Why many small files instead of few large ones?
 ====================================================
@@ -5679,7 +5783,7 @@ that for my Org agenda, by the way, as I explained before about using
 the right tool for the job).
 
 
-File: docZ15YWZ.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
 
 22.5 Does Denote perform well at scale?
 =======================================
@@ -5702,7 +5806,7 @@ Excerpt:
 where necessary, without compromising on the project’s principles.
 
 
-File: docZ15YWZ.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
 
 22.6 I add TODOs to my notes; will many files slow down the Org agenda?
 =======================================================================
@@ -5736,7 +5840,7 @@ help figuring out the specifics of this workflow, you are welcome to ask
 for help in our relevant channels (*note Contributing::).
 
 
-File: docZ15YWZ.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
 
 22.7 I want to sort by last modified in Dired, why won’t Denote let me?
 =======================================================================
@@ -5753,7 +5857,7 @@ option ‘dired-listing-switches’ sets your default preference.
 use the command ‘denote-sort-dired’ (*note Sort files by component::).
 
 
-File: docZ15YWZ.info,  Node: How do you handle the last modified case?,  Next: Speed up backlinks' buffer creation?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: How do you handle the last modified case?,  Next: Speed up backlinks' buffer creation?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
 
 22.8 How do you handle the last modified case?
 ==============================================
@@ -5780,7 +5884,7 @@ programs deal with searching and narrowing, and version control software
 handle the tracking of changes.
 
 
-File: docZ15YWZ.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
 
 22.9 Speed up backlinks’ buffer creation?
 =========================================
@@ -5816,7 +5920,7 @@ like this:
              'grep)))
 
 
-File: docZ15YWZ.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
 
 22.10 Why do I get “Search failed with status 1” when I search for backlinks?
 =============================================================================
@@ -5835,7 +5939,7 @@ following code (adjust the git’s installation path if necessary):
      (setenv "PATH" (concat (getenv "PATH") ";" "C:\\Program Files\\Git\\usr\\bin"))
 
 
-File: docZ15YWZ.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
+File: docwBCzPY.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
 
 22.11 Why do I get a double ‘#+title’ in Doom Emacs?
 ====================================================
@@ -5850,7 +5954,7 @@ empty by default.  Check how to disable the relevant module in your Doom
 Emacs configuration file.
 
 
-File: docZ15YWZ.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
+File: docwBCzPY.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
 
 23 Acknowledgements
 *******************
@@ -5886,12 +5990,12 @@ Ideas and/or user feedback
      Friesen, Jonathan Sahar, Johan Bolmsjö, Jousimies, Juanjo Presa,
      Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas, M.  Hadi
      Timachi, Maikol Solis, Mark Olson, Mirko Hernandez, Niall Dooley,
-     Paul van Gelder, Peter Prevos, Peter Smith, Suhail Singh, Shreyas
-     Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
-     Stankus, Vick (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot,
-     atanasj, azegas, babusri, doolio, duli, drcxd, elge70,
-     fingerknight, hpgisler, mentalisttraceur, pRot0ta1p, rbenit68,
-     relict007, sienic, sundar bp.
+     Nick Bell, Paul van Gelder, Peter Prevos, Peter Smith, Samuel W.
+     Flint, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs,
+     Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Wade
+     Mealing, Yi Liu, Ypot, atanasj, azegas, babusri, doolio, duli,
+     drcxd, elge70, fingerknight, hpgisler, mentalisttraceur, pRot0ta1p,
+     rbenit68, relict007, sienic, sundar bp, zadca123
 
    Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
@@ -5900,7 +6004,7 @@ scheme, which is the cornerstone of this project.
 contributions to the code base.
 
 
-File: docZ15YWZ.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
+File: docwBCzPY.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
 
 Appendix A GNU Free Documentation License
 *****************************************
@@ -6382,7 +6486,7 @@ software license, such as the GNU General Public License, to permit
 their use in free software.
 
 
-File: docZ15YWZ.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
+File: docwBCzPY.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
 
 B Indices
 *********
@@ -6394,7 +6498,7 @@ B Indices
 * Concept index::
 
 
-File: docZ15YWZ.info,  Node: Function index,  Next: Variable index,  Up: Indices
+File: docwBCzPY.info,  Node: Function index,  Next: Variable index,  Up: Indices
 
 B.1 Function index
 ==================
@@ -6406,21 +6510,21 @@ B.1 Function index
 * denote-add-front-matter:               Regenerate front matter.
                                                               (line   6)
 * denote-add-front-matter-prompt:        For developers or advanced users.
-                                                              (line 397)
+                                                              (line 432)
 * denote-add-links:                      Insert links matching a regexp.
                                                               (line   6)
 * denote-add-prompts:                    For developers or advanced users.
-                                                              (line 287)
+                                                              (line 328)
 * denote-backlinks:                      The backlinks' buffer.
                                                               (line   6)
 * denote-backlinks-mode:                 The backlinks' buffer.
                                                               (line  42)
 * denote-barf-duplicate-id:              For developers or advanced users.
-                                                              (line 155)
+                                                              (line 156)
 * denote-change-file-type-and-front-matter: Rename a file by changing only its file type.
                                                               (line   6)
 * denote-command-prompt:                 For developers or advanced users.
-                                                              (line 349)
+                                                              (line 387)
 * denote-create-note:                    Standard note creation.
                                                               (line  38)
 * denote-create-note-in-subdirectory:    Convenience commands for note creation.
@@ -6432,22 +6536,22 @@ B.1 Function index
 * denote-create-note-with-template:      Convenience commands for note creation.
                                                               (line  69)
 * denote-create-unique-file-identifier:  For developers or advanced users.
-                                                              (line 256)
+                                                              (line 297)
 * denote-date:                           Points of entry.     (line   6)
 * denote-date-iso-8601:                  For developers or advanced users.
-                                                              (line 532)
+                                                              (line 566)
 * denote-date-org-timestamp:             For developers or advanced users.
-                                                              (line 526)
+                                                              (line 560)
 * denote-date-prompt:                    For developers or advanced users.
-                                                              (line 341)
+                                                              (line 379)
 * denote-date-rfc3339:                   For developers or advanced users.
-                                                              (line 529)
+                                                              (line 563)
 * denote-directory:                      For developers or advanced users.
                                                               (line 121)
 * denote-directory-files:                For developers or advanced users.
                                                               (line 129)
 * denote-directory-subdirectories:       For developers or advanced users.
-                                                              (line 140)
+                                                              (line 141)
 * denote-dired-mode:                     Fontification in Dired.
                                                               (line   6)
 * denote-dired-mode-in-directories:      Fontification in Dired.
@@ -6457,19 +6561,19 @@ B.1 Function index
 * denote-dired-rename-marked-files:      Rename multiple files interactively.
                                                               (line   6)
 * denote-dired-rename-marked-files-add-keywords: Rename multiple files at once by asking only for keywords.
-                                                              (line  38)
+                                                              (line  42)
 * denote-dired-rename-marked-files-remove-keywords: Rename multiple files at once by asking only for keywords.
-                                                              (line  38)
+                                                              (line  42)
 * denote-dired-rename-marked-files-using-front-matter: Rename multiple files based on their front matter.
                                                               (line   6)
 * denote-dired-rename-marked-files-with-keywords: Rename multiple files at once by asking only for keywords.
                                                               (line   6)
 * denote-extract-id-from-string:         For developers or advanced users.
-                                                              (line 226)
+                                                              (line 268)
 * denote-extract-keywords-from-front-matter: For developers or advanced users.
-                                                              (line 567)
+                                                              (line 601)
 * denote-extract-keywords-from-path:     For developers or advanced users.
-                                                              (line 220)
+                                                              (line 262)
 * denote-file-has-identifier-p:          For developers or advanced users.
                                                               (line  58)
 * denote-file-has-signature-p:           For developers or advanced users.
@@ -6481,17 +6585,17 @@ B.1 Function index
 * denote-file-is-writable-and-supported-p: For developers or advanced users.
                                                               (line  69)
 * denote-file-name-relative-to-denote-directory: For developers or advanced users.
-                                                              (line 148)
+                                                              (line 149)
 * denote-file-prompt:                    For developers or advanced users.
-                                                              (line 303)
+                                                              (line 343)
 * denote-file-type-extensions:           For developers or advanced users.
                                                               (line  72)
 * denote-file-type-extensions-with-encryption: For developers or advanced users.
                                                               (line  78)
 * denote-file-type-prompt:               For developers or advanced users.
-                                                              (line 336)
+                                                              (line 374)
 * denote-files-matching-regexp-prompt:   For developers or advanced users.
-                                                              (line 362)
+                                                              (line 400)
 * denote-filetype-heuristics:            For developers or advanced users.
                                                               (line 180)
 * denote-find-backlink:                  Visiting linked files via the minibuffer.
@@ -6499,27 +6603,27 @@ B.1 Function index
 * denote-find-link:                      Visiting linked files via the minibuffer.
                                                               (line   6)
 * denote-fontify-links-mode:             Fontify links in non-Org buffers.
-                                                              (line   8)
+                                                              (line   6)
 * denote-format-file-name:               For developers or advanced users.
-                                                              (line 192)
+                                                              (line 234)
 * denote-format-keywords-for-md-front-matter: For developers or advanced users.
-                                                              (line 552)
+                                                              (line 586)
 * denote-format-keywords-for-org-front-matter: For developers or advanced users.
-                                                              (line 562)
+                                                              (line 596)
 * denote-format-keywords-for-text-front-matter: For developers or advanced users.
-                                                              (line 557)
+                                                              (line 591)
 * denote-format-string-for-md-front-matter: For developers or advanced users.
-                                                              (line 547)
+                                                              (line 581)
 * denote-format-string-for-org-front-matter: For developers or advanced users.
-                                                              (line 543)
+                                                              (line 577)
 * denote-get-file-extension:             For developers or advanced users.
                                                               (line  82)
 * denote-get-file-extension-sans-encryption: For developers or advanced users.
                                                               (line  88)
 * denote-get-identifier:                 For developers or advanced users.
-                                                              (line 251)
+                                                              (line 292)
 * denote-get-path-by-id:                 For developers or advanced users.
-                                                              (line 152)
+                                                              (line 153)
 * denote-insert-link:                    Aliases for the linking commands.
                                                               (line   6)
 * denote-journal-extras-link-or-create-entry: Keep a journal or diary.
@@ -6530,14 +6634,10 @@ B.1 Function index
                                                               (line  68)
 * denote-keywords:                       For developers or advanced users.
                                                               (line  94)
-* denote-keywords-add:                   Rename a file by adding or removing keywords interactively.
-                                                              (line   9)
 * denote-keywords-combine:               For developers or advanced users.
                                                               (line 105)
 * denote-keywords-prompt:                For developers or advanced users.
-                                                              (line 314)
-* denote-keywords-remove:                Rename a file by adding or removing keywords interactively.
-                                                              (line   9)
+                                                              (line 352)
 * denote-keywords-sort:                  For developers or advanced users.
                                                               (line 101)
 * denote-link:                           Adding a single link.
@@ -6547,21 +6647,21 @@ B.1 Function index
 * denote-link-after-creating-with-command: Link to an existing note or create a new one.
                                                               (line  38)
 * denote-link-description-with-signature-and-title: For developers or advanced users.
-                                                              (line 587)
+                                                              (line 620)
 * denote-link-dired-marked-notes:        Insert links from marked files in Dired.
                                                               (line   6)
 * denote-link-insert-links-matching-regexp: Aliases for the linking commands.
                                                               (line   6)
 * denote-link-markdown-follow:           Fontify links in non-Org buffers.
-                                                              (line  30)
+                                                              (line  29)
 * denote-link-or-create:                 Link to an existing note or create a new one.
                                                               (line  46)
 * denote-link-or-create-with-command:    Link to an existing note or create a new one.
                                                               (line  67)
 * denote-link-return-backlinks:          For developers or advanced users.
-                                                              (line 580)
+                                                              (line 613)
 * denote-link-return-links:              For developers or advanced users.
-                                                              (line 576)
+                                                              (line 609)
 * denote-link-with-signature:            Insert link to file with signature.
                                                               (line   6)
 * denote-menu-bar-mode:                  Use Denote commands from the menu bar or context menu.
@@ -6592,58 +6692,56 @@ B.1 Function index
 * denote-parse-date:                     For developers or advanced users.
                                                               (line 116)
 * denote-prompt-for-date-return-id:      For developers or advanced users.
-                                                              (line 366)
+                                                              (line 404)
 * denote-region:                         Create a note with the region's contents.
                                                               (line   6)
-* denote-rename-add-keywords:            Rename a file by adding or removing keywords interactively.
-                                                              (line  30)
-* denote-rename-add-signature:           Rename a file by adding or removing a signature interactively.
-                                                              (line   9)
 * denote-rename-buffer:                  Automatically rename Denote buffers.
                                                               (line  13)
 * denote-rename-buffer-mode:             Automatically rename Denote buffers.
                                                               (line   6)
 * denote-rename-file:                    Rename a single file.
-                                                              (line   9)
+                                                              (line   6)
 * denote-rename-file-and-buffer:         For developers or advanced users.
-                                                              (line 383)
+                                                              (line 420)
+* denote-rename-file-keywords:           Rename a file by adding or removing keywords interactively.
+                                                              (line   6)
 * denote-rename-file-prompt:             For developers or advanced users.
-                                                              (line 377)
+                                                              (line 415)
+* denote-rename-file-signature:          Rename a file by adding or removing a signature interactively.
+                                                              (line   6)
+* denote-rename-file-title:              Rename a file by adding or removing a title interactively.
+                                                              (line   6)
 * denote-rename-file-using-front-matter: Rename a single file based on its front matter.
                                                               (line   6)
-* denote-rename-remove-keywords:         Rename a file by adding or removing keywords interactively.
-                                                              (line  30)
-* denote-rename-remove-signature:        Rename a file by adding or removing a signature interactively.
-                                                              (line   9)
 * denote-retrieve-filename-identifier:   For developers or advanced users.
-                                                              (line 229)
+                                                              (line 271)
 * denote-retrieve-filename-keywords:     For developers or advanced users.
-                                                              (line 238)
-* denote-retrieve-filename-signature:    For developers or advanced users.
-                                                              (line 242)
-* denote-retrieve-filename-title:        For developers or advanced users.
-                                                              (line 234)
-* denote-retrieve-front-matter-keywords-line: For developers or advanced users.
-                                                              (line 284)
-* denote-retrieve-front-matter-keywords-value: For developers or advanced users.
                                                               (line 280)
+* denote-retrieve-filename-signature:    For developers or advanced users.
+                                                              (line 284)
+* denote-retrieve-filename-title:        For developers or advanced users.
+                                                              (line 276)
+* denote-retrieve-front-matter-keywords-line: For developers or advanced users.
+                                                              (line 325)
+* denote-retrieve-front-matter-keywords-value: For developers or advanced users.
+                                                              (line 321)
 * denote-retrieve-front-matter-title-line: For developers or advanced users.
-                                                              (line 277)
+                                                              (line 318)
 * denote-retrieve-front-matter-title-value: For developers or advanced users.
-                                                              (line 274)
+                                                              (line 315)
 * denote-retrieve-title-or-filename:     For developers or advanced users.
-                                                              (line 245)
+                                                              (line 287)
 * denote-rewrite-front-matter:           For developers or advanced users.
-                                                              (line 386)
+                                                              (line 423)
 * denote-rewrite-keywords:               For developers or advanced users.
-                                                              (line 403)
+                                                              (line 437)
 * denote-select-linked-file-prompt:      For developers or advanced users.
-                                                              (line 572)
+                                                              (line 606)
 * denote-show-backlinks-buffer:          Aliases for the linking commands.
                                                               (line   6)
 * denote-signature:                      Points of entry.     (line   6)
 * denote-signature-prompt:               For developers or advanced users.
-                                                              (line 294)
+                                                              (line 334)
 * denote-silo-extras-create-note:        The denote-silo-extrasel.
                                                               (line  15)
 * denote-silo-extras-open-or-create:     The denote-silo-extrasel.
@@ -6651,7 +6749,7 @@ B.1 Function index
 * denote-silo-extras-select-silo-then-command: The denote-silo-extrasel.
                                                               (line  23)
 * denote-sluggify:                       For developers or advanced users.
-                                                              (line 158)
+                                                              (line 159)
 * denote-sluggify-keyword:               For developers or advanced users.
                                                               (line 169)
 * denote-sluggify-keywords:              For developers or advanced users.
@@ -6662,24 +6760,38 @@ B.1 Function index
                                                               (line  10)
 * denote-subdirectory:                   Points of entry.     (line   6)
 * denote-subdirectory-prompt:            For developers or advanced users.
-                                                              (line 372)
+                                                              (line 410)
 * denote-template:                       Points of entry.     (line   6)
 * denote-template-prompt:                For developers or advanced users.
-                                                              (line 369)
+                                                              (line 407)
 * denote-title-prompt:                   For developers or advanced users.
-                                                              (line 321)
+                                                              (line 359)
 * denote-trim-whitespace:                For developers or advanced users.
-                                                              (line 535)
+                                                              (line 569)
 * denote-trim-whitespace-then-quotes:    For developers or advanced users.
-                                                              (line 539)
+                                                              (line 573)
 * denote-type:                           Points of entry.     (line   6)
 * denote-update-dired-buffers:           For developers or advanced users.
-                                                              (line 411)
+                                                              (line 445)
+* denote-use-date:                       For developers or advanced users.
+                                                              (line 192)
+* denote-use-directory:                  For developers or advanced users.
+                                                              (line 198)
+* denote-use-file-type:                  For developers or advanced users.
+                                                              (line 204)
+* denote-use-keywords:                   For developers or advanced users.
+                                                              (line 210)
+* denote-use-signature:                  For developers or advanced users.
+                                                              (line 216)
+* denote-use-template:                   For developers or advanced users.
+                                                              (line 222)
+* denote-use-title:                      For developers or advanced users.
+                                                              (line 228)
 * denote-valid-date-p:                   For developers or advanced users.
                                                               (line 110)
 
 
-File: docZ15YWZ.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
+File: docwBCzPY.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
 
 B.2 Variable index
 ==================
@@ -6709,6 +6821,8 @@ B.2 Variable index
                                                               (line  75)
 * denote-excluded-directories-regexp:    Exclude certain directories from all operations.
                                                               (line   6)
+* denote-excluded-files-regexp:          Exclude certain files from file prompts.
+                                                              (line   6)
 * denote-excluded-keywords-regexp:       Exclude certain keywords from being inferred.
                                                               (line   6)
 * denote-excluded-punctuation-extra-regexp: For developers or advanced users.
@@ -6734,21 +6848,21 @@ B.2 Variable index
 * denote-faces-title:                    Fontification in Dired.
                                                               (line  35)
 * denote-file-name-components-order:     Change the order of file name components.
-                                                              (line   8)
+                                                              (line   6)
 * denote-file-name-slug-functions:       User-defined sluggification of file name components.
                                                               (line   6)
 * denote-file-type:                      The file-naming scheme.
                                                               (line  52)
 * denote-file-types:                     For developers or advanced users.
-                                                              (line 419)
+                                                              (line 453)
 * denote-history-completion-in-prompts:  The denote-history-completion-in-prompts option.
                                                               (line   6)
 * denote-id-format:                      For developers or advanced users.
                                                               (line  23)
 * denote-id-only-link-format:            For developers or advanced users.
-                                                              (line 509)
+                                                              (line 543)
 * denote-id-only-link-in-context-regexp: For developers or advanced users.
-                                                              (line 522)
+                                                              (line 556)
 * denote-id-regexp:                      For developers or advanced users.
                                                               (line  28)
 * denote-infer-keywords:                 Standard note creation.
@@ -6766,17 +6880,17 @@ B.2 Variable index
 * denote-known-keywords:                 Standard note creation.
                                                               (line  19)
 * denote-link-backlinks-display-buffer-action: The backlinks' buffer.
-                                                              (line  66)
+                                                              (line  61)
 * denote-link-description-function:      The denote-link-description-function to format links.
                                                               (line   6)
 * denote-link-description-function <1>:  For developers or advanced users.
-                                                              (line 600)
+                                                              (line 633)
 * denote-link-signature-format:          For developers or advanced users.
-                                                              (line 584)
+                                                              (line 617)
 * denote-md-link-format:                 For developers or advanced users.
-                                                              (line 503)
+                                                              (line 537)
 * denote-md-link-in-context-regexp:      For developers or advanced users.
-                                                              (line 518)
+                                                              (line 552)
 * denote-org-capture-specifiers:         Create note using Org capture.
                                                               (line  30)
 * denote-org-extras-dblock-file-contents-separator: Org dynamic block to insert file contents.
@@ -6784,17 +6898,17 @@ B.2 Variable index
 * denote-org-front-matter:               Change the front matter format.
                                                               (line  18)
 * denote-org-front-matter <1>:           For developers or advanced users.
-                                                              (line 478)
+                                                              (line 512)
 * denote-org-link-format:                For developers or advanced users.
-                                                              (line 498)
+                                                              (line 532)
 * denote-org-link-in-context-regexp:     For developers or advanced users.
-                                                              (line 514)
+                                                              (line 548)
 * denote-org-store-link-to-heading:      The denote-org-store-link-to-heading user option.
                                                               (line   6)
 * denote-prompts:                        The denote-prompts option.
                                                               (line   6)
 * denote-prompts-with-history-as-completion: For developers or advanced users.
-                                                              (line 353)
+                                                              (line 391)
 * denote-region-after-new-note-functions: Create a note with the region's contents.
                                                               (line  11)
 * denote-rename-buffer-format:           Automatically rename Denote buffers.
@@ -6802,9 +6916,9 @@ B.2 Variable index
 * denote-rename-buffer-function:         Automatically rename Denote buffers.
                                                               (line  13)
 * denote-rename-confirmations:           The denote-rename-confirmations option.
-                                                              (line   9)
+                                                              (line   6)
 * denote-save-buffers:                   The denote-save-buffers option.
-                                                              (line  10)
+                                                              (line   6)
 * denote-signature-regexp:               For developers or advanced users.
                                                               (line  31)
 * denote-silo-extras-directories:        The denote-silo-extrasel.
@@ -6816,22 +6930,22 @@ B.2 Variable index
 * denote-text-front-matter:              Change the front matter format.
                                                               (line  20)
 * denote-text-front-matter <1>:          For developers or advanced users.
-                                                              (line 493)
+                                                              (line 527)
 * denote-title-prompt-current-default:   For developers or advanced users.
-                                                              (line 329)
+                                                              (line 367)
 * denote-title-regexp:                   For developers or advanced users.
                                                               (line  34)
 * denote-toml-front-matter:              Change the front matter format.
                                                               (line  22)
 * denote-toml-front-matter <1>:          For developers or advanced users.
-                                                              (line 488)
+                                                              (line 522)
 * denote-yaml-front-matter:              Change the front matter format.
                                                               (line  24)
 * denote-yaml-front-matter <1>:          For developers or advanced users.
-                                                              (line 483)
+                                                              (line 517)
 
 
-File: docZ15YWZ.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
+File: docwBCzPY.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 B.3 Concept index
 =================
@@ -6849,127 +6963,129 @@ B.3 Concept index
 
 Tag Table:
 Node: Top857
-Node: Overview8149
-Node: Points of entry12095
-Node: Standard note creation13256
-Node: The denote-prompts option15340
-Node: The denote-history-completion-in-prompts option19618
-Node: The denote-templates option21348
-Node: Convenience commands for note creation23875
-Ref: Write your own convenience commands27932
-Node: The denote-save-buffers option30932
-Node: The denote-date-prompt-use-org-read-date option32242
-Node: Create a note from the current Org subtree32992
-Node: Create note using Org capture35736
-Node: Create note with specific prompts using Org capture37993
-Node: Create a note with the region's contents41920
-Node: Open an existing note or create it if missing43905
-Node: Maintain separate directory silos for notes46273
-Node: How to switch a silo51306
-Node: Use custom commands to select a silo51982
-Node: The denote-silo-extrasel55331
-Node: Make Org export work with silos56647
-Node: Make any Denote command work in a silo from anywhere59065
-Node: Exclude certain directories from all operations60897
-Node: Exclude certain keywords from being inferred61997
-Node: Use Denote commands from the menu bar or context menu62666
-Node: Renaming files63695
-Node: Rename a single file65791
-Node: The denote-rename-confirmations option71364
-Node: Rename a single file based on its front matter73034
-Node: Rename multiple files interactively75685
-Node: Rename multiple files at once by asking only for keywords76938
-Node: Rename multiple files based on their front matter78914
-Node: Rename a file by changing only its file type79977
-Node: Rename a file by adding or removing keywords interactively81306
-Node: Rename a file by adding or removing a signature interactively82789
-Node: Faces used by rename commands84209
-Node: The file-naming scheme84715
-Node: Change the order of file name components89461
-Node: Sluggification of file name components92269
-Node: User-defined sluggification of file name components94650
-Node: Features of the file-naming scheme for searching or filtering98527
-Node: Front matter100184
-Node: Change the front matter format102531
-Node: Regenerate front matter105359
-Node: Linking notes106723
-Node: Adding a single link107734
-Node: The denote-org-store-link-to-heading user option110748
-Node: Insert link to an Org file with a further pointer to a heading113318
-Node: Insert links matching a regexp115109
-Node: Insert link to file with signature117352
-Node: Insert links from marked files in Dired118166
-Node: Link to an existing note or create a new one119566
-Node: The backlinks' buffer123749
-Node: Backlinks for Org headings127687
-Node: Writing metanotes128289
-Node: Visiting linked files via the minibuffer129959
-Node: Convert denote links to file links131185
-Node: Fontify links in non-Org buffers132823
-Node: Miscellaneous information about links134440
-Node: Aliases for the linking commands134762
-Node: The denote-link-description-function to format links135378
-Node: Choose which commands to prompt for136053
-Node: Fontification in Dired136969
-Node: Automatically rename Denote buffers139696
-Node: The denote-rename-buffer-format option141024
-Node: Use Org dynamic blocks143066
-Node: Org dynamic blocks to insert links or backlinks144967
-Node: Org dynamic block to insert file contents149296
-Node: Sort files by component154632
-Node: Keep a journal or diary156700
-Node: Journaling with a timer161251
-Node: Minibuffer histories163851
-Node: Extending Denote164710
-Node: Create a new note in any directory165840
-Node: Narrow the list of files in Dired166910
-Node: Use dired-virtual-mode for arbitrary file listings169243
-Node: Use Embark to collect minibuffer candidates173358
-Node: Search file contents174660
-Node: Bookmark the directory with the notes176344
-Node: Use the denote-explore package to explore your notes177734
-Node: Use the citar-denote package for bibliography notes178535
-Node: Use the consult-notes package179630
-Node: Use the denote-menu package181309
-Node: Treat your notes as a project182304
-Node: Use the tree-based file prompt for select commands183797
-Node: Rename files with Denote in the Image Dired thumbnails buffer185849
-Node: Rename files with Denote using dired-preview189373
-Node: Avoid duplicate identifiers when exporting Denote notes192029
-Node: Export Denote notes with Org Mode193291
-Ref: Manually configure Org export193941
-Ref: Automatically store Org exports in another folder194879
-Ref: Org Mode Publishing197453
-Node: Export Denote notes with Markdown198068
-Node: Installation198740
-Node: GNU ELPA package198937
-Node: Manual installation199500
-Node: Sample configuration200271
-Node: For developers or advanced users205197
-Node: Troubleshoot Denote in a pristine environment233716
-Node: Contributing235394
-Node: Wishlist of what we can do to extend Denote238420
-Node: Publications about Denote241991
-Node: Alternatives to Denote244780
-Node: Alternative implementations and further reading249418
-Node: Frequently Asked Questions251161
-Node: Why develop Denote when PACKAGE already exists?252193
-Node: Why not rely exclusively on Org?254120
-Node: Why care about Unix tools when you use Emacs?255830
-Node: Why many small files instead of few large ones?257172
-Node: Does Denote perform well at scale?259114
-Node: I add TODOs to my notes; will many files slow down the Org agenda?260247
-Node: I want to sort by last modified in Dired why won't Denote let me?262219
-Node: How do you handle the last modified case?263273
-Node: Speed up backlinks' buffer creation?264834
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?266162
-Node: Why do I get a double #+title in Doom Emacs?267218
-Node: Acknowledgements267942
-Node: GNU Free Documentation License270465
-Node: Indices295826
-Node: Function index296002
-Node: Variable index317075
-Node: Concept index327661
+Node: Overview8255
+Node: Points of entry12201
+Node: Standard note creation13581
+Node: The denote-prompts option15665
+Node: The denote-history-completion-in-prompts option19943
+Node: The denote-templates option21673
+Node: Convenience commands for note creation24200
+Ref: Write your own convenience commands28257
+Node: The denote-save-buffers option31257
+Node: The denote-date-prompt-use-org-read-date option32440
+Node: Create a note from the current Org subtree33190
+Node: Create note using Org capture35934
+Node: Create note with specific prompts using Org capture38191
+Node: Create a note with the region's contents42118
+Node: Open an existing note or create it if missing44103
+Node: Maintain separate directory silos for notes46471
+Node: How to switch a silo51496
+Node: Use custom commands to select a silo52172
+Node: The denote-silo-extrasel55521
+Node: Make Org export work with silos56837
+Node: Make any Denote command work in a silo from anywhere59255
+Node: Exclude certain files from file prompts61087
+Node: Exclude certain directories from all operations61977
+Node: Exclude certain keywords from being inferred63073
+Node: Use Denote commands from the menu bar or context menu63744
+Node: Renaming files64773
+Node: Rename a single file67093
+Node: The denote-rename-confirmations option72765
+Node: Rename a single file based on its front matter74285
+Node: Rename multiple files interactively77105
+Node: Rename multiple files at once by asking only for keywords78358
+Node: Rename multiple files based on their front matter80506
+Node: Rename a file by changing only its file type81569
+Node: Rename a file by adding or removing a title interactively83066
+Node: Rename a file by adding or removing keywords interactively84873
+Node: Rename a file by adding or removing a signature interactively86891
+Node: Faces used by rename commands88724
+Node: The file-naming scheme89232
+Node: Change the order of file name components93978
+Node: Sluggification of file name components96758
+Node: User-defined sluggification of file name components99139
+Node: Features of the file-naming scheme for searching or filtering103016
+Node: Front matter104673
+Node: Change the front matter format107020
+Node: Regenerate front matter109848
+Node: Linking notes111212
+Node: Adding a single link112223
+Node: The denote-org-store-link-to-heading user option115237
+Node: Insert link to an Org file with a further pointer to a heading117807
+Node: Insert links matching a regexp119573
+Node: Insert link to file with signature121816
+Node: Insert links from marked files in Dired122630
+Node: Link to an existing note or create a new one124030
+Node: The backlinks' buffer128213
+Node: Backlinks for Org headings131883
+Node: Writing metanotes132449
+Node: Visiting linked files via the minibuffer134119
+Node: Convert denote links to file links135345
+Node: Fontify links in non-Org buffers136983
+Node: Miscellaneous information about links138657
+Node: Aliases for the linking commands138979
+Node: The denote-link-description-function to format links139595
+Node: Choose which commands to prompt for140270
+Node: Fontification in Dired141186
+Node: Automatically rename Denote buffers143913
+Node: The denote-rename-buffer-format option145241
+Node: Use Org dynamic blocks147283
+Node: Org dynamic blocks to insert links or backlinks149184
+Node: Org dynamic block to insert file contents153513
+Node: Sort files by component158849
+Node: Keep a journal or diary160917
+Node: Journaling with a timer165468
+Node: Minibuffer histories168068
+Node: Extending Denote168927
+Node: Create a new note in any directory170057
+Node: Narrow the list of files in Dired171127
+Node: Use dired-virtual-mode for arbitrary file listings173460
+Node: Use Embark to collect minibuffer candidates177575
+Node: Search file contents178877
+Node: Bookmark the directory with the notes180561
+Node: Use the denote-explore package to explore your notes181951
+Node: Use the citar-denote package for bibliography notes182752
+Node: Use the consult-notes package183847
+Node: Use the denote-menu package185526
+Node: Treat your notes as a project186521
+Node: Use the tree-based file prompt for select commands188014
+Node: Rename files with Denote in the Image Dired thumbnails buffer190066
+Node: Rename files with Denote using dired-preview193590
+Node: Avoid duplicate identifiers when exporting Denote notes196246
+Node: Export Denote notes with Org Mode197508
+Ref: Manually configure Org export198158
+Ref: Automatically store Org exports in another folder199096
+Ref: Org Mode Publishing201670
+Node: Export Denote notes with Markdown202285
+Node: Installation202957
+Node: GNU ELPA package203154
+Node: Manual installation203717
+Node: Sample configuration204488
+Node: For developers or advanced users209414
+Node: Troubleshoot Denote in a pristine environment239651
+Node: Contributing241329
+Node: Wishlist of what we can do to extend Denote244355
+Node: Publications about Denote247926
+Node: Alternatives to Denote250715
+Node: Alternative implementations and further reading255353
+Node: Frequently Asked Questions257096
+Node: Why develop Denote when PACKAGE already exists?258128
+Node: Why not rely exclusively on Org?260055
+Node: Why care about Unix tools when you use Emacs?261765
+Node: Why many small files instead of few large ones?263107
+Node: Does Denote perform well at scale?265049
+Node: I add TODOs to my notes; will many files slow down the Org agenda?266182
+Node: I want to sort by last modified in Dired why won't Denote let me?268154
+Node: How do you handle the last modified case?269208
+Node: Speed up backlinks' buffer creation?270769
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?272097
+Node: Why do I get a double #+title in Doom Emacs?273153
+Node: Acknowledgements273877
+Node: GNU Free Documentation License276437
+Node: Indices301798
+Node: Function index301974
+Node: Variable index323557
+Node: Concept index334298
 
 End Tag Table
 

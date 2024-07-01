@@ -4,9 +4,9 @@
 #+language: en
 #+options: ':t toc:nil author:t email:t num:t
 #+startup: content
-#+macro: stable-version 2.3.0
-#+macro: release-date 2024-03-24
-#+macro: development-version 3.0.0-dev
+#+macro: stable-version 3.0.0
+#+macro: release-date 2024-06-30
+#+macro: development-version 3.1.0-dev
 #+export_file_name: denote.texi
 #+texinfo_filename: denote.info
 #+texinfo_dir_category: Emacs misc features
@@ -158,6 +158,9 @@ function ~denote-org-capture~.  We explain all of those in the
 subsequent sections.  Other more specialised commands exist as well,
 which one shall learn about as they read through this manual.  We do
 not want to overwhelm the user with options at this stage.
+
+All these commands constructs the file name in accordance with the user option
+~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
 
 ** Standard note creation
 :PROPERTIES:
@@ -541,9 +544,6 @@ to the list of commands available at the ~denote-command-prompt~
 :PROPERTIES:
 :CUSTOM_ID: h:bf80f4cd-6f56-4f7c-a991-8573161e4511
 :END:
-
-[ As part of {{{development-version}}}, the user option
-  ~denote-save-buffer-after-creation~ is renamed to ~denote-save-buffers~. ]
 
 #+vindex: denote-save-buffers
 The user option ~denote-save-buffer-after-creation~ controls whether
@@ -1133,7 +1133,7 @@ ways to go about it, anyway:
    ;;;     (info "(emacs) Directory Variables")
 
    ((nil . ((denote-directory . "/path/to/silo/")
-            (denote-org-front-matter . 
+            (denote-org-front-matter .
              "#+title:      %s
 ,#+date:       %s
 ,#+filetags:   %s
@@ -1186,6 +1186,25 @@ greater convenience. For example:
 #+begin_src emacs-lisp
 (define-key global-map (kbd "C-c n j") #'my-denote-journal-extras-new-or-existing-entry)
 #+end_src
+
+** Exclude certain files from file prompts
+:PROPERTIES:
+:CUSTOM_ID: h:53db09de-2cec-4670-b163-5cb791f997b4
+:END:
+
+#+vindex: denote-excluded-files-regexp
+The user option ~denote-excluded-files-regexp~ is a regular expression
+that matches files names which should be excluded from all Denote file
+prompts. Such prompts are present when linking to a file with one of
+the many commands, like ~denote-link~ ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]), or when trying
+to open a file that may or may not exist ([[#h:ad91ca39-cf10-4e16-b224-fdf78f093883][Open an existing note or create it if missing]]).
+
+Functions that check for files include ~denote-directory-files~ and
+~denote-file-prompt~.
+
+The match is performed with ~string-match-p~.
+
+[[#h:c916d8c5-540a-409f-b780-6ccbd90e088e][For developers or advanced users]].
 
 ** Exclude certain directories from all operations
 :PROPERTIES:
@@ -1277,7 +1296,8 @@ mechanisms to facilitate the task of renaming them.
 
 #+vindex: denote-after-rename-file-hook
 All renaming commands run the ~denote-after-rename-file-hook~ after a
-succesful operation.
+succesful operation. They also construct the file name in accordance
+with the user option ~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
 
 Apart from renaming files, Denote can also rename only the buffer.
 The idea is that the underlying file name is correct but it can be
@@ -1290,9 +1310,6 @@ line or switching between then with commands like ~switch-to-buffer~.
 :PROPERTIES:
 :CUSTOM_ID: h:7cc9e000-806a-48da-945c-711bbc7426b0
 :END:
-
-[ Revised as part of {{{development-version}}} to respect the user
-  options ~denote-rename-confirmations~ and ~denote-save-buffers~. ]
 
 #+findex: denote-rename-file
 The ~denote-rename-file~ command renames a file and updates existing
@@ -1385,6 +1402,11 @@ types (per ~denote-file-type~), add front matter to the top of it and
 leave the buffer unsaved for further inspection ([[#h:13218826-56a5-482a-9b91-5b6de4f14261][Front matter]]). Save
 the buffer if ~denote-save-buffers~ is non-nil ([[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]]).
 
+Construct the file name in accordance with the user option
+~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
+
+Run the ~denote-after-rename-file-hook~ after renaming =FILE=.
+
 This command is intended to (i) rename Denote files, (ii) convert
 existing supported file types to Denote notes, and (ii) rename
 non-note files (e.g. =PDF=) that can benefit from Denote's file-naming
@@ -1397,9 +1419,6 @@ one-by-one, use ~denote-dired-rename-files~ ([[#h:1b6b2c78-42f0-45b8-9ef0-6de21a
 :PROPERTIES:
 :CUSTOM_ID: h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7
 :END:
-
-[ As part of {{{development-version}}} the ~denote-rename-no-confirm~
-  is deprecated and superseded by the more flexible ~denote-rename-confirmations~. ]
 
 #+vindex: denote-rename-confirmations
 The user option ~denote-rename-confirmations~ controls what kind of
@@ -1494,6 +1513,9 @@ edited in the front matter: Denote considers the file name to be the
 source of truth in this case, to avoid potential breakage with typos and
 the like.
 
+This command constructs the file name in accordance with the user option
+~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
+
 ** Rename multiple files interactively
 :PROPERTIES:
 :CUSTOM_ID: h:1b6b2c78-42f0-45b8-9ef0-6de21a8b2cde
@@ -1553,7 +1575,10 @@ so by writing keywords to them. Specifically, it does the following:
   saved in one go with the command ~save-some-buffers~ (read its doc
   string). ]
 
-[ The following two commands are part of {{{development-version}}}. ]
+Construct the file name in accordance with the user option
+~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
+
+Run the ~denote-after-rename-file-hook~ after the renaming is done.
 
 #+findex: denote-dired-rename-marked-files-add-keywords
 #+findex: denote-dired-rename-marked-files-remove-keywords
@@ -1607,69 +1632,109 @@ field in the file's front matter, depending on the previous file type
 As a final step, the command asks for confirmation, showing the
 difference between old and new file names.
 
+This command constructs the file name in accordance with the user option
+~denote-file-name-components-order~ ([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]).
+
+** Rename a file by adding or removing a title interactively
+:PROPERTIES:
+:CUSTOM_ID: h:a26e28c7-8222-4377-92e9-3b0a709010a5
+:END:
+
+#+findex: denote-rename-file-title
+The command ~denote-rename-file-title~ streamlines the process of
+interactively adding or removing a title to/from a file, while
+changing its file name accordingly. It asks for a title using the
+familiar minibuffer prompt ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]). It then renames
+the file. The command respect the values of
+~denote-rename-confirmations~ and ~denote-save-buffers~:
+
+- [[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-confirmations~ option]].
+- [[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]].
+
+Technically, ~denote-rename-file-title~ is a wrapper for
+~denote-rename-file~, doing all the things that does ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
+
+Concretely, this command can add or remove a title in one go. It
+does it by prepopulating the minibuffer prompt with the existing
+title. Users can then modify it. An empty input means to remove
+the title altogether ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+[ NOTE: Please check with your minibuffer user interface how to
+  provide an empty input. The Emacs default setup accepts the empty
+  minibuffer contents as they are, though popular packages like
+  ~vertico~ use the first available completion candidate instead. For
+  ~vertico~, the user must either move one up to select the prompt and
+  then type =RET= there with empty contents, or use the command
+  ~vertico-exit-input~ with empty contents. That Vertico command is
+  bound to =M-RET= as of this writing on 2024-06-30 10:37 +0300. ]
+
 ** Rename a file by adding or removing keywords interactively
 :PROPERTIES:
 :CUSTOM_ID: h:ad4dde4a-8e88-470a-97ae-e7b9d4b41fb4
 :END:
 
-[ Revised as part of {{{development-version}}} to respect the user
-  options ~denote-rename-confirmations~ and ~denote-save-buffers~. ]
-
-#+findex: denote-keywords-add
-#+findex: denote-keywords-remove
-The commands ~denote-keywords-add~ and ~denote-keywords-remove~
-streamline the process of interactively updating a file's keywords in
-the front matter and renaming it accordingly.
-
-The ~denote-keywords-add~ asks for keywords using the familiar
-minibuffer prompt ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]).  It then renames the file
-([[#h:3ab08ff4-81fa-4d24-99cb-79f97c13a373][Rename a single file based on its front matter]]).
-
-Similarly, the ~denote-keywords-remove~ removes one or more keywords
-from the list of existing keywords and then renames the file
-accordingly.
-
-Both commands respect the values of ~denote-rename-confirmations~ and
+#+findex: denote-rename-file-keywords
+The command ~denote-rename-file-keywords~ streamlines the process of
+interactively adding or removing keywords to a file, while changing
+its file name and front matter accordingly. It asks for keywords using
+the familiar minibuffer prompt ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]). It then
+renames the file ([[#h:3ab08ff4-81fa-4d24-99cb-79f97c13a373][Rename a single file based on its front matter]]).
+The command respect the values of ~denote-rename-confirmations~ and
 ~denote-save-buffers~:
 
 - [[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-confirmations~ option]].
 - [[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]].
 
-Furthermore, both commands call the ~denote-after-rename-file-hook~ as
-a final step after carrying out their task.
+Technically, ~denote-rename-file-keywords~ is a wrapper for
+~denote-rename-file~, doing all the things that does ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
 
-#+findex: denote-rename-add-keywords
-#+findex: denote-rename-remove-keywords
-Aliases for these commands are: ~denote-rename-add-keywords~ and
-~denote-rename-remove-keywords~.
+Concretely, this command can add or remove keywords in one go. It does
+it by prepopulating the minibuffer prompt with the existing keywords.
+Users can then use the ~crm-separator~ (normally a comma), to write
+new keywords or edit what is in the prompt to rewrite them
+accordingly. An empty input means to remove all keywords ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+
+[ NOTE: Please check with your minibuffer user interface how to
+  provide an empty input. The Emacs default setup accepts the empty
+  minibuffer contents as they are, though popular packages like
+  ~vertico~ use the first available completion candidate instead. For
+  ~vertico~, the user must either move one up to select the prompt and
+  then type =RET= there with empty contents, or use the command
+  ~vertico-exit-input~ with empty contents. That Vertico command is
+  bound to =M-RET= as of this writing on 2024-06-30 10:37 +0300. ]
 
 ** Rename a file by adding or removing a signature interactively
 :PROPERTIES:
 :CUSTOM_ID: h:b08a350f-b269-47ed-8c2a-b8ecf1b63c7f
 :END:
 
-[ Revised as part of {{{development-version}}} to respect the user
-  option ~denote-rename-confirmations~. ]
+#+findex: denote-rename-file-signature
+The command ~denote-rename-file-signature~ streamlines the process of
+interactively adding or removing a signature to/from a file, while
+changing its file name accordingly. It asks for a signature using the
+familiar minibuffer prompt ([[#h:6a92a8b5-d766-42cc-8e5b-8dc255466a23][Standard note creation]]). It then renames
+the file. The command respect the values of
+~denote-rename-confirmations~ and ~denote-save-buffers~:
 
-#+findex: denote-rename-add-signature
-#+findex: denote-rename-remove-signature
-The commands ~denote-rename-add-signature~ and
-~denote-rename-remove-signature~ streamline the process of
-interactively adding or removing a signature from a given file ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
+- [[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename-confirmations~ option]].
+- [[#h:bf80f4cd-6f56-4f7c-a991-8573161e4511][The ~denote-save-buffers~ option]].
 
-The ~denote-rename-add-signature~ prompts for a file and a signature. The
-default value for the file prompt is the file of the currently open
-buffer or the file-at-point in a Dired buffer. The signature is an
-ordinary string, defaulting to the selected file's signature, if any.
+Technically, ~denote-rename-file-signature~ is a wrapper for
+~denote-rename-file~, doing all the things that does ([[#h:7cc9e000-806a-48da-945c-711bbc7426b0][Rename a single file]]).
 
-The ~denote-rename-remove-signature~ uses the same file prompt as
-above. It performs its action only if the selected file has a
-signature. Otherwise, it does nothing.
+Concretely, this command can add or remove a signature in one go. It
+does it by prepopulating the minibuffer prompt with the existing
+signature. Users can then modify it. An empty input means to remove
+the signature altogether ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
 
-Both commands respect the value of ~denote-rename-confirmations~
-([[#h:a2ae9090-c49e-4b32-bcf5-eb8944241fd7][The ~denote-rename--confirmations~ option]]). They also both take care
-to reload any Dired buffers and run the ~denote-after-rename-file-hook~
-as a final step.
+[ NOTE: Please check with your minibuffer user interface how to
+  provide an empty input. The Emacs default setup accepts the empty
+  minibuffer contents as they are, though popular packages like
+  ~vertico~ use the first available completion candidate instead. For
+  ~vertico~, the user must either move one up to select the prompt and
+  then type =RET= there with empty contents, or use the command
+  ~vertico-exit-input~ with empty contents. That Vertico command is
+  bound to =M-RET= as of this writing on 2024-06-30 10:37 +0300. ]
 
 ** Faces used by rename commands
 :PROPERTIES:
@@ -1784,8 +1849,6 @@ low-tech invention.
 :PROPERTIES:
 :CUSTOM_ID: h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd
 :END:
-
-[ Part of {{{development-version}}}. ]
 
 #+vindex: denote-file-name-components-order
 Our standard file-naming scheme prescribes a specific order for the
@@ -2357,7 +2420,7 @@ fit. By contrast, the command ~denote-org-extras-link-to-heading~
 prompts for a file, then a heading, and inserts the link at point.
 
 Just as with files, it is possible to show backlinks for the given
-heading ([[#h:604bf92a-908a-485c-98b8-37ccae559afd][Backlinks for Org headings]]). [ Part of {{{development-version}}}. ]
+heading ([[#h:604bf92a-908a-485c-98b8-37ccae559afd][Backlinks for Org headings]]).
 
 ** Insert links matching a regexp
 :PROPERTIES:
@@ -2613,11 +2676,6 @@ Backlinks to the current file can also be visited by using the
 minibuffer completion interface with the ~denote-find-backlink~
 command ([[#h:1bc2adad-dca3-4878-b9f0-b105d5dec6f4][Visiting linked files via the minibuffer]]).
 
-[ As part of {{{development-version}}} the value of the user option
-  ~denote-link-backlinks-display-buffer-action~ is slightly modified to
-  (i) make the buffer dedicated to its window and (ii) try to preserve
-  its size during automatic recombinations of the frame's layout. ]
-
 #+vindex: denote-link-backlinks-display-buffer-action
 The placement of the backlinks' buffer is subject to the user option
 ~denote-link-backlinks-display-buffer-action~.  Due to the nature of the
@@ -2642,8 +2700,6 @@ Reproducing it here for the sake of convenience:
 :PROPERTIES:
 :CUSTOM_ID: h:604bf92a-908a-485c-98b8-37ccae559afd
 :END:
-
-[ This is part of {{{development-version}}}. ]
 
 The optional =denote-org-extras.el= can produce Denote links to
 individual headings ([[#h:fc1ad245-ec08-41be-8d1e-7153d99daf02][Insert link to an Org file with a further pointer to a heading]]).
@@ -2746,8 +2802,6 @@ that are relevant for this use-case:
 :CUSTOM_ID: h:156c5ea3-147b-4f9d-a404-86a00558c60a
 :END:
 
-[ Part of {{{development-version}}}. ]
-
 #+findex: denote-fontify-links-mode
 Denote links are automatically fontified in Org buffers ([[#h:5e5e3370-12ab-454f-ba09-88ff44214324][Adding a single link]]).
 This means that Org recognises the link and applies the relevant
@@ -2756,23 +2810,24 @@ such as ~markdown-mode~ (for =.md= files) or ~text-mode~ (for =.txt=
 files) do not have this feature built into them. Users can still get
 the same behaviour as with Org by activating the ~denote-fontify-links-mode~.
 
-The ~denote-fontify-links-mode~ is a buffer-local minor mode. Users
-can enable it automatically in all plain text files with something
-like this:
+The ~denote-fontify-links-mode~ is a buffer-local minor mode. Users can enable
+it automatically in plain text files that correspond to denote notes with
+something like this:
 
 #+begin_src emacs-lisp
-(add-hook 'text-mode-hook #'denote-fontify-links-mode)
+(add-hook 'text-mode-hook #'denote-fontify-links-mode-maybe)
 #+end_src
 
-The ~text-mode-hook~ applies to all modes derived from ~text-mode~,
-including ~markdown-mode~. Though a more explicit setup does no harm:
+The ~text-mode-hook~ applies to all modes derived from ~text-mode~, including
+~markdown-mode~. Though a more explicit setup does no harm:
 
 #+begin_src emacs-lisp
-(add-hook 'markdown-mode-hook #'denote-fontify-links-mode)
+(add-hook 'markdown-mode-hook #'denote-fontify-links-mode-maybe)
 #+end_src
 
-Because Org already recognises =denote:= links, the minor mode
-~denote-fontify-links-mode~ will do nothing in Org buffers.
+Because Org already recognises =denote:= links, the function
+~denote-fontify-links-mode-maybe~ will not enable the mode
+~denote-fontify-links-mode~ in Org buffers.
 
 #+findex: denote-link-markdown-follow
 In files whose major mode is ~markdown-mode~, the default key binding
@@ -4451,14 +4506,15 @@ might change them without further notice.
 
 #+findex: denote-directory-files
 + Function ~denote-directory-files~ :: Return list of absolute file
-  paths in variable ~denote-directory~. Files only need to have an
-  identifier. The return value may thus include file types that are not
-  implied by ~denote-file-type~. With optional =FILES-MATCHING-REGEXP=,
-  restrict files to those matching the given regular expression. With
-  optional =OMIT-CURRENT= as a non-nil value, do not include the current
-  Denote file in the returned list. With optional =TEXT-ONLY= as a
-  non-nil value, limit the results to text files that satisfy
-  ~denote-file-is-note-p~.
+  paths in variable ~denote-directory~. Files that match
+  ~denote-excluded-files-regexp~ are excluded from the list. Files
+  only need to have an identifier. The return value may thus include
+  file types that are not implied by ~denote-file-type~. With optional
+  =FILES-MATCHING-REGEXP=, restrict files to those matching the given
+  regular expression. With optional =OMIT-CURRENT= as a non-nil value,
+  do not include the current Denote file in the returned list. With
+  optional =TEXT-ONLY= as a non-nil value, limit the results to text
+  files that satisfy ~denote-file-is-note-p~.
 
 #+findex: denote-directory-subdirectories
 + Function ~denote-directory-subdirectories~ :: Return list of
@@ -4490,7 +4546,7 @@ might change them without further notice.
   replaced by a single occurence of the character, if necessary
   according to =COMPONENT=. If =COMPONENT= is ~keyword~, remove
   underscores from =STR= as they are used as the keywords separator in
-  file names. [ Revised as part of {{{development-version}}}. ]
+  file names.
 
 #+findex: denote-sluggify-keyword
 + Function ~denote-sluggify-keyword~ :: Sluggify =STR= while joining
@@ -4515,6 +4571,55 @@ might change them without further notice.
   ~denote-file-types~ matches in the file.
 
   Return nil if the file type is not recognized.
+
+#+findex: denote-use-date
++ Function ~denote-use-date~ :: The date to be used in a note creation
+  command. See the documentation of ~denote~ for acceptable values.
+  This variable is ignored if nil. Only ever ~let~ bind this,
+  otherwise the title will always be the same and the title prompt
+  will be skipped.
+
+#+findex: denote-use-directory
++ Function ~denote-use-directory~ :: The directory to be used in a
+  note creation command. See the documentation of ~denote~ for
+  acceptable values. This variable is ignored if nil. Only ever ~let~
+  bind this, otherwise the title will always be the same and the title
+  prompt will be skipped.
+
+#+findex: denote-use-file-type
++ Function ~denote-use-file-type~ :: The file type to be used in a
+  note creation command. See the documentation of ~denote~ for
+  acceptable values. This variable is ignored if nil. Only ever ~let~
+  bind this, otherwise the title will always be the same and the title
+  prompt will be skipped.
+
+#+findex: denote-use-keywords
++ Function ~denote-use-keywords~ :: The keywords to be used in a note
+  creation command. See the documentation of ~denote~ for acceptable
+  values. This variable is ignored if nil. Only ever ~let~ bind this,
+  otherwise the title will always be the same and the title prompt
+  will be skipped.
+
+#+findex: denote-use-signature
++ Function ~denote-use-signature~ :: The signature to be used in a
+  note creation command. See the documentation of ~denote~ for
+  acceptable values. This variable is ignored if nil. Only ever ~let~
+  bind this, otherwise the title will always be the same and the title
+  prompt will be skipped.
+
+#+findex: denote-use-template
++ Function ~denote-use-template~ :: The template to be used in a note
+  creation command. See the documentation of ~denote~ for acceptable
+  values. This variable is ignored if nil. Only ever ~let~ bind this,
+  otherwise the title will always be the same and the title prompt
+  will be skipped.
+
+#+findex: denote-use-title
++ Function ~denote-use-title~ :: The title to be used in a note
+  creation command. See the documentation of ~denote~ for acceptable
+  values. This variable is ignored if nil. Only ever ~let~ bind this,
+  otherwise the title will always be the same and the title prompt
+  will be skipped.
 
 #+findex: denote-format-file-name
 + Function ~denote-format-file-name~ :: Format file name. =DIR-PATH=,
@@ -4577,9 +4682,7 @@ might change them without further notice.
 + Function ~denote-retrieve-title-or-filename~ :: Return appropriate
   title for =FILE= given its =TYPE=. This is a wrapper for
   ~denote-retrieve-front-matter-title-value~ and
-  =denote-retrieve-filename-title=. [ Simplified as part of
-  {{{development-version}}} to only be a wrapper as its doc string
-  suggests. ]
+  =denote-retrieve-filename-title=.
 
 #+findex: denote-get-identifier
 + Function ~denote-get-identifier~ :: Convert =DATE= into a Denote
@@ -4626,7 +4729,6 @@ might change them without further notice.
   ~denote-prompts~. This is best done inside of a ~let~ to create a
   wrapper function around ~denote~, ~denote-rename-file~, and
   generally any command that consults the value of ~denote-prompts~.
-  [ Made public as part of {{{development-version}}}. ]
 
 #+findex: denote-signature-prompt
 + Function ~denote-signature-prompt~ :: Prompt for signature string.
@@ -4638,14 +4740,12 @@ might change them without further notice.
 
 #+findex: denote-file-prompt
 + Function ~denote-file-prompt~ :: Prompt for file in variable
-  ~denote-directory~. With optional =FILES-MATCHING-REGEXP=, filter the
-  candidates per the given regular expression. With optional
-  =PROMPT-TEXT=, use it instead of the default call to select a file.
-  With optional =NO-REQUIRE-MATCH= accept the given input as-is. Return
-  the absolute path to the matching file. [ Revised as part of
-  {{{development-version}}} to include the new =NO-REQUIRE-MATCH=
-  parameter. This is to simplify how we use the various "... or create"
-  commands internally. ]
+  ~denote-directory~. Files that match ~denote-excluded-files-regexp~
+  are excluded from the list. With optional =FILES-MATCHING-REGEXP=,
+  filter the candidates per the given regular expression. With
+  optional =PROMPT-TEXT=, use it instead of the default call to select
+  a file. With optional =NO-REQUIRE-MATCH= accept the given input
+  as-is. Return the absolute path to the matching file.
 
 #+findex: denote-keywords-prompt
 + Function ~denote-keywords-prompt~ :: Prompt for one or more keywords.
@@ -4718,9 +4818,7 @@ might change them without further notice.
 #+findex: denote-rename-file-prompt
 - Function ~denote-rename-file-prompt~ :: Prompt to rename file named
   =OLD-NAME= to =NEW-NAME=. If ~denote-rename-confirmations~ does not
-  contain ~modify-file-name~, return t without prompting. [ Revised as
-  part of {{{development-version}}} to conform with the user option
-  ~denote-rename-confirmations~. ]
+  contain ~modify-file-name~, return t without prompting.
 
 #+findex: denote-rename-file-and-buffer
 + Function ~denote-rename-file-and-buffer~ :: Rename file named
@@ -4733,16 +4831,13 @@ might change them without further notice.
   command and are used to construct new front matter values if
   appropriate. If ~denote-rename-confirmations~ contains
   ~rewrite-front-matter~, prompt to confirm the rewriting of the front
-  matter. Otherwise produce a ~y-or-n-p~ prompt to that effect. [
-  Revised as part of {{{development-version}}} to conform with the
-  user option ~denote-rename-confirmations~. ]
+  matter. Otherwise produce a ~y-or-n-p~ prompt to that effect.
 
 #+findex: denote-add-front-matter-prompt
 + Function ~denote-add-front-matter-prompt~ :: Prompt to add a
   front-matter to =FILE=. Return non-nil if a new front matter should
   be added. If ~denote-rename-confirmations~ does not contain
-  ~add-front-matter~, return t without prompting. [ Part of
-  {{{development-version}}}. ]
+  ~add-front-matter~, return t without prompting.
 
 #+findex: denote-rewrite-keywords
 + Function ~denote-rewrite-keywords~ :: Rewrite =KEYWORDS= in =FILE=
@@ -4924,8 +5019,7 @@ might change them without further notice.
 
 #+findex: denote-select-linked-file-prompt
 + Function ~denote-select-linked-file-prompt~ :: Prompt for linked
-  file among =FILES=. [ Made publicly available as part of
-  {{{development-version}}}. ]
+  file among =FILES=.
 
 #+findex: denote-link-return-links
 + Function ~denote-link-return-links~ :: Return list of links in
@@ -5641,12 +5735,13 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen, Jonathan Sahar,
   Johan Bolmsjö, Jousimies, Juanjo Presa, Julian Hoch, Kai von Fintel,
   Kaushal Modi, Kolmas, M. Hadi Timachi, Maikol Solis, Mark Olson,
-  Mirko Hernandez, Niall Dooley, Paul van Gelder, Peter Prevos, Peter
-  Smith, Suhail Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs,
-  Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Wade
-  Mealing, Yi Liu, Ypot, atanasj, azegas, babusri, doolio, duli,
-  drcxd, elge70, fingerknight, hpgisler, mentalisttraceur, pRot0ta1p,
-  rbenit68, relict007, sienic, sundar bp.
+  Mirko Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
+  Prevos, Peter Smith, Samuel W. Flint, Suhail Singh, Shreyas Ragavan,
+  Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus,
+  Vick (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj,
+  azegas, babusri, doolio, duli, drcxd, elge70, fingerknight,
+  hpgisler, mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic,
+  sundar bp, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

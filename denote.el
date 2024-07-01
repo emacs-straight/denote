@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 2.3.5
+;; Version: 3.0.1
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -385,11 +385,6 @@ If nil, show the keywords in their given order."
   :package-version '(denote . "0.1.0")
   :type 'boolean)
 
-(make-obsolete
- 'denote-allow-multi-word-keywords
- 'denote-file-name-letter-casing
- "2.1.0")
-
 (defcustom denote-file-type nil
   "The file type extension for new notes.
 
@@ -536,7 +531,7 @@ current note."
   :package-version '(denote . "1.2.0")
   :type 'boolean)
 
-(make-obsolete 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
+(make-obsolete-variable 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
 
 (defcustom denote-rename-confirmations '(rewrite-front-matter modify-file-name)
   "Make renaming commands prompt for confirmations.
@@ -598,6 +593,16 @@ prompts as completion candidates when the user option
 The match is performed with `string-match-p'."
   :group 'denote
   :package-version '(denote . "1.2.0")
+  :type 'string)
+
+(defcustom denote-excluded-files-regexp nil
+  "Regular expression of files that are excluded from Denote file prompts.
+Files are provided for completion when using commands like `denote-link'
+and `denote-open-or-create'.
+
+The match is performed with `string-match-p' on the full file path."
+  :group 'denote
+  :package-version '(denote . "3.0.0")
   :type 'string)
 
 (defcustom denote-after-new-note-hook nil
@@ -1016,8 +1021,6 @@ For our purposes, a note must satisfy `file-regular-p' and
   "Return non-nil if FILE has a Denote identifier."
   (denote-retrieve-filename-signature file))
 
-(make-obsolete 'denote-file-directory-p nil "2.0.0")
-
 (defun denote--file-regular-writable-p (file)
   "Return non-nil if FILE is regular and writable."
   (and (file-regular-p file)
@@ -1043,11 +1046,6 @@ FILE must be an absolute path."
   "Return existing Denote identifier in STRING, else nil."
   (when (string-match denote-id-regexp string)
     (match-string-no-properties 0 string)))
-
-(define-obsolete-function-alias
-  'denote--default-dir-has-denote-prefix
-  'denote--dir-in-denote-directory-p
-  "2.1.0")
 
 (defun denote--exclude-directory-regexp-p (file)
   "Return non-nil if FILE matches `denote-excluded-directories-regexp'."
@@ -1076,6 +1074,11 @@ Avoids traversing dotfiles (unconditionally) and whatever matches
    #'denote--directory-files-recursively-predicate
    :follow-symlinks))
 
+(defun denote--file-excluded-p (file)
+  "Return non-file if FILE matches `denote-excluded-files-regexp'."
+  (and denote-excluded-files-regexp
+       (string-match-p denote-excluded-files-regexp file)))
+
 (defun denote--directory-get-files ()
   "Return list with full path of valid files in variable `denote-directory'.
 Consider files that satisfy `denote-file-has-identifier-p' and
@@ -1086,11 +1089,14 @@ are not backups."
     (lambda (file)
       (and (file-regular-p file)
            (denote-file-has-identifier-p file)
+           (not (denote--file-excluded-p file))
            (not (backup-file-name-p file))))
     (denote--directory-all-files-recursively))))
 
 (defun denote-directory-files (&optional files-matching-regexp omit-current text-only)
   "Return list of absolute file paths in variable `denote-directory'.
+Files that match `denote-excluded-files-regexp' are excluded from the
+list.
 
 Files only need to have an identifier.  The return value may thus
 include file types that are not implied by `denote-file-type'.
@@ -1115,17 +1121,6 @@ text files that satisfy `denote-filename-is-note-p'."
       (setq files (seq-filter #'denote-filename-is-note-p files)))
     files))
 
-;; NOTE 2023-11-30: We are declaring `denote-directory-text-only-files'
-;; obsolete, though we keep it around for the foreseeable future.  It
-;; WILL BE REMOVED ahead of version 3.0.0 of Denote, whenever that
-;; happens.
-(make-obsolete 'denote-directory-text-only-files 'denote-directory-files "2.2.0")
-
-(defun denote-directory-text-only-files ()
-  "Return list of text files in variable `denote-directory'.
-Filter `denote-directory-files' using `denote-filename-is-note-p'."
-  (denote-directory-files nil nil :text-only))
-
 (defun denote-directory-subdirectories ()
   "Return list of subdirectories in variable `denote-directory'.
 Omit dotfiles (such as .git) unconditionally.  Also exclude
@@ -1139,20 +1134,10 @@ whatever matches `denote-excluded-directories-regexp'."
            (denote--exclude-directory-regexp-p rel))))
    (denote--directory-all-files-recursively)))
 
-(define-obsolete-variable-alias
-  'denote--encryption-file-extensions
-  'denote-encryption-file-extensions
-  "2.0.0")
-
 ;; TODO 2023-01-24: Perhaps there is a good reason to make this a user
 ;; option, but I am keeping it as a generic variable for now.
 (defvar denote-encryption-file-extensions '(".gpg" ".age")
   "List of strings specifying file extensions for encryption.")
-
-(define-obsolete-function-alias
-  'denote--extensions-with-encryption
-  'denote-file-type-extensions-with-encryption
-  "2.0.0")
 
 (defun denote-file-type-extensions-with-encryption ()
   "Derive `denote-file-type-extensions' plus `denote-encryption-file-extensions'."
@@ -1209,27 +1194,6 @@ something like .org even if the actual file extension is
 The path is relative to DIRECTORY (default: ‘default-directory’)."
   (file-relative-name (denote-get-path-by-id id) directory))
 
-;; NOTE 2023-11-30: We are declaring `denote-directory-files-matching-regexp'
-;; obsolete, though we keep it around for the foreseeable future.  It
-;; WILL BE REMOVED ahead of version 3.0.0 of Denote, whenever that
-;; happens.
-(make-obsolete 'denote-directory-files-matching-regexp 'denote-directory-files "2.2.0")
-
-(defun denote-directory-files-matching-regexp (regexp)
-  "Return list of files matching REGEXP in `denote-directory-files'."
-  (denote-directory-files regexp))
-
-;; NOTE 2023-11-30: We are declaring `denote-all-files' obsolete,
-;; though we keep it around for the foreseeable future.  It WILL BE
-;; REMOVED ahead of version 3.0.0 of Denote, whenever that happens.
-(make-obsolete 'denote-all-files 'denote-directory-files "2.2.0")
-
-(defun denote-all-files (&optional omit-current)
-  "Return the list of Denote files in variable `denote-directory'.
-With optional OMIT-CURRENT, do not include the current Denote
-file in the returned list."
-  (denote-directory-files nil omit-current nil))
-
 (defvar denote-file-history nil
   "Minibuffer history of `denote-file-prompt'.")
 
@@ -1243,6 +1207,9 @@ the title prompt of `denote-open-or-create' and related commands.")
 
 (defun denote-file-prompt (&optional files-matching-regexp prompt-text no-require-match)
   "Prompt for file in variable `denote-directory'.
+Files that match `denote-excluded-files-regexp' are excluded from the
+list.
+
 With optional FILES-MATCHING-REGEXP, filter the candidates per
 the given regular expression.
 
@@ -1343,11 +1310,6 @@ KEYWORDS is a list of strings, per `denote-keywords-prompt'."
   (if denote-sort-keywords
       (sort (copy-sequence keywords) #'string-collate-lessp)
     keywords))
-
-(define-obsolete-function-alias
-  'denote--keywords-combine
-  'denote-keywords-combine
-  "2.1.0")
 
 (defun denote-keywords-combine (keywords)
   "Combine KEYWORDS list of strings into a single string.
@@ -1652,11 +1614,6 @@ for new note creation.  The default is `org'.")
         (symbol-value prop)
       prop)))
 
-(define-obsolete-function-alias
-  'denote--extensions
-  'denote-file-type-extensions
-  "2.0.0")
-
 (defun denote-file-type-extensions ()
   "Return all file type extensions in `denote-file-types'."
   (delete-dups
@@ -1757,11 +1714,6 @@ To only return an existing identifier, refer to the function
              ((denote--file-attributes-time file))
              (t (denote-get-identifier)))))
     (denote--find-first-unused-id id)))
-
-(define-obsolete-function-alias
-  'denote-retrieve-or-create-file-identifier
-  'denote-retrieve-filename-identifier
-  "2.1.0")
 
 (defun denote-retrieve-filename-keywords (file)
   "Extract keywords from FILE name, if present, else return nil.
@@ -2112,8 +2064,6 @@ available id is found."
         (user-error "A unique identifier could not be found"))
       (setq current-id (denote-get-identifier (time-add (date-to-time current-id) 1))))
     current-id))
-
-(make-obsolete 'denote-barf-duplicate-id nil "2.1.0")
 
 (defvar denote-command-prompt-history nil
   "Minibuffer history for `denote-command-prompt'.")
@@ -2799,11 +2749,6 @@ related."
           (delete-region (point) (line-end-position))
           (when save-buffer (save-buffer)))))))
 
-(define-obsolete-function-alias
-  'denote--rewrite-keywords
-  'denote-rewrite-keywords
-  "2.0.0")
-
 (defun denote-rewrite-front-matter (file title keywords file-type)
   "Rewrite front matter of note after `denote-rename-file'.
 The FILE, TITLE, KEYWORDS, and FILE-TYPE are given by the
@@ -2838,11 +2783,6 @@ produce a `y-or-n-p' prompt to that effect."
             (goto-char (line-beginning-position))
             (insert new-keywords-line)
             (delete-region (point) (line-end-position))))))))
-
-(define-obsolete-function-alias
-  'denote--rewrite-front-matter
-  'denote-rewrite-front-matter
-  "2.0.0")
 
 ;;;;; The renaming commands and their prompts
 
@@ -3072,6 +3012,9 @@ For the front matter of each file type, refer to the variables:
 - `denote-toml-front-matter'
 - `denote-yaml-front-matter'
 
+Construct the file name in accordance with the user option
+`denote-file-name-components-order'.
+
 Run the `denote-after-rename-file-hook' after renaming FILE.
 
 This command is intended to (i) rename Denote files, (ii) convert
@@ -3090,7 +3033,14 @@ one-by-one, use `denote-dired-rename-files'."
 
 (defun denote-rename-file-title ()
   "Convenience command to change the title of a file.
-Like `denote-rename-file', but prompts only for the title."
+Like `denote-rename-file', but prompts only for the title.
+
+Add or remove a title in one go.  Do this by prepopulating the
+minibuffer prompt with the existing title.  The user can then modify it
+accordingly.  An empty input means to remove the title altogether.
+
+Please check the documentation of `denote-rename-file' with regard to
+how a completion User Interface may accept an empty input."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(title)))
@@ -3098,7 +3048,16 @@ Like `denote-rename-file', but prompts only for the title."
 
 (defun denote-rename-file-keywords ()
   "Convenience command to change the keywords of a file.
-Like `denote-rename-file', but prompts only for keywords."
+Like `denote-rename-file', but prompts only for keywords.
+
+Add or remove keywords in one go.  Do this by prepopulating the
+minibuffer prompt with the existing keywords.  The user can then insert
+the `crm-separator' (normally a comma), to write new keywords or edit
+what is in the prompt to rewrite them accordingly.  An empty input means
+to remove all keywords.
+
+Please check the documentation of `denote-rename-file' with regard to
+how a completion User Interface may accept an empty input."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(keywords)))
@@ -3111,7 +3070,15 @@ Like `denote-rename-file', but prompts only for keywords."
 
 (defun denote-rename-file-signature ()
   "Convenience command to change the signature of a file.
-Like `denote-rename-file', but prompts only for the signature."
+Like `denote-rename-file', but prompts only for the signature.
+
+Add or remove a signature in one go.  Do this by prepopulating the
+minibuffer prompt with the existing signature.  The user can then modify
+it accordingly.  An empty input means to remove the signature
+altogether.
+
+Please check the documentation of `denote-rename-file' with regard to
+how a completion User Interface may accept an empty input."
   (declare (interactive-only t))
   (interactive)
   (let ((denote-prompts '(signature)))
@@ -3141,11 +3108,6 @@ setting `denote-rename-confirmations' to a nil value)."
               (denote--rename-file file title keywords signature date)))
           (denote-update-dired-buffers))
       (user-error "No marked files; aborting"))))
-
-(make-obsolete
- 'denote-dired-rename-marked-files
- 'denote-dired-rename-marked-files-with-keywords
- "2.1.0")
 
 (defalias 'denote-dired-rename-marked-files 'denote-dired-rename-files
   "Alias for `denote-dired-rename-files'.")
@@ -3214,6 +3176,9 @@ Specifically, do the following:
   it is recognized as a Denote note (per `denote-file-type'),
   such that it includes the new keywords.
 
+Construct the file name in accordance with the user option
+`denote-file-name-components-order'.
+
 Run the `denote-after-rename-file-hook' after renaming is done.
 
 Also see the specialized commands to only add or remove keywords:
@@ -3260,7 +3225,10 @@ The values of `denote-rename-confirmations' and
 The identifier of the file, if any, is never modified even if it
 is edited in the front matter: Denote considers the file name to
 be the source of truth in this case, to avoid potential breakage
-with typos and the like."
+with typos and the like.
+
+Construct the file name in accordance with the user option
+`denote-file-name-components-order'."
   (interactive (list buffer-file-name))
   (unless (denote-file-is-writable-and-supported-p file)
     (user-error "The file is not writable or does not have a supported file extension"))
@@ -3349,11 +3317,6 @@ relevant front matter.
              (file-type (denote-filetype-heuristics file)))
     (denote--add-front-matter file title keywords id file-type)))
 
-(define-obsolete-function-alias
-  'denote-change-file-type
-  'denote-change-file-type-and-front-matter
-  "2.1.0")
-
 ;;;###autoload
 (defun denote-change-file-type-and-front-matter (file new-file-type)
   "Change file type of FILE and add an appropriate front matter.
@@ -3373,7 +3336,10 @@ As a final step, ask for confirmation, showing the difference
 between old and new file names.
 
 Important note: No attempt is made to modify any other elements
-of the file.  This needs to be done manually."
+of the file.  This needs to be done manually.
+
+Construct the file name in accordance with the user option
+`denote-file-name-components-order'."
   (interactive
    (list
     (denote--rename-dired-file-or-current-file-or-prompt)
@@ -3863,7 +3829,6 @@ See the `:link' property of `denote-file-types'."
    (denote-retrieve-filename-identifier file)
    description))
 
-(make-obsolete 'denote-link--format-link 'denote-format-link "2.1.0")
 (make-obsolete 'denote-link-signature-format nil "2.3.0")
 
 (defun denote--link-get-description (file)
@@ -3951,11 +3916,6 @@ Also see `denote-link-with-signature'."
   (denote--delete-active-region-content)
   (insert (denote-format-link file description file-type id-only)))
 
-(define-obsolete-function-alias
-  'denote-link-insert-link
-  'denote-insert-link
-  "2.0.0")
-
 (defalias 'denote-insert-link 'denote-link
   "Alias for `denote-link' command.")
 
@@ -4034,11 +3994,6 @@ Also see `denote-link-return-backlinks'."
 (defalias 'denote-link-return-forelinks 'denote-link-return-links
   "Alias for `denote-link-return-links'.")
 
-(define-obsolete-function-alias
-  'denote-link-find-file
-  'denote-find-link
-  "2.0.0")
-
 ;;;###autoload
 (defun denote-find-link ()
   "Use minibuffer completion to visit linked file."
@@ -4057,11 +4012,6 @@ Also see `denote-link-return-links'."
   (when-let ((current-file (or file (buffer-file-name)))
              (id (denote-retrieve-filename-identifier-with-error current-file)))
     (delete current-file (denote--retrieve-files-in-xrefs id))))
-
-(define-obsolete-function-alias
-  'denote-link-find-backlink
-  'denote-find-backlink
-  "2.0.0")
 
 ;;;###autoload
 (defun denote-find-backlink ()
@@ -4265,27 +4215,37 @@ To be used as a `thing-at' provider."
 
 (defvar thing-at-point-provider-alist)
 
+(defun denote-fontify-links-mode-maybe ()
+  "Enable `denote-fontify-links-mode' in a denote file unless in `org-mode'."
+  (when (and buffer-file-name
+             (not (derived-mode-p 'org-mode))
+             (denote-file-is-note-p buffer-file-name))
+    (denote-fontify-links-mode)))
+
 (define-minor-mode denote-fontify-links-mode
-  "A minor mode to fontify and fold Denote links."
+  "A minor mode to fontify and fold Denote links.
+
+Enabled this mode only when the current buffer is a Denote note and the
+major mode is not `org-mode' (or derived therefrom).  Consider using
+`denote-fontify-links-mode-maybe' for this purpose."
   :init-value nil
   :global nil
   :group 'denote
-  (unless (derived-mode-p 'org-mode)
-    (require 'thingatpt)
-    (if denote-fontify-links-mode
-        (progn
-          (add-to-invisibility-spec 'denote-link)
-          (font-lock-add-keywords nil '(denote-fontify-links))
-          (setq-local thing-at-point-provider-alist
-                      (append thing-at-point-provider-alist
-                              '((url . denote--get-link-file-path-at-point)))))
-      (remove-from-invisibility-spec 'denote-link)
-      (font-lock-remove-keywords nil '(denote-fontify-links))
-      (setq-local thing-at-point-provider-alist
-                  (delete
-                   '(url . denote--get-link-file-path-at-point)
-                   thing-at-point-provider-alist)))
-    (font-lock-update)))
+  (require 'thingatpt)
+  (if denote-fontify-links-mode
+      (progn
+        (add-to-invisibility-spec 'denote-link)
+        (font-lock-add-keywords nil '(denote-fontify-links))
+        (setq-local thing-at-point-provider-alist
+                    (append thing-at-point-provider-alist
+                            '((url . denote--get-link-file-path-at-point)))))
+    (remove-from-invisibility-spec 'denote-link)
+    (font-lock-remove-keywords nil '(denote-fontify-links))
+    (setq-local thing-at-point-provider-alist
+                (delete
+                 '(url . denote--get-link-file-path-at-point)
+                 thing-at-point-provider-alist)))
+  (font-lock-update))
 
 ;;;;; Backlinks' buffer
 
@@ -4411,11 +4371,6 @@ concomitant alist, such as `denote-link-backlinks-display-buffer-action'."
                       (denote-link--prepare-backlinks query)))))
     (denote-link--display-buffer buffer-name display-buffer-action)))
 
-(define-obsolete-function-alias
-  'denote-link-backlinks
-  'denote-backlinks
-  "2.0.0")
-
 (defun denote--backlinks-get-buffer-name (file id)
   "Format a buffer name for `denote-backlinks'.
 Use FILE to detect a suitable title with which to name the buffer.  Else
@@ -4440,11 +4395,6 @@ Place the buffer below the current window or wherever the user option
       (when-let ((id (denote-retrieve-filename-identifier-with-error file)))
         (denote-link--prepare-backlinks id nil (denote--backlinks-get-buffer-name file id)))
     (user-error "Buffer `%s' is not associated with a file" (current-buffer))))
-
-(define-obsolete-function-alias
-  'denote-link-show-backlinks-buffer
-  'denote-show-backlinks-buffer
-  "2.0.0")
 
 (defalias 'denote-show-backlinks-buffer 'denote-backlinks
   "Alias for `denote-backlinks' command.")
@@ -4477,11 +4427,6 @@ Otherwise sort lines while accounting for `denote-link-add-links-sort'."
     (unless no-sort
       (sort-lines denote-link-add-links-sort (point-min) (point-max)))
     (buffer-string)))
-
-(define-obsolete-function-alias
-  'denote-link-add-links
-  'denote-add-links
-  "2.0.0")
 
 (defun denote-link--insert-links (files current-file-type &optional id-only no-sort)
   "Insert at point a typographic list of links matching FILES.
@@ -4521,13 +4466,6 @@ inserts links with just the identifier."
 
 (defalias 'denote-link-insert-links-matching-regexp 'denote-add-links
   "Alias for `denote-add-links' command.")
-
-(define-obsolete-function-alias
-  'denote-link-add-missing-links
-  'denote-add-missing-links
-  "2.0.0")
-
-(make-obsolete 'denote-add-missing-links nil "2.2.0")
 
 ;;;;; Links from Dired marks
 
