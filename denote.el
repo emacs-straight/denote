@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 3.0.3
+;; Version: 3.0.6
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -3219,8 +3219,9 @@ edited in the front matter.  Denote considers the file name to be
 the source of truth in this case to avoid potential breakage with
 typos and the like.
 
-The values of `denote-rename-confirmations' and
-`denote-save-buffers' are respected.
+The values of `denote-rename-confirmations' and `denote-save-buffers'
+are respected.  Though there is no prompt to confirm the rewrite of the
+front matter, since this is already done by the user.
 
 The identifier of the file, if any, is never modified even if it
 is edited in the front matter: Denote considers the file name to
@@ -3235,12 +3236,13 @@ Construct the file name in accordance with the user option
   (if-let ((file-type (denote-filetype-heuristics file))
            (front-matter-title (denote-retrieve-front-matter-title-value file file-type))
            (id (denote-retrieve-filename-identifier file)))
-      (pcase-let* ((denote-prompts '())
-                   (front-matter-keywords (denote-retrieve-front-matter-keywords-value file file-type))
-                   (`(_title _keywords ,signature ,date)
-                    (denote--rename-get-file-info-from-prompts-or-existing file)))
-        (denote--rename-file file front-matter-title front-matter-keywords signature date)
-        (denote-update-dired-buffers))
+      (let ((denote-rename-confirmations (delq 'rewrite-front-matter denote-rename-confirmations)))
+        (pcase-let* ((denote-prompts '())
+                     (front-matter-keywords (denote-retrieve-front-matter-keywords-value file file-type))
+                     (`(_title _keywords ,signature ,date)
+                      (denote--rename-get-file-info-from-prompts-or-existing file)))
+          (denote--rename-file file front-matter-title front-matter-keywords signature date)
+          (denote-update-dired-buffers)))
     (user-error "No identifier or front matter for title")))
 
 ;;;###autoload
