@@ -5768,15 +5768,16 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Wiersdorf, Benjamin Kästner, Bruno Boal, Charanjit Singh, Clemens
   Radermacher, Colin McLear, Damien Cassou, Eduardo Grajeda, Elias
   Storms, Eshel Yaron, Florian, Glenna D., Graham Marlow, Hilde Rhyne,
-  Ivan Sokolov, Jack Baty, Jean-Charles Bagneris, Jean-Philippe Gagné
-  Guay, Jianwei Hou, Joseph Turner, Jürgen Hötzel, Kaushal Modi, Kai
-  von Fintel, Kostas Andreadis, Kristoffer Balintona, Kyle Meyer, Marc
-  Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Peter
-  Prevos, Philip Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan
-  Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-  Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, ezchi, jarofromel,
-  leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
-  mentalisttraceur, pmenair, relict007.
+  Ivan Sokolov, Jack Baty, Jakub Szczerbowski, Jean-Charles Bagneris,
+  Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen Hötzel,
+  Kaushal Modi, Kai von Fintel, Kostas Andreadis, Kristoffer
+  Balintona, Kyle Meyer, Marc Fargas, Matthew Lemon, Noboru Ota
+  (nobiot), Norwid Behrnd, Peter Prevos, Philip Kaludercic, Quiliro
+  Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut
+  Benjamin, Tomasz Hołubowicz, Vedang Manerikar, Wesley Harvey, Zhenxu
+  Xu, arsaber101, ezchi, jarofromel, leinfink (Henrik), l-o-l-h
+  (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur, pmenair,
+  relict007.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Hirschfeld, Alexis Purslane,
@@ -5793,7 +5794,7 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Vick (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot, atanasj,
   azegas, babusri, doolio, duli, drcxd, elge70, fingerknight,
   hpgisler, mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic,
-  sundar bp, yetanotherfossman, zadca123
+  skissue, sundar bp, yetanotherfossman, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

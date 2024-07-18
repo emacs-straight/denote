@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 3.0.6
+;; Version: 3.0.7
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -2632,7 +2632,7 @@ See the format of `denote-file-types'."
   "Return non-nil if this is an `org-capture' or Org Note buffer."
   (and (derived-mode-p 'org-mode)
        (or (and (bound-and-true-p org-capture-mode)
-                (string-match-p "\\`CAPTURE.*\\.org" (buffer-name)))
+                (string-match-p "\\`CAPTURE-.*" (buffer-name)))
            (string-match-p "\\`\\*Org Note\\*" (buffer-name)))))
 
 (defun denote-filetype-heuristics (file)
