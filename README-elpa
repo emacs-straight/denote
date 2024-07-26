@@ -3078,15 +3078,15 @@ section 7.3
   command ([Visiting linked files via the minibuffer]).
 
   The placement of the backlinks’ buffer is subject to the user option
-  `denote-link-backlinks-display-buffer-action'.  Due to the nature of
-  the underlying `display-buffer' mechanism, this inevitably is a
-  relatively advanced feature.  By default, the backlinks’ buffer is
-  displayed below the current window.  The doc string of our user option
-  includes a sample configuration that places the buffer in a left side
-  window instead.  Reproducing it here for the sake of convenience:
+  `denote-backlinks-display-buffer-action'. Due to the nature of the
+  underlying `display-buffer' mechanism, this inevitably is a relatively
+  advanced feature. By default, the backlinks’ buffer is displayed below
+  the current window. The doc string of our user option includes a
+  sample configuration that places the buffer in a left side window
+  instead. Reproducing it here for the sake of convenience:
 
   ┌────
-  │ (setq denote-link-backlinks-display-buffer-action
+  │ (setq denote-backlinks-display-buffer-action
   │       '((display-buffer-reuse-window
   │ 	 display-buffer-in-side-window)
   │ 	(side . left)
@@ -3095,6 +3095,10 @@ section 7.3
   │ 	(dedicated . t)
   │ 	(preserve-size . (t . t))))
   └────
+
+  [ As part of 3.1.0-dev, the user option
+    `denote-link-backlinks-display-buffer-action' is now called
+    `denote-backlinks-display-buffer-action'. ]
 
 
 [Speed up backlinks’ buffer creation?] See section 23.10
@@ -4838,7 +4842,7 @@ section 15.14
   │ ;; file names.  This provides a more informative view.
   │ (setq denote-backlinks-show-context t)
   │ 
-  │ ;; Also see `denote-link-backlinks-display-buffer-action' which is a bit
+  │ ;; Also see `denote-backlinks-display-buffer-action' which is a bit
   │ ;; advanced.
   │ 
   │ ;; If you use Markdown or plain text files (Org renders links as buttons

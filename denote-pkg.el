@@ -1,2 +1,2 @@
 ;; Generated package description from denote.el  -*- no-byte-compile: t -*-
-(define-package "denote" "3.0.7.0.20240724.100808" "Simple notes with an efficient file-naming scheme" '((emacs "28.1")) :commit "46ecf930a027638b1a33788937795e33c29f9179" :authors '(("Protesilaos Stavrou" . "info@protesilaos.com")) :maintainer '("Protesilaos Stavrou" . "info@protesilaos.com") :url "https://github.com/protesilaos/denote")
+(define-package "denote" "3.0.8.0.20240725.145703" "Simple notes with an efficient file-naming scheme" '((emacs "28.1")) :commit "1cf20090b357a733021b06f94c1425c59124de34" :authors '(("Protesilaos Stavrou" . "info@protesilaos.com")) :maintainer '("Protesilaos Stavrou" . "info@protesilaos.com") :url "https://github.com/protesilaos/denote")

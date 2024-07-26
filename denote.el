@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 3.0.7
+;; Version: 3.0.8
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -538,6 +538,41 @@ current note."
   :type 'boolean)
 
 (make-obsolete-variable 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
+
+(define-obsolete-variable-alias
+  'denote-link-backlinks-display-buffer-action
+  'denote-backlinks-display-buffer-action
+  "3.1.0")
+
+(defcustom denote-backlinks-display-buffer-action
+  '((display-buffer-reuse-window display-buffer-below-selected)
+    (window-height . fit-window-to-buffer)
+    (dedicated . t))
+  "The action used to display the current file's backlinks buffer.
+
+The value has the form (FUNCTION . ALIST), where FUNCTION is
+either an \"action function\", a list thereof, or possibly an
+empty list.  ALIST is a list of \"action alist\" which may be
+omitted (or be empty).
+
+Sample configuration to display the buffer in a side window on
+the left of the Emacs frame:
+
+    (setq denote-backlinks-display-buffer-action
+          (quote ((display-buffer-reuse-window display-buffer-in-side-window)
+                  (side . left)
+                  (slot . 99)
+                  (window-width . 0.3)
+                  (dedicated . t)
+                  (preserve-size . (t . t)))))
+
+See Info node `(elisp) Displaying Buffers' for more details
+and/or the documentation string of `display-buffer'."
+  :type '(cons (choice (function :tag "Display Function")
+                       (repeat :tag "Display Functions" function))
+               alist)
+  :package-version '(denote . "3.1.0")
+  :group 'denote)
 
 (defcustom denote-rename-confirmations '(rewrite-front-matter modify-file-name)
   "Make renaming commands prompt for confirmations.
@@ -1824,9 +1859,8 @@ This is a wrapper for `denote-retrieve-front-matter-title-value' and
   "Return list of xrefs for IDENTIFIER with their respective location.
 Limit the search to text files, per `denote-directory-files' with
 non-nil `text-only' parameter."
-  (mapcar #'xref-match-item-location
-          (xref-matches-in-files identifier
-                                 (denote-directory-files nil nil :text-only))))
+  (when-let ((files (denote-directory-files nil nil :text-only)))
+    (mapcar #'xref-match-item-location (xref-matches-in-files identifier files))))
 
 (defun denote--retrieve-group-in-xrefs (identifier)
   "Access location of xrefs for IDENTIFIER and group them per file.
@@ -3744,43 +3778,6 @@ also enable it in all subdirectories."
 
 ;;;; The linking facility
 
-(defgroup denote-link ()
-  "Link facility for Denote."
-  :group 'denote)
-
-;;;;; User options
-
-(defcustom denote-link-backlinks-display-buffer-action
-  '((display-buffer-reuse-window display-buffer-below-selected)
-    (window-height . fit-window-to-buffer)
-    (dedicated . t)
-    (preserve-size . (t . t)))
-  "The action used to display the current file's backlinks buffer.
-
-The value has the form (FUNCTION . ALIST), where FUNCTION is
-either an \"action function\", a list thereof, or possibly an
-empty list.  ALIST is a list of \"action alist\" which may be
-omitted (or be empty).
-
-Sample configuration to display the buffer in a side window on
-the left of the Emacs frame:
-
-    (setq denote-link-backlinks-display-buffer-action
-          (quote ((display-buffer-reuse-window display-buffer-in-side-window)
-                  (side . left)
-                  (slot . 99)
-                  (window-width . 0.3)
-                  (dedicated . t)
-                  (preserve-size . (t . t)))))
-
-See Info node `(elisp) Displaying Buffers' for more details
-and/or the documentation string of `display-buffer'."
-  :type '(cons (choice (function :tag "Display Function")
-                       (repeat :tag "Display Functions" function))
-               alist)
-  :package-version '(denote . "3.0.0")
-  :group 'denote-link)
-
 ;;;;; Link to note
 
 (defvar denote-org-link-format "[[denote:%s][%s]]"
@@ -4276,10 +4273,10 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
 (defun denote-link--display-buffer (buf &optional action)
   "Run `display-buffer' on BUF using optional ACTION alist.
 ACTION is an alist of the form described in the user option
-`denote-link-backlinks-display-buffer-action'."
+`denote-backlinks-display-buffer-action'."
   (display-buffer
    buf
-   `(,@(or action denote-link-backlinks-display-buffer-action))))
+   `(,@(or action denote-backlinks-display-buffer-action))))
 
 (define-obsolete-function-alias
   'denote-backlinks-next
@@ -4325,30 +4322,63 @@ matching identifiers."
       (xref-prev-line)
     (backward-button n)))
 
+;; NOTE 2024-07-25: This can be a minor mode, though I do not like
+;; that global minor modes have to be autoloaded.  We do not need to
+;; autoload a secondary piece of functionality.
+;;
+;; NOTE 2024-07-25: We do not need the user option if we turn this
+;; into a minor mode.
+;;
+;; NOTE 2024-07-25: I would prefer to have a buffer-local toggle which
+;; does not affect the global user preference.  The trick is to make
+;; this work with `revert-buffer'.
+(defun denote-backlinks-toggle-context ()
+  "Show or hide the context of links in backlinks buffers.
+This is the same as toggling the `denote-backlinks-show-context' user
+option.
+
+When called inside of a backlinks buffer, also revert the buffer."
+  (interactive)
+  (let ((state))
+    (if denote-backlinks-show-context
+        (setq denote-backlinks-show-context nil
+              state "compact")
+      (setq denote-backlinks-show-context t
+            state "detailed"))
+    (message "Toggled the %s view for the backlinks buffer"
+             (propertize state 'face 'error))
+    (when (derived-mode-p 'denote-backlinks-mode)
+      (revert-buffer)
+      (fit-window-to-buffer))))
+
 (defvar denote-backlinks-mode-map
   (let ((m (make-sparse-keymap)))
     (define-key m "n" #'denote-backlinks-mode-next)
     (define-key m "p" #'denote-backlinks-mode-previous)
+    (define-key m "c" #'denote-backlinks-toggle-context)
     (define-key m "g" #'revert-buffer)
     m)
   "Keymap for `denote-backlinks-mode'.")
 
 (define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
   "Major mode for backlinks buffers."
-  :interactive nil
-  (unless denote-backlinks-show-context
-    (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t)))
+  :interactive nil)
 
-(defun denote-link--prepare-backlinks (query &optional files-matching-regexp buffer-name display-buffer-action)
+(defun denote-link--prepare-backlinks (query &optional files-matching-regexp buffer-name display-buffer-action show-context)
   "Create backlinks' buffer called BUFFER-NAME for the current file matching QUERY.
 
 With optional FILES-MATCHING-REGEXP, limit the list of files
 accordingly (per `denote-directory-files').
 
 Optional DISPLAY-BUFFER-ACTION is a `display-buffer' action and
-concomitant alist, such as `denote-link-backlinks-display-buffer-action'."
+concomitant alist, such as `denote-backlinks-display-buffer-action'.
+
+Optional SHOW-CONTEXT displays the lines where matches for QUERY
+occur.  This is the same as setting `denote-backlinks-show-context' to a
+non-nil value."
   (let* ((inhibit-read-only t)
          (file (buffer-file-name))
+         (backlinks-buffer (or buffer-name (format "Backlinks for '%s'" query)))
          ;; We retrieve results in absolute form and change the
          ;; absolute path to a relative path a few lines below. We
          ;; could add a suitable function and the results would be
@@ -4366,25 +4396,28 @@ concomitant alist, such as `denote-link-backlinks-display-buffer-action'."
     (mapc (lambda (x)
             (setf (car x) (denote-get-file-name-relative-to-denote-directory (car x))))
           xref-alist)
-    (with-current-buffer (get-buffer-create buffer-name)
-      (setq-local default-directory dir)
+    (with-current-buffer (get-buffer-create backlinks-buffer)
       (erase-buffer)
-      (setq overlay-arrow-position nil)
       (denote-backlinks-mode)
+      ;; Set the `denote-directory' after enabling the major mode,
+      ;; otherwise its value gets overwritten.
+      (setq-local denote-directory dir)
+      (setq overlay-arrow-position nil)
       (goto-char (point-min))
-      (if denote-backlinks-show-context
+      (if (or show-context denote-backlinks-show-context)
           (xref--insert-xrefs xref-alist)
         (mapc (lambda (x)
                 (insert (car x))
                 (make-button (line-beginning-position) (line-end-position) :type 'denote-link-backlink-button)
                 (newline))
-              xref-alist))
+              xref-alist)
+        (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t))
       (goto-char (point-min))
       (setq-local revert-buffer-function
                   (lambda (_ignore-auto _noconfirm)
                     (when-let ((buffer-file-name file))
-                      (denote-link--prepare-backlinks query files-matching-regexp buffer-name display-buffer-action)))))
-    (denote-link--display-buffer buffer-name display-buffer-action)))
+                      (denote-link--prepare-backlinks query files-matching-regexp buffer-name display-buffer-action show-context)))))
+    (denote-link--display-buffer backlinks-buffer display-buffer-action)))
 
 (defun denote--backlinks-get-buffer-name (file id)
   "Format a buffer name for `denote-backlinks'.
@@ -4404,7 +4437,7 @@ context of each link if the user option `denote-backlinks-show-context'
 is non-nil.
 
 Place the buffer below the current window or wherever the user option
-`denote-link-backlinks-display-buffer-action' specifies."
+`denote-backlinks-display-buffer-action' specifies."
   (interactive)
   (if-let ((file buffer-file-name))
       (when-let ((id (denote-retrieve-filename-identifier-with-error file)))
