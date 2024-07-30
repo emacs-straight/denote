@@ -607,7 +607,7 @@ but carries out the renaming without asking for confirmation)."
                      (const :tag "Rewrite front matter" rewrite-front-matter)
                      (const :tag "Modify file name" modify-file-name))))
 
-(defcustom denote-excluded-directories-regexp nil
+ (defcustom denote-excluded-directories-regexp nil
   "Regular expression of directories to exclude from all operations.
 Omit matching directories from file prompts and also exclude them
 from all functions that check the contents of the variable
@@ -966,13 +966,12 @@ a single one in str, if necessary according to COMPONENT."
 (defun denote-sluggify (component str)
   "Make STR an appropriate slug for file name COMPONENT.
 
-Apply the function specified in `denote-file-name-slug-function'
-to COMPONENT which is one of `title', `signature', `keyword'.  If
-the resulting string still contains consecutive -,_,= or @, they
-are replaced by a single occurence of the character, if necessary
-according to COMPONENT.  If COMPONENT is `keyword', remove
-underscores from STR as they are used as the keywords separator
-in file names."
+Apply the function specified in `denote-file-name-slug-function' to
+COMPONENT which is one of `title', `signature', `keyword'.  If the
+resulting string still contains consecutive -, _, =, or @, they are
+replaced by a single occurence of the character, if necessary according
+to COMPONENT.  If COMPONENT is `keyword', remove underscores from STR as
+they are used as the keywords separator in file names."
   (let* ((slug-function (alist-get component denote-file-name-slug-functions))
          (str-slug (cond ((eq component 'title)
                           (funcall (or slug-function #'denote-sluggify-title) str))
@@ -1090,7 +1089,7 @@ FILE must be an absolute path."
 
 (defun denote--exclude-directory-regexp-p (file)
   "Return non-nil if FILE matches `denote-excluded-directories-regexp'."
-  (and denote-excluded-directories-regexp
+  (and (stringp denote-excluded-directories-regexp)
        (string-match-p denote-excluded-directories-regexp file)))
 
 (defun denote--directory-files-recursively-predicate (file)

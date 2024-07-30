@@ -3647,6 +3647,22 @@ section 7.3
     meaningful results: even something like `_journal' will work to
     include all files that have a `journal' keyword.
 
+  • The `:excluded-dirs-regexp' is a string that contains a word or
+    regular expression that matches against directory files names
+    to-be-excluded from the results. This has the same meaning as
+    setting the `denote-excluded-punctuation-regexp' user option
+    ([Exclude certain directories from all operations]). The user option
+    has a global effect, which is overridden locally in the dynamic
+    block. When the value of `:excluded-dirs-regexp' is nil (the
+    default), the value of `denote-excluded-punctuation-regexp' is used
+    (which is also nil by default, meaning that all directories are
+    included). When the value of `excluded-dirs-regexp' is `t' or some
+    other symbol, then the `denote-excluded-punctuation-regexp' is
+    ignored altogether. This is useful in the scenario where the user
+    option is set to exclude some directories but the dynamic blocks
+    wants to lift that restriction. [ The `excluded-dirs-regexp'
+    parameter is part of 3.1.0-dev. ]
+
   • The `:sort-by-component' parameter is optional. It sorts the files
     by the given Denote file name component. The value it accepts is an
     unquoted symbol among `title', `keywords', `signature',
@@ -3701,6 +3717,8 @@ section 7.3
 
 
 [Insert links matching a regexp] See section 7.4
+
+[Exclude certain directories from all operations] See section 3.9
 
 [Linking notes] See section 7
 
@@ -3759,6 +3777,22 @@ section 7.3
     expression to get meaningful results: even something like `_journal'
     will work to include all files that have a `journal' keyword.
 
+  • The `:excluded-dirs-regexp' is a string that contains a word or
+    regular expression that matches against directory files names
+    to-be-excluded from the results. This has the same meaning as
+    setting the `denote-excluded-punctuation-regexp' user option
+    ([Exclude certain directories from all operations]). The user option
+    has a global effect, which is overridden locally in the dynamic
+    block. When the value of `:excluded-dirs-regexp' is nil (the
+    default), the value of `denote-excluded-punctuation-regexp' is used
+    (which is also nil by default, meaning that all directories are
+    included). When the value of `excluded-dirs-regexp' is `t' or some
+    other symbol, then the `denote-excluded-punctuation-regexp' is
+    ignored altogether. This is useful in the scenario where the user
+    option is set to exclude some directories but the dynamic blocks
+    wants to lift that restriction. [ The `excluded-dirs-regexp'
+    parameter is part of 3.1.0-dev. ]
+
   • The `:sort-by-component' parameter is optional. It sorts the files
     by the given Denote file name component. The value it accepts is an
     unquoted symbol among `title', `keywords', `signature',
@@ -3813,6 +3847,8 @@ section 7.3
 [Insert links matching a regexp] See section 7.4
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
+
+[Exclude certain directories from all operations] See section 3.9
 
 [Linking notes] See section 7
 
@@ -6425,14 +6461,14 @@ section 15.14
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
         Hirschfeld, Alexis Purslane, Alfredo Borrás, Ashton Wiersdorf,
-        Benjamin Kästner, Claudiu Tănăselia, Colin McLear, Damien
-        Cassou, Elias Storms, Federico Stilman, Florian, Frédéric Willem
-        Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler Harold
-        Ollivier, Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jens
-        Östlund, Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö,
-        Jousimies, Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal
-        Modi, Kolmas, M. Hadi Timachi, Maikol Solis, Mark Olson, Mirko
-        Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
+        Benjamin Kästner, Claudio Migliorelli, Claudiu Tănăselia, Colin
+        McLear, Damien Cassou, Elias Storms, Federico Stilman, Florian,
+        Frédéric Willem Frank Ehmsen, Glenna D., Guo Yong, Hanspeter
+        Gisler Harold Ollivier, Jack Baty, Jay Rajput, Jean-Charles
+        Bagneris, Jens Östlund, Jeremy Friesen, Jonathan Sahar, Johan
+        Bolmsjö, Jousimies, Juanjo Presa, Julian Hoch, Kai von Fintel,
+        Kaushal Modi, Kolmas, M. Hadi Timachi, Maikol Solis, Mark Olson,
+        Mirko Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
         Prevos, Peter Smith, Samuel W. Flint, Suhail Singh, Shreyas
         Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
         Stankus, Vick (VicZz), Viktor Haag, Wade Mealing, Yi Liu, Ypot,
