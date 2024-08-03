@@ -70,7 +70,8 @@ Table of Contents
 .. 7. Rename a file by adding or removing a title interactively
 .. 8. Rename a file by adding or removing keywords interactively
 .. 9. Rename a file by adding or removing a signature interactively
-.. 10. Faces used by rename commands
+.. 10. Find duplicate identifiers and put them in a Dired buffer
+.. 11. Faces used by rename commands
 5. The file-naming scheme
 .. 1. Change the order of file name components
 .. 2. Sluggification of file name components
@@ -103,6 +104,7 @@ Table of Contents
 11. Use Org dynamic blocks
 .. 1. Org dynamic blocks to insert links or backlinks
 .. 2. Org dynamic block to insert file contents
+.. 3. Org dynamic block to insert Org files as headings
 12. Sort files by component
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
@@ -1620,6 +1622,8 @@ Table of Contents
 
   [Automatically rename Denote buffers].
 
+  [Find duplicate identifiers and put them in a Dired buffer].
+
 
 [The file-naming scheme] See section 5
 
@@ -1628,6 +1632,9 @@ Table of Contents
 [Change the order of file name components] See section 5.1
 
 [Automatically rename Denote buffers] See section 10
+
+[Find duplicate identifiers and put them in a Dired buffer] See section
+4.10
 
 4.1 Rename a single file
 ────────────────────────
@@ -2125,7 +2132,58 @@ Table of Contents
 [The file-naming scheme] See section 5
 
 
-4.10 Faces used by rename commands
+4.10 Find duplicate identifiers and put them in a Dired buffer
+──────────────────────────────────────────────────────────────
+
+  Denote takes care to create unique identifiers, though its mechanism
+  relies on reading the existing identifiers in the `denote-directory'
+  or the current directory. When we are renaming files across different
+  directories, there is a small chance that some files have the same
+  attributes and are thus assigned identical identifiers. If those files
+  ever make it into a consolidated `denote-directory', we will have
+  duplicates, which break the linking mechanism.
+
+  As this is an edge case, we do not include any code to address it in
+  the Denote code base. Though here is a way to find duplicate
+  identifiers inside the current directory:
+
+  ┌────
+  │ (defun my-denote--get-files-in-dir (directory)
+  │   "Return file names in DIRECTORY."
+  │   (directory-files directory :full-paths directory-files-no-dot-files-regexp))
+  │ 
+  │ (defun my-denote--same-identifier-p (file1 file2)
+  │   "Return non-nil if FILE1 and FILE2 have the same identifier."
+  │   (let ((id1 (denote-retrieve-filename-identifier file1))
+  │ 	(id2 (denote-retrieve-filename-identifier file2)))
+  │     (equal id1 id2)))
+  │ 
+  │ (defun my-denote-find-duplicate-identifiers (directory)
+  │   "Find all files in DIRECTORY that need a new identifier."
+  │   (let* ((ids (my-denote--get-files-in-dir directory))
+  │ 	 (unique-ids (seq-uniq ids #'my-denote--same-identifier-p)))
+  │     (seq-difference ids unique-ids #'equal)))
+  │ 
+  │ (defun my-denote-dired-show-duplicate-identifiers (directory)
+  │   "Put duplicate identifiers from DIRECTORY in a dedicated Dired buffer."
+  │   (interactive
+  │    (list
+  │     (read-directory-name "Select DIRECTORY to check for duplicate identifiers: " default-directory)))
+  │   (if-let ((duplicates (my-denote-find-duplicate-identifiers directory)))
+  │       (dired (cons (format "Denote duplicate identifiers" directory) duplicates))
+  │     (message "No duplicates identifiers in `%s'" directory)))
+  └────
+
+  Evaluate this code and then call the command
+  `my-denote-dired-show-duplicate-identifiers'.  If there are
+  duplicates, it will put them in a dedicated Dired buffer.  From there,
+  you can view the file contents as usual, and manually edit the
+  identifiers as you see fit (e.g. edit them one by one, or change to
+  the writable Dired and record a keyboard macro that makes use of a
+  counter to increment by 1—contact me if you need any help).
+
+
+4.11 Faces used by rename commands
 ──────────────────────────────────
 
   These are the faces used by the various Denote rename commands to
@@ -3653,14 +3711,14 @@ section 7.3
   • The `:excluded-dirs-regexp' is a string that contains a word or
     regular expression that matches against directory files names
     to-be-excluded from the results. This has the same meaning as
-    setting the `denote-excluded-punctuation-regexp' user option
+    setting the `denote-excluded-directories-regexp' user option
     ([Exclude certain directories from all operations]). The user option
     has a global effect, which is overridden locally in the dynamic
     block. When the value of `:excluded-dirs-regexp' is nil (the
-    default), the value of `denote-excluded-punctuation-regexp' is used
+    default), the value of `denote-excluded-directories-regexp' is used
     (which is also nil by default, meaning that all directories are
     included). When the value of `excluded-dirs-regexp' is `t' or some
-    other symbol, then the `denote-excluded-punctuation-regexp' is
+    other symbol, then the `denote-excluded-directories-regexp' is
     ignored altogether. This is useful in the scenario where the user
     option is set to exclude some directories but the dynamic blocks
     wants to lift that restriction. [ The `excluded-dirs-regexp'
@@ -3783,14 +3841,14 @@ section 7.3
   • The `:excluded-dirs-regexp' is a string that contains a word or
     regular expression that matches against directory files names
     to-be-excluded from the results. This has the same meaning as
-    setting the `denote-excluded-punctuation-regexp' user option
+    setting the `denote-excluded-directories-regexp' user option
     ([Exclude certain directories from all operations]). The user option
     has a global effect, which is overridden locally in the dynamic
     block. When the value of `:excluded-dirs-regexp' is nil (the
-    default), the value of `denote-excluded-punctuation-regexp' is used
+    default), the value of `denote-excluded-directories-regexp' is used
     (which is also nil by default, meaning that all directories are
     included). When the value of `excluded-dirs-regexp' is `t' or some
-    other symbol, then the `denote-excluded-punctuation-regexp' is
+    other symbol, then the `denote-excluded-directories-regexp' is
     ignored altogether. This is useful in the scenario where the user
     option is set to exclude some directories but the dynamic blocks
     wants to lift that restriction. [ The `excluded-dirs-regexp'
@@ -3848,6 +3906,104 @@ section 7.3
 [Use Org dynamic blocks] See section 11
 
 [Insert links matching a regexp] See section 7.4
+
+[Org dynamic blocks to insert links or backlinks] See section 11.1
+
+[Exclude certain directories from all operations] See section 3.9
+
+[Linking notes] See section 7
+
+
+11.3 Org dynamic block to insert Org files as headings
+──────────────────────────────────────────────────────
+
+  [ Part of 3.1.0-dev. ]
+
+  [ IMPORTANT NOTE: This dynamic block only works with Org files,
+    because it has to assume the Org notation in order to insert each
+    file’s contents as its own heading. ]
+
+  As a variation of the previously covered block that inserts file
+  contents, we have the
+  `denote-org-extras-dblock-insert-files-as-headings' command ([Org
+  dynamic block to insert file contents]). It Turn the `#+title' of each
+  file into a top-level heading. Then it increments all original
+  headings in the file by one, so that they become subheadings of what
+  once was the `#+title'. Similarly, the `#+filetags' of each file as
+  tags for the top-level heading (what was the `#+title').
+
+  Because of how it is meant to work, this dynamic block only works with
+  Org files.
+
+  In its simplest form, this dynamic block looks like this:
+
+  ┌────
+  │ #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE"
+  │ 
+  │ #+END:
+  └────
+
+
+  Though when you use the command
+  `denote-org-extras-dblock-insert-files-as-headings' you get all the
+  parameters included:
+
+  ┌────
+  │ #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE" :excluded-dirs-regexp nil :sort-by-component title :reverse-sort nil :add-links t
+  │ 
+  │ #+END:
+  └────
+
+
+  • The `:regexp' parameter is mandatory. Its value is a string,
+    representing a regular expression to match Denote file names. Its
+    value may also be an `rx' expression instead of a string, as noted
+    in the previous section ([Org dynamic blocks to insert links or
+    backlinks]).  Note that you do not need to write an actual regular
+    expression to get meaningful results: even something like `_journal'
+    will work to include all files that have a `journal' keyword.
+
+  • The `:excluded-dirs-regexp' is a string that contains a word or
+    regular expression that matches against directory files names
+    to-be-excluded from the results. This has the same meaning as
+    setting the `denote-excluded-directories-regexp' user option
+    ([Exclude certain directories from all operations]). The user option
+    has a global effect, which is overridden locally in the dynamic
+    block. When the value of `:excluded-dirs-regexp' is nil (the
+    default), the value of `denote-excluded-directories-regexp' is used
+    (which is also nil by default, meaning that all directories are
+    included). When the value of `excluded-dirs-regexp' is `t' or some
+    other symbol, then the `denote-excluded-directories-regexp' is
+    ignored altogether. This is useful in the scenario where the user
+    option is set to exclude some directories but the dynamic blocks
+    wants to lift that restriction.
+
+  • The `:sort-by-component' parameter is optional. It sorts the files
+    by the given Denote file name component. The value it accepts is an
+    unquoted symbol among `title', `keywords', `signature',
+    `identifier'.  When using the command
+    `denote-org-extras-dblock-insert-files', this parameter is
+    automatically inserted together with the (`:regexp' parameter) and
+    the user is prompted for a file name component.
+
+  • The `:reverse-sort' parameter is optional. It reverses the order in
+    which files appear in. This is meaningful even without the presence
+    of the parameter `:sort-by-component', though it also combines with
+    it.
+
+  • The `:add-links' parameter is optional. When it is set to a `t'
+    value, all the top-level headings (those that were the `#+title' of
+    each file) are generated as links, pointing to the original file.
+    This has the same meaning as with the `denote-link' command and
+    related facilities ([Linking notes]).
+
+  • An optional `:block-name' parameter can be specified with a string
+    value to add a `#+name' to the results. This is useful for further
+    processing using Org facilities (a feature that is outside Denote’s
+    purview).
+
+
+[Org dynamic block to insert file contents] See section 11.2
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 

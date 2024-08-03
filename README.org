@@ -1397,6 +1397,8 @@ line or switching between then with commands like ~switch-to-buffer~.
 
 [[#h:3ca4db16-8f26-4d7d-b748-bac48ae32d69][Automatically rename Denote buffers]].
 
+[[#h:9051f15d-ea7e-4b17-adc2-bc6a749c721b][Find duplicate identifiers and put them in a Dired buffer]].
+
 ** Rename a single file
 :PROPERTIES:
 :CUSTOM_ID: h:7cc9e000-806a-48da-945c-711bbc7426b0
@@ -1814,6 +1816,57 @@ the signature altogether ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-na
   then type =RET= there with empty contents, or use the command
   ~vertico-exit-input~ with empty contents. That Vertico command is
   bound to =M-RET= as of this writing on 2024-06-30 10:37 +0300. ]
+
+** Find duplicate identifiers and put them in a Dired buffer
+:PROPERTIES:
+:CUSTOM_ID: h:9051f15d-ea7e-4b17-adc2-bc6a749c721b
+:END:
+
+Denote takes care to create unique identifiers, though its mechanism
+relies on reading the existing identifiers in the ~denote-directory~
+or the current directory. When we are renaming files across different
+directories, there is a small chance that some files have the same
+attributes and are thus assigned identical identifiers. If those files
+ever make it into a consolidated ~denote-directory~, we will have
+duplicates, which break the linking mechanism.
+
+As this is an edge case, we do not include any code to address it in
+the Denote code base. Though here is a way to find duplicate
+identifiers inside the current directory:
+
+#+begin_src emacs-lisp
+(defun my-denote--get-files-in-dir (directory)
+  "Return file names in DIRECTORY."
+  (directory-files directory :full-paths directory-files-no-dot-files-regexp))
+
+(defun my-denote--same-identifier-p (file1 file2)
+  "Return non-nil if FILE1 and FILE2 have the same identifier."
+  (let ((id1 (denote-retrieve-filename-identifier file1))
+        (id2 (denote-retrieve-filename-identifier file2)))
+    (equal id1 id2)))
+
+(defun my-denote-find-duplicate-identifiers (directory)
+  "Find all files in DIRECTORY that need a new identifier."
+  (let* ((ids (my-denote--get-files-in-dir directory))
+         (unique-ids (seq-uniq ids #'my-denote--same-identifier-p)))
+    (seq-difference ids unique-ids #'equal)))
+
+(defun my-denote-dired-show-duplicate-identifiers (directory)
+  "Put duplicate identifiers from DIRECTORY in a dedicated Dired buffer."
+  (interactive
+   (list
+    (read-directory-name "Select DIRECTORY to check for duplicate identifiers: " default-directory)))
+  (if-let ((duplicates (my-denote-find-duplicate-identifiers directory)))
+      (dired (cons (format "Denote duplicate identifiers" directory) duplicates))
+    (message "No duplicates identifiers in `%s'" directory)))
+#+end_src
+
+Evaluate this code and then call the command ~my-denote-dired-show-duplicate-identifiers~.
+If there are duplicates, it will put them in a dedicated Dired buffer.
+From there, you can view the file contents as usual, and manually edit
+the identifiers as you see fit (e.g. edit them one by one, or change
+to the writable Dired and record a keyboard macro that makes use of a
+counter to increment by 1---contact me if you need any help).
 
 ** Faces used by rename commands
 :PROPERTIES:
@@ -3228,14 +3281,14 @@ line to update the block.
 - The =:excluded-dirs-regexp= is a string that contains a word or
   regular expression that matches against directory files names
   to-be-excluded from the results. This has the same meaning as
-  setting the ~denote-excluded-punctuation-regexp~ user option
+  setting the ~denote-excluded-directories-regexp~ user option
   ([[#h:8458f716-f9c2-4888-824b-2bf01cc5850a][Exclude certain directories from all operations]]). The user option
   has a global effect, which is overridden locally in the dynamic
   block. When the value of =:excluded-dirs-regexp= is nil (the
-  default), the value of ~denote-excluded-punctuation-regexp~ is used
+  default), the value of ~denote-excluded-directories-regexp~ is used
   (which is also nil by default, meaning that all directories are
   included). When the value of =excluded-dirs-regexp= is ~t~ or some
-  other symbol, then the ~denote-excluded-punctuation-regexp~ is
+  other symbol, then the ~denote-excluded-directories-regexp~ is
   ignored altogether. This is useful in the scenario where the user
   option is set to exclude some directories but the dynamic blocks
   wants to lift that restriction. [ The =excluded-dirs-regexp=
@@ -3339,14 +3392,14 @@ parameters, which are described further below:
 - The =:excluded-dirs-regexp= is a string that contains a word or
   regular expression that matches against directory files names
   to-be-excluded from the results. This has the same meaning as
-  setting the ~denote-excluded-punctuation-regexp~ user option
+  setting the ~denote-excluded-directories-regexp~ user option
   ([[#h:8458f716-f9c2-4888-824b-2bf01cc5850a][Exclude certain directories from all operations]]). The user option
   has a global effect, which is overridden locally in the dynamic
   block. When the value of =:excluded-dirs-regexp= is nil (the
-  default), the value of ~denote-excluded-punctuation-regexp~ is used
+  default), the value of ~denote-excluded-directories-regexp~ is used
   (which is also nil by default, meaning that all directories are
   included). When the value of =excluded-dirs-regexp= is ~t~ or some
-  other symbol, then the ~denote-excluded-punctuation-regexp~ is
+  other symbol, then the ~denote-excluded-directories-regexp~ is
   ignored altogether. This is useful in the scenario where the user
   option is set to exclude some directories but the dynamic blocks
   wants to lift that restriction. [ The =excluded-dirs-regexp=
@@ -3393,6 +3446,89 @@ parameters, which are described further below:
   ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]). Remember that Org can fold the items in a
   typographic list the same way it does with headings. So even long
   files can be presented in this format without much trouble.
+
+- An optional =:block-name= parameter can be specified with a string
+  value to add a =#+name= to the results. This is useful for further
+  processing using Org facilities (a feature that is outside Denote's
+  purview).
+
+** Org dynamic block to insert Org files as headings
+:PROPERTIES:
+:CUSTOM_ID: h:d6254a12-b762-4096-a5de-66a0d423e204
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+[ IMPORTANT NOTE: This dynamic block only works with Org files,
+  because it has to assume the Org notation in order to insert each
+  file's contents as its own heading. ]
+
+#+findex: denote-org-extras-dblock-insert-files-as-headings
+As a variation of the previously covered block that inserts file
+contents, we have the ~denote-org-extras-dblock-insert-files-as-headings~
+command ([[#h:f15fa143-5036-416f-9bff-1bcabbb03456][Org dynamic block to insert file contents]]). It Turn the
+=#+title= of each file into a top-level heading. Then it increments
+all original headings in the file by one, so that they become
+subheadings of what once was the =#+title=. Similarly, the
+=#+filetags= of each file as tags for the top-level heading
+(what was the =#+title=).
+
+Because of how it is meant to work, this dynamic block only works with
+Org files.
+
+In its simplest form, this dynamic block looks like this:
+
+: #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE"
+:
+: #+END:
+
+Though when you use the command ~denote-org-extras-dblock-insert-files-as-headings~
+you get all the parameters included:
+
+: #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE" :excluded-dirs-regexp nil :sort-by-component title :reverse-sort nil :add-links t
+:
+: #+END:
+
+- The =:regexp= parameter is mandatory. Its value is a string,
+  representing a regular expression to match Denote file names. Its
+  value may also be an ~rx~ expression instead of a string, as noted
+  in the previous section ([[#h:50160fae-6515-4d7d-9737-995ad925e64b][Org dynamic blocks to insert links or backlinks]]).
+  Note that you do not need to write an actual regular expression to
+  get meaningful results: even something like =_journal= will work to
+  include all files that have a =journal= keyword.
+
+- The =:excluded-dirs-regexp= is a string that contains a word or
+  regular expression that matches against directory files names
+  to-be-excluded from the results. This has the same meaning as
+  setting the ~denote-excluded-directories-regexp~ user option
+  ([[#h:8458f716-f9c2-4888-824b-2bf01cc5850a][Exclude certain directories from all operations]]). The user option
+  has a global effect, which is overridden locally in the dynamic
+  block. When the value of =:excluded-dirs-regexp= is nil (the
+  default), the value of ~denote-excluded-directories-regexp~ is used
+  (which is also nil by default, meaning that all directories are
+  included). When the value of =excluded-dirs-regexp= is ~t~ or some
+  other symbol, then the ~denote-excluded-directories-regexp~ is
+  ignored altogether. This is useful in the scenario where the user
+  option is set to exclude some directories but the dynamic blocks
+  wants to lift that restriction.
+
+- The =:sort-by-component= parameter is optional. It sorts the files
+  by the given Denote file name component. The value it accepts is an
+  unquoted symbol among =title=, =keywords=, =signature=, =identifier=.
+  When using the command ~denote-org-extras-dblock-insert-files~, this
+  parameter is automatically inserted together with the (=:regexp=
+  parameter) and the user is prompted for a file name component.
+
+- The =:reverse-sort= parameter is optional. It reverses the order in
+  which files appear in. This is meaningful even without the presence
+  of the parameter =:sort-by-component=, though it also combines with
+  it.
+
+- The =:add-links= parameter is optional. When it is set to a ~t~
+  value, all the top-level headings (those that were the =#+title= of
+  each file) are generated as links, pointing to the original file.
+  This has the same meaning as with the ~denote-link~ command and
+  related facilities ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
 
 - An optional =:block-name= parameter can be specified with a string
   value to add a =#+name= to the results. This is useful for further
