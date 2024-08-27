@@ -1061,11 +1061,6 @@ For our purposes, a note must satisfy `file-regular-p' and
   "Return non-nil if FILE has a Denote identifier."
   (denote-retrieve-filename-signature file))
 
-(defun denote--file-regular-writable-p (file)
-  "Return non-nil if FILE is regular and writable."
-  (and (file-regular-p file)
-       (file-writable-p file)))
-
 (defun denote-file-is-writable-and-supported-p (file)
   "Return non-nil if FILE is writable and has supported extension."
   ;; We do not want to test that the file is regular (exists) because we want
@@ -2722,9 +2717,15 @@ variable `denote-directory'."
   (mapc #'denote--revert-dired (buffer-list)))
 
 (defun denote-rename-file-and-buffer (old-name new-name)
-  "Rename file named OLD-NAME to NEW-NAME, updating buffer name."
+  "Rename file named OLD-NAME to NEW-NAME, updating buffer name.
+
+If the file exists on the file system, it is renamed.  This
+function may be called when creating a new note and the file does
+not exist yet.
+
+If a buffer is visiting the file, its name is updated."
   (unless (string= (expand-file-name old-name) (expand-file-name new-name))
-    (when (and (denote--file-regular-writable-p old-name)
+    (when (and (file-regular-p old-name)
                (file-writable-p new-name))
       (cond
        ((derived-mode-p 'dired-mode)
@@ -4274,7 +4275,9 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
 
 (defun denote-link--backlink-find-file (button)
   "Action for BUTTON to `find-file'."
-  (funcall denote-link-button-action (buffer-substring (button-start button) (button-end button))))
+  (funcall denote-link-button-action
+           (concat (denote-directory)
+                   (buffer-substring (button-start button) (button-end button)))))
 
 (defun denote-link--display-buffer (buf &optional action)
   "Run `display-buffer' on BUF using optional ACTION alist.
