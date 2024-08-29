@@ -3571,6 +3571,7 @@ section 7.3
   • The `%k' is the Denote `KEYWORDS' of the file.
   • The `%b' is an indicator of whether or not the file has backlinks
     pointing to it. The indicator string is defined in the user option
+    `denote-rename-buffer-backlinks-indicator', alias
     `denote-buffer-has-backlinks-string' [ Part of 3.1.0-dev ].
   • The `%%' is a literal percent sign.
 
@@ -3602,16 +3603,21 @@ section 7.3
   prefix.  Examples:
 
   ┌────
-  │ ;; Use the title prefixed with the backlink indicator (default)
-  │ (setq denote-rename-buffer-format "%b%t")
+  │ ;; Use the title prefixed with the backlink indicator (default).
+  │ (setq denote-rename-buffer-format "%t %b")
   │ 
-  │ ;; Customize what the backlink indicator looks like
-  │ (setq denote-buffer-has-backlinks-string "!! ")
+  │ ;; Customize what the backlink indicator looks like.  This two-faced
+  │ ;; arrow is the default.
+  │ (setq denote-rename-buffer-backlinks-indicator "<-->")
   │ 
-  │ ;; Use the title and keywords with some emoji in between
+  │ ;; Use just the title and keywords with some emoji in between, because
+  │ ;; why not?
   │ (setq denote-rename-buffer-format "%t 🤨 %k")
   │ 
-  │ ;; Use the title with a literal "[D]" before it
+  │ ;; Use the title with a literal "[D]" before it.
+  │ (setq denote-rename-buffer-format "[D] %t")
+  │ 
+  │ ;; As above, but also add the `denote-rename-buffer-backlinks-indicator' at the end.
   │ (setq denote-rename-buffer-format "[D] %t")
   └────
 
