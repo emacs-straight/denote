@@ -2056,6 +2056,13 @@ If either that or DATE is nil or an empty string, return
 `current-time'."
   (or (denote-valid-date-p date) (current-time)))
 
+(defun denote--id-to-date (identifier)
+  "Convert IDENTIFIER string to YYYY-MM-DD."
+  (replace-regexp-in-string
+   "\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\).*"
+   "\\1-\\2-\\3"
+   identifier))
+
 (defun denote--buffer-file-names ()
   "Return file names of Denote buffers."
   (delq nil
@@ -2670,7 +2677,8 @@ See the format of `denote-file-types'."
   (and (derived-mode-p 'org-mode)
        (or (and (bound-and-true-p org-capture-mode)
                 (string-match-p "\\`CAPTURE-.*" (buffer-name)))
-           (string-match-p "\\`\\*Org Note\\*" (buffer-name)))))
+           (string-match-p "\\`\\*Org Note\\*" (buffer-name))
+           (null buffer-file-name))))
 
 (defun denote-filetype-heuristics (file)
   "Return likely file type of FILE.
@@ -3813,24 +3821,31 @@ The format of such links is `denote-md-link-format'.")
   "Regexp to match an identifier-only link in its context.
 The format of such links is `denote-id-only-link-format'."  )
 
-(defun denote-format-link (file description file-type id-only)
+(defun denote-format-link (file description file-type id-only &optional include-date)
   "Prepare link to FILE using DESCRIPTION.
 
 FILE-TYPE and ID-ONLY are used to get the format of the link.
-See the `:link' property of `denote-file-types'."
-  (format
-   (cond
-    ((or id-only (null description) (string-empty-p description))
-     denote-id-only-link-format)
-    ;; NOTE 2024-05-20: If there is no file type, we want to use the
-    ;; Org format because it is still a usable link with the help of
-    ;; the command `org-open-at-point-global'.
-    ((null file-type)
-     (denote--link-format 'org))
-    (t
-     (denote--link-format file-type)))
-   (denote-retrieve-filename-identifier file)
-   description))
+See the `:link' property of `denote-file-types'.
+
+With optional INCLUDE-DATE, convert the identifier using
+`denote--id-to-date' and append it to DESCRIPTION."
+  (let* ((identifier (denote-retrieve-filename-identifier file))
+         (desc (if include-date
+                   (format "%s (%s)" description (denote--id-to-date identifier))
+                description)))
+    (format
+     (cond
+      ((or id-only (null description) (string-empty-p description))
+       denote-id-only-link-format)
+      ;; NOTE 2024-05-20: If there is no file type, we want to use the
+      ;; Org format because it is still a usable link with the help of
+      ;; the command `org-open-at-point-global'.
+      ((null file-type)
+       (denote--link-format 'org))
+      (t
+       (denote--link-format file-type)))
+     identifier
+     desc)))
 
 (make-obsolete 'denote-link-signature-format nil "2.3.0")
 
@@ -3953,9 +3968,9 @@ function."
         (push (match-string-no-properties 1) matches)))
     matches))
 
-(defun denote-link--expand-identifiers (regexp files)
-  "Expand identifiers matching REGEXP in FILES into file paths."
-  (let ((files files)
+(defun denote-link--expand-identifiers (regexp)
+  "Expend identifiers matching REGEXP into file paths."
+  (let ((files (denote-directory-files))
         found-files)
     (dolist (file files)
       (dolist (i (denote-link--collect-identifiers regexp))
@@ -3990,10 +4005,19 @@ Also see `denote-link-return-backlinks'."
              ((denote-file-has-supported-extension-p current-file))
              (file-type (denote-filetype-heuristics current-file))
              (regexp (denote--link-in-context-regexp file-type))
-             (files (denote-directory-files)))
-    (with-temp-buffer
-      (insert-file-contents current-file)
-      (denote-link--expand-identifiers regexp files))))
+             (files (denote-directory-files))
+             (file-identifiers
+              (with-temp-buffer
+                (insert-file-contents current-file)
+                (denote-link--collect-identifiers regexp)))
+             (file-identifiers-hash-table (make-hash-table :test 'equal)))
+    (dolist (id file-identifiers)
+      (puthash id t file-identifiers-hash-table))
+    (let ((found-files))
+      (dolist (file files)
+        (when (gethash (denote-retrieve-filename-identifier file) file-identifiers-hash-table)
+          (push file found-files)))
+      found-files)))
 
 (defalias 'denote-link-return-forelinks 'denote-link-return-links
   "Alias for `denote-link-return-links'.")
@@ -4409,8 +4433,11 @@ non-nil value."
     (with-current-buffer (get-buffer-create backlinks-buffer)
       (erase-buffer)
       (denote-backlinks-mode)
-      ;; Set the `denote-directory' after enabling the major mode,
-      ;; otherwise its value gets overwritten.
+      ;; In the backlinks buffer, the values of variables set in a
+      ;; `.dir-locals.el` do not apply.  We need to set `denote-directory' in
+      ;; the backlinks buffer because the buttons depend on it.  Moreover, its
+      ;; value is overwritten after enabling the major mode, so it needs to be
+      ;; set after.
       (setq-local denote-directory dir)
       (setq overlay-arrow-position nil)
       (goto-char (point-min))
@@ -4464,23 +4491,25 @@ Place the buffer below the current window or wherever the user option
 
 (make-obsolete-variable 'denote-link-add-links-sort nil "3.1.0")
 
-(defun denote-link--prepare-links (files current-file-type id-only &optional no-sort)
+(defun denote-link--prepare-links (files current-file-type id-only &optional no-sort include-date)
   "Prepare links to FILES from CURRENT-FILE-TYPE.
 When ID-ONLY is non-nil, use a generic link format.
 
 With optional NO-SORT do not try to sort the inserted lines.
-Otherwise sort lines while accounting for `denote-link-add-links-sort'."
+Otherwise sort lines while accounting for `denote-link-add-links-sort'.
+
+Optional INCLUDE-DATE has the same meaning as in `denote-format-link'."
   (let ((links))
     (dolist (file files)
       (let* ((description (denote--link-get-description file))
-             (link (denote-format-link file description current-file-type id-only))
+             (link (denote-format-link file description current-file-type id-only include-date))
              (link-as-list-item (format denote-link--prepare-links-format link)))
          (push link-as-list-item links)))
     (if no-sort
         (nreverse links)
       (sort links #'string-collate-lessp))))
 
-(defun denote-link--insert-links (files current-file-type &optional id-only no-sort)
+(defun denote-link--insert-links (files current-file-type &optional id-only no-sort include-date)
   "Insert at point a typographic list of links matching FILES.
 
 With CURRENT-FILE-TYPE as a symbol among those specified in
@@ -4491,8 +4520,10 @@ unknown non-nil value, default to the Org notation.
 With ID-ONLY as a non-nil value, produce links that consist only
 of the identifier, thus deviating from CURRENT-FILE-TYPE.
 
-Optional NO-SORT is passed to `denote-link--prepare-links'."
-  (when-let ((links (denote-link--prepare-links files current-file-type id-only no-sort)))
+Optional NO-SORT is passed to `denote-link--prepare-links'.
+
+Optional INCLUDE-DATE has the same meaning as in `denote-format-link'."
+  (when-let ((links (denote-link--prepare-links files current-file-type id-only no-sort include-date)))
     (dolist (link links)
       (insert link))))
 
