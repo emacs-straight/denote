@@ -5425,6 +5425,10 @@ section 15.14
         understanding of what we should be omitting, we will update
         things accordingly.
 
+  Function `denote-identifier-p'
+        Return non-nil if `IDENTIFIER' string is a Denote identifier. [
+        Part of 3.1.0-dev. ]
+
   Function `denote-file-is-note-p'
         Return non-nil if `FILE' is an actual Denote note. For our
         purposes, a note must satisfy `file-regular-p' and

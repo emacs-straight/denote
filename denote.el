@@ -1030,6 +1030,10 @@ any leading and trailing signs."
   "Return non-nil if FILE is empty."
   (zerop (or (file-attribute-size (file-attributes file)) 0)))
 
+(defun denote-identifier-p (identifier)
+  "Return non-nil if IDENTIFIER string is a Denote identifier."
+  (string-match-p (format "\\`%s\\'" denote-id-regexp) identifier))
+
 (defun denote-file-has-identifier-p (file)
   "Return non-nil if FILE has a Denote identifier."
   (denote-retrieve-filename-identifier file))
@@ -2058,10 +2062,12 @@ If either that or DATE is nil or an empty string, return
 
 (defun denote--id-to-date (identifier)
   "Convert IDENTIFIER string to YYYY-MM-DD."
-  (replace-regexp-in-string
-   "\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\).*"
-   "\\1-\\2-\\3"
-   identifier))
+  (if (denote-identifier-p identifier)
+      (replace-regexp-in-string
+       "\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\).*"
+       "\\1-\\2-\\3"
+       identifier)
+    (error "`%s' does not look like a Denote identifier per `denote-id-regexp'" identifier)))
 
 (defun denote--buffer-file-names ()
   "Return file names of Denote buffers."

@@ -1,11 +1,10 @@
 ;;; denote-test.el --- Unit tests for Denote -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023  Free Software Foundation, Inc.
+;; Copyright (C) 2023-2024  Free Software Foundation, Inc.
 
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
-;; Maintainer: Denote Development <~protesilaos/denote@lists.sr.ht>
-;; URL: https://git.sr.ht/~protesilaos/denote
-;; Mailing-List: https://lists.sr.ht/~protesilaos/denote
+;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
+;; URL: https://github.com/protesilaos/denote
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -24,7 +23,7 @@
 
 ;;; Commentary:
 
-;; WORK-IN-PROGRESS
+;; Tests for Denote.
 
 ;;; Code:
 
@@ -487,6 +486,16 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
                 (denote-retrieve-filename-signature "/path/to/testing/==signature__denote_testing@@20240610T194654--this-is-a-test-reordered.org")
                 "signature"))))
 
+(ert-deftest denote-test--denote-identifier-p ()
+  "Test that `denote-identifier-p' works for Denote identifiers."
+  (should (and (denote-identifier-p "20240901T090910")
+               (null (denote-identifier-p "20240901T090910-not-identifier-format")))))
+
+(ert-deftest denote-test--denote--id-to-date ()
+  "Test that `denote--id-to-date' returns the date from an identifier."
+  (should (equal (denote--id-to-date "20240901T090910") "2024-09-01"))
+  (should-error (denote--id-to-date "20240901T090910-not-identifier-format")))
+
 ;;;; denote-journal-extras.el
 
 (require 'denote-journal-extras)
@@ -495,7 +504,7 @@ Extend what we do in `denote-test--denote-file-type-extensions'."
   "Make sure that `denote-journal-extras-daily--title-format' yields the desired format."
   (should (and
            ;; These three should prompt, but I am here treating the
-           ;; prompt as if already returned a string.  The test for
+           ;; prompt as if it already returned a string.  The test for
            ;; the `denote-title-prompt' can be separate.
            (stringp
             (cl-letf (((symbol-function 'denote-title-prompt) #'identity)
