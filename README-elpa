@@ -3640,7 +3640,7 @@ section 7.3
   [ As part of version 2.3.0, all dynamic blocks are defined in the file
     `denote-org-extras.el'. The file which was once called
     `denote-org-dblock.el' contains aliases for the new function names
-    and dipslays a warning about its deprecation. There is no need to
+    and displays a warning about its deprecation. There is no need to
     `require' the `denote-org-extras' feature because all of Denote’s
     Org dynamic blocks are autoloaded (meaning that they work as soon as
     they are used). For backward compatibility, all dynamic blocks
@@ -3685,7 +3685,7 @@ section 7.3
   [ As part of version 2.3.0, all dynamic blocks are defined in the file
     `denote-org-extras.el'. The file which was once called
     `denote-org-dblock.el' contains aliases for the new function names
-    and dipslays a warning about its deprecation. There is no need to
+    and displays a warning about its deprecation. There is no need to
     `require' the `denote-org-extras' feature because all of Denote’s
     Org dynamic blocks are autoloaded (meaning that they work as soon as
     they are used). For backward compatibility, all dynamic blocks
@@ -3862,7 +3862,7 @@ section 7.3
   [ As part of version 2.3.0, all dynamic blocks are defined in the file
     `denote-org-extras.el'. The file which was once called
     `denote-org-dblock.el' contains aliases for the new function names
-    and dipslays a warning about its deprecation. There is no need to
+    and displays a warning about its deprecation. There is no need to
     `require' the `denote-org-extras' feature because all of Denote’s
     Org dynamic blocks are autoloaded (meaning that they work as soon as
     they are used). For backward compatibility, all dynamic blocks
