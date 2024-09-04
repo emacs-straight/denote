@@ -157,10 +157,42 @@ commands (`denote-rename-file' and related).
 If this user option is set to a non-nil value, such buffers are
 saved automatically.  The assumption is that the user who opts in
 to this feature is familiar with the `denote-rename-file'
-operation (or related) and knows it is reliable."
+operation (or related) and knows it is reliable.  Data loss may
+occur if the file is modified externally.
+
+Also see `denote-kill-buffers'."
   :group 'denote
   :package-version '(denote . "3.0.0")
   :type 'boolean)
+
+(defcustom denote-kill-buffers nil
+  "Control whether creation or renaming commands kill their buffer.
+
+The default behaviour of creation or renaming commands such as
+`denote' or `denote-rename-file' is to not kill the buffer they
+create or modify at the end of their operation.
+
+If this user option is nil (the default), buffers affected by a
+creation or renaming command are not automatically killed.
+
+If set to `on-creation', new notes are automatically killed.
+
+If set to `on-rename', renamed notes are automatically killed.
+
+If set to t, new and renamed notes are killed.
+
+If a buffer is killed, it is also saved, as if `denote-save-buffers'
+were t. See its documentation.
+
+In all cases, if the buffer already existed before the Denote operation
+it is NOT automatically killed."
+  :group 'denote
+  :package-version '(denote . "3.1.0")
+  :type '(choice
+          (const :tag "Do not kill buffers" nil)
+          (const :tag "Kill after creation" on-creation)
+          (const :tag "Kill after rename" on-rename)
+          (const :tag "Kill after creation and rename" t)))
 
 ;;;###autoload (put 'denote-known-keywords 'safe-local-variable #'listp)
 (defcustom denote-known-keywords
@@ -896,6 +928,24 @@ to override what this function returns."
       (denote--make-denote-directory)
       denote-directory)))
 
+;;;;; Sluggification functions
+
+(defun denote-slug-keep-only-ascii (str)
+  "Remove all non-ASCII characters from STR and replace them with spaces.
+This is useful as a helper function to construct
+`denote-file-name-slug-functions'."
+  (let* ((ascii-range (seq-map
+                       (lambda (character)
+                         (if (and (>= character 33) (<= character 126))
+                             character
+                           32)) ; empty space
+                       str))
+         (characters (seq-filter #'characterp ascii-range)))
+    (mapconcat #'string characters)))
+
+;; TODO 2024-09-03: After Denote version 3.1.0 I want to make those
+;; public because (i) they are stable and (ii) we want to encourage
+;; people to use them as part of their `denote-file-name-slug-functions'.
 (defun denote--slug-no-punct (str &optional extra-characters)
   "Remove punctuation from STR.
 Concretely, replace with an empty string anything that matches
@@ -911,6 +961,7 @@ as the aforementioned variables."
       (setq str (replace-regexp-in-string regexp "" str))))
   str)
 
+;; See above TODO.
 (defun denote--slug-no-punct-for-signature (str &optional extra-characters)
   "Remove punctuation (except = signs) from STR.
 
@@ -926,6 +977,7 @@ EXTRA-CHARACTERS is an optional string.  See
       (setq str (replace-regexp-in-string (string-replace "=" "" regexp) "" str))))
   str)
 
+;; See above TODO.
 (defun denote--slug-hyphenate (str)
   "Replace spaces and underscores with hyphens in STR.
 Also replace multiple hyphens with a single one and remove any
@@ -936,10 +988,12 @@ leading and trailing hyphen."
     "-\\{2,\\}" "-"
     (replace-regexp-in-string "_\\|\s+" "-" str))))
 
+;; See above TODO.
 (defun denote--remove-dot-characters (str)
   "Remove dot characters from STR."
   (replace-regexp-in-string "\\." "" str))
 
+;; See above TODO.
 (defun denote--trim-right-token-characters (str component)
   "Remove =, -, _ and @ from the end of STR.
 The removal is done only if necessary according to COMPONENT."
@@ -947,6 +1001,7 @@ The removal is done only if necessary according to COMPONENT."
       (string-trim-right str "[=@_]+")
     (string-trim-right str "[=@_-]+")))
 
+;; See above TODO.
 (defun denote--replace-consecutive-token-characters (str component)
   "Replace consecutive characters with a single one in STR.
 Hyphens, underscores, equal signs and at signs are replaced with
@@ -1025,6 +1080,8 @@ any leading and trailing signs."
   (mapcar (lambda (keyword)
             (denote-sluggify 'keyword keyword))
           keywords))
+
+;;;;; Common helper functions
 
 (defun denote--file-empty-p (file)
   "Return non-nil if FILE is empty."
@@ -2192,11 +2249,35 @@ The path of the newly created file is returned."
         (path))
     (if in-background
         (save-window-excursion
-          (call-interactively command)
-          (setq path (buffer-file-name)))
-      (call-interactively command)
-      (setq path (buffer-file-name)))
+          (setq path (call-interactively command)))
+      (setq path (call-interactively command)))
     path))
+
+(defun denote--handle-save-and-kill-buffer (mode file initial-state)
+  "Save and kill buffer of FILE according to MODE and INITIAL-STATE.
+
+The values of `denote-save-buffers' and `denote-kill-buffers' are
+used to decide whether to save and/or kill the buffer visiting
+FILE.
+
+MODE is one of the symbols `creation' or `rename'.
+
+INITIAL-STATE is nil or one of the following symbols:
+`not-visited', `visited'.  If a buffer was already visited at the
+beginning of a rename operation, it is NOT killed automatically.
+
+If a buffer needs to be killed, it is also automatically saved,
+no matter the value of `denote-save-buffers'."
+  (let* ((do-kill-buffer (and (not (eq initial-state 'visited))
+                              (or (eq denote-kill-buffers t)
+                                  (and (eq mode 'creation)
+                                       (eq denote-kill-buffers 'on-creation))
+                                  (and (eq mode 'rename)
+                                       (eq denote-kill-buffers 'on-rename)))))
+         (do-save-buffer (or do-kill-buffer denote-save-buffers)))
+    (when-let ((buffer (find-buffer-visiting file)))
+      (when do-save-buffer (with-current-buffer buffer (save-buffer)))
+      (when do-kill-buffer (kill-buffer buffer)))))
 
 (defvar denote-use-title nil
   "The title to be used in a note creation command.
@@ -2358,7 +2439,7 @@ When called from Lisp, all arguments are optional.
                 (denote--creation-prepare-note-data title keywords file-type directory date template signature))
                (id (denote--find-first-unused-id (denote-get-identifier date)))
                (note-path (denote--prepare-note title keywords date id directory file-type template signature)))
-    (when denote-save-buffers (save-buffer))
+    (denote--handle-save-and-kill-buffer 'creation note-path nil)
     (denote--keywords-add-to-history keywords)
     (run-hooks 'denote-after-new-note-hook)
     note-path))
@@ -2629,7 +2710,11 @@ has the `signature' prompt appended to its existing prompts."
 
 ;;;###autoload
 (defun denote-region ()
-  "Call `denote' and insert therein the text of the active region."
+  "Call `denote' and insert therein the text of the active region.
+
+Note that, currently, `denote-save-buffers' and
+`denote-kill-buffers' are NOT respected.  The buffer is not
+saved or killed at the end of `denote-region'."
   (declare (interactive-only t))
   (interactive)
   (if-let (((region-active-p))
@@ -2637,7 +2722,11 @@ has the `signature' prompt appended to its existing prompts."
            ;; the moment `insert' is called.
            (text (buffer-substring-no-properties (region-beginning) (region-end))))
       (progn
-        (let ((denote-ignore-region-in-denote-command t))
+        (let ((denote-ignore-region-in-denote-command t)
+              ;; FIXME: Find a way to insert the region before the buffer is
+              ;; saved/killed by the creation command.
+              (denote-save-buffers nil)
+              (denote-kill-buffers nil))
           (call-interactively 'denote))
         (push-mark (point))
         (insert text)
@@ -2899,8 +2988,10 @@ for anything.  It is meant to be combined with
 `denote--rename-get-file-info-from-prompts-or-existing' to create
 a renaming command.
 
-Respect `denote-rename-confirmations' and `denote-save-buffers'."
-  (let* ((file-type (denote-filetype-heuristics file))
+Respect `denote-rename-confirmations', `denote-save-buffers' and
+`denote-kill-buffers'."
+  (let* ((initial-state (if (find-buffer-visiting file) 'visited 'not-visited))
+         (file-type (denote-filetype-heuristics file))
          (current-title (or (denote-retrieve-front-matter-title-value file file-type) ""))
          (current-keywords (denote-extract-keywords-from-path file))
          (keywords (denote-keywords-sort keywords))
@@ -2930,9 +3021,7 @@ Respect `denote-rename-confirmations' and `denote-save-buffers'."
       ;; files on rename. This could be a distinct command.
       (when denote--used-ids
         (puthash id t denote--used-ids))
-      (when denote-save-buffers
-        (with-current-buffer (find-file-noselect new-name)
-          (save-buffer)))
+      (denote--handle-save-and-kill-buffer 'rename new-name initial-state)
       (run-hooks 'denote-after-rename-file-hook))
     new-name))
 
@@ -3061,6 +3150,9 @@ If the file does not have front matter but is among the supported
 file types (per `denote-file-type'), add front matter to the top
 of it and leave the buffer unsaved for further inspection.  Save
 the buffer if `denote-save-buffers' is non-nil.
+
+When `denote-kill-buffers' is t or `on-rename', kill the buffer
+if it was not already being visited before the rename operation.
 
 For the front matter of each file type, refer to the variables:
 
@@ -3271,9 +3363,10 @@ the Dired file at point, which is subsequently inspected for the
 requisite front matter.  It is thus implied that the FILE has a file
 type that is supported by Denote, per `denote-file-type'.
 
-The values of `denote-rename-confirmations' and `denote-save-buffers'
-are respected.  Though there is no prompt to confirm the rewrite of the
-front matter, since this is already done by the user.
+The values of `denote-rename-confirmations',
+`denote-save-buffers' and `denote-kill-buffers' are respected.
+Though there is no prompt to confirm the rewrite of the front
+matter, since this is already done by the user.
 
 The identifier of the file, if any, is never modified even if it
 is edited in the front matter: Denote considers the file name to
@@ -3398,7 +3491,8 @@ Construct the file name in accordance with the user option
    (list
     (denote--rename-dired-file-or-current-file-or-prompt)
     (denote--valid-file-type (or (denote-file-type-prompt) denote-file-type))))
-  (let* ((dir (file-name-directory file))
+  (let* ((initial-state (if (find-buffer-visiting file) 'visited 'not-visited))
+         (dir (file-name-directory file))
          (old-file-type (denote-filetype-heuristics file))
          (id (or (denote-retrieve-filename-identifier file) ""))
          (title (or (denote-retrieve-title-or-filename file old-file-type) ""))
@@ -3413,9 +3507,7 @@ Construct the file name in accordance with the user option
       (when (and (denote-file-is-writable-and-supported-p new-name)
                  (denote-add-front-matter-prompt new-name))
         (denote--add-front-matter new-name title keywords id new-file-type)
-        (when denote-save-buffers
-          (with-current-buffer (find-file-noselect new-name)
-            (save-buffer)))))))
+        (denote--handle-save-and-kill-buffer 'rename new-name initial-state)))))
 
 ;;;; The Denote faces
 
