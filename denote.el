@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 3.0.8
+;; Version: 3.1.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -4139,6 +4139,9 @@ Also see `denote-link-return-links'."
              (id (denote-retrieve-filename-identifier-with-error current-file)))
     (delete current-file (denote--retrieve-files-in-xrefs id))))
 
+;; TODO 2024-09-04: Instead of using `denote-link-return-backlinks' we
+;; should have a function that does not try to find all backlinks but
+;; simply exits as soon as it finds one.
 (defun denote--file-has-backlinks-p (file)
   "Return non-nil if FILE has backlinks."
   (not (zerop (length (denote-link-return-backlinks file)))))
