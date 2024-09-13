@@ -1436,6 +1436,48 @@ Table of Contents
 
 [Points of entry] See section 3
 
+◊ 3.7.3.1 Switch to a silo directory outright
+
+  [ The code snippets in this section depend on 3.2.0-dev. ]
+
+  Users who rely on silos may have a need to quickly switch between
+  directories. This can be done with bookmarks or projects, both of
+  which are built into Emacs:
+
+  • [Bookmark the directory with the notes].
+  • [Treat your notes as a project].
+
+  Another approach is to use the following small custom commands to (i)
+  be prompted for a silo and (ii) either use `cd' or `dired' to switch
+  to it.
+
+  ┌────
+  │ (defun my-denote-silo-extras-dired-to-silo (silo)
+  │   "Switch to SILO directory using `dired'.
+  │ SILO is a file path from `denote-silo-extras-directories'.
+  │ 
+  │ When called from Lisp, SILO is a file system path to a directory that
+  │ conforms with `denote-silo-extras-path-is-silo-p'."
+  │   (interactive (list (denote-silo-extras-directory-prompt)))
+  │   (denote-silo-extras-with-silo silo
+  │     (dired silo)))
+  │ 
+  │ (defun my-denote-silo-extras-cd-to-silo (silo)
+  │   "Switch to SILO directory using `cd'.
+  │ SILO is a file path from `denote-silo-extras-directories'.
+  │ 
+  │ When called from Lisp, SILO is a file system path to a directory that
+  │ conforms with `denote-silo-extras-path-is-silo-p'."
+  │   (interactive (list (denote-silo-extras-directory-prompt)))
+  │   (denote-silo-extras-with-silo silo
+  │     (cd silo)))
+  └────
+
+
+  [Bookmark the directory with the notes] See section 16.7
+
+  [Treat your notes as a project] See section 16.8
+
 
 3.7.4 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -6961,12 +7003,12 @@ section 16.10
         Ashton Wiersdorf, Benjamin Kästner, Claudio Migliorelli, Claudiu
         Tănăselia, Colin McLear, Damien Cassou, Elias Storms, Federico
         Stilman, Florian, Frédéric Willem Frank Ehmsen, Glenna D., Guo
-        Yong, Hanspeter Gisler Harold Ollivier, Jack Baty, Jay Rajput,
-        Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen, Jonathan
-        Sahar, Johan Bolmsjö, Jonas Großekathöfer, Jousimies, Juanjo
-        Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas, Lukas
-        C. Bossert, M. Hadi Timachi, Maikol Solis, Mark Olson, Mirko
-        Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
+        Yong, Hanspeter Gisler Harold Ollivier, IceAsteroid, Jack Baty,
+        Jay Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
+        Jonathan Sahar, Johan Bolmsjö, Jonas Großekathöfer, Jousimies,
+        Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas,
+        Lukas C. Bossert, M. Hadi Timachi, Maikol Solis, Mark Olson,
+        Mirko Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
         Prevos, Peter Smith, Riccardo Giannitrapani, Samuel W. Flint,
         Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan Thesing,
         Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
