@@ -137,6 +137,7 @@ Table of Contents
 .. 12. Avoid duplicate identifiers when exporting Denote notes
 ..... 1. Export Denote notes with Org Mode
 ..... 2. Export Denote notes with Markdown
+.. 13. Set up your workflow for daily or weekly meeting notes
 17. Installation
 .. 1. GNU ELPA package
 .. 2. Manual installation
@@ -4544,12 +4545,11 @@ section 5.4
 
   ⁃ Package name (GNU ELPA): `tmr'
   ⁃ Official manual: <https://protesilaos.com/emacs/tmr>
-  ⁃ Change log: <https://protesilaos.com/emacs/denote-changelog>
-  ⁃ Git repo on SourceHut: <https://git.sr.ht/~protesilaos/tmr>
-    • Mirrors:
-      ⁃ GitHub: <https://github.com/protesilaos/tmr>
-      ⁃ GitLab: <https://gitlab.com/protesilaos/tmr>
-  ⁃ Mailing list: <https://lists.sr.ht/~protesilaos/tmr>
+  ⁃ Change log: <https://protesilaos.com/emacs/tmr-changelog>
+  ⁃ Git repositories:
+    ⁃ GitHub: <https://github.com/protesilaos/tmr>
+    ⁃ GitLab: <https://gitlab.com/protesilaos/tmr>
+  ⁃ Backronym: TMR May Ring; Timer Must Run.
 
 
 [Keep a journal or diary] See section 13
@@ -5386,6 +5386,90 @@ section 16.10
   of duplicate Denote identifiers.
 
 
+16.13 Set up your workflow for daily or weekly meeting notes
+────────────────────────────────────────────────────────────
+
+  Perhaps as part of work, we meet with certain people on a regular
+  basis. During the meeting we may discuss a variety of topics. How best
+  to approach with the help of Denote?
+
+  One option is to write a new file for each meeting, giving it the
+  appropriate keywords each time ([Points of entry]). This is what
+  Denote does by default and does not need any further tweaks. If we
+  need to review those notes, we can use the command `denote-sort-dired'
+  ([Sort files by component]), or one of the Org dynamic blocks we
+  provide ([Use Org dynamic blocks]), among other options.
+
+  Another approach is to write one file per person with the regular
+  `denote' command (or related), give it the name of the person as a
+  title and, optionally, use some relevant keywords. Inside each file,
+  write a top-level heading with the date of the meeting, and then
+  produce the meeting notes below as paragraphs and subheadings. This
+  can all be done without any changes to Denote, though we can
+  streamline it by incorporating the following code in our setup.
+  Configure `my-denote-colleagues' and then use the command
+  `my-denote-colleagues-new-meeting' to see how it works.
+
+  ┌────
+  │ (defvar my-denote-colleagues '("Prot" "Protesilaos")
+  │   "List of names I collaborate with.
+  │ There is at least one file in the variable `denote-directory' that has
+  │ the name of this person.")
+  │ 
+  │ (defvar my-denote-colleagues-prompt-history nil
+  │   "Minibuffer history for `my-denote-colleagues-new-meeting'.")
+  │ 
+  │ (defun my-denote-colleagues-prompt ()
+  │   "Prompt with completion for a name among `my-denote-colleagues'.
+  │ Use the last input as the default value."
+  │   (let ((default-value (car my-denote-colleagues-prompt-history)))
+  │     (completing-read
+  │      (format-prompt "New meeting with COLLEAGUE" default-value)
+  │      my-denote-colleagues
+  │      nil :require-match nil
+  │      'my-denote-colleagues-prompt-history
+  │      default-value)))
+  │ 
+  │ (defun my-denote-colleagues-get-file (name)
+  │   "Find file in variable `denote-directory' for NAME colleague.
+  │ If there are more than one files, prompt with completion for one among
+  │ them.
+  │ 
+  │ NAME is one among `my-denote-colleagues'."
+  │   (if-let ((files (denote-directory-files name))
+  │ 	   (length-of-files (length files)))
+  │       (cond
+  │        ((= length-of-files 1)
+  │ 	(car files))
+  │        ((> length-of-files 1)
+  │ 	(completing-read "Select a file: " files nil :require-match)))
+  │     (user-error "No files for colleague with name `%s'" name)))
+  │ 
+  │ (defun my-denote-colleagues-new-meeting ()
+  │   "Prompt for the name of a colleague and insert a timestamped heading therein.
+  │ The name of a colleague corresponds to at least one file in the variable
+  │ `denote-directory'.  In case there are multiple files, prompt to choose
+  │ one among them and operate therein."
+  │   (declare (interactive-only t))
+  │   (interactive)
+  │   (let* ((name (my-denote-colleagues-prompt))
+  │ 	 (file (my-denote-colleagues-get-file name))
+  │ 	 (time (format-time-string "%F %a %R")))  ; remove %R if you do not want the time
+  │     (with-current-buffer (find-file file)
+  │       (goto-char (point-max))
+  │       ;; Here I am assuming we are in `org-mode', hence the leading
+  │       ;; asterisk for the heading.  Adapt accordingly.
+  │       (insert (format "* [%s]\n\n" time)))))
+  └────
+
+
+[Points of entry] See section 3
+
+[Sort files by component] See section 12
+
+[Use Org dynamic blocks] See section 11
+
+
 17 Installation
 ═══════════════
 
@@ -5428,7 +5512,7 @@ section 16.10
   │ cd manual-packages
   │ 
   │ # Clone this repo, naming it "denote"
-  │ git clone https://git.sr.ht/~protesilaos/denote denote
+  │ git clone https://github.com/protesilaos/denote denote
   └────
 
   Finally, in your `init.el' (or equivalent) evaluate this:
