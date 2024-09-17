@@ -2482,8 +2482,7 @@ section 5.4
   option `denote-file-name-slug-functions'. These rules are applied to
   file names by default:
 
-  ⁃ What we count as “illegal characters” are removed.  The constant
-    `denote-excluded-punctuation-regexp' holds the relevant value.
+  ⁃ What we count as “illegal characters” are removed.
 
   ⁃ Input for a file title is hyphenated.  The original value is
     preserved in the note’s contents ([Front matter]).
@@ -2570,13 +2569,16 @@ section 5.4
   │ ;; The original function for reference
   │ (defun denote-sluggify-title (str)
   │   "Make STR an appropriate slug for title."
-  │   (downcase (denote--slug-hyphenate (denote--slug-no-punct str))))
+  │   (downcase
+  │    (denote-slug-hyphenate
+  │     (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/=]*" "" str))))
   │ 
   │ ;; Our variant of the above, which does the same thing except from
   │ ;; downcasing the string.
   │ (defun my-denote-sluggify-title (str)
   │   "Make STR an appropriate slug for title."
-  │   (denote--slug-hyphenate (denote--slug-no-punct str)))
+  │   (denote-slug-hyphenate
+  │    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/=]*" "" str)))
   │ 
   │ ;; Now we use our function to sluggify titles without affecting their
   │ ;; letter casing.
@@ -2635,24 +2637,20 @@ section 5.4
   │ ;; except they remove all non-ASCII characters.
   │ (defun my-denote-sluggify-title (str)
   │   (downcase
-  │    (denote--slug-hyphenate
-  │     (denote--slug-no-punct
-  │      (denote-slug-keep-only-ascii str)))))
+  │    (denote-slug-hyphenate
+  │     (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/=]*" ""
+  │ 			      (denote-slug-keep-only-ascii str)))))
   │ 
   │ (defun my-denote-sluggify-signature (str)
   │   (downcase
-  │    (denote--slug-put-equals
-  │     (denote--slug-no-punct-for-signature
-  │      (denote-slug-keep-only-ascii str)
-  │      "-+"))))
+  │    (denote-slug-put-equals
+  │     (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/-]*" ""
+  │ 			      (denote-slug-keep-only-ascii str)))))
   │ 
   │ (defun my-denote-sluggify-keyword (str)
   │   (downcase
-  │    (replace-regexp-in-string
-  │     "-" ""
-  │     (denote--slug-hyphenate
-  │      (denote--slug-no-punct
-  │       (denote-slug-keep-only-ascii str))))))
+  │    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/_ -=]*" ""
+  │ 			     (denote-slug-keep-only-ascii str))))
   │ 
   │ (defcustom denote-file-name-slug-functions
   │   '((title . my-denote-sluggify-title)
@@ -5672,17 +5670,6 @@ section 16.10
   Variable `denote-keywords-regexp'
         Regular expression to match the `KEYWORDS' field in a file name
         ([The file-naming scheme]).
-
-  Variable `denote-excluded-punctuation-regexp'
-        Punctionation that is removed from file names.  We consider
-        those characters illegal for our purposes.
-
-  Variable `denote-excluded-punctuation-extra-regexp'
-        Additional punctuation that is removed from file names.  This
-        variable is for advanced users who need to extend the
-        `denote-excluded-punctuation-regexp'.  Once we have a better
-        understanding of what we should be omitting, we will update
-        things accordingly.
 
   Function `denote-identifier-p'
         Return non-nil if `IDENTIFIER' string is a Denote identifier.
