@@ -124,20 +124,21 @@ Table of Contents
 .. 5. Use the `denote-menu' package
 16. Extending Denote
 .. 1. Create a new note in any directory
-.. 2. Automatically rename the note after saving it
-.. 3. Narrow the list of files in Dired
-.. 4. Use `dired-virtual-mode' for arbitrary file listings
-.. 5. Use Embark to collect minibuffer candidates
-.. 6. Search file contents
-.. 7. Bookmark the directory with the notes
-.. 8. Treat your notes as a project
-.. 9. Use the tree-based file prompt for select commands
-.. 10. Rename files with Denote in the Image Dired thumbnails buffer
-.. 11. Rename files with Denote using `dired-preview'
-.. 12. Avoid duplicate identifiers when exporting Denote notes
+.. 2. Find empty notes and put them in a Dired buffer
+.. 3. Automatically rename the note after saving it
+.. 4. Narrow the list of files in Dired
+.. 5. Use `dired-virtual-mode' for arbitrary file listings
+.. 6. Use Embark to collect minibuffer candidates
+.. 7. Search file contents
+.. 8. Bookmark the directory with the notes
+.. 9. Treat your notes as a project
+.. 10. Use the tree-based file prompt for select commands
+.. 11. Rename files with Denote in the Image Dired thumbnails buffer
+.. 12. Rename files with Denote using `dired-preview'
+.. 13. Avoid duplicate identifiers when exporting Denote notes
 ..... 1. Export Denote notes with Org Mode
 ..... 2. Export Denote notes with Markdown
-.. 13. Set up your workflow for daily or weekly meeting notes
+.. 14. Set up your workflow for daily or weekly meeting notes
 17. Installation
 .. 1. GNU ELPA package
 .. 2. Manual installation
@@ -1475,9 +1476,9 @@ Table of Contents
   └────
 
 
-  [Bookmark the directory with the notes] See section 16.7
+  [Bookmark the directory with the notes] See section 16.8
 
-  [Treat your notes as a project] See section 16.8
+  [Treat your notes as a project] See section 16.9
 
 
 3.7.4 Make Org export work with silos
@@ -4256,7 +4257,7 @@ section 7.3
 
 [Define a sorting function per component] See section 12.2
 
-[Use `dired-virtual-mode' for arbitrary file listings] See section 16.4
+[Use `dired-virtual-mode' for arbitrary file listings] See section 16.5
 
 [Org dynamic block to insert file contents] See section 11.4
 
@@ -4748,7 +4749,143 @@ section 5.4
   └────
 
 
-16.2 Automatically rename the note after saving it
+16.2 Find empty notes and put them in a Dired buffer
+────────────────────────────────────────────────────
+
+  [ This feature is based on the command `denote-sort-dired' ([Sort
+  files by component]). ]
+
+  Users may have a workflow where they use the commands
+  `denote-link-or-create' or `denote-link-after-creating' (and related)
+  to produce new notes that they plan to elaborate on later ([Link to an
+  existing note or create a new one]).
+
+  To help users find those empty notes, we document the following
+  commands:
+
+  • `my-denote-sort-dired-empty-files'
+  • `my-denote-sort-dired-without-empty-files'
+  • `my-denote-sort-dired-all-empty-files'
+  • `my-denote-sort-dired-without-all-empty-files'
+
+  ┌────
+  │ (require 'denote-sort)
+  │ 
+  │ (defun my-denote--note-has-no-contents-p (file)
+  │   "Return non-nil if FILE is an empty note.
+  │ This means that FILE conforms with `denote-file-is-note-p' and either
+  │ has no contents or has only the front matter."
+  │   (and (denote-file-is-note-p file)
+  │        (or (denote--file-with-temp-buffer file
+  │ 	     (re-search-forward "^$" nil t)
+  │ 	     (if (re-search-forward "[^\s\t\n\r]+" nil t)
+  │ 		 nil
+  │ 	       t))
+  │ 	   ;; This must come later because here we consider a file
+  │ 	   ;; "empty" even if it only has front matter.
+  │ 	   (denote--file-empty-p file))))
+  │ 
+  │ (defun my-denote-sort-dired-empty-files (files-matching-regexp sort-by-component reverse)
+  │   "Like `denote-sort-dired' but only cover empty files.
+  │ Empty files are those that satisfy `my-denote--note-has-no-contents-p'."
+  │   (interactive
+  │    (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
+  │   (let ((component (or sort-by-component
+  │ 		       denote-sort-dired-default-sort-component
+  │ 		       'identifier))
+  │ 	(reverse-sort (or reverse
+  │ 			  denote-sort-dired-default-reverse-sort
+  │ 			  nil)))
+  │     (if-let ((default-directory (denote-directory))
+  │ 	     (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort))
+  │ 	     (empty-files (seq-filter #'my-denote--note-has-no-contents-p files))
+  │ 	     ;; NOTE 2023-12-04: Passing the FILES-MATCHING-REGEXP as
+  │ 	     ;; buffer-name produces an error if the regexp contains a
+  │ 	     ;; wildcard for a directory. I can reproduce this in emacs
+  │ 	     ;; -Q and am not sure if it is a bug. Anyway, I will report
+  │ 	     ;; it upstream, but even if it is fixed we cannot use it
+  │ 	     ;; for now (whatever fix will be available for Emacs 30+).
+  │ 	     (denote-sort-dired-buffer-name (format "Denote sort `%s' by `%s'" files-matching-regexp component))
+  │ 	     (buffer-name (format "Denote sort by `%s' at %s" component (format-time-string "%T"))))
+  │ 	(let ((dired-buffer (dired (cons buffer-name (mapcar #'file-relative-name empty-files)))))
+  │ 	  (setq denote-sort--dired-buffer dired-buffer)
+  │ 	  (with-current-buffer dired-buffer
+  │ 	    (setq-local revert-buffer-function
+  │ 			(lambda (&rest _)
+  │ 			  (kill-buffer dired-buffer)
+  │ 			  (denote-sort-dired files-matching-regexp component reverse-sort))))
+  │ 	  ;; Because of the above NOTE, I am printing a message.  Not
+  │ 	  ;; what I want, but it is better than nothing...
+  │ 	  (message denote-sort-dired-buffer-name))
+  │       (message "No matching files for: %s" files-matching-regexp))))
+  │ 
+  │ (defun my-denote-sort-dired-without-empty-files (files-matching-regexp sort-by-component reverse)
+  │   "Like `denote-sort-dired' but only cover empty files.
+  │ Empty files are those that satisfy `my-denote--note-has-no-contents-p'."
+  │   (interactive
+  │    (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
+  │   (let ((component (or sort-by-component
+  │ 		       denote-sort-dired-default-sort-component
+  │ 		       'identifier))
+  │ 	(reverse-sort (or reverse
+  │ 			  denote-sort-dired-default-reverse-sort
+  │ 			  nil)))
+  │     (if-let ((default-directory (denote-directory))
+  │ 	     (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort))
+  │ 	     (empty-files (seq-remove #'my-denote--note-has-no-contents-p files))
+  │ 	     ;; NOTE 2023-12-04: Passing the FILES-MATCHING-REGEXP as
+  │ 	     ;; buffer-name produces an error if the regexp contains a
+  │ 	     ;; wildcard for a directory. I can reproduce this in emacs
+  │ 	     ;; -Q and am not sure if it is a bug. Anyway, I will report
+  │ 	     ;; it upstream, but even if it is fixed we cannot use it
+  │ 	     ;; for now (whatever fix will be available for Emacs 30+).
+  │ 	     (denote-sort-dired-buffer-name (format "Denote sort `%s' by `%s'" files-matching-regexp component))
+  │ 	     (buffer-name (format "Denote sort by `%s' at %s" component (format-time-string "%T"))))
+  │ 	(let ((dired-buffer (dired (cons buffer-name (mapcar #'file-relative-name empty-files)))))
+  │ 	  (setq denote-sort--dired-buffer dired-buffer)
+  │ 	  (with-current-buffer dired-buffer
+  │ 	    (setq-local revert-buffer-function
+  │ 			(lambda (&rest _)
+  │ 			  (kill-buffer dired-buffer)
+  │ 			  (denote-sort-dired files-matching-regexp component reverse-sort))))
+  │ 	  ;; Because of the above NOTE, I am printing a message.  Not
+  │ 	  ;; what I want, but it is better than nothing...
+  │ 	  (message denote-sort-dired-buffer-name))
+  │       (message "No matching files for: %s" files-matching-regexp))))
+  │ 
+  │ (defun my-denote-sort-dired-all-empty-files ()
+  │   "List all empty files in a Dired buffer.
+  │ This is the same as calling `my-denote-sort-dired' with a
+  │ FILES-MATCHING-REGEXP of \".*\"."
+  │   (declare (interactive-only t))
+  │   (interactive)
+  │   (let* ((other-prompts (denote-sort-dired--prompts))
+  │ 	 (sort-key (nth 1 other-prompts))
+  │ 	 (reverse (nth 2 other-prompts)))
+  │     (funcall-interactively #'my-denote-sort-dired-empty-files ".*" sort-key reverse)))
+  │ 
+  │ (defun my-denote-sort-dired-without-all-empty-files ()
+  │   "List all empty files in a Dired buffer.
+  │ This is the same as calling `my-denote-sort-dired' with a
+  │ FILES-MATCHING-REGEXP of \".*\"."
+  │   (declare (interactive-only t))
+  │   (interactive)
+  │   (let* ((other-prompts (denote-sort-dired--prompts))
+  │ 	 (sort-key (nth 1 other-prompts))
+  │ 	 (reverse (nth 2 other-prompts)))
+  │     (funcall-interactively #'my-denote-sort-dired-without-empty-files ".*" sort-key reverse)))
+  └────
+
+  [ In the above snippet, I am purposefully duplicating code to make it
+    easier for users to pick the ones they need. ]
+
+
+[Sort files by component] See section 12
+
+[Link to an existing note or create a new one] See section 7.7
+
+
+16.3 Automatically rename the note after saving it
 ──────────────────────────────────────────────────
 
   While experimenting with Denote, users may need to try different
@@ -4773,7 +4910,7 @@ section 5.4
   └────
 
 
-16.3 Narrow the list of files in Dired
+16.4 Narrow the list of files in Dired
 ──────────────────────────────────────
 
   Emacs’ standard file manager (or directory editor) can read a regular
@@ -4835,7 +4972,7 @@ section 5.4
 section 5.4
 
 
-16.4 Use `dired-virtual-mode' for arbitrary file listings
+16.5 Use `dired-virtual-mode' for arbitrary file listings
 ─────────────────────────────────────────────────────────
 
   Emacs’ Dired is a powerful file manager that builds its functionality
@@ -4937,7 +5074,7 @@ section 5.4
 [The file-naming scheme] See section 5
 
 
-16.5 Use Embark to collect minibuffer candidates
+16.6 Use Embark to collect minibuffer candidates
 ────────────────────────────────────────────────
 
   `embark' is a remarkable package that lets you perform relevant,
@@ -4961,10 +5098,10 @@ section 5.4
   power of the minibuffer ([Narrow the list of files in Dired]).
 
 
-[Narrow the list of files in Dired] See section 16.3
+[Narrow the list of files in Dired] See section 16.4
 
 
-16.6 Search file contents
+16.7 Search file contents
 ─────────────────────────
 
   [ Users of `consult' can use the `consult-denote' package instead
@@ -5013,7 +5150,7 @@ section 5.4
 See section 15.1
 
 
-16.7 Bookmark the directory with the notes
+16.8 Bookmark the directory with the notes
 ──────────────────────────────────────────
 
   Part of the reason Denote does not reinvent existing functionality is
@@ -5038,7 +5175,7 @@ See section 15.1
   extras for working with directories, including bookmarks.
 
 
-16.8 Treat your notes as a project
+16.9 Treat your notes as a project
 ──────────────────────────────────
 
   Emacs has a built-in library for treating a directory tree as a
@@ -5071,8 +5208,8 @@ See section 15.1
   Git).
 
 
-16.9 Use the tree-based file prompt for select commands
-───────────────────────────────────────────────────────
+16.10 Use the tree-based file prompt for select commands
+────────────────────────────────────────────────────────
 
   Older versions of Denote had a file prompt that resembled that of the
   standard `find-file' command (bound to `C-x C-f' by default).  This
@@ -5110,7 +5247,7 @@ See section 15.1
   └────
 
 
-16.10 Rename files with Denote in the Image Dired thumbnails buffer
+16.11 Rename files with Denote in the Image Dired thumbnails buffer
 ───────────────────────────────────────────────────────────────────
 
   [Rename files with Denote using `dired-preview']
@@ -5175,12 +5312,12 @@ See section 15.1
   └────
 
 
-[Rename files with Denote using `dired-preview'] See section 16.11
+[Rename files with Denote using `dired-preview'] See section 16.12
 
 [Rename multiple files at once] See section 4.3
 
 
-16.11 Rename files with Denote using `dired-preview'
+16.12 Rename files with Denote using `dired-preview'
 ────────────────────────────────────────────────────
 
   The `dired-preview' package (by me/Protesilaos) automatically displays
@@ -5234,10 +5371,10 @@ See section 15.1
 [Rename multiple files at once] See section 4.3
 
 [Rename files with Denote in the Image Dired thumbnails buffer] See
-section 16.10
+section 16.11
 
 
-16.12 Avoid duplicate identifiers when exporting Denote notes
+16.13 Avoid duplicate identifiers when exporting Denote notes
 ─────────────────────────────────────────────────────────────
 
   When exporting Denote notes to, for example, an HTML or PDF file,
@@ -5258,7 +5395,7 @@ section 16.10
 
 [Convenience commands for note creation] See section 3.1.4
 
-16.12.1 Export Denote notes with Org Mode
+16.13.1 Export Denote notes with Org Mode
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Org Mode has a built-in configurable export engine.  You can prevent
@@ -5272,7 +5409,7 @@ section 16.10
 
 [Convert `denote:' links to `file:' links] See section 7.11
 
-◊ 16.12.1.1 Manually configure Org export
+◊ 16.13.1.1 Manually configure Org export
 
   Insert `#+export_file_name: FILENAME' in the front matter before
   exporting to force a filename called whatever the value of `FILENAME'
@@ -5289,10 +5426,10 @@ section 16.10
   this section ([Export Denote notes]).
 
 
-  [Export Denote notes] See section 16.12
+  [Export Denote notes] See section 16.13
 
 
-◊ 16.12.1.2 Automatically store Org exports in another folder
+◊ 16.13.1.2 Automatically store Org exports in another folder
 
   It is possible to automatically place all exports in another folder by
   making Org’s function `org-export-output-file-name' create the target
@@ -5350,7 +5487,7 @@ section 16.10
   [Exclude certain directories from all operations] See section 3.9
 
 
-◊ 16.12.1.3 Org Mode Publishing
+◊ 16.13.1.3 Org Mode Publishing
 
   Org Mode also has a publishing tool for exporting a collection of
   files. Some user might apply this approach to convert their note
@@ -5368,7 +5505,7 @@ section 16.10
   [Exclude certain directories from all operations] See section 3.9
 
 
-16.12.2 Export Denote notes with Markdown
+16.13.2 Export Denote notes with Markdown
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Exporting from Markdown requires an external processor (e.g.,
@@ -5384,7 +5521,7 @@ section 16.10
   of duplicate Denote identifiers.
 
 
-16.13 Set up your workflow for daily or weekly meeting notes
+16.14 Set up your workflow for daily or weekly meeting notes
 ────────────────────────────────────────────────────────────
 
   Perhaps as part of work, we meet with certain people on a regular
@@ -7083,10 +7220,10 @@ section 16.10
         Prevos, Peter Smith, Riccardo Giannitrapani, Samuel W. Flint,
         Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan Thesing,
         Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
-        Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Yi Liu, Ypot,
-        atanasj, azegas, babusri, coherentstate, doolio, duli, drcxd,
-        elge70, fingerknight, hpgisler, mentalisttraceur, pRot0ta1p,
-        rbenit68, relict007, sienic, skissue, sundar bp,
+        Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi Liu,
+        Ypot, atanasj, azegas, babusri, coherentstate, doolio, duli,
+        drcxd, elge70, fingerknight, hpgisler, mentalisttraceur,
+        pRot0ta1p, rbenit68, relict007, sienic, skissue, sundar bp,
         yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming

@@ -1275,7 +1275,9 @@ With optional NO-REQUIRE-MATCH, accept the given input as-is.
 Return the absolute path to the matching file."
   (let* ((relative-files (mapcar #'denote-get-file-name-relative-to-denote-directory
                                  (denote-directory-files files-matching-regexp :omit-current)))
-         (prompt (format "%s in %s: " (or prompt-text "Select FILE") (denote-directory)))
+         (prompt (format "%s in %s: "
+                         (or prompt-text "Select FILE")
+                         (propertize (denote-directory) 'face 'denote-faces-prompt-current-name)))
          (input (completing-read
                  prompt
                  (denote--completion-table 'file relative-files)
@@ -2500,9 +2502,7 @@ Use Org's more advanced date selection utility if the user option
   "Match DIRS as a completion table."
   (let* ((def (car denote-subdirectory-history))
          (table (denote--completion-table 'file dirs))
-         (prompt (if def
-                     (format "Select SUBDIRECTORY [%s]: " def)
-                   "Select SUBDIRECTORY: ")))
+         (prompt (format-prompt "Select SUBDIRECTORY" def)))
     (completing-read prompt table nil t nil 'denote-subdirectory-history def)))
 
 (defun denote-subdirectory-prompt ()
@@ -4369,7 +4369,7 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
 (define-button-type 'denote-link-backlink-button
   'follow-link t
   'action #'denote-link--backlink-find-file
-  'face nil)            ; we use this face though we style it later
+  'face nil) ; we add fontification in `denote-link--prepare-backlinks'
 
 (defun denote-link--backlink-find-file (button)
   "Action for BUTTON to `find-file'."
@@ -4978,7 +4978,7 @@ Consult the manual for template samples."
                 (denote--creation-prepare-note-data title keywords 'org directory date template signature))
                (id (denote--find-first-unused-id (denote-get-identifier date)))
                (front-matter (denote--format-front-matter
-                              title (denote--date nil 'org) keywords id 'org))
+                              title (denote--date date 'org) keywords id 'org))
                (template-string (cond ((stringp template) template)
                                       ((functionp template) (funcall template))
                                       (t (user-error "Invalid template")))))
