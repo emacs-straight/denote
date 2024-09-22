@@ -6043,7 +6043,9 @@ section 16.11
         strings.  `PATH' must be a Denote-style file name where keywords
         are prefixed with an underscore.  If `PATH' has no such
         keywords, which is possible, return nil ([The file-naming
-        scheme]).
+        scheme]). [ As part of 3.2.0-dev, this function has an alias
+        `denote-retrieve-filename-keywords-as-list' which should make it
+        easier to discover this functionality. ]
 
   Function `denote-extract-id-from-string'
         Return existing Denote identifier in `STRING', else nil.
