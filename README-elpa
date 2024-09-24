@@ -47,19 +47,20 @@ Table of Contents
 .. 2. Create a note from the current Org subtree
 .. 3. Create note using Org capture
 .. 4. Create note with specific prompts using Org capture
-.. 5. Create a note with the region’s contents
+.. 5. Create note with specific values using Org capture
+.. 6. Create a note with the region’s contents
 ..... 1. A custom `denote-region' that references the source
-.. 6. Open an existing note or create it if missing
-.. 7. Maintain separate directory silos for notes
+.. 7. Open an existing note or create it if missing
+.. 8. Maintain separate directory silos for notes
 ..... 1. How to switch a silo
 ..... 2. Use custom commands to select a silo
 ..... 3. The `denote-silo-extras.el'
 ..... 4. Make Org export work with silos
 ..... 5. Make any Denote command work in a silo from anywhere
-.. 8. Exclude certain files from file prompts
-.. 9. Exclude certain directories from all operations
-.. 10. Exclude certain keywords from being inferred
-.. 11. Use Denote commands from the menu bar or context menu
+.. 9. Exclude certain files from file prompts
+.. 10. Exclude certain directories from all operations
+.. 11. Exclude certain keywords from being inferred
+.. 12. Use Denote commands from the menu bar or context menu
 4. Renaming files
 .. 1. Rename a single file
 ..... 1. The `denote-rename-confirmations' option
@@ -676,9 +677,9 @@ Table of Contents
 ◊ 3.1.4.1 Write your own convenience commands
 
   The convenience commands we provide only cover some basic use-cases
-  ([Convenience commands for note creation]).  The user may require
+  ([Convenience commands for note creation]). The user may require
   combinations that are not covered, such as to prompt for a template
-  and for a subdirectory, instead of only one of the two.  To this end,
+  and for a subdirectory, instead of only one of the two. To this end,
   we show how to follow the code we use in Denote to write your own
   variants of those commands.
 
@@ -693,40 +694,49 @@ Table of Contents
   │ Available candidates include the value of the variable
   │ `denote-directory' and any subdirectory thereof.
   │ 
-  │ This is equivalent to calling `denote' when `denote-prompts' is
-  │ set to '(subdirectory title keywords)."
+  │ This is the equivalent of calling `denote' when `denote-prompts'
+  │ has the `subdirectory' prompt appended to its existing prompts."
   │   (declare (interactive-only t))
   │   (interactive)
-  │   (let ((denote-prompts '(subdirectory title keywords)))
+  │   (let ((denote-prompts (denote-add-prompts '(subdirectory))))
   │     (call-interactively #'denote)))
   └────
 
-  The hyphenated word after `defun' is the name of the function.  It has
-  to be unique.  Then we have the documentation string (or “doc string”)
+  The hyphenated word after `defun' is the name of the function. It has
+  to be unique. Then we have the documentation string (or “doc string”)
   which is for the user’s convenience.
 
   This function is `interactive', meaning that it can be called via
-  `M-x' or be assigned to a key binding.  Then we have the local binding
+  `M-x' or be assigned to a key binding. Then we have the local binding
   of the `denote-prompts' to the desired combination (“local” means
-  specific to this function without affecting other contexts).  Lastly,
+  specific to this function without affecting other contexts). Lastly,
   it calls the standard `denote' command interactively, so it uses all
   the prompts in their specified order.
 
+  The function call `(denote-add-prompts '(subdirectory))' will append
+  the subdirectory prompt to the existing value of the `denote-prompts'.
+  If, for example, the default value is `'(title keywords)' (to prompt
+  for a title and then for keywords), it will become `'(subdirectory
+  title keywords)' inside the context of this `let'. Remember that this
+  is “local”, so the global value of `denote-prompts' remains
+  unaffected.
+
   Now let’s say we want to have a command that (i) asks for a template
-  and (ii) for a subdirectory ([The denote-templates option]).  All we
-  need to do is tweak the `let' bound value of `denote-prompts' and give
-  our command a unique name:
+  (ii) for a subdirectory ([The denote-templates option]), and (iii)
+  then goes through the remaining `denote-prompts'. All we need to do is
+  tweak the `let' bound value of `denote-prompts' and give our command a
+  unique name:
 
   ┌────
   │ ;; Like `denote-subdirectory' but also ask for a template
-  │ (defun denote-subdirectory-with-template ()
+  │ (defun my-denote-subdirectory-with-template ()
   │   "Create note while also prompting for a template and subdirectory.
   │ 
-  │ This is equivalent to calling `denote' when `denote-prompts' is
-  │ set to '(template subdirectory title keywords)."
+  │ This is the equivalent of calling `denote' when `denote-prompts' has the
+  │ `subdirectory' and `template' prompts appended to its existing prompts."
   │   (declare (interactive-only t))
   │   (interactive)
-  │   (let ((denote-prompts '(template subdirectory title keywords)))
+  │   (let ((denote-prompts (denote-add-prompts '(subdirectory template))))
   │     (call-interactively #'denote)))
   └────
 
@@ -735,6 +745,23 @@ Table of Contents
   variants which you can then assign to keys, invoke with `M-x', or add
   to the list of commands available at the `denote-command-prompt'
   ([Choose which commands to prompt for]).
+
+  In the above scenario, we are using the `denote-add-prompts' function,
+  which appends whatever prompts we want to the existing value of
+  `denote-prompts'. If the user prefers to completely override the
+  `denote-prompts', they can set the value outright:
+
+  ┌────
+  │ (defun my-denote-subdirectory-with-template-title-and-keywords ()
+  │   "Create a note while prompting for subdirectory, template, title, and keywords.
+  │ 
+  │ This is the equivalent of calling `denote' when `denote-prompts' has the
+  │ value '(template subdirectory title keywords)."
+  │   (declare (interactive-only t))
+  │   (interactive)
+  │   (let ((denote-prompts '(subdirectory template title keywords)))
+  │     (call-interactively #'denote)))
+  └────
 
 
   [Convenience commands for note creation] See section 3.1.4
@@ -907,16 +934,20 @@ Table of Contents
   │ 		 :jump-to-captured t)))
   └────
 
-  [ In the future, we might develop Denote in ways which do not require
-    such manual intervention.  More user feedback is required to
-    identify the relevant workflows. ]
-
-  Once the template is added, it is accessed from the specified key.
-  If, for instance, `org-capture' is bound to `C-c c', then the note
-  creation is initiated with `C-c c n', per the above snippet.  After
+  Once the template is added, it is accessed from the specified key. If,
+  for instance, `org-capture' is bound to `C-c c', then the note
+  creation is initiated with `C-c c n', per the above snippet. After
   that, the process is the same as with invoking `denote' directly,
-  namely: a prompt for a title followed by a prompt for keywords
-  ([Standard note creation]).
+  namely: a prompt for a title followed by a prompt for keywords,
+  assuming the default settings ([Standard note creation]). Concretely,
+  this method always respects the value of the user option
+  `denote-prompts' ([The `denote-prompts' option]).
+
+  It is also possible to define templates that have specific prompts or
+  certain values set, for which there is no prompt:
+
+  • [Create note with specific values using Org capture]
+  • [Create note with specific prompts using Org capture]
 
   Users may prefer to leverage `org-capture' in order to extend file
   creation with the specifiers described in the `org-capture-templates'
@@ -939,8 +970,19 @@ Table of Contents
   the capture process works as intended, especially for the desired
   output of the `denote-org-capture-specifiers'.
 
+  [ You may not need `org-capture' to do what you want ([Write your own
+  convenience commands]). ]
+
 
 [Standard note creation] See section 3.1
+
+[The `denote-prompts' option] See section 3.1.1
+
+[Create note with specific values using Org capture] See section 3.5
+
+[Create note with specific prompts using Org capture] See section 3.4
+
+[Write your own convenience commands] See section 3.1.4.1
 
 
 3.4 Create note with specific prompts using Org capture
@@ -950,9 +992,10 @@ Table of Contents
   explained in the previous section ([Create note using Org capture]).
 
   The previous section shows how to define an Org capture template that
-  always prompts for a title and keywords.  There are, however, cases
-  where the user wants more control over what kind of input Denote will
-  prompt for.  To this end, we provide the function
+  always prompts for whatever is set in the user option `denote-prompts'
+  (title and keywords, by default). There are, however, cases where the
+  user wants more control over what kind of input Denote will prompt
+  for. To this end, we provide the function
   `denote-org-capture-with-prompts'.  Below we explain it and then show
   some examples of how to use it.
 
@@ -962,16 +1005,13 @@ Table of Contents
   When called without arguments, it does not prompt for anything.  It
   just returns the front matter with title and keyword fields empty and
   the date and identifier fields specified.  It also makes the file name
-  consist of only the identifier plus the Org file name extension.
-
-  [The file-naming scheme].
+  consist of only the identifier plus the Org file name extension ([The
+  file-naming scheme]).
 
   Otherwise, it produces a minibuffer prompt for every non-nil value
   that corresponds to the `TITLE', `KEYWORDS', `SUBDIRECTORY', `DATE',
   and `TEMPLATE' arguments.  The prompts are those used by the standard
-  `denote' command and all of its utility commands.
-
-  [Points of entry].
+  `denote' command and all of its utility commands ([Points of entry]).
 
   When returning the contents that fill in the Org capture template, the
   sequence is as follows: front matter, `TEMPLATE', and then the value
@@ -1027,6 +1067,9 @@ Table of Contents
   │ 	       :jump-to-captured t))
   └────
 
+  [ You may not need `org-capture' to do what you want ([Write your own
+  convenience commands]). ]
+
 
 [Create note using Org capture] See section 3.3
 
@@ -1034,8 +1077,100 @@ Table of Contents
 
 [Points of entry] See section 3
 
+[Write your own convenience commands] See section 3.1.4.1
 
-3.5 Create a note with the region’s contents
+
+3.5 Create note with specific values using Org capture
+──────────────────────────────────────────────────────
+
+  The ordinary procedure to create a note with `org-capture' respects
+  the value of the user option `denote-prompts' ([Create note using Org
+  capture]): the user is prompted for all the values they have
+  configured (title and keywords, by default). Sometimes, there is no
+  need to have a certain prompt because the value of it will be
+  constant. For example, the user wants to have a template that (i)
+  respects the `denote-prompts' but (ii) puts the new note in an
+  existing subdirectory of the `denote-directory'. The following code
+  block does exactly that.
+
+  [ It also is possible to have a template that deviates from
+    `denote-prompts' and prompts for specific values ([Create note with
+    specific prompts using Org capture]). ]
+
+  ┌────
+  │ (with-eval-after-load 'org-capture
+  │   (add-to-list 'org-capture-templates
+  │ 	       '("r" "New reference (with Denote)" plain
+  │ 		 (file denote-last-path)
+  │ 		 (function
+  │ 		  (lambda ()
+  │ 		    (let ((denote-use-directory "reference"))
+  │ 		      (denote-org-capture))))
+  │ 		 :no-save t
+  │ 		 :immediate-finish nil
+  │ 		 :kill-buffer t
+  │ 		 :jump-to-captured t)))
+  └────
+
+  The values one may predefine in this way are via these variables ([For
+  developers or advanced users]):
+
+  ⁃ `denote-use-date'
+
+  ⁃ `denote-use-directory'
+
+  ⁃ `denote-use-file-type'
+
+  ⁃ `denote-use-keywords'
+
+  ⁃ `denote-use-signature'
+
+  ⁃ `denote-use-template'
+
+  ⁃ `denote-use-title'
+
+  When there exists a binding for the aforementioned variables, the
+  corresponding prompt is always skipped. It is thus paramount to never
+  set those variables outside the scope of a `let' (or equivalent).
+
+  With those granted, here is another example scenario where the user
+  wants to have a constant value for the subdirectory but also be
+  prompted for a date.
+
+  ┌────
+  │ (with-eval-after-load 'org-capture
+  │   (add-to-list 'org-capture-templates
+  │ 	       '("j" "New journal (with Denote)" plain
+  │ 		 (file denote-last-path)
+  │ 		 (function
+  │ 		  (lambda ()
+  │ 		    ;; The "journal" subdirectory of the `denote-directory'---this must exist!
+  │ 		    (let* ((denote-use-directory "journal")
+  │ 			   ;; Use the existing `denote-prompts' as well as the one for a date.
+  │ 			   (denote-prompts (denote-add-prompts '(date))))
+  │ 		      (denote-org-capture))))
+  │ 		 :no-save t
+  │ 		 :immediate-finish nil
+  │ 		 :kill-buffer t
+  │ 		 :jump-to-captured t)))
+  └────
+
+  The above highlights the hackability of the Denote code base, namely,
+  how we can affect the behaviour of the underlying `denote' command by
+  `let' binding variables that affect every aspect of its behaviour
+  ([Write your own convenience commands]).
+
+
+[Create note using Org capture] See section 3.3
+
+[Create note with specific prompts using Org capture] See section 3.4
+
+[For developers or advanced users] See section 19
+
+[Write your own convenience commands] See section 3.1.4.1
+
+
+3.6 Create a note with the region’s contents
 ────────────────────────────────────────────
 
   The command `denote-region' takes the contents of the active region
@@ -1074,7 +1209,7 @@ Table of Contents
   if `denote-region' is used without an active region.
 
 
-3.5.1 A custom `denote-region' that references the source
+3.6.1 A custom `denote-region' that references the source
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-region' command simply creates a new note and includes the
@@ -1139,10 +1274,10 @@ Table of Contents
     called.
 
 
-[Create a note with the region’s contents] See section 3.5
+[Create a note with the region’s contents] See section 3.6
 
 
-3.6 Open an existing note or create it if missing
+3.7 Open an existing note or create it if missing
 ─────────────────────────────────────────────────
 
   Sometimes it is necessary to briefly interrupt the ongoing writing
@@ -1187,7 +1322,7 @@ Table of Contents
 [Link to a note or create it if missing] See section 7.7
 
 
-3.7 Maintain separate directory silos for notes
+3.8 Maintain separate directory silos for notes
 ───────────────────────────────────────────────
 
   The user option `denote-directory' accepts a value that represents the
@@ -1304,11 +1439,11 @@ Table of Contents
   sufficient.  The manual shall be expanded accordingly.
 
 
-[How to switch a silo] See section 3.7.1
+[How to switch a silo] See section 3.8.1
 
-[Use custom commands to select a silo] See section 3.7.2
+[Use custom commands to select a silo] See section 3.8.2
 
-3.7.1 How to switch a silo
+3.8.1 How to switch a silo
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Switching to a silo directory will make all Denote commands use the
@@ -1322,10 +1457,10 @@ Table of Contents
      from the current buffer.
 
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
 
-3.7.2 Use custom commands to select a silo
+3.8.2 Use custom commands to select a silo
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ As part of version 2.1.0, the contents of this section are formally
@@ -1397,15 +1532,15 @@ Table of Contents
   [Extending Denote: Split an Org subtree into its own note].
 
 
-[The `denote-silo-extras.el'] See section 3.7.3
+[The `denote-silo-extras.el'] See section 3.8.3
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
 [Extending Denote: Split an Org subtree into its own note] See section
 3.2
 
 
-3.7.3 The `denote-silo-extras.el'
+3.8.3 The `denote-silo-extras.el'
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-silo-extras.el' provides optional convenience functions
@@ -1434,11 +1569,11 @@ Table of Contents
   inside that silo ([Points of entry]).
 
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
 [Points of entry] See section 3
 
-◊ 3.7.3.1 Switch to a silo directory outright
+◊ 3.8.3.1 Switch to a silo directory outright
 
   [ The code snippets in this section depend on 3.2.0-dev. ]
 
@@ -1481,7 +1616,7 @@ Table of Contents
   [Treat your notes as a project] See section 16.9
 
 
-3.7.4 Make Org export work with silos
+3.8.4 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Org export infrastructure is designed to ignore directory-local
@@ -1540,10 +1675,10 @@ Table of Contents
        keywords of the current file. ]
 
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
 
-3.7.5 Make any Denote command work in a silo from anywhere
+3.8.5 Make any Denote command work in a silo from anywhere
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Denote silos are instantiated with a directory-local value for the
@@ -1581,14 +1716,14 @@ Table of Contents
   └────
 
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
-[How to switch a silo] See section 3.7.1
+[How to switch a silo] See section 3.8.1
 
 [Keep a journal or diary] See section 13
 
 
-3.8 Exclude certain files from file prompts
+3.9 Exclude certain files from file prompts
 ───────────────────────────────────────────
 
   The user option `denote-excluded-files-regexp' is a regular expression
@@ -1608,13 +1743,13 @@ Table of Contents
 
 [Linking notes] See section 7
 
-[Open an existing note or create it if missing] See section 3.6
+[Open an existing note or create it if missing] See section 3.7
 
 [For developers or advanced users] See section 19
 
 
-3.9 Exclude certain directories from all operations
-───────────────────────────────────────────────────
+3.10 Exclude certain directories from all operations
+────────────────────────────────────────────────────
 
   The user option `denote-excluded-directories-regexp' instructs all
   Denote functions that read or check file/directory names to omit
@@ -1636,12 +1771,12 @@ Table of Contents
   [For developers or advanced users].
 
 
-[Maintain separate directory silos for notes] See section 3.7
+[Maintain separate directory silos for notes] See section 3.8
 
 [For developers or advanced users] See section 19
 
 
-3.10 Exclude certain keywords from being inferred
+3.11 Exclude certain keywords from being inferred
 ─────────────────────────────────────────────────
 
   The user option `denote-excluded-keywords-regexp' omits keywords that
@@ -1654,7 +1789,7 @@ Table of Contents
   The match is performed with `string-match-p'.
 
 
-3.11 Use Denote commands from the menu bar or context menu
+3.12 Use Denote commands from the menu bar or context menu
 ──────────────────────────────────────────────────────────
 
   Denote registers a submenu for the `menu-bar-mode'.  Users will find
@@ -3286,7 +3421,7 @@ section 7.3
 
 [Points of entry] See section 3
 
-[Open an existing note or create it if missing] See section 3.6
+[Open an existing note or create it if missing] See section 3.7
 
 
 7.8 The backlinks’ buffer
@@ -3585,7 +3720,7 @@ section 7.3
   command in the list ([Write your own convenience commands]).
 
 
-[Open an existing note or create it if missing] See section 3.6
+[Open an existing note or create it if missing] See section 3.7
 
 [Link to a note or create it if missing] See section 7.7
 
@@ -3915,7 +4050,7 @@ section 7.3
 
 [Insert links matching a regexp] See section 7.4
 
-[Exclude certain directories from all operations] See section 3.9
+[Exclude certain directories from all operations] See section 3.10
 
 [Linking notes] See section 7
 
@@ -4120,7 +4255,7 @@ section 7.3
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
-[Exclude certain directories from all operations] See section 3.9
+[Exclude certain directories from all operations] See section 3.10
 
 [Linking notes] See section 7
 
@@ -4217,7 +4352,7 @@ section 7.3
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
-[Exclude certain directories from all operations] See section 3.9
+[Exclude certain directories from all operations] See section 3.10
 
 [Linking notes] See section 7
 
@@ -5484,7 +5619,7 @@ section 16.11
   <https://emacs.stackexchange.com/questions/45751/org-export-to-different-directory>.
 
 
-  [Exclude certain directories from all operations] See section 3.9
+  [Exclude certain directories from all operations] See section 3.10
 
 
 ◊ 16.13.1.3 Org Mode Publishing
@@ -5502,7 +5637,7 @@ section 16.11
   ([Exclude certain directories from all operations]).
 
 
-  [Exclude certain directories from all operations] See section 3.9
+  [Exclude certain directories from all operations] See section 3.10
 
 
 16.13.2 Export Denote notes with Markdown
@@ -6432,7 +6567,7 @@ section 16.11
 
 [Standard note creation] See section 3.1
 
-[Maintain separate directories for notes] See section 3.7
+[Maintain separate directories for notes] See section 3.8
 
 [Custom sluggification to remove non-ASCII characters] See section 5.3.1
 
@@ -7224,9 +7359,9 @@ section 16.11
         Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
         Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi Liu,
         Ypot, atanasj, azegas, babusri, coherentstate, doolio, duli,
-        drcxd, elge70, fingerknight, hpgisler, mentalisttraceur,
-        pRot0ta1p, rbenit68, relict007, sienic, skissue, sundar bp,
-        yetanotherfossman, zadca123
+        drcxd, elge70, fingerknight, hpgisler, jtpavlock,
+        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic,
+        skissue, sundar bp, yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
