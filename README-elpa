@@ -2785,7 +2785,7 @@ section 5.4
   │ 
   │ (defun my-denote-sluggify-keyword (str)
   │   (downcase
-  │    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/_ -=]*" ""
+  │    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/_ =-]*" ""
   │ 			     (denote-slug-keep-only-ascii str))))
   │ 
   │ (defcustom denote-file-name-slug-functions
