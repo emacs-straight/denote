@@ -48,19 +48,20 @@ Table of Contents
 .. 3. Create note using Org capture
 .. 4. Create note with specific prompts using Org capture
 .. 5. Create note with specific values using Org capture
-.. 6. Create a note with the region’s contents
+.. 6. Create a journal entry using Org capture
+.. 7. Create a note with the region’s contents
 ..... 1. A custom `denote-region' that references the source
-.. 7. Open an existing note or create it if missing
-.. 8. Maintain separate directory silos for notes
+.. 8. Open an existing note or create it if missing
+.. 9. Maintain separate directory silos for notes
 ..... 1. How to switch a silo
 ..... 2. Use custom commands to select a silo
 ..... 3. The `denote-silo-extras.el'
 ..... 4. Make Org export work with silos
 ..... 5. Make any Denote command work in a silo from anywhere
-.. 9. Exclude certain files from file prompts
-.. 10. Exclude certain directories from all operations
-.. 11. Exclude certain keywords from being inferred
-.. 12. Use Denote commands from the menu bar or context menu
+.. 10. Exclude certain files from file prompts
+.. 11. Exclude certain directories from all operations
+.. 12. Exclude certain keywords from being inferred
+.. 13. Use Denote commands from the menu bar or context menu
 4. Renaming files
 .. 1. Rename a single file
 ..... 1. The `denote-rename-confirmations' option
@@ -1170,7 +1171,44 @@ Table of Contents
 [Write your own convenience commands] See section 3.1.4.1
 
 
-3.6 Create a note with the region’s contents
+3.6 Create a journal entry using Org capture
+────────────────────────────────────────────
+
+  [ What we document here uses the
+    `denote-journal-extras-path-to-new-or-existing-entry' which is
+    modified as part of 3.2.0-dev. ]
+
+  Denote can be used for a free-form journaling out-of-the-box. We also
+  provide the `denote-journal-extras.el' file, which contains extensions
+  for a more streamlined workflow ([Keep a journal or diary]).
+
+  One of the features of those extras is the ability to create a Denote
+  file for a given day, if there is none, but revisit the file if it
+  exists. Users can thus leverage this to set up a workflow where they
+  quickly add a new heading to their daily journal file via the command
+  `org-capture':
+
+  ┌────
+  │ (with-eval-after-load 'org-capture
+  │   (add-to-list 'org-capture-templates
+  │ 	       '("j" "Journal" entry
+  │ 		 (file denote-journal-extras-path-to-new-or-existing-entry)
+  │ 		 "* %U %?\n%i\n%a"
+  │ 		 :kill-buffer t
+  │ 		 :empty-lines 1)))
+  └────
+
+  Using the above, is the same as calling the command
+  `denote-journal-extras-new-or-existing-entry' and then manually
+  appending a heading with a timestamp. The template can be modified
+  accordingly, in accordance with the documentation of
+  `org-capture-templates'.
+
+
+[Keep a journal or diary] See section 13
+
+
+3.7 Create a note with the region’s contents
 ────────────────────────────────────────────
 
   The command `denote-region' takes the contents of the active region
@@ -1209,7 +1247,7 @@ Table of Contents
   if `denote-region' is used without an active region.
 
 
-3.6.1 A custom `denote-region' that references the source
+3.7.1 A custom `denote-region' that references the source
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-region' command simply creates a new note and includes the
@@ -1274,10 +1312,10 @@ Table of Contents
     called.
 
 
-[Create a note with the region’s contents] See section 3.6
+[Create a note with the region’s contents] See section 3.7
 
 
-3.7 Open an existing note or create it if missing
+3.8 Open an existing note or create it if missing
 ─────────────────────────────────────────────────
 
   Sometimes it is necessary to briefly interrupt the ongoing writing
@@ -1322,7 +1360,7 @@ Table of Contents
 [Link to a note or create it if missing] See section 7.7
 
 
-3.8 Maintain separate directory silos for notes
+3.9 Maintain separate directory silos for notes
 ───────────────────────────────────────────────
 
   The user option `denote-directory' accepts a value that represents the
@@ -1439,11 +1477,11 @@ Table of Contents
   sufficient.  The manual shall be expanded accordingly.
 
 
-[How to switch a silo] See section 3.8.1
+[How to switch a silo] See section 3.9.1
 
-[Use custom commands to select a silo] See section 3.8.2
+[Use custom commands to select a silo] See section 3.9.2
 
-3.8.1 How to switch a silo
+3.9.1 How to switch a silo
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Switching to a silo directory will make all Denote commands use the
@@ -1457,10 +1495,10 @@ Table of Contents
      from the current buffer.
 
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
 
-3.8.2 Use custom commands to select a silo
+3.9.2 Use custom commands to select a silo
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ As part of version 2.1.0, the contents of this section are formally
@@ -1532,15 +1570,15 @@ Table of Contents
   [Extending Denote: Split an Org subtree into its own note].
 
 
-[The `denote-silo-extras.el'] See section 3.8.3
+[The `denote-silo-extras.el'] See section 3.9.3
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
 [Extending Denote: Split an Org subtree into its own note] See section
 3.2
 
 
-3.8.3 The `denote-silo-extras.el'
+3.9.3 The `denote-silo-extras.el'
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-silo-extras.el' provides optional convenience functions
@@ -1569,11 +1607,11 @@ Table of Contents
   inside that silo ([Points of entry]).
 
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
 [Points of entry] See section 3
 
-◊ 3.8.3.1 Switch to a silo directory outright
+◊ 3.9.3.1 Switch to a silo directory outright
 
   [ The code snippets in this section depend on 3.2.0-dev. ]
 
@@ -1616,7 +1654,7 @@ Table of Contents
   [Treat your notes as a project] See section 16.9
 
 
-3.8.4 Make Org export work with silos
+3.9.4 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Org export infrastructure is designed to ignore directory-local
@@ -1675,10 +1713,10 @@ Table of Contents
        keywords of the current file. ]
 
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
 
-3.8.5 Make any Denote command work in a silo from anywhere
+3.9.5 Make any Denote command work in a silo from anywhere
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Denote silos are instantiated with a directory-local value for the
@@ -1716,15 +1754,15 @@ Table of Contents
   └────
 
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
-[How to switch a silo] See section 3.8.1
+[How to switch a silo] See section 3.9.1
 
 [Keep a journal or diary] See section 13
 
 
-3.9 Exclude certain files from file prompts
-───────────────────────────────────────────
+3.10 Exclude certain files from file prompts
+────────────────────────────────────────────
 
   The user option `denote-excluded-files-regexp' is a regular expression
   that matches files names which should be excluded from all Denote file
@@ -1743,12 +1781,12 @@ Table of Contents
 
 [Linking notes] See section 7
 
-[Open an existing note or create it if missing] See section 3.7
+[Open an existing note or create it if missing] See section 3.8
 
 [For developers or advanced users] See section 19
 
 
-3.10 Exclude certain directories from all operations
+3.11 Exclude certain directories from all operations
 ────────────────────────────────────────────────────
 
   The user option `denote-excluded-directories-regexp' instructs all
@@ -1771,12 +1809,12 @@ Table of Contents
   [For developers or advanced users].
 
 
-[Maintain separate directory silos for notes] See section 3.8
+[Maintain separate directory silos for notes] See section 3.9
 
 [For developers or advanced users] See section 19
 
 
-3.11 Exclude certain keywords from being inferred
+3.12 Exclude certain keywords from being inferred
 ─────────────────────────────────────────────────
 
   The user option `denote-excluded-keywords-regexp' omits keywords that
@@ -1789,7 +1827,7 @@ Table of Contents
   The match is performed with `string-match-p'.
 
 
-3.12 Use Denote commands from the menu bar or context menu
+3.13 Use Denote commands from the menu bar or context menu
 ──────────────────────────────────────────────────────────
 
   Denote registers a submenu for the `menu-bar-mode'.  Users will find
@@ -3456,7 +3494,7 @@ section 7.3
 
 [Points of entry] See section 3
 
-[Open an existing note or create it if missing] See section 3.7
+[Open an existing note or create it if missing] See section 3.8
 
 
 7.8 The backlinks’ buffer
@@ -3755,7 +3793,7 @@ section 7.3
   command in the list ([Write your own convenience commands]).
 
 
-[Open an existing note or create it if missing] See section 3.7
+[Open an existing note or create it if missing] See section 3.8
 
 [Link to a note or create it if missing] See section 7.7
 
@@ -4085,7 +4123,7 @@ section 7.3
 
 [Insert links matching a regexp] See section 7.4
 
-[Exclude certain directories from all operations] See section 3.10
+[Exclude certain directories from all operations] See section 3.11
 
 [Linking notes] See section 7
 
@@ -4290,7 +4328,7 @@ section 7.3
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
-[Exclude certain directories from all operations] See section 3.10
+[Exclude certain directories from all operations] See section 3.11
 
 [Linking notes] See section 7
 
@@ -4387,7 +4425,7 @@ section 7.3
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
-[Exclude certain directories from all operations] See section 3.10
+[Exclude certain directories from all operations] See section 3.11
 
 [Linking notes] See section 7
 
@@ -4626,12 +4664,14 @@ section 7.3
   the `tmr' package from GNU ELPA ([Journaling with a timer]).
 
   The command `denote-journal-extras-new-or-existing-entry' locates an
-  existing journal entry or creates a new one.  A journal entry is one
-  that has `denote-journal-extras-keyword' as part of its file name.  If
+  existing journal entry or creates a new one. A journal entry is one
+  that has `denote-journal-extras-keyword' as part of its file name. If
   there are multiple journal entries for the current date, it prompts
-  for one among them using minibuffer completion.  If there is only one,
-  it visits it outright.  If there is no journal entry, it creates one
-  by calling `denote-journal-extra-new-entry' (as described above).
+  for one among them using minibuffer completion. If there is only one,
+  it visits it outright. If there is no journal entry, it creates one by
+  calling `denote-journal-extra-new-entry' (as described above).
+  Depending on one’s workflow, this can be done via `org-capture'
+  ([Create a journal entry using Org capture]).
 
   The command `denote-journal-extras-link-or-create-entry' links to the
   journal entry for today or creates it in the background, if missing,
@@ -4654,6 +4694,8 @@ section 5.4
 [The `denote-date-prompt-use-org-read-date' option] See section 3.1.7
 
 [Journaling with a timer] See section 13.1
+
+[Create a journal entry using Org capture] See section 3.6
 
 13.1 Journaling with a timer
 ────────────────────────────
@@ -5654,7 +5696,7 @@ section 16.11
   <https://emacs.stackexchange.com/questions/45751/org-export-to-different-directory>.
 
 
-  [Exclude certain directories from all operations] See section 3.10
+  [Exclude certain directories from all operations] See section 3.11
 
 
 ◊ 16.13.1.3 Org Mode Publishing
@@ -5672,7 +5714,7 @@ section 16.11
   ([Exclude certain directories from all operations]).
 
 
-  [Exclude certain directories from all operations] See section 3.10
+  [Exclude certain directories from all operations] See section 3.11
 
 
 16.13.2 Export Denote notes with Markdown
@@ -6602,7 +6644,7 @@ section 16.11
 
 [Standard note creation] See section 3.1
 
-[Maintain separate directories for notes] See section 3.8
+[Maintain separate directories for notes] See section 3.9
 
 [Custom sluggification to remove non-ASCII characters] See section 5.3.1
 
@@ -7381,22 +7423,23 @@ section 16.11
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
         Hirschfeld, Alexis Purslane, Alfredo Borrás, Alp Eren Kose,
         Ashton Wiersdorf, Benjamin Kästner, Claudio Migliorelli, Claudiu
-        Tănăselia, Colin McLear, Damien Cassou, Elias Storms, Federico
-        Stilman, Florian, Frédéric Willem Frank Ehmsen, Glenna D., Guo
-        Yong, Hanspeter Gisler Harold Ollivier, IceAsteroid, Jack Baty,
-        Jay Rajput, Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen,
-        Jonathan Sahar, Johan Bolmsjö, Jonas Großekathöfer, Jousimies,
-        Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas,
-        Lukas C. Bossert, M. Hadi Timachi, Maikol Solis, Mark Olson,
-        Mirko Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
-        Prevos, Peter Smith, Riccardo Giannitrapani, Samuel W. Flint,
-        Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan Thesing,
-        Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
-        Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi Liu,
-        Ypot, atanasj, azegas, babusri, coherentstate, doolio, duli,
-        drcxd, elge70, fingerknight, hpgisler, jtpavlock,
-        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sienic,
-        skissue, sundar bp, yetanotherfossman, zadca123
+        Tănăselia, Colin McLear, Cosmin-Octavian C, Damien Cassou, Elias
+        Storms, Federico Stilman, Florian, Frédéric Willem Frank Ehmsen,
+        Glenna D., Guo Yong, Hanspeter Gisler Harold Ollivier,
+        IceAsteroid, Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jens
+        Östlund, Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö, Jonas
+        Großekathöfer, Jousimies, Juanjo Presa, Julian Hoch, Kai von
+        Fintel, Kaushal Modi, Kolmas, Lukas C. Bossert, M. Hadi Timachi,
+        Maikol Solis, Mark Olson, Mirko Hernandez, Niall Dooley, Nick
+        Bell, Paul van Gelder, Peter Prevos, Peter Smith, Riccardo
+        Giannitrapani, Samuel W. Flint, Sergio Rey, Suhail Singh,
+        Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
+        Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet C.
+        Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
+        babusri, coherentstate, doolio, duli, drcxd, elge70,
+        fingerknight, hpgisler, jtpavlock, mentalisttraceur, pRot0ta1p,
+        rbenit68, relict007, sienic, skissue, sundar bp,
+        yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
