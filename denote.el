@@ -2381,7 +2381,7 @@ instead of that of the parameter."
          (file-type (denote--valid-file-type (or file-type denote-file-type)))
          (keywords (denote-keywords-sort keywords))
          (date (denote-parse-date date))
-         (directory (if (denote--dir-in-denote-directory-p directory)
+         (directory (if (and directory (denote--dir-in-denote-directory-p directory))
                         (file-name-as-directory directory)
                       (denote-directory)))
          (template (if (or (stringp template) (functionp template))
@@ -2802,7 +2802,7 @@ Do it if BUF is in Dired mode and is either part of the variable
   (let ((current (current-buffer)))
     (with-current-buffer buf
       (when (and (eq major-mode 'dired-mode)
-                 (or (denote--dir-in-denote-directory-p default-directory)
+                 (or (and default-directory (denote--dir-in-denote-directory-p default-directory))
                      (eq current buf)))
         (revert-buffer)))))
 
@@ -4925,15 +4925,12 @@ Also see the user option `denote-org-store-link-to-heading'."
   "Export a `denote:' link from Org files.
 The LINK, DESCRIPTION, and FORMAT are handled by the export
 backend."
-  (let* ((path-id (denote-link--ol-resolve-link-to-target link :full-data))
-         (path (file-relative-name (nth 0 path-id)))
-         (id (nth 1 path-id))
-         (query (nth 2 path-id))
-         (anchor (file-name-sans-extension path))
-         (desc (cond
-                (description)
-                (query (format "denote:%s::%s" id query))
-                (t (concat "denote:" id)))))
+  (pcase-let* ((`(,path ,id ,query) (denote-link--ol-resolve-link-to-target link :full-data))
+               (anchor (file-relative-name (file-name-sans-extension path)))
+               (desc (cond
+                      (description)
+                      (query (format "denote:%s::%s" id query))
+                      (t (concat "denote:" id)))))
     (cond
      ((eq format 'html)
       (if query
