@@ -96,9 +96,10 @@ Table of Contents
 ..... 1. Backlinks for Org headings
 .. 9. Writing metanotes
 .. 10. Visiting linked files via the minibuffer
-.. 11. Convert `denote:' links to `file:' links
-.. 12. Fontify links in non-Org buffers
-.. 13. Miscellaneous information about links
+.. 11. Convert `denote:' links to `file:' links in Org
+.. 12. Convert `:denote' links to paths in Markdown
+.. 13. Fontify links in non-Org buffers
+.. 14. Miscellaneous information about links
 ..... 1. Aliases for the linking commands
 ..... 2. The `denote-link-description-function' to format links
 8. Choose which commands to prompt for
@@ -3155,7 +3156,7 @@ section 5.4
 
 [The `denote-org-store-link-to-heading' user option] See section 7.2
 
-[Fontify links in non-Org buffers] See section 7.12
+[Fontify links in non-Org buffers] See section 7.13
 
 [Insert link to file with signature] See section 7.5
 
@@ -3684,8 +3685,10 @@ section 7.3
 [The backlinks’ buffer] See section 7.8
 
 
-7.11 Convert `denote:' links to `file:' links
-─────────────────────────────────────────────
+7.11 Convert `denote:' links to `file:' links in Org
+────────────────────────────────────────────────────
+
+  [ Also: [Convert `:denote' links to paths in Markdown]. ]
 
   Sometimes the user needs to translate all `denote:' link types to
   their `file:' equivalent. This may be because some other tool does not
@@ -3714,11 +3717,56 @@ section 7.3
         file system path and converts it into its identifier.
 
 
+[Convert `:denote' links to paths in Markdown] See section 7.12
+
 [Insert link to an Org file with a further pointer to a heading] See
 section 7.3
 
 
-7.12 Fontify links in non-Org buffers
+7.12 Convert `:denote' links to paths in Markdown
+─────────────────────────────────────────────────
+
+  [ Also: [Convert `denote:' links to `file:' links in Org]. ]
+
+  [ These commands are part of 3.2.0-dev. ]
+
+  Although Markdown is a ubiquitous file format, there is no
+  standardised way to extend its link facility. This means that we
+  cannot reliably make `denote:' links work in applications outside of
+  Emacs. Though users will likely need this feature for
+  interoperability.
+
+  All we can do is provide commands which convert links from the
+  `denote:' type to a relative or absolute file path, and vice versa:
+
+  Convert `denote:' links to file paths
+        The command `denote-md-extras-convert-links-to-file-paths' runs
+        through the current Markdown file and converts every instance of
+        a `denote:' link to file path implied by the Denote
+        identifier. For example, this link `[Test
+        description](denote:20241026T051243)' expands to the file
+        `20241026T051243--test-description__denote_testing.md'.  When
+        `denote-md-extras-convert-links-to-file-paths' is called with a
+        prefix argument (`C-u' by default), it produces absolute file
+        system paths.
+
+  Convert file paths links to `denote:'
+        The command `denote-md-extras-convert-links-to-denote-type' is
+        the inverse of the above. It finds all the file paths , be they
+        relative or absolute, and converts them into their corresponding
+        `denote:' style links. It only does so for files with a Denote
+        identifier.
+
+  DEVELOPMENT NOTE: The regular expressions I am using to determine what
+  is a link are much simpler than what `markdown-mode' is using.
+  Everything seems to work on my end, though do let me know if there are
+  bugs.
+
+
+[Convert `denote:' links to `file:' links in Org] See section 7.11
+
+
+7.13 Fontify links in non-Org buffers
 ─────────────────────────────────────
 
   Denote links are automatically fontified in Org buffers ([Adding a
@@ -3757,10 +3805,10 @@ section 7.3
 [Adding a single link] See section 7.1
 
 
-7.13 Miscellaneous information about links
+7.14 Miscellaneous information about links
 ──────────────────────────────────────────
 
-7.13.1 Aliases for the linking commands
+7.14.1 Aliases for the linking commands
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   For convenience, the `denote-link' command has an alias called
@@ -3771,7 +3819,7 @@ section 7.3
   commands.
 
 
-7.13.2 The `denote-link-description-function' to format links
+7.14.2 The `denote-link-description-function' to format links
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-link-description-function' takes as its value
@@ -7446,7 +7494,7 @@ section 16.11
         Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
         babusri, coherentstate, doolio, duli, drcxd, elge70,
         fingerknight, hpgisler, jtpavlock, mentalisttraceur, pRot0ta1p,
-        rbenit68, relict007, sienic, skissue, sundar bp,
+        rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
         yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
