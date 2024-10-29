@@ -3399,6 +3399,9 @@ section 7.3
   As always, links are created only for files which qualify as a “note”
   for our purposes ([Linking notes]).
 
+  The `denote-dired-link-marked-notes' is an alias for
+  `denote-link-dired-marked-notes'. [ The alias is part of 3.2.0-dev. ]
+
 
 [Insert links matching a regexp] See section 7.4
 
@@ -6008,7 +6011,7 @@ section 16.11
   │ 
   │ ;; Key bindings specifically for Dired.
   │ (let ((map dired-mode-map))
-  │   (define-key map (kbd "C-c C-d C-i") #'denote-link-dired-marked-notes)
+  │   (define-key map (kbd "C-c C-d C-i") #'denote-dired-link-marked-notes)
   │   (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-files)
   │   (define-key map (kbd "C-c C-d C-k") #'denote-dired-rename-marked-files-with-keywords)
   │   (define-key map (kbd "C-c C-d C-R") #'denote-dired-rename-marked-files-using-front-matter))
