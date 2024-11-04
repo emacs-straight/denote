@@ -1,4 +1,4 @@
-This is doc7Pl8s0.info, produced by makeinfo version 6.8 from
+This is docUPo47b.info, produced by makeinfo version 6.8 from
 denote.texi.
 
 Copyright (C) 2022-2024 Free Software Foundation, Inc.
@@ -20,7 +20,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: doc7Pl8s0.info,  Node: Top,  Next: Overview,  Up: (dir)
+File: docUPo47b.info,  Node: Top,  Next: Overview,  Up: (dir)
 
 denote: Simple notes with an efficient file-naming scheme
 *********************************************************
@@ -192,7 +192,7 @@ The backlinks’ buffer
 Miscellaneous information about links
 
 * Aliases for the linking commands::
-* The denote-link-description-function to format links::
+* The denote-link-description-format to format link descriptions::
 
 Automatically rename Denote buffers
 
@@ -285,7 +285,7 @@ Indices
 
 
 
-File: doc7Pl8s0.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
+File: docUPo47b.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
 
 1 Overview
 **********
@@ -365,7 +365,7 @@ acronyms, recursive or otherwise, of increasingly dubious utility like:
 Obligations, Tasks, and Engagements.
 
 
-File: doc7Pl8s0.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
+File: docUPo47b.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
 
 2 Points of entry
 *****************
@@ -400,7 +400,7 @@ of file name components::).
 * Use Denote commands from the menu bar or context menu::
 
 
-File: doc7Pl8s0.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
+File: docUPo47b.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
 
 2.1 Standard note creation
 ==========================
@@ -456,7 +456,7 @@ the alias ‘denote-create-note’.
 * The denote-date-prompt-use-org-read-date option::
 
 
-File: doc7Pl8s0.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.1 The ‘denote-prompts’ option
 ---------------------------------
@@ -549,7 +549,7 @@ Lisp).  In Lisp usage, the behaviour is always what the caller
 specifies, based on the supplied arguments.
 
 
-File: doc7Pl8s0.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
 
 2.1.2 The ‘denote-history-completion-in-prompts’ option
 -------------------------------------------------------
@@ -583,7 +583,7 @@ minibuffer completion, due to the specifics of their data.
 minibuffer histories between sessions.]
 
 
-File: doc7Pl8s0.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.3 The ‘denote-templates’ option
 -----------------------------------
@@ -665,7 +665,7 @@ welcome to ask for help if the information provided herein is not
 sufficient.  We shall expand the manual accordingly.
 
 
-File: doc7Pl8s0.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
+File: docUPo47b.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
 
 2.1.4 Convenience commands for note creation
 --------------------------------------------
@@ -837,7 +837,7 @@ Create note with a signature
               (call-interactively #'denote)))
 
 
-File: doc7Pl8s0.info,  Node: The denote-save-buffers option,  Next: The denote-kill-buffers option,  Prev: Convenience commands for note creation,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-save-buffers option,  Next: The denote-kill-buffers option,  Prev: Convenience commands for note creation,  Up: Standard note creation
 
 2.1.5 The ‘denote-save-buffers’ option
 --------------------------------------
@@ -863,7 +863,7 @@ and knows it is reliable (*note Renaming files::).
    *note The denote-kill-buffers option::.
 
 
-File: doc7Pl8s0.info,  Node: The denote-kill-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-kill-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
 
 2.1.6 The ‘denote-kill-buffers’ option
 --------------------------------------
@@ -898,7 +898,7 @@ were t (*note The denote-save-buffers option::).
 operation it is NOT automatically killed.
 
 
-File: doc7Pl8s0.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-kill-buffers option,  Up: Standard note creation
+File: docUPo47b.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-kill-buffers option,  Up: Standard note creation
 
 2.1.7 The ‘denote-date-prompt-use-org-read-date’ option
 -------------------------------------------------------
@@ -913,7 +913,7 @@ method that is common in interactions with Org mode, can set the user
 option ‘denote-date-prompt-use-org-read-date’ to a non-nil value.
 
 
-File: doc7Pl8s0.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
+File: docUPo47b.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
 
 2.2 Create a note from the current Org subtree
 ==============================================
@@ -968,7 +968,7 @@ prompts for a date at this stage (also see
 ‘denote-file-type’.
 
 
-File: doc7Pl8s0.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
+File: docUPo47b.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
 
 2.3 Create note using Org capture
 =================================
@@ -1023,7 +1023,7 @@ of the ‘denote-org-capture-specifiers’.
 your own convenience commands::).  ]
 
 
-File: doc7Pl8s0.info,  Node: Create note with specific prompts using Org capture,  Next: Create note with specific values using Org capture,  Prev: Create note using Org capture,  Up: Points of entry
+File: docUPo47b.info,  Node: Create note with specific prompts using Org capture,  Next: Create note with specific values using Org capture,  Prev: Create note using Org capture,  Up: Points of entry
 
 2.4 Create note with specific prompts using Org capture
 =======================================================
@@ -1110,7 +1110,7 @@ treated the same as ‘:title’ or ‘t’).
 your own convenience commands::).  ]
 
 
-File: doc7Pl8s0.info,  Node: Create note with specific values using Org capture,  Next: Create a journal entry using Org capture,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
+File: docUPo47b.info,  Node: Create note with specific values using Org capture,  Next: Create a journal entry using Org capture,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
 
 2.5 Create note with specific values using Org capture
 ======================================================
@@ -1188,7 +1188,7 @@ how we can affect the behaviour of the underlying ‘denote’ command by
 Write your own convenience commands::).
 
 
-File: doc7Pl8s0.info,  Node: Create a journal entry using Org capture,  Next: Create a note with the region's contents,  Prev: Create note with specific values using Org capture,  Up: Points of entry
+File: docUPo47b.info,  Node: Create a journal entry using Org capture,  Next: Create a note with the region's contents,  Prev: Create note with specific values using Org capture,  Up: Points of entry
 
 2.6 Create a journal entry using Org capture
 ============================================
@@ -1223,7 +1223,7 @@ accordingly, in accordance with the documentation of
 ‘org-capture-templates’.
 
 
-File: doc7Pl8s0.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create a journal entry using Org capture,  Up: Points of entry
+File: docUPo47b.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create a journal entry using Org capture,  Up: Points of entry
 
 2.7 Create a note with the region’s contents
 ============================================
@@ -1265,7 +1265,7 @@ if ‘denote-region’ is used without an active region.
 * A custom denote-region that references the source::
 
 
-File: doc7Pl8s0.info,  Node: A custom denote-region that references the source,  Up: Create a note with the region's contents
+File: docUPo47b.info,  Node: A custom denote-region that references the source,  Up: Create a note with the region's contents
 
 2.7.1 A custom ‘denote-region’ that references the source
 ---------------------------------------------------------
@@ -1330,7 +1330,7 @@ the following:
      called.
 
 
-File: doc7Pl8s0.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
+File: docUPo47b.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
 
 2.8 Open an existing note or create it if missing
 =================================================
@@ -1370,7 +1370,7 @@ or creating a new one (*note Link to a note or create it if missing:
 Link to an existing note or create a new one.).
 
 
-File: doc7Pl8s0.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain files from file prompts,  Prev: Open an existing note or create it if missing,  Up: Points of entry
+File: docUPo47b.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain files from file prompts,  Prev: Open an existing note or create it if missing,  Up: Points of entry
 
 2.9 Maintain separate directory silos for notes
 ===============================================
@@ -1488,7 +1488,7 @@ not sufficient.  The manual shall be expanded accordingly.
 * Make any Denote command work in a silo from anywhere::
 
 
-File: doc7Pl8s0.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docUPo47b.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.9.1 How to switch a silo
 --------------------------
@@ -1504,7 +1504,7 @@ There are three ways to switch to a silo:
      from the current buffer.
 
 
-File: doc7Pl8s0.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
+File: docUPo47b.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
 
 2.9.2 Use custom commands to select a silo
 ------------------------------------------
@@ -1577,7 +1577,7 @@ value of ‘denote-directory’ to select silos.
 a note from the current Org subtree.
 
 
-File: doc7Pl8s0.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docUPo47b.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.9.3 The ‘denote-silo-extras.el’
 ---------------------------------
@@ -1641,7 +1641,7 @@ inside that silo (*note Points of entry::).
               (cd silo)))
 
 
-File: doc7Pl8s0.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
+File: docUPo47b.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
 
 2.9.4 Make Org export work with silos
 -------------------------------------
@@ -1696,7 +1696,7 @@ ways to go about it, anyway:
      of the current file.  ]
 
 
-File: doc7Pl8s0.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
+File: docUPo47b.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
 
 2.9.5 Make any Denote command work in a silo from anywhere
 ----------------------------------------------------------
@@ -1733,7 +1733,7 @@ convenience.  For example:
      (define-key global-map (kbd "C-c n j") #'my-denote-journal-extras-new-or-existing-entry)
 
 
-File: doc7Pl8s0.info,  Node: Exclude certain files from file prompts,  Next: Exclude certain directories from all operations,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
+File: docUPo47b.info,  Node: Exclude certain files from file prompts,  Next: Exclude certain directories from all operations,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
 
 2.10 Exclude certain files from file prompts
 ============================================
@@ -1753,7 +1753,7 @@ note or create it if missing::).
    *note For developers or advanced users::.
 
 
-File: doc7Pl8s0.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Exclude certain files from file prompts,  Up: Points of entry
+File: docUPo47b.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Exclude certain files from file prompts,  Up: Points of entry
 
 2.11 Exclude certain directories from all operations
 ====================================================
@@ -1778,7 +1778,7 @@ the available files in the value of the user option ‘denote-directory’
    *note For developers or advanced users::.
 
 
-File: doc7Pl8s0.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
+File: docUPo47b.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
 
 2.12 Exclude certain keywords from being inferred
 =================================================
@@ -1793,7 +1793,7 @@ prompts as completion candidates when the user option
    The match is performed with ‘string-match-p’.
 
 
-File: doc7Pl8s0.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
+File: docUPo47b.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
 
 2.13 Use Denote commands from the menu bar or context menu
 ==========================================================
@@ -1814,7 +1814,7 @@ Denote entry for it by adding the following to their configuration file:
      (add-hook 'context-menu-functions #'denote-context-menu)
 
 
-File: doc7Pl8s0.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
+File: docUPo47b.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
 
 3 Renaming files
 ****************
@@ -1867,7 +1867,7 @@ or switching between then with commands like ‘switch-to-buffer’.
 * Faces used by rename commands::
 
 
-File: doc7Pl8s0.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
 
 3.1 Rename a single file
 ========================
@@ -1988,7 +1988,7 @@ interactively::).
 * The denote-rename-confirmations option::
 
 
-File: doc7Pl8s0.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
+File: docUPo47b.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
 
 3.1.1 The ‘denote-rename-confirmations’ option
 ----------------------------------------------
@@ -2022,7 +2022,7 @@ but carries out the renaming without asking for confirmation (*note
 Rename multiple files interactively::)).
 
 
-File: doc7Pl8s0.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
 
 3.2 Rename a single file based on its front matter
 ==================================================
@@ -2077,7 +2077,7 @@ option ‘denote-file-name-components-order’ (*note Change the order of
 file name components::).
 
 
-File: doc7Pl8s0.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
 
 3.3 Rename multiple files interactively
 =======================================
@@ -2101,7 +2101,7 @@ command ‘denote-dired-rename-marked-files-with-keywords’.
    • *note Rename multiple files based on their front matter::
 
 
-File: doc7Pl8s0.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
 
 3.4 Rename multiple files at once by asking only for keywords
 =============================================================
@@ -2147,7 +2147,7 @@ keywords, use ‘denote-dired-rename-marked-files-add-keywords’ and
 ‘denote-dired-rename-marked-files-remove-keywords’, respectively.
 
 
-File: doc7Pl8s0.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
 
 3.5 Rename multiple files based on their front matter
 =====================================================
@@ -2167,7 +2167,7 @@ to rename them interactively (*note Rename multiple files
 interactively::).
 
 
-File: doc7Pl8s0.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing a title interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing a title interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
 
 3.6 Rename a file by changing only its file type
 ================================================
@@ -2198,7 +2198,7 @@ option ‘denote-file-name-components-order’ (*note Change the order of
 file name components::).
 
 
-File: doc7Pl8s0.info,  Node: Rename a file by adding or removing a title interactively,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a file by adding or removing a title interactively,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
 
 3.7 Rename a file by adding or removing a title interactively
 =============================================================
@@ -2232,7 +2232,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doc7Pl8s0.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by adding or removing a title interactively,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by adding or removing a title interactively,  Up: Renaming files
 
 3.8 Rename a file by adding or removing keywords interactively
 ==============================================================
@@ -2269,7 +2269,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doc7Pl8s0.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Find duplicate identifiers and put them in a Dired buffer,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
+File: docUPo47b.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Find duplicate identifiers and put them in a Dired buffer,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
 
 3.9 Rename a file by adding or removing a signature interactively
 =================================================================
@@ -2303,7 +2303,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doc7Pl8s0.info,  Node: Find duplicate identifiers and put them in a Dired buffer,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
+File: docUPo47b.info,  Node: Find duplicate identifiers and put them in a Dired buffer,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
 
 3.10 Find duplicate identifiers and put them in a Dired buffer
 ==============================================================
@@ -2354,7 +2354,7 @@ record a keyboard macro that makes use of a counter to increment by
 1—contact me if you need any help).
 
 
-File: doc7Pl8s0.info,  Node: Faces used by rename commands,  Prev: Find duplicate identifiers and put them in a Dired buffer,  Up: Renaming files
+File: docUPo47b.info,  Node: Faces used by rename commands,  Prev: Find duplicate identifiers and put them in a Dired buffer,  Up: Renaming files
 
 3.11 Faces used by rename commands
 ==================================
@@ -2368,7 +2368,7 @@ prompts:
    • ‘denote-faces-prompt-old-name’
 
 
-File: doc7Pl8s0.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
+File: docUPo47b.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
 
 4 The file-naming scheme
 ************************
@@ -2473,7 +2473,7 @@ low-tech invention.
 * Features of the file-naming scheme for searching or filtering::
 
 
-File: doc7Pl8s0.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
+File: docUPo47b.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
 
 4.1 Change the order of file name components
 ============================================
@@ -2531,7 +2531,7 @@ predictable and thus easier to find.  So pick one order and never touch
 it again.  When in doubt, leave the default file-naming scheme as-is.
 
 
-File: doc7Pl8s0.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
+File: docUPo47b.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
 
 4.2 Sluggification of file name components
 ==========================================
@@ -2579,7 +2579,7 @@ hackability and so users can deviate from the aforementioned (*note
 User-defined sluggification of file name components::).
 
 
-File: doc7Pl8s0.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
+File: docUPo47b.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
 
 4.3 User-defined sluggification of file name components
 =======================================================
@@ -2672,7 +2672,7 @@ have been warned.
 * Custom sluggification to remove non-ASCII characters::
 
 
-File: doc7Pl8s0.info,  Node: Custom sluggification to remove non-ASCII characters,  Up: User-defined sluggification of file name components
+File: docUPo47b.info,  Node: Custom sluggification to remove non-ASCII characters,  Up: User-defined sluggification of file name components
 
 4.3.1 Custom sluggification to remove non-ASCII characters
 ----------------------------------------------------------
@@ -2714,7 +2714,7 @@ sluggification of file name components::).
          (keyword . my-denote-sluggify-keyword)))
 
 
-File: doc7Pl8s0.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
+File: docUPo47b.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
 
 4.4 Features of the file-naming scheme for searching or filtering
 =================================================================
@@ -2751,7 +2751,7 @@ interfere with the above: either set the user option
 at the relevant prompts.
 
 
-File: doc7Pl8s0.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
+File: docUPo47b.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
 
 5 Front matter
 **************
@@ -2822,7 +2822,7 @@ in the doc string of ‘format-time-string’..
 * Regenerate front matter::
 
 
-File: doc7Pl8s0.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
+File: docUPo47b.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
 
 5.1 Change the front matter format
 ==================================
@@ -2904,7 +2904,7 @@ are not yet sure what the user’s needs are.  Please provide feedback and
 we shall act accordingly.
 
 
-File: doc7Pl8s0.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
+File: docUPo47b.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
 
 5.2 Regenerate front matter
 ===========================
@@ -2934,7 +2934,7 @@ to make it comply with our file-naming scheme and then add the relevant
 front matter.
 
 
-File: doc7Pl8s0.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
+File: docUPo47b.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
 
 6 Linking notes
 ***************
@@ -2967,7 +2967,7 @@ links opening outside Emacs?::).
 * Miscellaneous information about links::
 
 
-File: doc7Pl8s0.info,  Node: Adding a single link,  Next: The denote-org-store-link-to-heading user option,  Up: Linking notes
+File: docUPo47b.info,  Node: Adding a single link,  Next: The denote-org-store-link-to-heading user option,  Up: Linking notes
 
 6.1 Adding a single link
 ========================
@@ -3028,7 +3028,7 @@ for the user/theme in case they want ‘denote:’ links to remain distinct
 from other links.
 
 
-File: doc7Pl8s0.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: Adding a single link,  Up: Linking notes
+File: docUPo47b.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: Adding a single link,  Up: Linking notes
 
 6.2 The ‘denote-org-store-link-to-heading’ user option
 ======================================================
@@ -3103,7 +3103,7 @@ file+heading regardless of the aforementioned user option (*note Insert
 link to an Org file with a further pointer to a heading::).
 
 
-File: doc7Pl8s0.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
+File: docUPo47b.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
 
 6.3 Insert link to an Org file with a further pointer to a heading
 ==================================================================
@@ -3135,7 +3135,7 @@ a file, then a heading, and inserts the link at point.
 heading (*note Backlinks for Org headings::).
 
 
-File: doc7Pl8s0.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
+File: docUPo47b.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
 
 6.4 Insert links matching a regexp
 ==================================
@@ -3193,7 +3193,7 @@ show above is for interactive usage.
 purposes (*note Linking notes::).
 
 
-File: doc7Pl8s0.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
+File: docUPo47b.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
 
 6.5 Insert link to file with signature
 ======================================
@@ -3212,7 +3212,7 @@ note]]’.
 function (*note Adding a single link::).
 
 
-File: doc7Pl8s0.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
+File: docUPo47b.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
 
 6.6 Insert links from marked files in Dired
 ===========================================
@@ -3245,7 +3245,7 @@ for our purposes (*note Linking notes::).
 ‘denote-link-dired-marked-notes’.  [ The alias is part of 3.2.0-dev.  ]
 
 
-File: doc7Pl8s0.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
+File: docUPo47b.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
 
 6.7 Link to an existing note or create a new one
 ================================================
@@ -3327,7 +3327,7 @@ creating a new one (*note Open an existing note or create it if
 missing::).
 
 
-File: doc7Pl8s0.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
+File: docUPo47b.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
 
 6.8 The backlinks’ buffer
 =========================
@@ -3412,7 +3412,7 @@ Reproducing it here for the sake of convenience:
 * Backlinks for Org headings::
 
 
-File: doc7Pl8s0.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
+File: docUPo47b.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
 
 6.8.1 Backlinks for Org headings
 --------------------------------
@@ -3428,7 +3428,7 @@ current heading is also an option (*note Org dynamic blocks to insert
 links or backlinks: Org dynamic blocks to insert links.).
 
 
-File: doc7Pl8s0.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
+File: docUPo47b.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
 
 6.9 Writing metanotes
 =====================
@@ -3465,7 +3465,7 @@ serve in encapsulating knowledge, while current you will be equipped
 with the knowledge derived from the deliberate self-reflection.
 
 
-File: doc7Pl8s0.info,  Node: Visiting linked files via the minibuffer,  Next: Convert denote links to file links in Org,  Prev: Writing metanotes,  Up: Linking notes
+File: docUPo47b.info,  Node: Visiting linked files via the minibuffer,  Next: Convert denote links to file links in Org,  Prev: Writing metanotes,  Up: Linking notes
 
 6.10 Visiting linked files via the minibuffer
 =============================================
@@ -3487,7 +3487,7 @@ with only the files of the current minibuffer session).
 a dedicated buffer (*note The backlinks' buffer::).
 
 
-File: doc7Pl8s0.info,  Node: Convert denote links to file links in Org,  Next: Convert denote links to paths in Markdown,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
+File: docUPo47b.info,  Node: Convert denote links to file links in Org,  Next: Convert denote links to paths in Markdown,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
 
 6.11 Convert ‘denote:’ links to ‘file:’ links in Org
 ====================================================
@@ -3520,7 +3520,7 @@ Convert ‘file:’ links to ‘denote:’ links
      file system path and converts it into its identifier.
 
 
-File: doc7Pl8s0.info,  Node: Convert denote links to paths in Markdown,  Next: Fontify links in non-Org buffers,  Prev: Convert denote links to file links in Org,  Up: Linking notes
+File: docUPo47b.info,  Node: Convert denote links to paths in Markdown,  Next: Fontify links in non-Org buffers,  Prev: Convert denote links to file links in Org,  Up: Linking notes
 
 6.12 Convert ‘:denote’ links to paths in Markdown
 =================================================
@@ -3561,7 +3561,7 @@ Everything seems to work on my end, though do let me know if there are
 bugs.
 
 
-File: doc7Pl8s0.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to paths in Markdown,  Up: Linking notes
+File: docUPo47b.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to paths in Markdown,  Up: Linking notes
 
 6.13 Fontify links in non-Org buffers
 =====================================
@@ -3595,7 +3595,7 @@ correctly resolves ‘denote:’ links.  Interested users can refer to the
 function ‘denote-link-markdown-follow’ for the implementation details.
 
 
-File: doc7Pl8s0.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
+File: docUPo47b.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
 
 6.14 Miscellaneous information about links
 ==========================================
@@ -3603,10 +3603,10 @@ File: doc7Pl8s0.info,  Node: Miscellaneous information about links,  Prev: Fonti
 * Menu:
 
 * Aliases for the linking commands::
-* The denote-link-description-function to format links::
+* The denote-link-description-format to format link descriptions::
 
 
-File: doc7Pl8s0.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-function to format links,  Up: Miscellaneous information about links
+File: docUPo47b.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-format to format link descriptions,  Up: Miscellaneous information about links
 
 6.14.1 Aliases for the linking commands
 ---------------------------------------
@@ -3619,21 +3619,64 @@ aliases is to offer alternative, more descriptive names of select
 commands.
 
 
-File: doc7Pl8s0.info,  Node: The denote-link-description-function to format links,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
+File: docUPo47b.info,  Node: The denote-link-description-format to format link descriptions,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
 
-6.14.2 The ‘denote-link-description-function’ to format links
--------------------------------------------------------------
+6.14.2 The ‘denote-link-description-format’ to format link descriptions
+-----------------------------------------------------------------------
 
-The user option ‘denote-link-description-function’ takes as its value
-the symbol of a function.  This is used to format the text of the link.
-The default function inserts the title.  If the file has a signature, it
-includes that as well, prepending it to the title.
+[ As part of 3.2.0-dev, the old user option
+‘denote-link-description-function’ is deprecated and superseded by the
+new ‘denote-link-description-format’.  The new user option still accepts
+a custom function as its value, so the old behaviour should be retained.
+]
 
-   The function specified accepts a single ‘FILE’ argument and returns
-the description as a string.
+   The user option ‘denote-link-description-format’ controls how the
+command ‘denote-link’ and related functions create a link description by
+default, when no region is active.  If the region is active, its text is
+used as the link’s description when that is relevant (for example, some
+linking commands insert many links, so those do not consider the active
+region).
+
+   The value can be either a function or a string.  If it is a function,
+it is called with one argument, the file, and should return a string
+representing the link description.
+
+   If the value is a string, it treats specially the following
+specifiers:
+
+   • The ‘%t’ is the Denote ‘TITLE’ of the file.
+   • The ‘%i’ is the Denote ‘IDENTIFIER’ of the file.
+   • The ‘%d’ is the same as ‘%i’ (‘DATE’ mnemonic).
+   • The ‘%s’ is the Denote ‘SIGNATURE’ of the file.
+   • The ‘%k’ is the Denote ‘KEYWORDS’ of the file.
+   • The ‘%%’ is a literal percent sign.
+
+   In addition, the following flags are available for each of the
+specifiers:
+
+0
+     Pad to the width, if given, with zeros instead of spaces.
+-
+     Pad to the width, if given, on the right instead of the left.
+<
+     Truncate to the width and precision, if given, on the left.
+>
+     Truncate to the width and precision, if given, on the right.
+^
+     Convert to upper case.
+_
+     Convert to lower case.
+
+   When combined all together, the above are written thus:
+
+     %<flags><width><precision>SPECIFIER-CHARACTER
+
+   Any other text in the string it taken as-is.  Users may want, for
+example, to include some text that makes Denote links stand out, such as
+a ‘[D]’ prefix.
 
 
-File: doc7Pl8s0.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
+File: docUPo47b.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
 
 7 Choose which commands to prompt for
 *************************************
@@ -3654,7 +3697,7 @@ custom command in the list (*note Write your own convenience
 commands::).
 
 
-File: doc7Pl8s0.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
+File: docUPo47b.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
 
 8 Fontification in Dired
 ************************
@@ -3721,7 +3764,7 @@ attachments for the notes Denote produces if you are writing Org notes
 and are using its standand attachments’ facility).
 
 
-File: doc7Pl8s0.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
+File: docUPo47b.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
 
 9 Automatically rename Denote buffers
 *************************************
@@ -3752,7 +3795,7 @@ to all programs.
 * The denote-rename-buffer-format option::
 
 
-File: doc7Pl8s0.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
+File: docUPo47b.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
 
 9.1 The ‘denote-rename-buffer-format’ option
 ============================================
@@ -3821,7 +3864,7 @@ prefix.  Examples:
 own function and assigning it to the ‘denote-rename-buffer-function’.
 
 
-File: doc7Pl8s0.info,  Node: Use Org dynamic blocks,  Next: Sort files by component,  Prev: Automatically rename Denote buffers,  Up: Top
+File: docUPo47b.info,  Node: Use Org dynamic blocks,  Next: Sort files by component,  Prev: Automatically rename Denote buffers,  Up: Top
 
 10 Use Org dynamic blocks
 *************************
@@ -3869,7 +3912,7 @@ Evaluate:
 * Org dynamic block to insert Org files as headings::
 
 
-File: doc7Pl8s0.info,  Node: Org dynamic blocks to insert links,  Next: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
+File: docUPo47b.info,  Node: Org dynamic blocks to insert links,  Next: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
 
 10.1 Org dynamic blocks to insert links
 =======================================
@@ -3961,7 +4004,7 @@ block.  We cover that case as well (*note The Org dynamic block to
 insert missing links only::).
 
 
-File: doc7Pl8s0.info,  Node: The Org dynamic block to insert missing links only,  Next: The Org dynamic block to insert backlinks,  Prev: Org dynamic blocks to insert links,  Up: Use Org dynamic blocks
+File: docUPo47b.info,  Node: The Org dynamic block to insert missing links only,  Next: The Org dynamic block to insert backlinks,  Prev: Org dynamic blocks to insert links,  Up: Use Org dynamic blocks
 
 10.2 The Org dynamic block to insert missing links only
 =======================================================
@@ -3984,7 +4027,7 @@ the command ‘org-dynamic-block-insert-dblock’.
 the ‘#+BEGIN’ line to update the block.
 
 
-File: doc7Pl8s0.info,  Node: The Org dynamic block to insert backlinks,  Next: Org dynamic block to insert file contents,  Prev: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
+File: docUPo47b.info,  Node: The Org dynamic block to insert backlinks,  Next: Org dynamic block to insert file contents,  Prev: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
 
 10.3 The Org dynamic block to insert backlinks
 ==============================================
@@ -4020,7 +4063,7 @@ the heading (*note Insert link to an Org file with a further pointer to
 a heading::).
 
 
-File: doc7Pl8s0.info,  Node: Org dynamic block to insert file contents,  Next: Org dynamic block to insert Org files as headings,  Prev: The Org dynamic block to insert backlinks,  Up: Use Org dynamic blocks
+File: docUPo47b.info,  Node: Org dynamic block to insert file contents,  Next: Org dynamic block to insert Org files as headings,  Prev: The Org dynamic block to insert backlinks,  Up: Use Org dynamic blocks
 
 10.4 Org dynamic block to insert file contents
 ==============================================
@@ -4140,7 +4183,7 @@ parameters, which are described further below:
      purview).
 
 
-File: doc7Pl8s0.info,  Node: Org dynamic block to insert Org files as headings,  Prev: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
+File: docUPo47b.info,  Node: Org dynamic block to insert Org files as headings,  Prev: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
 
 10.5 Org dynamic block to insert Org files as headings
 ======================================================
@@ -4225,7 +4268,7 @@ parameters included:
      purview).
 
 
-File: doc7Pl8s0.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Use Org dynamic blocks,  Up: Top
+File: docUPo47b.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Use Org dynamic blocks,  Up: Top
 
 11 Sort files by component
 **************************
@@ -4264,7 +4307,7 @@ contents::).
 * Define a sorting function per component::
 
 
-File: doc7Pl8s0.info,  Node: Configure what extra prompts denote-sort-dired issues,  Next: Define a sorting function per component,  Up: Sort files by component
+File: docUPo47b.info,  Node: Configure what extra prompts denote-sort-dired issues,  Next: Define a sorting function per component,  Up: Sort files by component
 
 11.1 Configure what extra prompts ‘denote-sort-dired’ issues
 ============================================================
@@ -4304,7 +4347,7 @@ that ‘denote-sort-dired’ will fall back to using
      (setq denote-sort-dired-default-reverse-sort nil)
 
 
-File: doc7Pl8s0.info,  Node: Define a sorting function per component,  Prev: Configure what extra prompts denote-sort-dired issues,  Up: Sort files by component
+File: docUPo47b.info,  Node: Define a sorting function per component,  Prev: Configure what extra prompts denote-sort-dired issues,  Up: Sort files by component
 
 11.2 Define a sorting function per component
 ============================================
@@ -4330,7 +4373,7 @@ Sort signatures that include Luhmann-style sequences::).
 * Sort signatures that include Luhmann-style sequences::
 
 
-File: doc7Pl8s0.info,  Node: Sort signatures that include Luhmann-style sequences,  Up: Define a sorting function per component
+File: docUPo47b.info,  Node: Sort signatures that include Luhmann-style sequences,  Up: Define a sorting function per component
 
 11.2.1 Sort signatures that include Luhmann-style sequences
 -----------------------------------------------------------
@@ -4383,7 +4426,7 @@ me know.  I am happy to help and we can then include our findings in the
 manual for the benefit of the community.
 
 
-File: doc7Pl8s0.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
+File: docUPo47b.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
 
 12 Keep a journal or diary
 **************************
@@ -4475,7 +4518,7 @@ file’s identifier.
 * Journaling with a timer::
 
 
-File: doc7Pl8s0.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
+File: docUPo47b.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
 
 12.1 Journaling with a timer
 ============================
@@ -4539,7 +4582,7 @@ Practice makes perfect!
    • Backronym: TMR May Ring; Timer Must Run.
 
 
-File: doc7Pl8s0.info,  Node: Minibuffer histories,  Next: Packages that build on Denote,  Prev: Keep a journal or diary,  Up: Top
+File: docUPo47b.info,  Node: Minibuffer histories,  Next: Packages that build on Denote,  Prev: Keep a journal or diary,  Up: Top
 
 13 Minibuffer histories
 ***********************
@@ -4561,7 +4604,7 @@ configuration:
      (add-hook 'after-init-hook #'savehist-mode)
 
 
-File: doc7Pl8s0.info,  Node: Packages that build on Denote,  Next: Extending Denote,  Prev: Minibuffer histories,  Up: Top
+File: docUPo47b.info,  Node: Packages that build on Denote,  Next: Extending Denote,  Prev: Minibuffer histories,  Up: Top
 
 14 Packages that build on Denote
 ********************************
@@ -4579,7 +4622,7 @@ author, please let us know about your work and we will include it here
 * Use the denote-menu package::
 
 
-File: doc7Pl8s0.info,  Node: Use the consult-denote package for enhanced minibuffer interactions,  Next: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
+File: docUPo47b.info,  Node: Use the consult-denote package for enhanced minibuffer interactions,  Next: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
 
 14.1 Use the ‘consult-denote’ package for enhanced minibuffer interactions
 ==========================================================================
@@ -4605,7 +4648,7 @@ with Denote and make its feature set entirely optional (*note Use the
 consult-notes package::).  It also only works with Denote.
 
 
-File: doc7Pl8s0.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Use the consult-denote package for enhanced minibuffer interactions,  Up: Packages that build on Denote
+File: docUPo47b.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Use the consult-denote package for enhanced minibuffer interactions,  Up: Packages that build on Denote
 
 14.2 Use the ‘denote-explore’ package to explore your notes
 ===========================================================
@@ -4626,7 +4669,7 @@ Visualisations
 <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-File: doc7Pl8s0.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
+File: docUPo47b.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
 
 14.3 Use the ‘citar-denote’ package for bibliography notes
 ==========================================================
@@ -4645,7 +4688,7 @@ ease.  The package’s documentation covers the details:
 <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-File: doc7Pl8s0.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Packages that build on Denote
+File: docUPo47b.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Packages that build on Denote
 
 14.4 Use the ‘consult-notes’ package
 ====================================
@@ -4682,7 +4725,7 @@ option (*note Features of the file-naming scheme for searching or
 filtering::).
 
 
-File: doc7Pl8s0.info,  Node: Use the denote-menu package,  Prev: Use the consult-notes package,  Up: Packages that build on Denote
+File: docUPo47b.info,  Node: Use the denote-menu package,  Prev: Use the consult-notes package,  Up: Packages that build on Denote
 
 14.5 Use the ‘denote-menu’ package
 ==================================
@@ -4702,7 +4745,7 @@ them and to transition from the tabular list to Dired.  Its
 documentation expands on the technicalities.
 
 
-File: doc7Pl8s0.info,  Node: Extending Denote,  Next: Installation,  Prev: Packages that build on Denote,  Up: Top
+File: docUPo47b.info,  Node: Extending Denote,  Next: Installation,  Prev: Packages that build on Denote,  Up: Top
 
 15 Extending Denote
 *******************
@@ -4731,7 +4774,7 @@ Denote::).  This section covers the details.
 * Set up your workflow for daily or weekly meeting notes::
 
 
-File: doc7Pl8s0.info,  Node: Create a new note in any directory,  Next: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
+File: docUPo47b.info,  Node: Create a new note in any directory,  Next: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
 
 15.1 Create a new note in any directory
 =======================================
@@ -4755,7 +4798,7 @@ by its name with ‘M-x’.
          (call-interactively 'denote)))
 
 
-File: doc7Pl8s0.info,  Node: Find empty notes and put them in a Dired buffer,  Next: Automatically rename the note after saving it,  Prev: Create a new note in any directory,  Up: Extending Denote
+File: docUPo47b.info,  Node: Find empty notes and put them in a Dired buffer,  Next: Automatically rename the note after saving it,  Prev: Create a new note in any directory,  Up: Extending Denote
 
 15.2 Find empty notes and put them in a Dired buffer
 ====================================================
@@ -4886,7 +4929,7 @@ commands:
 easier for users to pick the ones they need.  ]
 
 
-File: doc7Pl8s0.info,  Node: Automatically rename the note after saving it,  Next: Narrow the list of files in Dired,  Prev: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
+File: docUPo47b.info,  Node: Automatically rename the note after saving it,  Next: Narrow the list of files in Dired,  Prev: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
 
 15.3 Automatically rename the note after saving it
 ==================================================
@@ -4911,7 +4954,7 @@ following sample can be used:
      (add-hook 'after-save-hook #'my-denote-always-rename-on-save-based-on-front-matter)
 
 
-File: doc7Pl8s0.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Automatically rename the note after saving it,  Up: Extending Denote
+File: docUPo47b.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Automatically rename the note after saving it,  Up: Extending Denote
 
 15.4 Narrow the list of files in Dired
 ======================================
@@ -4969,7 +5012,7 @@ them from the current view.
        (dired-do-kill-lines))
 
 
-File: doc7Pl8s0.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
+File: docUPo47b.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
 
 15.5 Use ‘dired-virtual-mode’ for arbitrary file listings
 =========================================================
@@ -5059,7 +5102,7 @@ it a try (I use ‘C-c C-e’).  In the produced buffer, activate the
 ‘dired-virtual-mode’.
 
 
-File: doc7Pl8s0.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
+File: docUPo47b.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
 
 15.6 Use Embark to collect minibuffer candidates
 ================================================
@@ -5085,7 +5128,7 @@ same thing directly in Dired, since you also benefit from all the power
 of the minibuffer (*note Narrow the list of files in Dired::).
 
 
-File: doc7Pl8s0.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
+File: docUPo47b.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
 
 15.7 Search file contents
 =========================
@@ -5130,7 +5173,7 @@ pass a regular expression to the ‘-e’ flag.
 use than the built-in commands.
 
 
-File: doc7Pl8s0.info,  Node: Bookmark the directory with the notes,  Next: Treat your notes as a project,  Prev: Search file contents,  Up: Extending Denote
+File: docUPo47b.info,  Node: Bookmark the directory with the notes,  Next: Treat your notes as a project,  Prev: Search file contents,  Up: Extending Denote
 
 15.8 Bookmark the directory with the notes
 ==========================================
@@ -5157,7 +5200,7 @@ The package ‘consult-dir’ is an extension to ‘consult’ which provides
 useful extras for working with directories, including bookmarks.
 
 
-File: doc7Pl8s0.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
+File: docUPo47b.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
 
 15.9 Treat your notes as a project
 ==================================
@@ -5189,7 +5232,7 @@ package will get the job done (VC can work with other backends besides
 Git).
 
 
-File: doc7Pl8s0.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
+File: docUPo47b.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
 
 15.10 Use the tree-based file prompt for select commands
 ========================================================
@@ -5228,7 +5271,7 @@ their own wrapper functions as shown in the following code block.
          (call-interactively #'denote-link)))
 
 
-File: doc7Pl8s0.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
+File: docUPo47b.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
 
 15.11 Rename files with Denote in the Image Dired thumbnails buffer
 ===================================================================
@@ -5291,7 +5334,7 @@ can be used instead:
           (denote-rename-file-and-buffer file new-name))))
 
 
-File: doc7Pl8s0.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
+File: docUPo47b.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
 
 15.12 Rename files with Denote using ‘dired-preview’
 ====================================================
@@ -5341,7 +5384,7 @@ We thus have:
          (user-error "No marked files; aborting")))
 
 
-File: doc7Pl8s0.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Next: Set up your workflow for daily or weekly meeting notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
+File: docUPo47b.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Next: Set up your workflow for daily or weekly meeting notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
 
 15.13 Avoid duplicate identifiers when exporting Denote notes
 =============================================================
@@ -5367,7 +5410,7 @@ create a new note using the file type they want on a case-by-case basis:
 * Export Denote notes with Markdown::
 
 
-File: doc7Pl8s0.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docUPo47b.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
 
 15.13.1 Export Denote notes with Org Mode
 -----------------------------------------
@@ -5465,7 +5508,7 @@ denote links to file links in Org.).
      option (*note Exclude certain directories from all operations::).
 
 
-File: doc7Pl8s0.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docUPo47b.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
 
 15.13.2 Export Denote notes with Markdown
 -----------------------------------------
@@ -5481,7 +5524,7 @@ the documentation of their preferred processor to prevent the creation
 of duplicate Denote identifiers.
 
 
-File: doc7Pl8s0.info,  Node: Set up your workflow for daily or weekly meeting notes,  Prev: Avoid duplicate identifiers when exporting Denote notes,  Up: Extending Denote
+File: docUPo47b.info,  Node: Set up your workflow for daily or weekly meeting notes,  Prev: Avoid duplicate identifiers when exporting Denote notes,  Up: Extending Denote
 
 15.14 Set up your workflow for daily or weekly meeting notes
 ============================================================
@@ -5558,7 +5601,7 @@ incorporating the following code in our setup.  Configure
            (insert (format "* [%s]\n\n" time)))))
 
 
-File: doc7Pl8s0.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
+File: docUPo47b.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
 
 16 Installation
 ***************
@@ -5569,7 +5612,7 @@ File: doc7Pl8s0.info,  Node: Installation,  Next: Sample configuration,  Prev: E
 * Manual installation::
 
 
-File: doc7Pl8s0.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
+File: docUPo47b.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
 
 16.1 GNU ELPA package
 =====================
@@ -5588,7 +5631,7 @@ archive.  Read:
 <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>.
 
 
-File: doc7Pl8s0.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
+File: docUPo47b.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
 
 16.2 Manual installation
 ========================
@@ -5615,7 +5658,7 @@ following commands in a shell prompt:
    Everything is in place to set up the package.
 
 
-File: doc7Pl8s0.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
+File: docUPo47b.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
 
 17 Sample configuration
 ***********************
@@ -5723,7 +5766,7 @@ File: doc7Pl8s0.info,  Node: Sample configuration,  Next: For developers or adva
      (add-hook 'context-menu-functions #'denote-context-menu)
 
 
-File: doc7Pl8s0.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
+File: docUPo47b.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
 
 18 For developers or advanced users
 ***********************************
@@ -6363,7 +6406,7 @@ Variable ‘denote-link-description-function’
      returned as the description.
 
 
-File: doc7Pl8s0.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
+File: docUPo47b.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
 
 19 Troubleshoot Denote in a pristine environment
 ************************************************
@@ -6404,7 +6447,7 @@ we need to account for.  Whatever the case, this exercise helps us get a
 better sense of the specifics.
 
 
-File: doc7Pl8s0.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
+File: docUPo47b.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
 
 20 Contributing
 ***************
@@ -6488,7 +6531,7 @@ Emacs in general.
 * Wishlist of what we can do to extend Denote::
 
 
-File: doc7Pl8s0.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
+File: docUPo47b.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
 
 20.1 Wishlist of what we can do to extend Denote
 ================================================
@@ -6557,7 +6600,7 @@ Encode the day in the identifier
 list.
 
 
-File: doc7Pl8s0.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
+File: docUPo47b.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
 
 21 Publications about Denote
 ****************************
@@ -6618,7 +6661,7 @@ Denote, feel welcome to tell us about it (*note Contributing::).
      <https://github.com/summeremacs/howiuseemacs/blob/main/full-explanation-of-how-i-use-emacs.org>
 
 
-File: doc7Pl8s0.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
+File: docUPo47b.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
 
 22 Alternatives to Denote
 *************************
@@ -6702,7 +6745,7 @@ should not be mutually exclusive.
 * Alternative implementations and further reading::
 
 
-File: doc7Pl8s0.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
+File: docUPo47b.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
 
 22.1 Alternative implementations and further reading
 ====================================================
@@ -6739,7 +6782,7 @@ unsorted.
    [ Development note: help expand this list.  ]
 
 
-File: doc7Pl8s0.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
+File: docUPo47b.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
 
 23 Frequently Asked Questions
 *****************************
@@ -6764,7 +6807,7 @@ into the specifics of how Denote works.
 * Why do I get a double #+title in Doom Emacs?::
 
 
-File: doc7Pl8s0.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
 23.1 Why develop Denote when PACKAGE already exists?
 ====================================================
@@ -6799,7 +6842,7 @@ package does not guarantee I get what I want in terms of workflow.
 choose whatever you want.
 
 
-File: doc7Pl8s0.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
 
 23.2 Why not rely exclusively on Org?
 =====================================
@@ -6830,7 +6873,7 @@ documentation that needs to be exported to various formats, including
 this very manual.
 
 
-File: doc7Pl8s0.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
 23.3 Why care about Unix tools when you use Emacs?
 ==================================================
@@ -6858,7 +6901,7 @@ computing and maintain a growing list of packages for it.  This is just
 me thinking long-term.
 
 
-File: doc7Pl8s0.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
 
 23.4 Why many small files instead of few large ones?
 ====================================================
@@ -6894,7 +6937,7 @@ that for my Org agenda, by the way, as I explained before about using
 the right tool for the job).
 
 
-File: doc7Pl8s0.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
 
 23.5 Does Denote perform well at scale?
 =======================================
@@ -6917,7 +6960,7 @@ Excerpt:
 where necessary, without compromising on the project’s principles.
 
 
-File: doc7Pl8s0.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
 
 23.6 I add TODOs to my notes; will many files slow down the Org agenda?
 =======================================================================
@@ -6951,7 +6994,7 @@ help figuring out the specifics of this workflow, you are welcome to ask
 for help in our relevant channels (*note Contributing::).
 
 
-File: doc7Pl8s0.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
 
 23.7 I want to sort by last modified in Dired, why won’t Denote let me?
 =======================================================================
@@ -6968,7 +7011,7 @@ option ‘dired-listing-switches’ sets your default preference.
 use the command ‘denote-sort-dired’ (*note Sort files by component::).
 
 
-File: doc7Pl8s0.info,  Node: How do you handle the last modified case?,  Next: Why are some Org links opening outside Emacs?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: How do you handle the last modified case?,  Next: Why are some Org links opening outside Emacs?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
 
 23.8 How do you handle the last modified case?
 ==============================================
@@ -6995,7 +7038,7 @@ programs deal with searching and narrowing, and version control software
 handle the tracking of changes.
 
 
-File: doc7Pl8s0.info,  Node: Why are some Org links opening outside Emacs?,  Next: Speed up backlinks' buffer creation?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why are some Org links opening outside Emacs?,  Next: Speed up backlinks' buffer creation?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
 
 23.9 Why are some Org links opening outside Emacs?
 ==================================================
@@ -7031,7 +7074,7 @@ their Org or Denote configuration:
 option.  Replace ‘md’ or ‘html’ with the desired file type extension.
 
 
-File: doc7Pl8s0.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: Why are some Org links opening outside Emacs?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: Why are some Org links opening outside Emacs?,  Up: Frequently Asked Questions
 
 23.10 Speed up backlinks’ buffer creation?
 ==========================================
@@ -7067,7 +7110,7 @@ like this:
              'grep)))
 
 
-File: doc7Pl8s0.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
 
 23.11 Why do I get “Search failed with status 1” when I search for backlinks?
 =============================================================================
@@ -7086,7 +7129,7 @@ following code (adjust the git’s installation path if necessary):
      (setenv "PATH" (concat (getenv "PATH") ";" "C:\\Program Files\\Git\\usr\\bin"))
 
 
-File: doc7Pl8s0.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
+File: docUPo47b.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
 
 23.12 Why do I get a double ‘#+title’ in Doom Emacs?
 ====================================================
@@ -7101,7 +7144,7 @@ empty by default.  Check how to disable the relevant module in your Doom
 Emacs configuration file.
 
 
-File: doc7Pl8s0.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
+File: docUPo47b.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
 
 24 Acknowledgements
 *******************
@@ -7156,7 +7199,7 @@ scheme, which is the cornerstone of this project.
 contributions to the code base.
 
 
-File: doc7Pl8s0.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
+File: docUPo47b.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
 
 Appendix A GNU Free Documentation License
 *****************************************
@@ -7638,7 +7681,7 @@ software license, such as the GNU General Public License, to permit
 their use in free software.
 
 
-File: doc7Pl8s0.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
+File: docUPo47b.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
 
 B Indices
 *********
@@ -7650,7 +7693,7 @@ B Indices
 * Concept index::
 
 
-File: doc7Pl8s0.info,  Node: Function index,  Next: Variable index,  Up: Indices
+File: docUPo47b.info,  Node: Function index,  Next: Variable index,  Up: Indices
 
 B.1 Function index
 ==================
@@ -7971,7 +8014,7 @@ B.1 Function index
                                                               (line 102)
 
 
-File: doc7Pl8s0.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
+File: docUPo47b.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
 
 B.2 Variable index
 ==================
@@ -8059,9 +8102,7 @@ B.2 Variable index
                                                               (line   6)
 * denote-known-keywords:                 Standard note creation.
                                                               (line  24)
-* denote-link-description-function:      The denote-link-description-function to format links.
-                                                              (line   6)
-* denote-link-description-function <1>:  For developers or advanced users.
+* denote-link-description-function:      For developers or advanced users.
                                                               (line 634)
 * denote-link-signature-format:          For developers or advanced users.
                                                               (line 618)
@@ -8137,7 +8178,7 @@ B.2 Variable index
                                                               (line 518)
 
 
-File: doc7Pl8s0.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
+File: docUPo47b.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 B.3 Concept index
 =================
@@ -8155,149 +8196,149 @@ B.3 Concept index
 
 Tag Table:
 Node: Top857
-Node: Overview9433
-Node: Points of entry13379
-Node: Standard note creation14859
-Node: The denote-prompts option17356
-Node: The denote-history-completion-in-prompts option21634
-Node: The denote-templates option23364
-Node: Convenience commands for note creation26823
-Ref: Write your own convenience commands30880
-Node: The denote-save-buffers option35290
-Node: The denote-kill-buffers option36500
-Node: The denote-date-prompt-use-org-read-date option37864
-Node: Create a note from the current Org subtree38614
-Node: Create note using Org capture41358
-Node: Create note with specific prompts using Org capture43972
-Node: Create note with specific values using Org capture48080
-Node: Create a journal entry using Org capture51566
-Node: Create a note with the region's contents53110
-Node: A custom denote-region that references the source55148
-Node: Open an existing note or create it if missing57967
-Node: Maintain separate directory silos for notes60335
-Node: How to switch a silo65360
-Node: Use custom commands to select a silo66036
-Node: The denote-silo-extrasel69385
-Ref: Switch to a silo directory outright70706
-Node: Make Org export work with silos72204
-Node: Make any Denote command work in a silo from anywhere74622
-Node: Exclude certain files from file prompts76454
-Node: Exclude certain directories from all operations77346
-Node: Exclude certain keywords from being inferred78444
-Node: Use Denote commands from the menu bar or context menu79115
-Node: Renaming files80144
-Node: Rename a single file82597
-Node: The denote-rename-confirmations option88461
-Node: Rename a single file based on its front matter89981
-Node: Rename multiple files interactively92221
-Node: Rename multiple files at once by asking only for keywords93474
-Node: Rename multiple files based on their front matter95622
-Node: Rename a file by changing only its file type96685
-Node: Rename a file by adding or removing a title interactively98182
-Node: Rename a file by adding or removing keywords interactively99989
-Node: Rename a file by adding or removing a signature interactively102007
-Node: Find duplicate identifiers and put them in a Dired buffer103868
-Node: Faces used by rename commands106597
-Node: The file-naming scheme107101
-Node: Change the order of file name components111847
-Node: Sluggification of file name components114627
-Node: User-defined sluggification of file name components116922
-Node: Custom sluggification to remove non-ASCII characters121058
-Node: Features of the file-naming scheme for searching or filtering122969
-Node: Front matter124626
-Node: Change the front matter format126973
-Node: Regenerate front matter129801
-Node: Linking notes131165
-Node: Adding a single link132285
-Node: The denote-org-store-link-to-heading user option135299
-Node: Insert link to an Org file with a further pointer to a heading138919
-Node: Insert links matching a regexp140685
-Node: Insert link to file with signature142928
-Node: Insert links from marked files in Dired143742
-Node: Link to an existing note or create a new one145279
-Node: The backlinks' buffer149462
-Node: Backlinks for Org headings153267
-Node: Writing metanotes154006
-Node: Visiting linked files via the minibuffer155676
-Node: Convert denote links to file links in Org156909
-Node: Convert denote links to paths in Markdown158643
-Node: Fontify links in non-Org buffers160616
-Node: Miscellaneous information about links162297
-Node: Aliases for the linking commands162619
-Node: The denote-link-description-function to format links163235
-Node: Choose which commands to prompt for163910
-Node: Fontification in Dired164826
-Node: Automatically rename Denote buffers167553
-Node: The denote-rename-buffer-format option168881
-Node: Use Org dynamic blocks171599
-Node: Org dynamic blocks to insert links173682
-Node: The Org dynamic block to insert missing links only178598
-Node: The Org dynamic block to insert backlinks179730
-Node: Org dynamic block to insert file contents181512
-Node: Org dynamic block to insert Org files as headings188148
-Node: Sort files by component192524
-Node: Configure what extra prompts denote-sort-dired issues194179
-Node: Define a sorting function per component196110
-Node: Sort signatures that include Luhmann-style sequences197105
-Node: Keep a journal or diary199589
-Node: Journaling with a timer204262
-Node: Minibuffer histories206774
-Node: Packages that build on Denote207646
-Node: Use the consult-denote package for enhanced minibuffer interactions208306
-Node: Use the denote-explore package to explore your notes209687
-Node: Use the citar-denote package for bibliography notes210531
-Node: Use the consult-notes package211639
-Node: Use the denote-menu package213482
-Node: Extending Denote214450
-Node: Create a new note in any directory215611
-Node: Find empty notes and put them in a Dired buffer216695
-Node: Automatically rename the note after saving it224159
-Node: Narrow the list of files in Dired225416
-Node: Use dired-virtual-mode for arbitrary file listings227760
-Node: Use Embark to collect minibuffer candidates231875
-Node: Search file contents233177
-Node: Bookmark the directory with the notes235020
-Node: Treat your notes as a project236387
-Node: Use the tree-based file prompt for select commands237888
-Node: Rename files with Denote in the Image Dired thumbnails buffer239940
-Node: Rename files with Denote using dired-preview243464
-Node: Avoid duplicate identifiers when exporting Denote notes246121
-Node: Export Denote notes with Org Mode247446
-Ref: Manually configure Org export248150
-Ref: Automatically store Org exports in another folder249088
-Ref: Org Mode Publishing251662
-Node: Export Denote notes with Markdown252277
-Node: Set up your workflow for daily or weekly meeting notes252949
-Node: Installation256712
-Node: GNU ELPA package256909
-Node: Manual installation257472
-Node: Sample configuration258243
-Node: For developers or advanced users263170
-Node: Troubleshoot Denote in a pristine environment293510
-Node: Contributing295188
-Node: Wishlist of what we can do to extend Denote298214
-Node: Publications about Denote301785
-Node: Alternatives to Denote304574
-Node: Alternative implementations and further reading309212
-Node: Frequently Asked Questions310955
-Node: Why develop Denote when PACKAGE already exists?312037
-Node: Why not rely exclusively on Org?313964
-Node: Why care about Unix tools when you use Emacs?315674
-Node: Why many small files instead of few large ones?317016
-Node: Does Denote perform well at scale?318958
-Node: I add TODOs to my notes; will many files slow down the Org agenda?320091
-Node: I want to sort by last modified in Dired why won't Denote let me?322063
-Node: How do you handle the last modified case?323117
-Node: Why are some Org links opening outside Emacs?324687
-Node: Speed up backlinks' buffer creation?326542
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?327876
-Node: Why do I get a double #+title in Doom Emacs?328932
-Node: Acknowledgements329656
-Node: GNU Free Documentation License332529
-Node: Indices357890
-Node: Function index358066
-Node: Variable index381903
-Node: Concept index393626
+Node: Overview9443
+Node: Points of entry13389
+Node: Standard note creation14869
+Node: The denote-prompts option17366
+Node: The denote-history-completion-in-prompts option21644
+Node: The denote-templates option23374
+Node: Convenience commands for note creation26833
+Ref: Write your own convenience commands30890
+Node: The denote-save-buffers option35300
+Node: The denote-kill-buffers option36510
+Node: The denote-date-prompt-use-org-read-date option37874
+Node: Create a note from the current Org subtree38624
+Node: Create note using Org capture41368
+Node: Create note with specific prompts using Org capture43982
+Node: Create note with specific values using Org capture48090
+Node: Create a journal entry using Org capture51576
+Node: Create a note with the region's contents53120
+Node: A custom denote-region that references the source55158
+Node: Open an existing note or create it if missing57977
+Node: Maintain separate directory silos for notes60345
+Node: How to switch a silo65370
+Node: Use custom commands to select a silo66046
+Node: The denote-silo-extrasel69395
+Ref: Switch to a silo directory outright70716
+Node: Make Org export work with silos72214
+Node: Make any Denote command work in a silo from anywhere74632
+Node: Exclude certain files from file prompts76464
+Node: Exclude certain directories from all operations77356
+Node: Exclude certain keywords from being inferred78454
+Node: Use Denote commands from the menu bar or context menu79125
+Node: Renaming files80154
+Node: Rename a single file82607
+Node: The denote-rename-confirmations option88471
+Node: Rename a single file based on its front matter89991
+Node: Rename multiple files interactively92231
+Node: Rename multiple files at once by asking only for keywords93484
+Node: Rename multiple files based on their front matter95632
+Node: Rename a file by changing only its file type96695
+Node: Rename a file by adding or removing a title interactively98192
+Node: Rename a file by adding or removing keywords interactively99999
+Node: Rename a file by adding or removing a signature interactively102017
+Node: Find duplicate identifiers and put them in a Dired buffer103878
+Node: Faces used by rename commands106607
+Node: The file-naming scheme107111
+Node: Change the order of file name components111857
+Node: Sluggification of file name components114637
+Node: User-defined sluggification of file name components116932
+Node: Custom sluggification to remove non-ASCII characters121068
+Node: Features of the file-naming scheme for searching or filtering122979
+Node: Front matter124636
+Node: Change the front matter format126983
+Node: Regenerate front matter129811
+Node: Linking notes131175
+Node: Adding a single link132295
+Node: The denote-org-store-link-to-heading user option135309
+Node: Insert link to an Org file with a further pointer to a heading138929
+Node: Insert links matching a regexp140695
+Node: Insert link to file with signature142938
+Node: Insert links from marked files in Dired143752
+Node: Link to an existing note or create a new one145289
+Node: The backlinks' buffer149472
+Node: Backlinks for Org headings153277
+Node: Writing metanotes154016
+Node: Visiting linked files via the minibuffer155686
+Node: Convert denote links to file links in Org156919
+Node: Convert denote links to paths in Markdown158653
+Node: Fontify links in non-Org buffers160626
+Node: Miscellaneous information about links162307
+Node: Aliases for the linking commands162639
+Node: The denote-link-description-format to format link descriptions163265
+Node: Choose which commands to prompt for165546
+Node: Fontification in Dired166462
+Node: Automatically rename Denote buffers169189
+Node: The denote-rename-buffer-format option170517
+Node: Use Org dynamic blocks173235
+Node: Org dynamic blocks to insert links175318
+Node: The Org dynamic block to insert missing links only180234
+Node: The Org dynamic block to insert backlinks181366
+Node: Org dynamic block to insert file contents183148
+Node: Org dynamic block to insert Org files as headings189784
+Node: Sort files by component194160
+Node: Configure what extra prompts denote-sort-dired issues195815
+Node: Define a sorting function per component197746
+Node: Sort signatures that include Luhmann-style sequences198741
+Node: Keep a journal or diary201225
+Node: Journaling with a timer205898
+Node: Minibuffer histories208410
+Node: Packages that build on Denote209282
+Node: Use the consult-denote package for enhanced minibuffer interactions209942
+Node: Use the denote-explore package to explore your notes211323
+Node: Use the citar-denote package for bibliography notes212167
+Node: Use the consult-notes package213275
+Node: Use the denote-menu package215118
+Node: Extending Denote216086
+Node: Create a new note in any directory217247
+Node: Find empty notes and put them in a Dired buffer218331
+Node: Automatically rename the note after saving it225795
+Node: Narrow the list of files in Dired227052
+Node: Use dired-virtual-mode for arbitrary file listings229396
+Node: Use Embark to collect minibuffer candidates233511
+Node: Search file contents234813
+Node: Bookmark the directory with the notes236656
+Node: Treat your notes as a project238023
+Node: Use the tree-based file prompt for select commands239524
+Node: Rename files with Denote in the Image Dired thumbnails buffer241576
+Node: Rename files with Denote using dired-preview245100
+Node: Avoid duplicate identifiers when exporting Denote notes247757
+Node: Export Denote notes with Org Mode249082
+Ref: Manually configure Org export249786
+Ref: Automatically store Org exports in another folder250724
+Ref: Org Mode Publishing253298
+Node: Export Denote notes with Markdown253913
+Node: Set up your workflow for daily or weekly meeting notes254585
+Node: Installation258348
+Node: GNU ELPA package258545
+Node: Manual installation259108
+Node: Sample configuration259879
+Node: For developers or advanced users264806
+Node: Troubleshoot Denote in a pristine environment295146
+Node: Contributing296824
+Node: Wishlist of what we can do to extend Denote299850
+Node: Publications about Denote303421
+Node: Alternatives to Denote306210
+Node: Alternative implementations and further reading310848
+Node: Frequently Asked Questions312591
+Node: Why develop Denote when PACKAGE already exists?313673
+Node: Why not rely exclusively on Org?315600
+Node: Why care about Unix tools when you use Emacs?317310
+Node: Why many small files instead of few large ones?318652
+Node: Does Denote perform well at scale?320594
+Node: I add TODOs to my notes; will many files slow down the Org agenda?321727
+Node: I want to sort by last modified in Dired why won't Denote let me?323699
+Node: How do you handle the last modified case?324753
+Node: Why are some Org links opening outside Emacs?326323
+Node: Speed up backlinks' buffer creation?328178
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?329512
+Node: Why do I get a double #+title in Doom Emacs?330568
+Node: Acknowledgements331292
+Node: GNU Free Documentation License334165
+Node: Indices359526
+Node: Function index359702
+Node: Variable index383539
+Node: Concept index395094
 
 End Tag Table
 
