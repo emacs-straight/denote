@@ -3845,7 +3845,8 @@ section 7.3
   If the value is a string, it treats specially the following
   specifiers:
 
-  • The `%t' is the Denote `TITLE' of the file.
+  • The `%t' is the Denote `TITLE' in the front matter or the file name.
+  • The `%T' is the Denote `TITLE' in the file name.
   • The `%i' is the Denote `IDENTIFIER' of the file.
   • The `%d' is the same as `%i' (`DATE' mnemonic).
   • The `%s' is the Denote `SIGNATURE' of the file.
@@ -4025,7 +4026,9 @@ section 7.3
   are placeholders for Denote file name components ([The file-naming
   scheme]):
 
-  • The `%t' is the Denote `TITLE' of the file.
+  • The `%t' is the Denote `TITLE' in the front matter or the file name.
+  • The `%T' is the Denote `TITLE' in the file name. [ The `%T' is part
+    of 3.2.0-dev. ]
   • The `%i' is the Denote `IDENTIFIER' of the file.
   • The `%d' is the same as `%i' (`DATE' mnemonic).
   • The `%s' is the Denote `SIGNATURE' of the file.
