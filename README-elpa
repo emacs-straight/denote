@@ -97,7 +97,7 @@ Table of Contents
 .. 9. Writing metanotes
 .. 10. Visiting linked files via the minibuffer
 .. 11. Convert `denote:' links to `file:' links in Org
-.. 12. Convert `:denote' links to paths in Markdown
+.. 12. Convert `:denote' links to paths in Markdown or Obsidian style
 .. 13. Fontify links in non-Org buffers
 .. 14. Miscellaneous information about links
 ..... 1. Aliases for the linking commands
@@ -3726,8 +3726,8 @@ section 7.3
 section 7.3
 
 
-7.12 Convert `:denote' links to paths in Markdown
-─────────────────────────────────────────────────
+7.12 Convert `:denote' links to paths in Markdown or Obsidian style
+───────────────────────────────────────────────────────────────────
 
   [ Also: [Convert `denote:' links to `file:' links in Org]. ]
 
@@ -3759,6 +3759,18 @@ section 7.3
         relative or absolute, and converts them into their corresponding
         `denote:' style links. It only does so for files with a Denote
         identifier.
+
+  Convert `denote:' links to Obsidian type
+        The command `denote-md-extras-convert-links-to-obsidian-type'
+        changes links from `[Test description](denote:20241026T051243)'
+        becomes
+        `[20241026T051243--test-description__keyword1](20241026T051243--test-description__keyword1.md)'.
+
+  Convert Obsidian style links to `denote:' type
+        The command
+        `denote-md-extras-convert-obsidian-links-to-denote-type' does
+        the inverse of
+        `denote-md-extras-convert-links-to-obsidian-type'.
 
   DEVELOPMENT NOTE: The regular expressions I am using to determine what
   is a link are much simpler than what `markdown-mode' is using.
@@ -7547,9 +7559,9 @@ section 16.11
         Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet C.
         Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
         babusri, coherentstate, doolio, duli, drcxd, elge70,
-        fingerknight, hpgisler, jtpavlock, mentalisttraceur, pRot0ta1p,
-        rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
-        yetanotherfossman, zadca123
+        fingerknight, hpgisler, hyperfocus1337, jtpavlock,
+        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sarcom-sar,
+        sienic, skissue, sundar bp, yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
