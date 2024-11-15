@@ -6518,12 +6518,13 @@ section 16.11
 
   Function `denote-rewrite-front-matter'
         Rewrite front matter of note after `denote-rename-file' (or
-        related) The `FILE', `TITLE', `KEYWORDS', and `FILE-TYPE'
-        arguments are given by the renaming command and are used to
-        construct new front matter values if appropriate. If
-        `denote-rename-confirmations' contains `rewrite-front-matter',
-        prompt to confirm the rewriting of the front matter. Otherwise
-        produce a `y-or-n-p' prompt to that effect.
+        related) The `FILE', `TITLE', `KEYWORDS', `SIGNATURE', `DATE',
+        `IDENTIFIER', and `FILE-TYPE' arguments are given by the
+        renaming command and are used to construct new front matter
+        values if appropriate. If `denote-rename-confirmations' contains
+        `rewrite-front-matter', prompt to confirm the rewriting of the
+        front matter. Otherwise produce a `y-or-n-p' prompt to that
+        effect. [ This function is changed as part of 3.2.0-dev. ]
 
   Function `denote-add-front-matter-prompt'
         Prompt to add a front-matter to `FILE'. Return non-nil if a new
