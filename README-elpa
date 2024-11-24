@@ -4727,11 +4727,12 @@ section 7.3
   └────
 
   The command `denote-journal-extras-new-entry' creates a new entry in
-  the journal.  Such a file has the `denote-journal-extras-keyword',
-  which is `journal' by default ([The file-naming scheme]).  The user
-  can set this keyword to an arbitrary string (single word is
-  preferred).  New journal entries can be stored in the
-  `denote-directory' or subdirectory thereof.  To make it easier for the
+  the journal. Such a file has the `denote-journal-extras-keyword',
+  which is `journal' by default ([The file-naming scheme]). The user can
+  set this keyword to an arbitrary string (single word is preferred) or
+  a list of string (the support for a list of strings is part of
+  3.2.0-dev). New journal entries can be stored in the
+  `denote-directory' or subdirectory thereof. To make it easier for the
   user, the new journal entry will be placed in
   `denote-journal-extras-directory', which defaults to a subdirectory of
   `denote-directory' called `journal'.
@@ -6893,18 +6894,6 @@ section 16.11
   the core package or a separate extension is something we can discuss.
   I, Protesilaos, am happy to help anyone who wants to do any of this.
 
-  denote-consult.el
-        This can be a separate package that enhances or replaces the
-        various prompts we have for files (and maybe more) by using the
-        `consult' package. Consult provides the preview mechanism and
-        can probably be used for more things, such as to define a source
-        for Denote-only buffers in the `consult-buffer' command. If we
-        need to tweak things in `denote.el', I am happy to do it. For
-        example, we could have a `denote-file-prompt-function' variable,
-        which would default to `denote-file-prompt' (what we currently
-        have) and would also such a hypothetical package to easily plug
-        into what we have.
-
   denote-embark.el
         Provide integration with the `embark' package.  This can be for
         doing something with the identifier/link at point.  For example,
@@ -6927,15 +6916,6 @@ section 16.11
         something `~/Git/projects/' and everything work as if the
         `denote-directory' is set to the `~/' (with the status quo as of
         2024-02-18 08:27 +0200).
-
-  Signatures before identifiers
-        This is probably going to increase the complixity of `denote.el'
-        and may not be worth pursuing. But just to explore the idea: we
-        could have an option to rearrange file names such that the
-        signature appears before the identifier. If we can do this in a
-        smart way, we can probably extend the principle for all file
-        name components. Again though, this may be too complex and not
-        worth doing.
 
   Encode the day in the identifier
         The idea is to use some coded reference for Monday, Tuesday,
@@ -7512,13 +7492,13 @@ section 16.11
         Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen
         Hötzel, Kaushal Modi, Kai von Fintel, Kostas Andreadis,
         Kristoffer Balintona, Kyle Meyer, Marc Fargas, Matthew Lemon,
-        Noboru Ota (nobiot), Norwid Behrnd, Peter Prevos, Philip
-        Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
-        Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-        Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders,
-        ezchi, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
-        mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
-        skissue.
+        Noboru Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos,
+        Philip Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan
+        Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz,
+        Vedang Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101,
+        bryanrinders, ezchi, jarofromel, leinfink (Henrik), l-o-l-h
+        (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur, pmenair,
+        relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
