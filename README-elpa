@@ -86,20 +86,21 @@ Table of Contents
 .. 2. Regenerate front matter
 7. Linking notes
 .. 1. Adding a single link
-.. 2. The `denote-org-store-link-to-heading' user option
-.. 3. Insert link to an Org file with a further pointer to a heading
-.. 4. Insert links matching a regexp
-.. 5. Insert link to file with signature
-.. 6. Insert links from marked files in Dired
-.. 7. Link to an existing note or create a new one
-.. 8. The backlinks’ buffer
+.. 2. The `denote-open-link-function' user option
+.. 3. The `denote-org-store-link-to-heading' user option
+.. 4. Insert link to an Org file with a further pointer to a heading
+.. 5. Insert links matching a regexp
+.. 6. Insert link to file with signature
+.. 7. Insert links from marked files in Dired
+.. 8. Link to an existing note or create a new one
+.. 9. The backlinks’ buffer
 ..... 1. Backlinks for Org headings
-.. 9. Writing metanotes
-.. 10. Visiting linked files via the minibuffer
-.. 11. Convert `denote:' links to `file:' links in Org
-.. 12. Convert `:denote' links to paths in Markdown or Obsidian style
-.. 13. Fontify links in non-Org buffers
-.. 14. Miscellaneous information about links
+.. 10. Writing metanotes
+.. 11. Visiting linked files via the minibuffer
+.. 12. Convert `denote:' links to `file:' links in Org
+.. 13. Convert `:denote' links to paths in Markdown or Obsidian style
+.. 14. Fontify links in non-Org buffers
+.. 15. Miscellaneous information about links
 ..... 1. Aliases for the linking commands
 ..... 2. The `denote-link-description-format' to format link descriptions
 8. Choose which commands to prompt for
@@ -279,7 +280,7 @@ Table of Contents
 
 [Points of entry] See section 3
 
-[Writing metanotes] See section 7.9
+[Writing metanotes] See section 7.10
 
 [Keep a journal or diary] See section 13
 
@@ -461,7 +462,7 @@ Table of Contents
 
 [The denote-templates option] See section 3.1.3
 
-[Insert link to file with signature] See section 7.5
+[Insert link to file with signature] See section 7.6
 
 [The file-naming scheme] See section 5
 
@@ -1365,7 +1366,7 @@ Table of Contents
 
 [Points of entry] See section 3
 
-[Link to a note or create it if missing] See section 7.7
+[Link to a note or create it if missing] See section 7.8
 
 
 3.9 Maintain separate directory silos for notes
@@ -3154,16 +3155,32 @@ section 5.4
   distinct from other links.
 
 
-[The `denote-org-store-link-to-heading' user option] See section 7.2
+[The `denote-org-store-link-to-heading' user option] See section 7.3
 
-[Fontify links in non-Org buffers] See section 7.13
+[Fontify links in non-Org buffers] See section 7.14
 
-[Insert link to file with signature] See section 7.5
+[Insert link to file with signature] See section 7.6
 
 [Linking notes] See section 7
 
 
-7.2 The `denote-org-store-link-to-heading' user option
+7.2 The `denote-open-link-function' user option
+───────────────────────────────────────────────
+
+  [ This is part of 3.2.0-dev. ]
+
+  The user option `denote-open-link-function' specifies the function
+  used by Denote to open the file of a link. The default value opens the
+  file in the other window. Another common value is the function
+  `find-file', which will open the file in the current window. Users may
+  also specify a function of their choosing.
+
+  Note that this is relevant in buffers other than Org mode because Org
+  has its own mechanism for how to open links (read the documentation of
+  the command `org-open-at-point').
+
+
+7.3 The `denote-org-store-link-to-heading' user option
 ──────────────────────────────────────────────────────
 
   [ Revised to also support context links that do not use a `PROPERTIES'
@@ -3247,10 +3264,10 @@ section 5.4
 
 
 [Insert link to an Org file with a further pointer to a heading] See
-section 7.3
+section 7.4
 
 
-7.3 Insert link to an Org file with a further pointer to a heading
+7.4 Insert link to an Org file with a further pointer to a heading
 ──────────────────────────────────────────────────────────────────
 
   As part of the optional `denote-org-extras.el' extension, the command
@@ -3282,12 +3299,12 @@ section 7.3
 
 [The file-naming scheme] See section 5
 
-[The `denote-org-store-link-to-heading' user option] See section 7.2
+[The `denote-org-store-link-to-heading' user option] See section 7.3
 
-[Backlinks for Org headings] See section 7.8.1
+[Backlinks for Org headings] See section 7.9.1
 
 
-7.4 Insert links matching a regexp
+7.5 Insert links matching a regexp
 ──────────────────────────────────
 
   The command `denote-add-links' adds links at point matching a regular
@@ -3350,7 +3367,7 @@ section 7.3
 [Linking notes] See section 7
 
 
-7.5 Insert link to file with signature
+7.6 Insert link to file with signature
 ──────────────────────────────────────
 
   The command `denote-link-with-signature' prompts for a file among
@@ -3373,7 +3390,7 @@ section 7.3
 [Adding a single link] See section 7.1
 
 
-7.6 Insert links from marked files in Dired
+7.7 Insert links from marked files in Dired
 ───────────────────────────────────────────
 
   The command `denote-link-dired-marked-notes' is similar to
@@ -3403,14 +3420,14 @@ section 7.3
   `denote-link-dired-marked-notes'. [ The alias is part of 3.2.0-dev. ]
 
 
-[Insert links matching a regexp] See section 7.4
+[Insert links matching a regexp] See section 7.5
 
 [Adding a single link] See section 7.1
 
 [Linking notes] See section 7
 
 
-7.7 Link to an existing note or create a new one
+7.8 Link to an existing note or create a new one
 ────────────────────────────────────────────────
 
   In one’s note-taking workflow, there may come a point where they are
@@ -3508,7 +3525,7 @@ section 7.3
 [Open an existing note or create it if missing] See section 3.8
 
 
-7.8 The backlinks’ buffer
+7.9 The backlinks’ buffer
 ─────────────────────────
 
   The command `denote-backlinks' produces a bespoke buffer which
@@ -3598,9 +3615,9 @@ section 7.3
 [Why do I get “Search failed with status 1” when I search for
 backlinks?] See section 24.11
 
-[Visiting linked files via the minibuffer] See section 7.10
+[Visiting linked files via the minibuffer] See section 7.11
 
-7.8.1 Backlinks for Org headings
+7.9.1 Backlinks for Org headings
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The optional `denote-org-extras.el' can generate Denote links to
@@ -3615,15 +3632,15 @@ backlinks?] See section 24.11
 
 
 [Insert link to an Org file with a further pointer to a heading] See
-section 7.3
+section 7.4
 
-[The backlinks’ buffer] See section 7.8
+[The backlinks’ buffer] See section 7.9
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
 
-7.9 Writing metanotes
-─────────────────────
+7.10 Writing metanotes
+──────────────────────
 
   A “metanote” is an entry that describes other entries who have
   something in common.  Writing metanotes can be part of a workflow
@@ -3657,12 +3674,12 @@ section 7.3
   the knowledge derived from the deliberate self-reflection.
 
 
-[Insert links matching a regexp] See section 7.4
+[Insert links matching a regexp] See section 7.5
 
-[Insert links from marked files in Dired] See section 7.6
+[Insert links from marked files in Dired] See section 7.7
 
 
-7.10 Visiting linked files via the minibuffer
+7.11 Visiting linked files via the minibuffer
 ─────────────────────────────────────────────
 
   Denote has a major-mode-agnostic mechanism to collect all linked file
@@ -3685,10 +3702,10 @@ section 7.3
 
 [Extending Denote] See section 16
 
-[The backlinks’ buffer] See section 7.8
+[The backlinks’ buffer] See section 7.9
 
 
-7.11 Convert `denote:' links to `file:' links in Org
+7.12 Convert `denote:' links to `file:' links in Org
 ────────────────────────────────────────────────────
 
   [ Also: [Convert `:denote' links to paths in Markdown]. ]
@@ -3720,13 +3737,13 @@ section 7.3
         file system path and converts it into its identifier.
 
 
-[Convert `:denote' links to paths in Markdown] See section 7.12
+[Convert `:denote' links to paths in Markdown] See section 7.13
 
 [Insert link to an Org file with a further pointer to a heading] See
-section 7.3
+section 7.4
 
 
-7.12 Convert `:denote' links to paths in Markdown or Obsidian style
+7.13 Convert `:denote' links to paths in Markdown or Obsidian style
 ───────────────────────────────────────────────────────────────────
 
   [ Also: [Convert `denote:' links to `file:' links in Org]. ]
@@ -3778,10 +3795,10 @@ section 7.3
   bugs.
 
 
-[Convert `denote:' links to `file:' links in Org] See section 7.11
+[Convert `denote:' links to `file:' links in Org] See section 7.12
 
 
-7.13 Fontify links in non-Org buffers
+7.14 Fontify links in non-Org buffers
 ─────────────────────────────────────
 
   Denote links are automatically fontified in Org buffers ([Adding a
@@ -3820,10 +3837,10 @@ section 7.3
 [Adding a single link] See section 7.1
 
 
-7.14 Miscellaneous information about links
+7.15 Miscellaneous information about links
 ──────────────────────────────────────────
 
-7.14.1 Aliases for the linking commands
+7.15.1 Aliases for the linking commands
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   For convenience, the `denote-link' command has an alias called
@@ -3834,7 +3851,7 @@ section 7.3
   commands.
 
 
-7.14.2 The `denote-link-description-format' to format link descriptions
+7.15.2 The `denote-link-description-format' to format link descriptions
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ As part of 3.2.0-dev, the old user option
@@ -3914,7 +3931,7 @@ section 7.3
 
 [Open an existing note or create it if missing] See section 3.8
 
-[Link to a note or create it if missing] See section 7.7
+[Link to a note or create it if missing] See section 7.8
 
 [Points of entry] See section 3
 
@@ -4148,7 +4165,7 @@ section 7.3
 
 [Org dynamic block to insert file contents] See section 11.4
 
-[Writing metanotes] See section 7.9
+[Writing metanotes] See section 7.10
 
 11.1 Org dynamic blocks to insert links
 ───────────────────────────────────────
@@ -4242,7 +4259,7 @@ section 7.3
   missing links only]).
 
 
-[Insert links matching a regexp] See section 7.4
+[Insert links matching a regexp] See section 7.5
 
 [Exclude certain directories from all operations] See section 3.11
 
@@ -4317,10 +4334,10 @@ section 7.3
 
 [Org dynamic blocks to insert links] See section 11.1
 
-[Backlinks for Org headings] See section 7.8.1
+[Backlinks for Org headings] See section 7.9.1
 
 [Insert link to an Org file with a further pointer to a heading] See
-section 7.3
+section 7.4
 
 
 11.4 Org dynamic block to insert file contents
@@ -4445,7 +4462,7 @@ section 7.3
 
 [Use Org dynamic blocks] See section 11
 
-[Insert links matching a regexp] See section 7.4
+[Insert links matching a regexp] See section 7.5
 
 [Org dynamic blocks to insert links or backlinks] See section 11.1
 
@@ -5216,7 +5233,7 @@ section 5.4
 
 [Sort files by component] See section 12
 
-[Link to an existing note or create a new one] See section 7.7
+[Link to an existing note or create a new one] See section 7.8
 
 
 16.3 Automatically rename the note after saving it
@@ -5741,7 +5758,7 @@ section 16.11
   export purposes ([Convert `denote:' links to `file:' links]).
 
 
-[Convert `denote:' links to `file:' links] See section 7.11
+[Convert `denote:' links to `file:' links] See section 7.12
 
 ◊ 16.13.1.1 Manually configure Org export
 
