@@ -126,6 +126,7 @@ Table of Contents
 .. 3. Use the `citar-denote' package for bibliography notes
 .. 4. Use the `consult-notes' package
 .. 5. Use the `denote-menu' package
+.. 6. Use the `denote-zettel-interface' package
 16. Extending Denote
 .. 1. Create a new note in any directory
 .. 2. Find empty notes and put them in a Dired buffer
@@ -5062,6 +5063,28 @@ section 5.4
 
 [the `denote-menu' package by Mohamed Suliman]
 <https://github.com/namilus/denote-menu>
+
+
+15.6 Use the `denote-zettel-interface' package
+──────────────────────────────────────────────
+
+  The [`denote-zettel-interface' package by Kristoffer Balintona] is
+  designed for those who want to use Denote while adhering to a strict
+  Zettelkasten methodology of sequence notes (Folgezettel). This method
+  leverages the optional `SIGNATURE' file name component of Denote ([The
+  file-naming scheme]).  The package provides a point of entry to one’s
+  note by visualising them in a tabulated (grid) interface. Files are
+  sorted by their Folgezettel index. Users can then use a number of
+  commands to filter their files, navigate around, and the like.
+
+  Note that the package is in early development as of this writing
+  (2024-12-03 10:18 +0200).
+
+
+[`denote-zettel-interface' package by Kristoffer Balintona]
+<https://github.com/krisbalintona/denote-zettel-interface>
+
+[The file-naming scheme] See section 5
 
 
 16 Extending Denote
