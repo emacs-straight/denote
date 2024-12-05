@@ -4185,7 +4185,7 @@ section 7.4
   following in an Org file:
 
   ┌────
-  │ #+BEGIN: denote-links :regexp "YOUR REGEXP HERE" :excluded-dirs-regexp nil :sort-by-component nil :reverse-sort nil :id-only nil :include-date nil
+  │ #+BEGIN: denote-links :regexp "YOUR REGEXP HERE" :not-regexp :excluded-dirs-regexp nil :sort-by-component nil :reverse-sort nil :id-only nil :include-date nil
   │ 
   │ #+END:
   └────
@@ -4210,6 +4210,10 @@ section 7.4
     you do not need to write an actual regular expression to get
     meaningful results: even something like `_journal' will work to
     include all files that have a `journal' keyword.
+
+  • The `:not-regexp' parameter is optional. It is a regular expression
+    that applies after `:regexp' to filter out the matching files. [
+    Part of 3.2.0-dev. ]
 
   • The `:excluded-dirs-regexp' is a string that contains a word or
     regular expression that matches against directory files names
@@ -4371,7 +4375,7 @@ section 7.4
   recalculate the block):
 
   ┌────
-  │ #+BEGIN: denote-files :regexp "YOUR REGEXP HERE" :sort-by-component nil :reverse-sort nil :no-front-matter nil :file-separator nil :add-links nil
+  │ #+BEGIN: denote-files :regexp "YOUR REGEXP HERE" :not-regexp nil :sort-by-component nil :reverse-sort nil :no-front-matter nil :file-separator nil :add-links nil
   │ 
   │ #+END:
   └────
@@ -4388,7 +4392,6 @@ section 7.4
   To fully control the output, include these additional optional
   parameters, which are described further below:
 
-
   • The `:regexp' parameter is mandatory. Its value is a string,
     representing a regular expression to match Denote file names. Its
     value may also be an `rx' expression instead of a string, as noted
@@ -4396,6 +4399,10 @@ section 7.4
     backlinks]).  Note that you do not need to write an actual regular
     expression to get meaningful results: even something like `_journal'
     will work to include all files that have a `journal' keyword.
+
+  • The `:not-regexp' parameter is optional. It is a regular expression
+    that applies after `:regexp' to filter out the matching files. [
+    Part of 3.2.0-dev. ]
 
   • The `:excluded-dirs-regexp' is a string that contains a word or
     regular expression that matches against directory files names
@@ -4506,7 +4513,7 @@ section 7.4
   parameters included:
 
   ┌────
-  │ #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE" :excluded-dirs-regexp nil :sort-by-component title :reverse-sort nil :add-links t
+  │ #+BEGIN: denote-files-as-headings :regexp "YOUR REGEXP HERE" :not-regexp nil :excluded-dirs-regexp nil :sort-by-component title :reverse-sort nil :add-links t
   │ 
   │ #+END:
   └────
@@ -4519,6 +4526,10 @@ section 7.4
     backlinks]).  Note that you do not need to write an actual regular
     expression to get meaningful results: even something like `_journal'
     will work to include all files that have a `journal' keyword.
+
+  • The `:not-regexp' parameter is optional. It is a regular expression
+    that applies after `:regexp' to filter out the matching files. [
+    Part of 3.2.0-dev. ]
 
   • The `:excluded-dirs-regexp' is a string that contains a word or
     regular expression that matches against directory files names
@@ -4578,8 +4589,12 @@ section 7.4
 
   The command `denote-sort-dired' produces a Dired file listing with a
   flat, filtered, and sorted set of files from the `denote-directory'
-  ([Define a sorting function per component]). It does so by means of
-  three minibuffer prompts:
+  ([Define a sorting function per component]). It does so by a series of
+  prompts, which can be configured by the user option
+  `denote-sort-dired-extra-prompts' ([Configure what extra prompts
+  `denote-sort-dired' issues]).
+
+  The out-of-the-box behaviour of `denote-sort-dired' is as follows:
 
   1. It first asks for a regular expression with which to match Denote
      files. Remember that due to Denote’s efficient file-naming scheme,
@@ -4604,6 +4619,9 @@ section 7.4
 
 [Define a sorting function per component] See section 12.2
 
+[Configure what extra prompts `denote-sort-dired' issues] See section
+12.1
+
 [Use `dired-virtual-mode' for arbitrary file listings] See section 16.5
 
 [Org dynamic block to insert file contents] See section 11.4
@@ -4617,8 +4635,16 @@ section 7.4
   modifying the user option `denote-sort-dired-extra-prompts'.
 
   It accepts either a nil value or a list of symbols among
-  `sort-by-component' and `reverse-sort'. The order those symbols appear
-  in the list is significant, with the leftmost coming first.
+  `sort-by-component', `reverse-sort', and `exclude-regexp'. The order
+  those symbols appear in the list is significant, with the leftmost
+  coming first. [ The `exclude-regexp' feature is part of 3.2.0-dev. ]
+
+  These symbols correspond to the following:
+
+  • A choice to select the file name component to sort by.
+  • A yes or no prompt on whether to reverse the sorting.
+  • A string (or regular expression) of files to be excluded from the
+    results.
 
   In case of a nil value, those extra prompts will not happen, meaning
   that `denote-sort-dired' will fall back to using
@@ -6268,7 +6294,11 @@ section 16.11
         expression. With optional `OMIT-CURRENT' as a non-nil value, do
         not include the current Denote file in the returned list. With
         optional `TEXT-ONLY' as a non-nil value, limit the results to
-        text files that satisfy `denote-file-is-note-p'.
+        text files that satisfy `denote-file-is-note-p'. With optional
+        `EXCLUDE-REGEXP' exclude the files that match the given regular
+        expression. This is done after `FILES-MATCHING-REGEXP' and
+        `OMIT-CURRENT' have been applied. [ The optional
+        `EXCLUDE-REGEXP' is part of 3.2.0-dev. ]
 
   Function `denote-directory-subdirectories'
         Return list of subdirectories in variable
