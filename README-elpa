@@ -6219,6 +6219,13 @@ section 16.11
   Function `denote-file-has-identifier-p'
         Return non-nil if `FILE' has a Denote identifier.
 
+  Function `denote-file-has-denoted-filename-p'
+        Return non-nil if `FILE' respects the file-naming scheme of
+        Denote. This tests the rules of Denote’s file-naming
+        scheme. Sluggification is ignored. It is done by removing all
+        file name components and validating what remains. [ This
+        function is part of 3.2.0-dev. ]
+
   Function `denote-file-has-signature-p'
         Return non-nil if `FILE' has a signature.
 
@@ -6544,10 +6551,17 @@ section 16.11
 
   Function `denote-date-prompt'
         Prompt for date, expecting `YYYY-MM-DD' or that plus `HH:MM' (or
-        even `HH:MM:SS').  Use Org’s more advanced date selection
-        utility if the user option
-        `denote-date-prompt-use-org-read-date' is non-nil.  It requires
-        Org ([The denote-date-prompt-use-org-read-date option]).
+        even `HH:MM:SS'). Use Org’s more advanced date selection utility
+        if the user option `denote-date-prompt-use-org-read-date' is
+        non-nil. It requires Org ([The
+        denote-date-prompt-use-org-read-date option]). With optional
+        `INITIAL-DATE' use it as the initial minibuffer text. With
+        optional `PROMPT-TEXT' use it in the minibuffer instead of the
+        default prompt. When `denote-date-prompt-use-org-read-date' is
+        non-nil, the value of `INITIAL-DATE' is of the format understood
+        by `org-read-date'. Otherwise, it is a string that can be
+        processed by `denote-valid-date-p'. [ The `INITIAL-DATE' and
+        `PROMPT-TEXT' are part of 3.2.0-dev. ]
 
   Function `denote-command-prompt'
         Prompt for command among `denote-commands-for-new-notes'
@@ -7572,25 +7586,26 @@ section 16.11
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
-        Hirschfeld, Alexis Purslane, Alfredo Borrás, Alp Eren Kose,
-        Ashton Wiersdorf, Benjamin Kästner, Claudio Migliorelli, Claudiu
-        Tănăselia, Colin McLear, Cosmin-Octavian C, Damien Cassou, Elias
-        Storms, Federico Stilman, Florian, Frédéric Willem Frank Ehmsen,
-        Glenna D., Guo Yong, Hanspeter Gisler Harold Ollivier,
-        IceAsteroid, Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jens
-        Östlund, Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö, Jonas
-        Großekathöfer, Jousimies, Juanjo Presa, Julian Hoch, Kai von
-        Fintel, Kaushal Modi, Kolmas, Lukas C. Bossert, M. Hadi Timachi,
-        Maikol Solis, Mark Olson, Mirko Hernandez, Niall Dooley, Nick
-        Bell, Paul van Gelder, Peter Prevos, Peter Smith, Riccardo
-        Giannitrapani, Samuel W. Flint, Sergio Rey, Suhail Singh,
-        Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
-        Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet C.
-        Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
-        babusri, coherentstate, doolio, duli, drcxd, elge70,
-        fingerknight, hpgisler, hyperfocus1337, jtpavlock,
-        mentalisttraceur, pRot0ta1p, rbenit68, relict007, sarcom-sar,
-        sienic, skissue, sundar bp, yetanotherfossman, zadca123
+        Griffin, Alex Hirschfeld, Alexis Purslane, Alfredo Borrás, Alp
+        Eren Kose, Ashton Wiersdorf, Benjamin Kästner, Claudio
+        Migliorelli, Claudiu Tănăselia, Colin McLear, Cosmin-Octavian C,
+        Damien Cassou, Elias Storms, Federico Stilman, Florian, Frédéric
+        Willem Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler
+        Harold Ollivier, IceAsteroid, Jack Baty, Jay Rajput,
+        Jean-Charles Bagneris, Jens Östlund, Jeremy Friesen, Jonathan
+        Sahar, Johan Bolmsjö, Jonas Großekathöfer, Jousimies, Juanjo
+        Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas, Lukas
+        C. Bossert, M. Hadi Timachi, Maikol Solis, Mark Olson, Mirko
+        Hernandez, Niall Dooley, Nick Bell, Paul van Gelder, Peter
+        Prevos, Peter Smith, Riccardo Giannitrapani, Samuel W. Flint,
+        Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan Thesing,
+        Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
+        Viktor Haag, Vineet C.  Kulkarni, Wade Mealing, Wilf, Yi Liu,
+        Ypot, atanasj, azegas, babusri, coherentstate, doolio, duli,
+        drcxd, elge70, fingerknight, hpgisler, hyperfocus1337,
+        jtpavlock, mentalisttraceur, pRot0ta1p, rbenit68, relict007,
+        sarcom-sar, sienic, skissue, sundar bp, yetanotherfossman,
+        zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
