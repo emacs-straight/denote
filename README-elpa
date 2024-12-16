@@ -97,10 +97,11 @@ Table of Contents
 ..... 1. Backlinks for Org headings
 .. 10. Writing metanotes
 .. 11. Visiting linked files via the minibuffer
-.. 12. Convert `denote:' links to `file:' links in Org
-.. 13. Convert `:denote' links to paths in Markdown or Obsidian style
-.. 14. Fontify links in non-Org buffers
-.. 15. Miscellaneous information about links
+.. 12. Use the `markdown-obsidian' file type
+.. 13. Convert `denote:' links to `file:' links in Org
+.. 14. Convert `:denote' links to paths in Markdown or Obsidian style
+.. 15. Fontify links in non-Org buffers
+.. 16. Miscellaneous information about links
 ..... 1. Aliases for the linking commands
 ..... 2. The `denote-link-description-format' to format link descriptions
 8. Choose which commands to prompt for
@@ -3178,7 +3179,7 @@ section 5.4
 
 [The `denote-org-store-link-to-heading' user option] See section 7.3
 
-[Fontify links in non-Org buffers] See section 7.14
+[Fontify links in non-Org buffers] See section 7.15
 
 [Insert link to file with signature] See section 7.6
 
@@ -3726,7 +3727,30 @@ section 7.4
 [The backlinks’ buffer] See section 7.9
 
 
-7.12 Convert `denote:' links to `file:' links in Org
+7.12 Use the `markdown-obsidian' file type
+──────────────────────────────────────────
+
+  [ This is part of 3.2.0-dev. ]
+
+  The optional `denote-md-extras.el' file which is part of the Denote
+  package includes features that are relevant for users of Markdown
+  files. Among them is the ability to write files using the
+  Obsidian-style front matter ([Convert `:denote' links to paths in
+  Markdown or Obsidian style]).  This is a plain representation of the
+  file’s title as a top-level heading, without any further data.
+
+  Include this in the Denote configuration:
+
+  ┌────
+  │ (require 'denote-md-extras)
+  └────
+
+
+[Convert `:denote' links to paths in Markdown or Obsidian style] See
+section 7.14
+
+
+7.13 Convert `denote:' links to `file:' links in Org
 ────────────────────────────────────────────────────
 
   [ Also: [Convert `:denote' links to paths in Markdown]. ]
@@ -3758,13 +3782,13 @@ section 7.4
         file system path and converts it into its identifier.
 
 
-[Convert `:denote' links to paths in Markdown] See section 7.13
+[Convert `:denote' links to paths in Markdown] See section 7.14
 
 [Insert link to an Org file with a further pointer to a heading] See
 section 7.4
 
 
-7.13 Convert `:denote' links to paths in Markdown or Obsidian style
+7.14 Convert `:denote' links to paths in Markdown or Obsidian style
 ───────────────────────────────────────────────────────────────────
 
   [ Also: [Convert `denote:' links to `file:' links in Org]. ]
@@ -3802,7 +3826,8 @@ section 7.4
         The command `denote-md-extras-convert-links-to-obsidian-type'
         changes links from `[Test description](denote:20241026T051243)'
         becomes
-        `[20241026T051243--test-description__keyword1](20241026T051243--test-description__keyword1.md)'.
+        `[20241026T051243--test-description__keyword1](20241026T051243--test-description__keyword1.md)'
+        ([Use the `markdown-obsidian' file type]).
 
   Convert Obsidian style links to `denote:' type
         The command
@@ -3816,10 +3841,12 @@ section 7.4
   bugs.
 
 
-[Convert `denote:' links to `file:' links in Org] See section 7.12
+[Convert `denote:' links to `file:' links in Org] See section 7.13
+
+[Use the `markdown-obsidian' file type] See section 7.12
 
 
-7.14 Fontify links in non-Org buffers
+7.15 Fontify links in non-Org buffers
 ─────────────────────────────────────
 
   Denote links are automatically fontified in Org buffers ([Adding a
@@ -3858,10 +3885,10 @@ section 7.4
 [Adding a single link] See section 7.1
 
 
-7.15 Miscellaneous information about links
+7.16 Miscellaneous information about links
 ──────────────────────────────────────────
 
-7.15.1 Aliases for the linking commands
+7.16.1 Aliases for the linking commands
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   For convenience, the `denote-link' command has an alias called
@@ -3872,7 +3899,7 @@ section 7.4
   commands.
 
 
-7.15.2 The `denote-link-description-format' to format link descriptions
+7.16.2 The `denote-link-description-format' to format link descriptions
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ As part of 3.2.0-dev, the old user option
@@ -5827,7 +5854,7 @@ section 16.11
   export purposes ([Convert `denote:' links to `file:' links]).
 
 
-[Convert `denote:' links to `file:' links] See section 7.12
+[Convert `denote:' links to `file:' links] See section 7.13
 
 ◊ 16.13.1.1 Manually configure Org export
 
