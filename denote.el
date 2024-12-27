@@ -5158,60 +5158,66 @@ inserts links with just the identifier."
   (let ((relative-buffer-file-names (mapcar #'denote-get-file-name-relative-to-denote-directory buffer-file-names)))
     (concat (denote-directory)
             (completing-read
-             "Select note file buffer: "
-             (denote--completion-table 'buffer relative-buffer-file-names)
+             "Select open note to add links to: "
+             (denote--completion-table 'file relative-buffer-file-names)
              nil t))))
 
 (defun denote-link--map-over-notes ()
-  "Return list of `denote-file-is-note-p' from Dired marked items."
-  (seq-filter #'denote-file-is-note-p (dired-get-marked-files)))
+  "Return list of `denote-file-has-denoted-filename-p' from Dired marked items."
+  (seq-filter #'denote-file-has-denoted-filename-p (dired-get-marked-files)))
 
 ;;;###autoload
 (defun denote-link-dired-marked-notes (files buffer &optional id-only)
   "Insert Dired marked FILES as links in BUFFER.
 
-FILES are Denote notes, meaning that they have our file-naming scheme,
-are writable/regular files, and use the appropriate file type
-extension (per the user option `denote-file-type').  Furthermore, the
-marked files need to be inside the variable `denote-directory' or one of
-its subdirectories.  No other file is recognised (the list of marked
-files ignores whatever does not count as a note for our purposes).
+FILES conform with the Denote file-naming scheme, such that they can be
+linked to using the `denote:' link type.
 
 The BUFFER is one which visits a Denote note file.  If there are
-multiple buffers, prompt with completion for one among them.  If
-there isn't one, throw an error.
+multiple BUFFER candidates in buffers, prompt with completion for
+one among them.  If there is none, throw an error.
 
 With optional ID-ONLY as a prefix argument, insert links with
 just the identifier (same principle as with `denote-link').
 
 This command is meant to be used from a Dired buffer."
   (interactive
-   (list
-    (denote-link--map-over-notes)
-    (let ((file-names (denote--buffer-file-names)))
-      (find-file
-       (cond
-        ((null file-names)
-         (user-error "No buffers visiting Denote notes"))
-        ((eq (length file-names) 1)
-         (car file-names))
-        (t
-         (denote-link--buffer-file-prompt file-names)))))
-    current-prefix-arg)
+   (if (derived-mode-p 'dired-mode)
+       (list
+        (denote-link--map-over-notes)
+        (let ((file-names (denote--buffer-file-names)))
+          (find-buffer-visiting
+           (cond
+            ((null file-names)
+             (user-error "No buffers visiting Denote notes"))
+            ((eq (length file-names) 1)
+             (car file-names))
+            (t
+             (denote-link--buffer-file-prompt file-names)))))
+        current-prefix-arg)
+     (user-error "This command only works inside a Dired buffer"))
    dired-mode)
   (when (null files)
     (user-error "No note files to link to"))
-  (with-current-buffer buffer
-    (unless (or (denote--file-type-org-extra-p)
-                (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
-      (user-error "The buffer's file type is not recognized by Denote")))
-  (when (y-or-n-p (format "Create links at point in %s?" buffer))
-    (with-current-buffer buffer
-      (denote-link--insert-links files
-                                 (denote-filetype-heuristics (buffer-file-name))
-                                 id-only))))
+  (unless (buffer-live-p buffer)
+    (error "The buffer `%s' is not live" buffer))
+  (let ((body (lambda ()
+                (unless (or (denote--file-type-org-extra-p)
+                            (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
+                  (user-error "The target file's type is not recognized by Denote"))
+                (when (y-or-n-p (format "Create links at point in `%s'?" buffer))
+                  (denote-link--insert-links files (denote-filetype-heuristics buffer-file-name) id-only)
+                  (message "Added links to `%s'; displaying it now"
+                           ;; TODO 2024-12-26: Do we need our face here?  I think
+                           ;; not, but let me keep a note of it.
+                           (propertize (format "%s" buffer) 'face 'success))))))
+    (if-let* ((window (get-buffer-window buffer))
+              ((window-live-p window)))
+        (with-selected-window window (funcall body))
+      (with-current-buffer buffer (funcall body))
+      (display-buffer-below-selected buffer nil))))
 
-(defalias 'denote-link-dired-marked-notes 'denote-dired-link-marked-notes
+(defalias 'denote-dired-link-marked-notes 'denote-link-dired-marked-notes
   "Alias for `denote-link-dired-marked-notes' command.")
 
 ;;;;; Define menu
