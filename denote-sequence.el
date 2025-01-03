@@ -272,12 +272,17 @@ Return selected type as a symbol."
 (defvar denote-sequence-file-history nil
   "Minibuffer history for `denote-sequence-file-prompt'.")
 
-(defun denote-sequence-file-prompt ()
+(defun denote-sequence-file-prompt (&optional prompt-text files-with-sequences)
   "Prompt for file with sequence in variable `denote-directory'.
-A sequence is a Denote signature that conforms with `denote-sequence-p'."
+A sequence is a Denote signature that conforms with `denote-sequence-p'.
+
+With optional PROMPT-TEXT use it instead of a generic prompt.
+
+With optional FILES-WITH-SEQUENCES as a list of strings, use them as
+completion candidates.  Else use `denote-sequence-get-all-files'."
   (if-let* ((relative-files (mapcar #'denote-get-file-name-relative-to-denote-directory
-                                    (denote-sequence-get-all-files)))
-            (prompt "Select FILE with sequence: ")
+                                    (or files-with-sequences (denote-sequence-get-all-files))))
+            (prompt (format-prompt (or prompt-text "Select FILE with sequence") nil))
             (input (completing-read
                     prompt
                     (denote--completion-table 'file relative-files)
@@ -418,6 +423,42 @@ is that many levels deep.  For example, 1=1=2 is three levels deep."
                         (kill-buffer dired-buffer)
                         (denote-sequence-dired)))))
     (user-error "There are no files whose Denote signature conforms with `denote-sequence-p'")))
+
+;;;###autoload
+(defun denote-sequence-reparent (current-file file-with-sequence)
+  "Re-parent the CURRENT-FILE to be a child of FILE-WITH-SEQUENCE.
+If CURRENT-FILE has a sequence (the Denote file name signature), change
+it.  Else create a new one.
+
+When called interactively, CURRENT-FILE is either the current file, or a
+special Org buffer (like those of `org-capture'), or the file at point in
+Dired.
+
+When called interactively, prompt for FILE-WITH-SEQUENCE showing only
+the files in the variable `denote-directory' which have a sequence.  If
+no such files exist, throw an error.
+
+When called from Lisp, CURRENT-FILE is a string pointing to a file.
+
+When called from Lisp, FILE-WITH-SEQUENCE is either a file with a
+sequence (per `denote-sequence-file-p') or the sequence string as
+such (per `denote-sequence-p').  In both cases, what matters is to know
+the target sequence."
+  (interactive
+   (list
+    (if (denote--file-type-org-extra-p)
+        denote-last-path-after-rename
+      (denote--rename-dired-file-or-current-file-or-prompt))
+    (denote-sequence-file-prompt
+     (format "Reparent `%s' to be a child of"
+             (propertize
+              (denote--rename-dired-file-or-current-file-or-prompt)
+              'face 'denote-faces-prompt-current-name)))))
+  (let* ((target-sequence (or (denote-sequence-file-p file-with-sequence)
+                              (denote-sequence-p file-with-sequence)
+                              (user-error "No sequence of `denote-sequence-p' found in `%s'" file-with-sequence)))
+         (new-sequence (denote-sequence--get-new-child target-sequence)))
+    (denote-rename-file current-file 'keep-current 'keep-current new-sequence 'keep-current)))
 
 (provide 'denote-sequence)
 ;;; denote-sequence.el ends here
