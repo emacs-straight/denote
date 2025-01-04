@@ -23,11 +23,31 @@
 
 ;;; Commentary:
 
-;; WORK-IN-PROGRESS.  Sequence notes extension for Denote.
+;; Sequence notes extension for Denote.  It uses the SIGNATURE file
+;; name component of Denote to establish a hierarchy between notes.
+;; As such, note 1=1 is the child of the note 1.  The rest of the
+;; Denote file naming scheme continues to apply as described in the
+;; manual, as do all the other features of Denote.
+;;
+;; A new sequence note can be of the type `parent', `child', and
+;; `sibling'.  For the convenience of the user, we provide commands to
+;; create such "sequence notes", link only between them (as opposed to
+;; a link to any other file with the Denote file-naminng scheme), and
+;; re-parent them on demand.
+;;
+;; All the relevant functions we provide take care to automatically
+;; use the right number for a given sequence.  If, for example, we
+;; create a new child for parent 1=1, we make sure that it is the new
+;; largest number among any existing children, so if 1=1=1 already
+;; exists we use 1=1=2, and so on.
+;;
+;; This optional extension is not necessary for such a workflow.
+;; Users can always define whatever SIGNATURE they want manually.  The
+;; purpose of this extension is to streamline that work.
 
 ;;; Code:
 
-;; FIXME 2024-12-25: Right now I am hardcoding the = as a field
+;; NOTE 2024-12-25: Right now I am hardcoding the = as a field
 ;; separator inside of the Denote signature.  This is the default
 ;; behaviour, though we provide the `denote-file-name-slug-functions'
 ;; which, in principle, make the separator anything the user wants.
@@ -76,7 +96,7 @@ SEQUENCE conforms with `denote-sequence-p'."
 
 (defun denote-sequence-depth (sequence)
   "Get the depth of SEQUENCE.
-For example, 1=2=1 is three levels deep."
+For example, 1=2=1 is three levels of depth."
   (length (denote-sequence-split sequence)))
 
 (defun denote-sequence-get-all-files ()
@@ -94,7 +114,7 @@ With optional FILES, operate on them, else use the return value of
         (mapcar
          (lambda (file)
            (when-let* ((file-sequence (denote-sequence-file-p file))
-                       ((string-match-p sequence file-sequence)))
+                       ((string-prefix-p sequence file-sequence)))
              file))
          (or files (denote-directory-files)))))
 
@@ -305,11 +325,11 @@ Files available at the minibuffer prompt are those returned by
      (list
       selected-type
       (when (memq selected-type (delq 'parent denote-sequence-types))
-        (denote-sequence-file-prompt)))))
+        (denote-sequence-file-prompt (format "Make a new %s of SEQUENCE" selected-type))))))
   ;; TODO 2024-12-30: Do we need to wrap this in the following?
   ;;
   ;; (cl-letf (((alist-get 'signature denote-file-name-slug-functions) #'denote-sluggify-signature))
-  (let* ((sequence (denote-retrieve-filename-signature file-with-sequence))
+  (let* ((sequence (when file-with-sequence (denote-retrieve-filename-signature file-with-sequence)))
          (new-sequence (denote-sequence-get type sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -327,7 +347,10 @@ Files available at the minibuffer prompt are those returned by
   "Like `denote-sequence' to directly create new sibling of SEQUENCE.
 When called from Lisp, SEQUENCE is a string that conforms with
 `denote-sequence-p'."
-  (interactive (list (denote-retrieve-filename-signature (denote-sequence-file-prompt))))
+  (interactive
+   (list
+    (denote-retrieve-filename-signature
+     (denote-sequence-file-prompt "Make a new sibling of SEQUENCE"))))
   (let* ((new-sequence (denote-sequence-get 'sibling sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -337,7 +360,10 @@ When called from Lisp, SEQUENCE is a string that conforms with
   "Like `denote-sequence' to directly create new child of SEQUENCE.
 When called from Lisp, SEQUENCE is a string that conforms with
 `denote-sequence-p'."
-  (interactive (list (denote-retrieve-filename-signature (denote-sequence-file-prompt))))
+  (interactive
+   (list
+    (denote-retrieve-filename-signature
+     (denote-sequence-file-prompt "Make a new child of SEQUENCE"))))
   (let* ((new-sequence (denote-sequence-get 'child sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -351,7 +377,7 @@ interactively, only relevant files are shown for minibuffer completion
 from the variable `denote-directory'.
 
 Optional ID-ONLY has the same meaning as the `denote-link' command."
-  (interactive (list (denote-sequence-file-prompt)))
+  (interactive (list (denote-sequence-file-prompt "Link to file with sequence")))
   (unless (denote-sequence-file-p file)
     (error "Can only link to file with a sequence; else use `denote-link' and related"))
   (let* ((type (denote-filetype-heuristics buffer-file-name))
@@ -382,9 +408,12 @@ is ignored."
    (or sequences (denote-sequence-get-all-sequences))
    #'denote-sequence-p :require-match nil 'denote-sequence-history))
 
-(defun denote-sequence-depth-prompt ()
-  "Prompt for the depth of a sequence."
-  (read-number "Get sequences up to this depth: "))
+(defun denote-sequence-depth-prompt (&optional prompt-text)
+  "Prompt for the depth of a sequence.
+With optional PROMPT-TEXT use it instead of the generic one."
+  (read-number
+   (or prompt-text
+       "Get sequences up to this depth (e.g. `1=1=2' is `3' levels of depth): ")))
 
 ;;;###autoload
 (defun denote-sequence-dired (&optional prefix depth)
@@ -400,11 +429,11 @@ is that many levels deep.  For example, 1=1=2 is three levels deep."
      (cond
       ((= arg 16)
        (list
-        (denote-sequence-prompt)
+        (denote-sequence-prompt "Limit to files that extend SEQUENCE (empty for all)")
         (denote-sequence-depth-prompt)))
       ((= arg 4)
        (list
-        (denote-sequence-prompt)))
+        (denote-sequence-prompt "Limit to files that extend SEQUENCE (empty for all)")))
       (t
        nil))))
   (if-let* ((default-directory (denote-directory))

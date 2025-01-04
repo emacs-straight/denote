@@ -1,4 +1,4 @@
-This is doctQiigr.info, produced by makeinfo version 6.8 from
+This is docnITXH1.info, produced by makeinfo version 6.8 from
 denote.texi.
 
 Copyright (C) 2022-2025 Free Software Foundation, Inc.
@@ -20,7 +20,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: doctQiigr.info,  Node: Top,  Next: Overview,  Up: (dir)
+File: docnITXH1.info,  Node: Top,  Next: Overview,  Up: (dir)
 
 denote: Simple notes with an efficient file-naming scheme
 *********************************************************
@@ -77,6 +77,7 @@ of it.
 * Fontification in Dired::
 * Automatically rename Denote buffers::
 * Use Org dynamic blocks::
+* Write sequence notes or ``folgezettel''::
 * Sort files by component::
 * Keep a journal or diary::
 * Minibuffer histories::
@@ -293,7 +294,7 @@ Indices
 
 
 
-File: doctQiigr.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
+File: docnITXH1.info,  Node: Overview,  Next: Points of entry,  Prev: Top,  Up: Top
 
 1 Overview
 **********
@@ -373,7 +374,7 @@ acronyms, recursive or otherwise, of increasingly dubious utility like:
 Obligations, Tasks, and Engagements.
 
 
-File: doctQiigr.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
+File: docnITXH1.info,  Node: Points of entry,  Next: Renaming files,  Prev: Overview,  Up: Top
 
 2 Points of entry
 *****************
@@ -408,7 +409,7 @@ of file name components::).
 * Use Denote commands from the menu bar or context menu::
 
 
-File: doctQiigr.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
+File: docnITXH1.info,  Node: Standard note creation,  Next: Create a note from the current Org subtree,  Up: Points of entry
 
 2.1 Standard note creation
 ==========================
@@ -464,7 +465,7 @@ the alias ‘denote-create-note’.
 * The denote-date-prompt-use-org-read-date option::
 
 
-File: doctQiigr.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-prompts option,  Next: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.1 The ‘denote-prompts’ option
 ---------------------------------
@@ -557,7 +558,7 @@ Lisp).  In Lisp usage, the behaviour is always what the caller
 specifies, based on the supplied arguments.
 
 
-File: doctQiigr.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-history-completion-in-prompts option,  Next: The denote-templates option,  Prev: The denote-prompts option,  Up: Standard note creation
 
 2.1.2 The ‘denote-history-completion-in-prompts’ option
 -------------------------------------------------------
@@ -591,7 +592,7 @@ minibuffer completion, due to the specifics of their data.
 minibuffer histories between sessions.]
 
 
-File: doctQiigr.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-templates option,  Next: Convenience commands for note creation,  Prev: The denote-history-completion-in-prompts option,  Up: Standard note creation
 
 2.1.3 The ‘denote-templates’ option
 -----------------------------------
@@ -673,7 +674,7 @@ welcome to ask for help if the information provided herein is not
 sufficient.  We shall expand the manual accordingly.
 
 
-File: doctQiigr.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
+File: docnITXH1.info,  Node: Convenience commands for note creation,  Next: The denote-save-buffers option,  Prev: The denote-templates option,  Up: Standard note creation
 
 2.1.4 Convenience commands for note creation
 --------------------------------------------
@@ -845,7 +846,7 @@ Create note with a signature
               (call-interactively #'denote)))
 
 
-File: doctQiigr.info,  Node: The denote-save-buffers option,  Next: The denote-kill-buffers option,  Prev: Convenience commands for note creation,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-save-buffers option,  Next: The denote-kill-buffers option,  Prev: Convenience commands for note creation,  Up: Standard note creation
 
 2.1.5 The ‘denote-save-buffers’ option
 --------------------------------------
@@ -871,7 +872,7 @@ and knows it is reliable (*note Renaming files::).
    *note The denote-kill-buffers option::.
 
 
-File: doctQiigr.info,  Node: The denote-kill-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-kill-buffers option,  Next: The denote-date-prompt-use-org-read-date option,  Prev: The denote-save-buffers option,  Up: Standard note creation
 
 2.1.6 The ‘denote-kill-buffers’ option
 --------------------------------------
@@ -906,7 +907,7 @@ were t (*note The denote-save-buffers option::).
 operation it is NOT automatically killed.
 
 
-File: doctQiigr.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-kill-buffers option,  Up: Standard note creation
+File: docnITXH1.info,  Node: The denote-date-prompt-use-org-read-date option,  Prev: The denote-kill-buffers option,  Up: Standard note creation
 
 2.1.7 The ‘denote-date-prompt-use-org-read-date’ option
 -------------------------------------------------------
@@ -921,7 +922,7 @@ method that is common in interactions with Org mode, can set the user
 option ‘denote-date-prompt-use-org-read-date’ to a non-nil value.
 
 
-File: doctQiigr.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
+File: docnITXH1.info,  Node: Create a note from the current Org subtree,  Next: Create note using Org capture,  Prev: Standard note creation,  Up: Points of entry
 
 2.2 Create a note from the current Org subtree
 ==============================================
@@ -976,7 +977,7 @@ prompts for a date at this stage (also see
 ‘denote-file-type’.
 
 
-File: doctQiigr.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
+File: docnITXH1.info,  Node: Create note using Org capture,  Next: Create note with specific prompts using Org capture,  Prev: Create a note from the current Org subtree,  Up: Points of entry
 
 2.3 Create note using Org capture
 =================================
@@ -1031,7 +1032,7 @@ of the ‘denote-org-capture-specifiers’.
 your own convenience commands::).  ]
 
 
-File: doctQiigr.info,  Node: Create note with specific prompts using Org capture,  Next: Create note with specific values using Org capture,  Prev: Create note using Org capture,  Up: Points of entry
+File: docnITXH1.info,  Node: Create note with specific prompts using Org capture,  Next: Create note with specific values using Org capture,  Prev: Create note using Org capture,  Up: Points of entry
 
 2.4 Create note with specific prompts using Org capture
 =======================================================
@@ -1118,7 +1119,7 @@ treated the same as ‘:title’ or ‘t’).
 your own convenience commands::).  ]
 
 
-File: doctQiigr.info,  Node: Create note with specific values using Org capture,  Next: Create a journal entry using Org capture,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
+File: docnITXH1.info,  Node: Create note with specific values using Org capture,  Next: Create a journal entry using Org capture,  Prev: Create note with specific prompts using Org capture,  Up: Points of entry
 
 2.5 Create note with specific values using Org capture
 ======================================================
@@ -1196,7 +1197,7 @@ how we can affect the behaviour of the underlying ‘denote’ command by
 Write your own convenience commands::).
 
 
-File: doctQiigr.info,  Node: Create a journal entry using Org capture,  Next: Create a note with the region's contents,  Prev: Create note with specific values using Org capture,  Up: Points of entry
+File: docnITXH1.info,  Node: Create a journal entry using Org capture,  Next: Create a note with the region's contents,  Prev: Create note with specific values using Org capture,  Up: Points of entry
 
 2.6 Create a journal entry using Org capture
 ============================================
@@ -1231,7 +1232,7 @@ accordingly, in accordance with the documentation of
 ‘org-capture-templates’.
 
 
-File: doctQiigr.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create a journal entry using Org capture,  Up: Points of entry
+File: docnITXH1.info,  Node: Create a note with the region's contents,  Next: Open an existing note or create it if missing,  Prev: Create a journal entry using Org capture,  Up: Points of entry
 
 2.7 Create a note with the region’s contents
 ============================================
@@ -1273,7 +1274,7 @@ if ‘denote-region’ is used without an active region.
 * A custom denote-region that references the source::
 
 
-File: doctQiigr.info,  Node: A custom denote-region that references the source,  Up: Create a note with the region's contents
+File: docnITXH1.info,  Node: A custom denote-region that references the source,  Up: Create a note with the region's contents
 
 2.7.1 A custom ‘denote-region’ that references the source
 ---------------------------------------------------------
@@ -1338,7 +1339,7 @@ the following:
      called.
 
 
-File: doctQiigr.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
+File: docnITXH1.info,  Node: Open an existing note or create it if missing,  Next: Maintain separate directory silos for notes,  Prev: Create a note with the region's contents,  Up: Points of entry
 
 2.8 Open an existing note or create it if missing
 =================================================
@@ -1378,7 +1379,7 @@ or creating a new one (*note Link to a note or create it if missing:
 Link to an existing note or create a new one.).
 
 
-File: doctQiigr.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain files from file prompts,  Prev: Open an existing note or create it if missing,  Up: Points of entry
+File: docnITXH1.info,  Node: Maintain separate directory silos for notes,  Next: Exclude certain files from file prompts,  Prev: Open an existing note or create it if missing,  Up: Points of entry
 
 2.9 Maintain separate directory silos for notes
 ===============================================
@@ -1496,7 +1497,7 @@ not sufficient.  The manual shall be expanded accordingly.
 * Make any Denote command work in a silo from anywhere::
 
 
-File: doctQiigr.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docnITXH1.info,  Node: How to switch a silo,  Next: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.9.1 How to switch a silo
 --------------------------
@@ -1512,7 +1513,7 @@ There are three ways to switch to a silo:
      from the current buffer.
 
 
-File: doctQiigr.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
+File: docnITXH1.info,  Node: Use custom commands to select a silo,  Next: The denote-silo-extrasel,  Prev: How to switch a silo,  Up: Maintain separate directory silos for notes
 
 2.9.2 Use custom commands to select a silo
 ------------------------------------------
@@ -1585,7 +1586,7 @@ value of ‘denote-directory’ to select silos.
 a note from the current Org subtree.
 
 
-File: doctQiigr.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
+File: docnITXH1.info,  Node: The denote-silo-extrasel,  Next: Make Org export work with silos,  Prev: Use custom commands to select a silo,  Up: Maintain separate directory silos for notes
 
 2.9.3 The ‘denote-silo-extras.el’
 ---------------------------------
@@ -1649,7 +1650,7 @@ inside that silo (*note Points of entry::).
               (cd silo)))
 
 
-File: doctQiigr.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
+File: docnITXH1.info,  Node: Make Org export work with silos,  Next: Make any Denote command work in a silo from anywhere,  Prev: The denote-silo-extrasel,  Up: Maintain separate directory silos for notes
 
 2.9.4 Make Org export work with silos
 -------------------------------------
@@ -1704,7 +1705,7 @@ ways to go about it, anyway:
      of the current file.  ]
 
 
-File: doctQiigr.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
+File: docnITXH1.info,  Node: Make any Denote command work in a silo from anywhere,  Prev: Make Org export work with silos,  Up: Maintain separate directory silos for notes
 
 2.9.5 Make any Denote command work in a silo from anywhere
 ----------------------------------------------------------
@@ -1741,7 +1742,7 @@ convenience.  For example:
      (define-key global-map (kbd "C-c n j") #'my-denote-journal-extras-new-or-existing-entry)
 
 
-File: doctQiigr.info,  Node: Exclude certain files from file prompts,  Next: Exclude certain directories from all operations,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
+File: docnITXH1.info,  Node: Exclude certain files from file prompts,  Next: Exclude certain directories from all operations,  Prev: Maintain separate directory silos for notes,  Up: Points of entry
 
 2.10 Exclude certain files from file prompts
 ============================================
@@ -1761,7 +1762,7 @@ note or create it if missing::).
    *note For developers or advanced users::.
 
 
-File: doctQiigr.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Exclude certain files from file prompts,  Up: Points of entry
+File: docnITXH1.info,  Node: Exclude certain directories from all operations,  Next: Exclude certain keywords from being inferred,  Prev: Exclude certain files from file prompts,  Up: Points of entry
 
 2.11 Exclude certain directories from all operations
 ====================================================
@@ -1786,7 +1787,7 @@ the available files in the value of the user option ‘denote-directory’
    *note For developers or advanced users::.
 
 
-File: doctQiigr.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
+File: docnITXH1.info,  Node: Exclude certain keywords from being inferred,  Next: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain directories from all operations,  Up: Points of entry
 
 2.12 Exclude certain keywords from being inferred
 =================================================
@@ -1801,7 +1802,7 @@ prompts as completion candidates when the user option
    The match is performed with ‘string-match-p’.
 
 
-File: doctQiigr.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
+File: docnITXH1.info,  Node: Use Denote commands from the menu bar or context menu,  Prev: Exclude certain keywords from being inferred,  Up: Points of entry
 
 2.13 Use Denote commands from the menu bar or context menu
 ==========================================================
@@ -1822,7 +1823,7 @@ Denote entry for it by adding the following to their configuration file:
      (add-hook 'context-menu-functions #'denote-context-menu)
 
 
-File: doctQiigr.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
+File: docnITXH1.info,  Node: Renaming files,  Next: The file-naming scheme,  Prev: Points of entry,  Up: Top
 
 3 Renaming files
 ****************
@@ -1875,7 +1876,7 @@ or switching between then with commands like ‘switch-to-buffer’.
 * Faces used by rename commands::
 
 
-File: doctQiigr.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a single file,  Next: Rename a single file based on its front matter,  Up: Renaming files
 
 3.1 Rename a single file
 ========================
@@ -1996,7 +1997,7 @@ interactively::).
 * The denote-rename-confirmations option::
 
 
-File: doctQiigr.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
+File: docnITXH1.info,  Node: The denote-rename-confirmations option,  Up: Rename a single file
 
 3.1.1 The ‘denote-rename-confirmations’ option
 ----------------------------------------------
@@ -2030,7 +2031,7 @@ but carries out the renaming without asking for confirmation (*note
 Rename multiple files interactively::)).
 
 
-File: doctQiigr.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a single file based on its front matter,  Next: Rename multiple files interactively,  Prev: Rename a single file,  Up: Renaming files
 
 3.2 Rename a single file based on its front matter
 ==================================================
@@ -2085,7 +2086,7 @@ option ‘denote-file-name-components-order’ (*note Change the order of
 file name components::).
 
 
-File: doctQiigr.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename multiple files interactively,  Next: Rename multiple files at once by asking only for keywords,  Prev: Rename a single file based on its front matter,  Up: Renaming files
 
 3.3 Rename multiple files interactively
 =======================================
@@ -2109,7 +2110,7 @@ command ‘denote-dired-rename-marked-files-with-keywords’.
    • *note Rename multiple files based on their front matter::
 
 
-File: doctQiigr.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename multiple files at once by asking only for keywords,  Next: Rename multiple files based on their front matter,  Prev: Rename multiple files interactively,  Up: Renaming files
 
 3.4 Rename multiple files at once by asking only for keywords
 =============================================================
@@ -2155,7 +2156,7 @@ keywords, use ‘denote-dired-rename-marked-files-add-keywords’ and
 ‘denote-dired-rename-marked-files-remove-keywords’, respectively.
 
 
-File: doctQiigr.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename multiple files based on their front matter,  Next: Rename a file by changing only its file type,  Prev: Rename multiple files at once by asking only for keywords,  Up: Renaming files
 
 3.5 Rename multiple files based on their front matter
 =====================================================
@@ -2175,7 +2176,7 @@ to rename them interactively (*note Rename multiple files
 interactively::).
 
 
-File: doctQiigr.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing a title interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a file by changing only its file type,  Next: Rename a file by adding or removing a title interactively,  Prev: Rename multiple files based on their front matter,  Up: Renaming files
 
 3.6 Rename a file by changing only its file type
 ================================================
@@ -2206,7 +2207,7 @@ option ‘denote-file-name-components-order’ (*note Change the order of
 file name components::).
 
 
-File: doctQiigr.info,  Node: Rename a file by adding or removing a title interactively,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a file by adding or removing a title interactively,  Next: Rename a file by adding or removing keywords interactively,  Prev: Rename a file by changing only its file type,  Up: Renaming files
 
 3.7 Rename a file by adding or removing a title interactively
 =============================================================
@@ -2240,7 +2241,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doctQiigr.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by adding or removing a title interactively,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a file by adding or removing keywords interactively,  Next: Rename a file by adding or removing a signature interactively,  Prev: Rename a file by adding or removing a title interactively,  Up: Renaming files
 
 3.8 Rename a file by adding or removing keywords interactively
 ==============================================================
@@ -2277,7 +2278,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doctQiigr.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Find duplicate identifiers and put them in a Dired buffer,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
+File: docnITXH1.info,  Node: Rename a file by adding or removing a signature interactively,  Next: Find duplicate identifiers and put them in a Dired buffer,  Prev: Rename a file by adding or removing keywords interactively,  Up: Renaming files
 
 3.9 Rename a file by adding or removing a signature interactively
 =================================================================
@@ -2311,7 +2312,7 @@ with empty contents.  That Vertico command is bound to ‘M-RET’ as of
 this writing on 2024-06-30 10:37 +0300.  ]
 
 
-File: doctQiigr.info,  Node: Find duplicate identifiers and put them in a Dired buffer,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
+File: docnITXH1.info,  Node: Find duplicate identifiers and put them in a Dired buffer,  Next: Faces used by rename commands,  Prev: Rename a file by adding or removing a signature interactively,  Up: Renaming files
 
 3.10 Find duplicate identifiers and put them in a Dired buffer
 ==============================================================
@@ -2362,7 +2363,7 @@ record a keyboard macro that makes use of a counter to increment by
 1—contact me if you need any help).
 
 
-File: doctQiigr.info,  Node: Faces used by rename commands,  Prev: Find duplicate identifiers and put them in a Dired buffer,  Up: Renaming files
+File: docnITXH1.info,  Node: Faces used by rename commands,  Prev: Find duplicate identifiers and put them in a Dired buffer,  Up: Renaming files
 
 3.11 Faces used by rename commands
 ==================================
@@ -2376,7 +2377,7 @@ prompts:
    • ‘denote-faces-prompt-old-name’
 
 
-File: doctQiigr.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
+File: docnITXH1.info,  Node: The file-naming scheme,  Next: Front matter,  Prev: Renaming files,  Up: Top
 
 4 The file-naming scheme
 ************************
@@ -2481,7 +2482,7 @@ low-tech invention.
 * Features of the file-naming scheme for searching or filtering::
 
 
-File: doctQiigr.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
+File: docnITXH1.info,  Node: Change the order of file name components,  Next: Sluggification of file name components,  Up: The file-naming scheme
 
 4.1 Change the order of file name components
 ============================================
@@ -2539,7 +2540,7 @@ predictable and thus easier to find.  So pick one order and never touch
 it again.  When in doubt, leave the default file-naming scheme as-is.
 
 
-File: doctQiigr.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
+File: docnITXH1.info,  Node: Sluggification of file name components,  Next: User-defined sluggification of file name components,  Prev: Change the order of file name components,  Up: The file-naming scheme
 
 4.2 Sluggification of file name components
 ==========================================
@@ -2587,7 +2588,7 @@ hackability and so users can deviate from the aforementioned (*note
 User-defined sluggification of file name components::).
 
 
-File: doctQiigr.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
+File: docnITXH1.info,  Node: User-defined sluggification of file name components,  Next: Features of the file-naming scheme for searching or filtering,  Prev: Sluggification of file name components,  Up: The file-naming scheme
 
 4.3 User-defined sluggification of file name components
 =======================================================
@@ -2680,7 +2681,7 @@ have been warned.
 * Custom sluggification to remove non-ASCII characters::
 
 
-File: doctQiigr.info,  Node: Custom sluggification to remove non-ASCII characters,  Up: User-defined sluggification of file name components
+File: docnITXH1.info,  Node: Custom sluggification to remove non-ASCII characters,  Up: User-defined sluggification of file name components
 
 4.3.1 Custom sluggification to remove non-ASCII characters
 ----------------------------------------------------------
@@ -2722,7 +2723,7 @@ sluggification of file name components::).
          (keyword . my-denote-sluggify-keyword)))
 
 
-File: doctQiigr.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
+File: docnITXH1.info,  Node: Features of the file-naming scheme for searching or filtering,  Prev: User-defined sluggification of file name components,  Up: The file-naming scheme
 
 4.4 Features of the file-naming scheme for searching or filtering
 =================================================================
@@ -2759,7 +2760,7 @@ interfere with the above: either set the user option
 at the relevant prompts.
 
 
-File: doctQiigr.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
+File: docnITXH1.info,  Node: Front matter,  Next: Linking notes,  Prev: The file-naming scheme,  Up: Top
 
 5 Front matter
 **************
@@ -2830,7 +2831,7 @@ in the doc string of ‘format-time-string’..
 * Regenerate front matter::
 
 
-File: doctQiigr.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
+File: docnITXH1.info,  Node: Change the front matter format,  Next: Regenerate front matter,  Up: Front matter
 
 5.1 Change the front matter format
 ==================================
@@ -2912,7 +2913,7 @@ are not yet sure what the user’s needs are.  Please provide feedback and
 we shall act accordingly.
 
 
-File: doctQiigr.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
+File: docnITXH1.info,  Node: Regenerate front matter,  Prev: Change the front matter format,  Up: Front matter
 
 5.2 Regenerate front matter
 ===========================
@@ -2923,7 +2924,7 @@ related (*note Renaming files::).  Those commands will add missing front
 matter or rewrite the modified lines of existing front matter.
 
 
-File: doctQiigr.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
+File: docnITXH1.info,  Node: Linking notes,  Next: Choose which commands to prompt for,  Prev: Front matter,  Up: Top
 
 6 Linking notes
 ***************
@@ -2958,7 +2959,7 @@ links opening outside Emacs?::).
 * Miscellaneous information about links::
 
 
-File: doctQiigr.info,  Node: Adding a single link,  Next: The denote-open-link-function user option,  Up: Linking notes
+File: docnITXH1.info,  Node: Adding a single link,  Next: The denote-open-link-function user option,  Up: Linking notes
 
 6.1 Adding a single link
 ========================
@@ -3019,7 +3020,7 @@ for the user/theme in case they want ‘denote:’ links to remain distinct
 from other links.
 
 
-File: doctQiigr.info,  Node: The denote-open-link-function user option,  Next: The denote-org-store-link-to-heading user option,  Prev: Adding a single link,  Up: Linking notes
+File: docnITXH1.info,  Node: The denote-open-link-function user option,  Next: The denote-org-store-link-to-heading user option,  Prev: Adding a single link,  Up: Linking notes
 
 6.2 The ‘denote-open-link-function’ user option
 ===============================================
@@ -3037,7 +3038,7 @@ has its own mechanism for how to open links (read the documentation of
 the command ‘org-open-at-point’).
 
 
-File: doctQiigr.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: The denote-open-link-function user option,  Up: Linking notes
+File: docnITXH1.info,  Node: The denote-org-store-link-to-heading user option,  Next: Insert link to an Org file with a further pointer to a heading,  Prev: The denote-open-link-function user option,  Up: Linking notes
 
 6.3 The ‘denote-org-store-link-to-heading’ user option
 ======================================================
@@ -3112,7 +3113,7 @@ file+heading regardless of the aforementioned user option (*note Insert
 link to an Org file with a further pointer to a heading::).
 
 
-File: doctQiigr.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
+File: docnITXH1.info,  Node: Insert link to an Org file with a further pointer to a heading,  Next: Insert links matching a regexp,  Prev: The denote-org-store-link-to-heading user option,  Up: Linking notes
 
 6.4 Insert link to an Org file with a further pointer to a heading
 ==================================================================
@@ -3144,7 +3145,7 @@ a file, then a heading, and inserts the link at point.
 heading (*note Backlinks for Org headings::).
 
 
-File: doctQiigr.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
+File: docnITXH1.info,  Node: Insert links matching a regexp,  Next: Insert link to file with signature,  Prev: Insert link to an Org file with a further pointer to a heading,  Up: Linking notes
 
 6.5 Insert links matching a regexp
 ==================================
@@ -3202,7 +3203,7 @@ show above is for interactive usage.
 purposes (*note Linking notes::).
 
 
-File: doctQiigr.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
+File: docnITXH1.info,  Node: Insert link to file with signature,  Next: Insert links from marked files in Dired,  Prev: Insert links matching a regexp,  Up: Linking notes
 
 6.6 Insert link to file with signature
 ======================================
@@ -3221,7 +3222,7 @@ note]]’.
 function (*note Adding a single link::).
 
 
-File: doctQiigr.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
+File: docnITXH1.info,  Node: Insert links from marked files in Dired,  Next: Link to an existing note or create a new one,  Prev: Insert link to file with signature,  Up: Linking notes
 
 6.7 Insert links from marked files in Dired
 ===========================================
@@ -3254,7 +3255,7 @@ for our purposes (*note Linking notes::).
 ‘denote-link-dired-marked-notes’.  [ The alias is part of 3.2.0-dev.  ]
 
 
-File: doctQiigr.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
+File: docnITXH1.info,  Node: Link to an existing note or create a new one,  Next: The backlinks' buffer,  Prev: Insert links from marked files in Dired,  Up: Linking notes
 
 6.8 Link to an existing note or create a new one
 ================================================
@@ -3336,7 +3337,7 @@ creating a new one (*note Open an existing note or create it if
 missing::).
 
 
-File: doctQiigr.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
+File: docnITXH1.info,  Node: The backlinks' buffer,  Next: Writing metanotes,  Prev: Link to an existing note or create a new one,  Up: Linking notes
 
 6.9 The backlinks’ buffer
 =========================
@@ -3421,7 +3422,7 @@ Reproducing it here for the sake of convenience:
 * Backlinks for Org headings::
 
 
-File: doctQiigr.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
+File: docnITXH1.info,  Node: Backlinks for Org headings,  Up: The backlinks' buffer
 
 6.9.1 Backlinks for Org headings
 --------------------------------
@@ -3437,7 +3438,7 @@ current heading is also an option (*note Org dynamic blocks to insert
 links or backlinks: Org dynamic blocks to insert links.).
 
 
-File: doctQiigr.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
+File: docnITXH1.info,  Node: Writing metanotes,  Next: Visiting linked files via the minibuffer,  Prev: The backlinks' buffer,  Up: Linking notes
 
 6.10 Writing metanotes
 ======================
@@ -3474,7 +3475,7 @@ serve in encapsulating knowledge, while current you will be equipped
 with the knowledge derived from the deliberate self-reflection.
 
 
-File: doctQiigr.info,  Node: Visiting linked files via the minibuffer,  Next: Use the markdown-obsidian file type,  Prev: Writing metanotes,  Up: Linking notes
+File: docnITXH1.info,  Node: Visiting linked files via the minibuffer,  Next: Use the markdown-obsidian file type,  Prev: Writing metanotes,  Up: Linking notes
 
 6.11 Visiting linked files via the minibuffer
 =============================================
@@ -3496,7 +3497,7 @@ with only the files of the current minibuffer session).
 a dedicated buffer (*note The backlinks' buffer::).
 
 
-File: doctQiigr.info,  Node: Use the markdown-obsidian file type,  Next: Convert denote links to file links in Org,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
+File: docnITXH1.info,  Node: Use the markdown-obsidian file type,  Next: Convert denote links to file links in Org,  Prev: Visiting linked files via the minibuffer,  Up: Linking notes
 
 6.12 Use the ‘markdown-obsidian’ file type
 ==========================================
@@ -3515,7 +3516,7 @@ top-level heading, without any further data.
      (require 'denote-md-extras)
 
 
-File: doctQiigr.info,  Node: Convert denote links to file links in Org,  Next: Convert denote links to paths in Markdown or Obsidian style,  Prev: Use the markdown-obsidian file type,  Up: Linking notes
+File: docnITXH1.info,  Node: Convert denote links to file links in Org,  Next: Convert denote links to paths in Markdown or Obsidian style,  Prev: Use the markdown-obsidian file type,  Up: Linking notes
 
 6.13 Convert ‘denote:’ links to ‘file:’ links in Org
 ====================================================
@@ -3549,7 +3550,7 @@ Convert ‘file:’ links to ‘denote:’ links
      file system path and converts it into its identifier.
 
 
-File: doctQiigr.info,  Node: Convert denote links to paths in Markdown or Obsidian style,  Next: Fontify links in non-Org buffers,  Prev: Convert denote links to file links in Org,  Up: Linking notes
+File: docnITXH1.info,  Node: Convert denote links to paths in Markdown or Obsidian style,  Next: Fontify links in non-Org buffers,  Prev: Convert denote links to file links in Org,  Up: Linking notes
 
 6.14 Convert ‘:denote’ links to paths in Markdown or Obsidian style
 ===================================================================
@@ -3602,7 +3603,7 @@ Everything seems to work on my end, though do let me know if there are
 bugs.
 
 
-File: doctQiigr.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to paths in Markdown or Obsidian style,  Up: Linking notes
+File: docnITXH1.info,  Node: Fontify links in non-Org buffers,  Next: Miscellaneous information about links,  Prev: Convert denote links to paths in Markdown or Obsidian style,  Up: Linking notes
 
 6.15 Fontify links in non-Org buffers
 =====================================
@@ -3636,7 +3637,7 @@ correctly resolves ‘denote:’ links.  Interested users can refer to the
 function ‘denote-link-markdown-follow’ for the implementation details.
 
 
-File: doctQiigr.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
+File: docnITXH1.info,  Node: Miscellaneous information about links,  Prev: Fontify links in non-Org buffers,  Up: Linking notes
 
 6.16 Miscellaneous information about links
 ==========================================
@@ -3647,7 +3648,7 @@ File: doctQiigr.info,  Node: Miscellaneous information about links,  Prev: Fonti
 * The denote-link-description-format to format link descriptions::
 
 
-File: doctQiigr.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-format to format link descriptions,  Up: Miscellaneous information about links
+File: docnITXH1.info,  Node: Aliases for the linking commands,  Next: The denote-link-description-format to format link descriptions,  Up: Miscellaneous information about links
 
 6.16.1 Aliases for the linking commands
 ---------------------------------------
@@ -3660,7 +3661,7 @@ aliases is to offer alternative, more descriptive names of select
 commands.
 
 
-File: doctQiigr.info,  Node: The denote-link-description-format to format link descriptions,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
+File: docnITXH1.info,  Node: The denote-link-description-format to format link descriptions,  Prev: Aliases for the linking commands,  Up: Miscellaneous information about links
 
 6.16.2 The ‘denote-link-description-format’ to format link descriptions
 -----------------------------------------------------------------------
@@ -3721,7 +3722,7 @@ a ‘[D]’ prefix.
    If the region is active, its text is used as the link’s description.
 
 
-File: doctQiigr.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
+File: docnITXH1.info,  Node: Choose which commands to prompt for,  Next: Fontification in Dired,  Prev: Linking notes,  Up: Top
 
 7 Choose which commands to prompt for
 *************************************
@@ -3742,7 +3743,7 @@ custom command in the list (*note Write your own convenience
 commands::).
 
 
-File: doctQiigr.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
+File: docnITXH1.info,  Node: Fontification in Dired,  Next: Automatically rename Denote buffers,  Prev: Choose which commands to prompt for,  Up: Top
 
 8 Fontification in Dired
 ************************
@@ -3809,7 +3810,7 @@ attachments for the notes Denote produces if you are writing Org notes
 and are using its standand attachments’ facility).
 
 
-File: doctQiigr.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
+File: docnITXH1.info,  Node: Automatically rename Denote buffers,  Next: Use Org dynamic blocks,  Prev: Fontification in Dired,  Up: Top
 
 9 Automatically rename Denote buffers
 *************************************
@@ -3840,7 +3841,7 @@ to all programs.
 * The denote-rename-buffer-format option::
 
 
-File: doctQiigr.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
+File: docnITXH1.info,  Node: The denote-rename-buffer-format option,  Up: Automatically rename Denote buffers
 
 9.1 The ‘denote-rename-buffer-format’ option
 ============================================
@@ -3912,7 +3913,7 @@ prefix.  Examples:
 own function and assigning it to the ‘denote-rename-buffer-function’.
 
 
-File: doctQiigr.info,  Node: Use Org dynamic blocks,  Next: Sort files by component,  Prev: Automatically rename Denote buffers,  Up: Top
+File: docnITXH1.info,  Node: Use Org dynamic blocks,  Next: Write sequence notes or ``folgezettel'',  Prev: Automatically rename Denote buffers,  Up: Top
 
 10 Use Org dynamic blocks
 *************************
@@ -3960,7 +3961,7 @@ Evaluate:
 * Org dynamic block to insert Org files as headings::
 
 
-File: doctQiigr.info,  Node: Org dynamic blocks to insert links,  Next: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
+File: docnITXH1.info,  Node: Org dynamic blocks to insert links,  Next: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
 
 10.1 Org dynamic blocks to insert links
 =======================================
@@ -4056,7 +4057,7 @@ block.  We cover that case as well (*note The Org dynamic block to
 insert missing links only::).
 
 
-File: doctQiigr.info,  Node: The Org dynamic block to insert missing links only,  Next: The Org dynamic block to insert backlinks,  Prev: Org dynamic blocks to insert links,  Up: Use Org dynamic blocks
+File: docnITXH1.info,  Node: The Org dynamic block to insert missing links only,  Next: The Org dynamic block to insert backlinks,  Prev: Org dynamic blocks to insert links,  Up: Use Org dynamic blocks
 
 10.2 The Org dynamic block to insert missing links only
 =======================================================
@@ -4079,7 +4080,7 @@ the command ‘org-dynamic-block-insert-dblock’.
 the ‘#+BEGIN’ line to update the block.
 
 
-File: doctQiigr.info,  Node: The Org dynamic block to insert backlinks,  Next: Org dynamic block to insert file contents,  Prev: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
+File: docnITXH1.info,  Node: The Org dynamic block to insert backlinks,  Next: Org dynamic block to insert file contents,  Prev: The Org dynamic block to insert missing links only,  Up: Use Org dynamic blocks
 
 10.3 The Org dynamic block to insert backlinks
 ==============================================
@@ -4115,7 +4116,7 @@ the heading (*note Insert link to an Org file with a further pointer to
 a heading::).
 
 
-File: doctQiigr.info,  Node: Org dynamic block to insert file contents,  Next: Org dynamic block to insert Org files as headings,  Prev: The Org dynamic block to insert backlinks,  Up: Use Org dynamic blocks
+File: docnITXH1.info,  Node: Org dynamic block to insert file contents,  Next: Org dynamic block to insert Org files as headings,  Prev: The Org dynamic block to insert backlinks,  Up: Use Org dynamic blocks
 
 10.4 Org dynamic block to insert file contents
 ==============================================
@@ -4239,7 +4240,7 @@ parameters, which are described further below:
      purview).
 
 
-File: doctQiigr.info,  Node: Org dynamic block to insert Org files as headings,  Prev: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
+File: docnITXH1.info,  Node: Org dynamic block to insert Org files as headings,  Prev: Org dynamic block to insert file contents,  Up: Use Org dynamic blocks
 
 10.5 Org dynamic block to insert Org files as headings
 ======================================================
@@ -4328,9 +4329,107 @@ parameters included:
      purview).
 
 
-File: doctQiigr.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Use Org dynamic blocks,  Up: Top
+File: docnITXH1.info,  Node: Write sequence notes or ``folgezettel'',  Next: Sort files by component,  Prev: Use Org dynamic blocks,  Up: Top
 
-11 Sort files by component
+11 Write sequence notes or “folgezettel”
+****************************************
+
+[ The ‘denote-sequence.el’ is part of 3.2.0-dev.  ]
+
+   This section is about the optional extension ‘denote-sequence.el’,
+which is part of the ‘denote’ package.
+
+   Denote defines an optional file name component called the ‘SIGNATURE’
+(*note The file-naming scheme::).  This is a free form field that users
+can fill in with whatever text they want, such as to have a video split
+up into ‘part1’ and ‘part2’, or to set some kind of priority like ‘a’
+and ‘b’, or even to have a special tag that stands out from the rest of
+the keywords.
+
+   A more specialised use-case of the ‘SIGNATURE’ is to define a
+hierarchical relationship between notes, such that the thoughts they
+expound on form sequences.  For example, an article about the Labrador
+Retriever dog breed is a continuation of a thought process that extends
+something about dog breeds in general which, in turn, is a topic that
+belongs to the wider theme of dogs.  A sequence, then, is a numeric
+representation of such relationships.  A note with a ‘SIGNATURE’ of
+‘1=1’ (the “‘" is the field separator of signatures, per the Denote
+file-naming scheme) is thus the child of note =1’ and the sibling of
+note ‘1=2’.  In this regard, something unrelated to dogs will be its own
+parent, such as ‘2’, and so on.
+
+   A new sequence note can be of the type ‘parent’, ‘child’, and
+‘sibling’.  For the convenience of the user, we provide commands to
+create such “sequence notes”, link only between them (as opposed to a
+link to any other file with the Denote file-naming scheme (*note Linking
+notes::)), and re-parent them on demand.
+
+   All the relevant functions we provide take care to automatically use
+the right number for a given sequence.  If, for example, we create a new
+child for parent ‘1=1’, we make sure that it is the new largest number
+among any existing children, so if ‘1=1=1’ already exists we use
+‘1=1=2’, and the like.
+
+   This optional extension is not necessary for such a workflow.  Users
+can always define whatever ‘SIGNATURE’ they want manually.  The purpose
+of this extension is to streamline this work.
+
+   Concretely, we provide the following commands:
+
+‘denote-sequence’
+     The most general way to create a new sequence note.  It prompts for
+     a type of sequence among ‘parent’, ‘child’, and ‘sibling’ and the
+     rest of the work accordingly.  If the new sequence is not a parent,
+     it thus prompts for an existing file to extend from.  The rest of
+     the interaction is that of all the usual Denote commands, such as
+     to prompt for a title and keywords (*note Points of entry::).
+
+‘denote-sequence-new-parent’
+     This is a convenience wrapper of ‘denote-sequence’ which directly
+     creates a parent sequence.
+
+‘denote-sequence-new-child’
+     This is a convenience wrapper of ‘denote-sequence’ which directly
+     creates a child of an existing sequence, prompting for it using
+     minibuffer completion.
+
+‘denote-sequence-new-sibling’
+     This is a convenience wrapper of ‘denote-sequence’ which directly
+     creates a sibling of an existing sequence, prompting for it using
+     minibuffer completion.
+
+‘denote-sequence-link’
+     This is a variant of the standard ‘denote-link’ command which
+     limits the list of files only to those which contain a sequence.
+
+‘denote-sequence-reparent’
+     This is a command that can be used from inside a file or for the
+     file-at-point in Dired to make the file a child of a given parent
+     sequence, prompting for it using minibuffer completion.
+
+‘denote-sequence-dired’
+     This command produces a bespoke Dired that contains all the
+     sequences in their order (as opposed to a regular Dired which sorts
+     files using the ‘ls’ flags).  With an optional ‘C-u’ prefix
+     argument, this command prompts for a prefix to only show sequences
+     that include it (e.g.  only show notes with ‘1=1’, like ‘1=1=1’ and
+     ‘1=1=2’ but not ‘1=2’).  With an optional double prefix argument of
+     ‘C-u C-u’, this command will prompt for the prefix as well as the
+     level of depth to limit the results to.  Here “depth” means how
+     deep to go in a sequence where, for example, ‘1=1=2’ is three
+     levels of depth.  It is possible to use an empty string at the
+     prefix prompt to not limit the results to any prefix.
+
+   Note that we do not use the Luhmann-style sequencing scheme of mixing
+numbers with letters.  We only have numbers and rely on the field
+separator (the “=”) to establish the kind of relationship between any
+two given notes.  This greatly simplifies the code, plus it is easy to
+reason about and to document.
+
+
+File: docnITXH1.info,  Node: Sort files by component,  Next: Keep a journal or diary,  Prev: Write sequence notes or ``folgezettel'',  Up: Top
+
+12 Sort files by component
 **************************
 
 The ‘denote-sort.el’ file is an optional extension to the core
@@ -4371,9 +4470,9 @@ contents::).
 * Define a sorting function per component::
 
 
-File: doctQiigr.info,  Node: Configure what extra prompts denote-sort-dired issues,  Next: Define a sorting function per component,  Up: Sort files by component
+File: docnITXH1.info,  Node: Configure what extra prompts denote-sort-dired issues,  Next: Define a sorting function per component,  Up: Sort files by component
 
-11.1 Configure what extra prompts ‘denote-sort-dired’ issues
+12.1 Configure what extra prompts ‘denote-sort-dired’ issues
 ============================================================
 
 By default, the ‘denote-sort-dired’ command prompts for (i) a query to
@@ -4419,9 +4518,9 @@ that ‘denote-sort-dired’ will fall back to using
      (setq denote-sort-dired-default-reverse-sort nil)
 
 
-File: doctQiigr.info,  Node: Define a sorting function per component,  Prev: Configure what extra prompts denote-sort-dired issues,  Up: Sort files by component
+File: docnITXH1.info,  Node: Define a sorting function per component,  Prev: Configure what extra prompts denote-sort-dired issues,  Up: Sort files by component
 
-11.2 Define a sorting function per component
+12.2 Define a sorting function per component
 ============================================
 
 When sorting by ‘title’, ‘keywords’, or ‘signature’ with the
@@ -4445,12 +4544,17 @@ Sort signatures that include Luhmann-style sequences::).
 * Sort signatures that include Luhmann-style sequences::
 
 
-File: doctQiigr.info,  Node: Sort signatures that include Luhmann-style sequences,  Up: Define a sorting function per component
+File: docnITXH1.info,  Node: Sort signatures that include Luhmann-style sequences,  Up: Define a sorting function per component
 
-11.2.1 Sort signatures that include Luhmann-style sequences
+12.2.1 Sort signatures that include Luhmann-style sequences
 -----------------------------------------------------------
 
-Niklas Luhmann would edit notes to form sequences of thoughts with
+[ As part of version ‘3.2.0’ of Denote, we provide the optional
+extension ‘denote-sequence.el’ which covers this workflow and provides
+several useful commands (*note Write sequence notes or folgezettel:
+Write sequence notes or ``folgezettel''.).  ]
+
+   Niklas Luhmann would edit notes to form sequences of thoughts with
 branching paths, such as ‘1.1’, ‘1.1a’, ‘1.2’, ‘1.2a’, ‘1.2b’, etc.
 With the Denote file-naming scheme, we make the word separator in each
 file name component use the same character as the entire field, so words
@@ -4492,15 +4596,10 @@ Luhmann-style signatures.
      ;; Change the sorting function only when we sort by signature.
      (setq denote-sort-signature-comparison-function #'my-denote-sort-for-signatures)
 
-   DEVELOPMENT NOTE 2024-08-01 08:27 +0300: If you need to sort in a
-certain way but do not know how to write the relevant Elisp, please let
-me know.  I am happy to help and we can then include our findings in the
-manual for the benefit of the community.
-
 
-File: doctQiigr.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
+File: docnITXH1.info,  Node: Keep a journal or diary,  Next: Minibuffer histories,  Prev: Sort files by component,  Up: Top
 
-12 Keep a journal or diary
+13 Keep a journal or diary
 **************************
 
 Denote provides a general-purpose mechanism to create new files that
@@ -4591,9 +4690,9 @@ file’s identifier.
 * Journaling with a timer::
 
 
-File: doctQiigr.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
+File: docnITXH1.info,  Node: Journaling with a timer,  Up: Keep a journal or diary
 
-12.1 Journaling with a timer
+13.1 Journaling with a timer
 ============================
 
 [ Revised as part of version 2.1.0 to conform with how we now tend to
@@ -4655,9 +4754,9 @@ Practice makes perfect!
    • Backronym: TMR May Ring; Timer Must Run.
 
 
-File: doctQiigr.info,  Node: Minibuffer histories,  Next: Packages that build on Denote,  Prev: Keep a journal or diary,  Up: Top
+File: docnITXH1.info,  Node: Minibuffer histories,  Next: Packages that build on Denote,  Prev: Keep a journal or diary,  Up: Top
 
-13 Minibuffer histories
+14 Minibuffer histories
 ***********************
 
 Denote has a dedicated minibuffer history for each one of its prompts.
@@ -4677,9 +4776,9 @@ configuration:
      (add-hook 'after-init-hook #'savehist-mode)
 
 
-File: doctQiigr.info,  Node: Packages that build on Denote,  Next: Extending Denote,  Prev: Minibuffer histories,  Up: Top
+File: docnITXH1.info,  Node: Packages that build on Denote,  Next: Extending Denote,  Prev: Minibuffer histories,  Up: Top
 
-14 Packages that build on Denote
+15 Packages that build on Denote
 ********************************
 
 This is a list of packages that extend Denote.  If you are a package
@@ -4696,9 +4795,9 @@ author, please let us know about your work and we will include it here
 * Use the denote-zettel-interface package::
 
 
-File: doctQiigr.info,  Node: Use the consult-denote package for enhanced minibuffer interactions,  Next: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the consult-denote package for enhanced minibuffer interactions,  Next: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
 
-14.1 Use the ‘consult-denote’ package for enhanced minibuffer interactions
+15.1 Use the ‘consult-denote’ package for enhanced minibuffer interactions
 ==========================================================================
 
 The ‘consult-denote’ package by me (Protesilaos) integrates Denote with
@@ -4722,9 +4821,9 @@ with Denote and make its feature set entirely optional (*note Use the
 consult-notes package::).  It also only works with Denote.
 
 
-File: doctQiigr.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Use the consult-denote package for enhanced minibuffer interactions,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the denote-explore package to explore your notes,  Next: Use the citar-denote package for bibliography notes,  Prev: Use the consult-denote package for enhanced minibuffer interactions,  Up: Packages that build on Denote
 
-14.2 Use the ‘denote-explore’ package to explore your notes
+15.2 Use the ‘denote-explore’ package to explore your notes
 ===========================================================
 
 Peter Prevos has developed the ‘denote-explore’ package which provides
@@ -4743,9 +4842,9 @@ Visualisations
 <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-File: doctQiigr.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the citar-denote package for bibliography notes,  Next: Use the consult-notes package,  Prev: Use the denote-explore package to explore your notes,  Up: Packages that build on Denote
 
-14.3 Use the ‘citar-denote’ package for bibliography notes
+15.3 Use the ‘citar-denote’ package for bibliography notes
 ==========================================================
 
 Peter Prevos has produced the ‘citar-denote’ package which makes it
@@ -4762,9 +4861,9 @@ ease.  The package’s documentation covers the details:
 <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-File: doctQiigr.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the consult-notes package,  Next: Use the denote-menu package,  Prev: Use the citar-denote package for bibliography notes,  Up: Packages that build on Denote
 
-14.4 Use the ‘consult-notes’ package
+15.4 Use the ‘consult-notes’ package
 ====================================
 
 [ Also check the ‘consult-denote’ package by me (Protesilaos): *note Use
@@ -4799,9 +4898,9 @@ option (*note Features of the file-naming scheme for searching or
 filtering::).
 
 
-File: doctQiigr.info,  Node: Use the denote-menu package,  Next: Use the denote-zettel-interface package,  Prev: Use the consult-notes package,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the denote-menu package,  Next: Use the denote-zettel-interface package,  Prev: Use the consult-notes package,  Up: Packages that build on Denote
 
-14.5 Use the ‘denote-menu’ package
+15.5 Use the ‘denote-menu’ package
 ==================================
 
 Denote’s file-naming scheme is designed to be efficient and to provide
@@ -4819,9 +4918,9 @@ them and to transition from the tabular list to Dired.  Its
 documentation expands on the technicalities.
 
 
-File: doctQiigr.info,  Node: Use the denote-zettel-interface package,  Prev: Use the denote-menu package,  Up: Packages that build on Denote
+File: docnITXH1.info,  Node: Use the denote-zettel-interface package,  Prev: Use the denote-menu package,  Up: Packages that build on Denote
 
-14.6 Use the ‘denote-zettel-interface’ package
+15.6 Use the ‘denote-zettel-interface’ package
 ==============================================
 
 The ‘denote-zettel-interface’ package by Kristoffer Balintona
@@ -4838,9 +4937,9 @@ commands to filter their files, navigate around, and the like.
 (2024-12-03 10:18 +0200).
 
 
-File: doctQiigr.info,  Node: Extending Denote,  Next: Installation,  Prev: Packages that build on Denote,  Up: Top
+File: docnITXH1.info,  Node: Extending Denote,  Next: Installation,  Prev: Packages that build on Denote,  Up: Top
 
-15 Extending Denote
+16 Extending Denote
 *******************
 
 Denote is a tool with a narrow scope: create notes and link between
@@ -4867,9 +4966,9 @@ Denote::).  This section covers the details.
 * Set up your workflow for daily or weekly meeting notes::
 
 
-File: doctQiigr.info,  Node: Create a new note in any directory,  Next: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
+File: docnITXH1.info,  Node: Create a new note in any directory,  Next: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
 
-15.1 Create a new note in any directory
+16.1 Create a new note in any directory
 =======================================
 
 The commands that create new files are designed to write to the
@@ -4891,9 +4990,9 @@ by its name with ‘M-x’.
          (call-interactively 'denote)))
 
 
-File: doctQiigr.info,  Node: Find empty notes and put them in a Dired buffer,  Next: Automatically rename the note after saving it,  Prev: Create a new note in any directory,  Up: Extending Denote
+File: docnITXH1.info,  Node: Find empty notes and put them in a Dired buffer,  Next: Automatically rename the note after saving it,  Prev: Create a new note in any directory,  Up: Extending Denote
 
-15.2 Find empty notes and put them in a Dired buffer
+16.2 Find empty notes and put them in a Dired buffer
 ====================================================
 
 [ This feature is based on the command ‘denote-sort-dired’ (*note Sort
@@ -5022,9 +5121,9 @@ commands:
 easier for users to pick the ones they need.  ]
 
 
-File: doctQiigr.info,  Node: Automatically rename the note after saving it,  Next: Narrow the list of files in Dired,  Prev: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
+File: docnITXH1.info,  Node: Automatically rename the note after saving it,  Next: Narrow the list of files in Dired,  Prev: Find empty notes and put them in a Dired buffer,  Up: Extending Denote
 
-15.3 Automatically rename the note after saving it
+16.3 Automatically rename the note after saving it
 ==================================================
 
 While experimenting with Denote, users may need to try different
@@ -5047,9 +5146,9 @@ following sample can be used:
      (add-hook 'after-save-hook #'my-denote-always-rename-on-save-based-on-front-matter)
 
 
-File: doctQiigr.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Automatically rename the note after saving it,  Up: Extending Denote
+File: docnITXH1.info,  Node: Narrow the list of files in Dired,  Next: Use dired-virtual-mode for arbitrary file listings,  Prev: Automatically rename the note after saving it,  Up: Extending Denote
 
-15.4 Narrow the list of files in Dired
+16.4 Narrow the list of files in Dired
 ======================================
 
 Emacs’ standard file manager (or directory editor) can read a regular
@@ -5105,9 +5204,9 @@ them from the current view.
        (dired-do-kill-lines))
 
 
-File: doctQiigr.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
+File: docnITXH1.info,  Node: Use dired-virtual-mode for arbitrary file listings,  Next: Use Embark to collect minibuffer candidates,  Prev: Narrow the list of files in Dired,  Up: Extending Denote
 
-15.5 Use ‘dired-virtual-mode’ for arbitrary file listings
+16.5 Use ‘dired-virtual-mode’ for arbitrary file listings
 =========================================================
 
 Emacs’ Dired is a powerful file manager that builds its functionality on
@@ -5195,9 +5294,9 @@ it a try (I use ‘C-c C-e’).  In the produced buffer, activate the
 ‘dired-virtual-mode’.
 
 
-File: doctQiigr.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
+File: docnITXH1.info,  Node: Use Embark to collect minibuffer candidates,  Next: Search file contents,  Prev: Use dired-virtual-mode for arbitrary file listings,  Up: Extending Denote
 
-15.6 Use Embark to collect minibuffer candidates
+16.6 Use Embark to collect minibuffer candidates
 ================================================
 
 ‘embark’ is a remarkable package that lets you perform relevant,
@@ -5221,9 +5320,9 @@ same thing directly in Dired, since you also benefit from all the power
 of the minibuffer (*note Narrow the list of files in Dired::).
 
 
-File: doctQiigr.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
+File: docnITXH1.info,  Node: Search file contents,  Next: Bookmark the directory with the notes,  Prev: Use Embark to collect minibuffer candidates,  Up: Extending Denote
 
-15.7 Search file contents
+16.7 Search file contents
 =========================
 
 [ Users of ‘consult’ can use the ‘consult-denote’ package instead (*note
@@ -5266,9 +5365,9 @@ pass a regular expression to the ‘-e’ flag.
 use than the built-in commands.
 
 
-File: doctQiigr.info,  Node: Bookmark the directory with the notes,  Next: Treat your notes as a project,  Prev: Search file contents,  Up: Extending Denote
+File: docnITXH1.info,  Node: Bookmark the directory with the notes,  Next: Treat your notes as a project,  Prev: Search file contents,  Up: Extending Denote
 
-15.8 Bookmark the directory with the notes
+16.8 Bookmark the directory with the notes
 ==========================================
 
 Part of the reason Denote does not reinvent existing functionality is to
@@ -5293,9 +5392,9 @@ The package ‘consult-dir’ is an extension to ‘consult’ which provides
 useful extras for working with directories, including bookmarks.
 
 
-File: doctQiigr.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
+File: docnITXH1.info,  Node: Treat your notes as a project,  Next: Use the tree-based file prompt for select commands,  Prev: Bookmark the directory with the notes,  Up: Extending Denote
 
-15.9 Treat your notes as a project
+16.9 Treat your notes as a project
 ==================================
 
 Emacs has a built-in library for treating a directory tree as a
@@ -5325,9 +5424,9 @@ package will get the job done (VC can work with other backends besides
 Git).
 
 
-File: doctQiigr.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
+File: docnITXH1.info,  Node: Use the tree-based file prompt for select commands,  Next: Rename files with Denote in the Image Dired thumbnails buffer,  Prev: Treat your notes as a project,  Up: Extending Denote
 
-15.10 Use the tree-based file prompt for select commands
+16.10 Use the tree-based file prompt for select commands
 ========================================================
 
 Older versions of Denote had a file prompt that resembled that of the
@@ -5364,9 +5463,9 @@ their own wrapper functions as shown in the following code block.
          (call-interactively #'denote-link)))
 
 
-File: doctQiigr.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
+File: docnITXH1.info,  Node: Rename files with Denote in the Image Dired thumbnails buffer,  Next: Rename files with Denote using dired-preview,  Prev: Use the tree-based file prompt for select commands,  Up: Extending Denote
 
-15.11 Rename files with Denote in the Image Dired thumbnails buffer
+16.11 Rename files with Denote in the Image Dired thumbnails buffer
 ===================================================================
 
 *note Rename files with Denote using dired-preview::
@@ -5427,9 +5526,9 @@ can be used instead:
           (denote-rename-file-and-buffer file new-name))))
 
 
-File: doctQiigr.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
+File: docnITXH1.info,  Node: Rename files with Denote using dired-preview,  Next: Avoid duplicate identifiers when exporting Denote notes,  Prev: Rename files with Denote in the Image Dired thumbnails buffer,  Up: Extending Denote
 
-15.12 Rename files with Denote using ‘dired-preview’
+16.12 Rename files with Denote using ‘dired-preview’
 ====================================================
 
 The ‘dired-preview’ package (by me/Protesilaos) automatically displays a
@@ -5477,9 +5576,9 @@ We thus have:
          (user-error "No marked files; aborting")))
 
 
-File: doctQiigr.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Next: Set up your workflow for daily or weekly meeting notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
+File: docnITXH1.info,  Node: Avoid duplicate identifiers when exporting Denote notes,  Next: Set up your workflow for daily or weekly meeting notes,  Prev: Rename files with Denote using dired-preview,  Up: Extending Denote
 
-15.13 Avoid duplicate identifiers when exporting Denote notes
+16.13 Avoid duplicate identifiers when exporting Denote notes
 =============================================================
 
 When exporting Denote notes to, for example, an HTML or PDF file, there
@@ -5503,9 +5602,9 @@ create a new note using the file type they want on a case-by-case basis:
 * Export Denote notes with Markdown::
 
 
-File: doctQiigr.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docnITXH1.info,  Node: Export Denote notes with Org Mode,  Next: Export Denote notes with Markdown,  Up: Avoid duplicate identifiers when exporting Denote notes
 
-15.13.1 Export Denote notes with Org Mode
+16.13.1 Export Denote notes with Org Mode
 -----------------------------------------
 
 Org Mode has a built-in configurable export engine.  You can prevent
@@ -5601,9 +5700,9 @@ denote links to file links in Org.).
      option (*note Exclude certain directories from all operations::).
 
 
-File: doctQiigr.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
+File: docnITXH1.info,  Node: Export Denote notes with Markdown,  Prev: Export Denote notes with Org Mode,  Up: Avoid duplicate identifiers when exporting Denote notes
 
-15.13.2 Export Denote notes with Markdown
+16.13.2 Export Denote notes with Markdown
 -----------------------------------------
 
 Exporting from Markdown requires an external processor (e.g.,
@@ -5617,9 +5716,9 @@ the documentation of their preferred processor to prevent the creation
 of duplicate Denote identifiers.
 
 
-File: doctQiigr.info,  Node: Set up your workflow for daily or weekly meeting notes,  Prev: Avoid duplicate identifiers when exporting Denote notes,  Up: Extending Denote
+File: docnITXH1.info,  Node: Set up your workflow for daily or weekly meeting notes,  Prev: Avoid duplicate identifiers when exporting Denote notes,  Up: Extending Denote
 
-15.14 Set up your workflow for daily or weekly meeting notes
+16.14 Set up your workflow for daily or weekly meeting notes
 ============================================================
 
 Perhaps as part of work, we meet with certain people on a regular basis.
@@ -5694,9 +5793,9 @@ incorporating the following code in our setup.  Configure
            (insert (format "* [%s]\n\n" time)))))
 
 
-File: doctQiigr.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
+File: docnITXH1.info,  Node: Installation,  Next: Sample configuration,  Prev: Extending Denote,  Up: Top
 
-16 Installation
+17 Installation
 ***************
 
 * Menu:
@@ -5705,9 +5804,9 @@ File: doctQiigr.info,  Node: Installation,  Next: Sample configuration,  Prev: E
 * Manual installation::
 
 
-File: doctQiigr.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
+File: docnITXH1.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
 
-16.1 GNU ELPA package
+17.1 GNU ELPA package
 =====================
 
 The package is available as ‘denote’.  Simply do:
@@ -5724,9 +5823,9 @@ archive.  Read:
 <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>.
 
 
-File: doctQiigr.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
+File: docnITXH1.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
 
-16.2 Manual installation
+17.2 Manual installation
 ========================
 
 Assuming your Emacs files are found in ‘~/.emacs.d/’, execute the
@@ -5751,9 +5850,9 @@ following commands in a shell prompt:
    Everything is in place to set up the package.
 
 
-File: doctQiigr.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
+File: docnITXH1.info,  Node: Sample configuration,  Next: For developers or advanced users,  Prev: Installation,  Up: Top
 
-17 Sample configuration
+18 Sample configuration
 ***********************
 
 Denote is immediately useful for beginners and power users alike.  This
@@ -5768,9 +5867,9 @@ configuration::).
 * More comprehensive sample configuration::
 
 
-File: doctQiigr.info,  Node: Get started with this sample configuration,  Next: More comprehensive sample configuration,  Up: Sample configuration
+File: docnITXH1.info,  Node: Get started with this sample configuration,  Next: More comprehensive sample configuration,  Up: Sample configuration
 
-17.1 Get started with this sample configuration
+18.1 Get started with this sample configuration
 ===============================================
 
 If you are new to Denote, this a good place to start.  Then work your
@@ -5799,9 +5898,9 @@ configuration::).
        (denote-rename-buffer-mode 1))
 
 
-File: doctQiigr.info,  Node: More comprehensive sample configuration,  Prev: Get started with this sample configuration,  Up: Sample configuration
+File: docnITXH1.info,  Node: More comprehensive sample configuration,  Prev: Get started with this sample configuration,  Up: Sample configuration
 
-17.2 More comprehensive sample configuration
+18.2 More comprehensive sample configuration
 ============================================
 
 Here we include more of what you can configure with Denote (*note Get
@@ -5867,9 +5966,9 @@ started with this sample configuration::).
        (denote-rename-buffer-mode 1))
 
 
-File: doctQiigr.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
+File: docnITXH1.info,  Node: For developers or advanced users,  Next: Troubleshoot Denote in a pristine environment,  Prev: Sample configuration,  Up: Top
 
-18 For developers or advanced users
+19 For developers or advanced users
 ***********************************
 
 Denote is in a stable state and can be relied upon as the basis for
@@ -6511,9 +6610,9 @@ Variable ‘denote-link-description-function’
      returned as the description.
 
 
-File: doctQiigr.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
+File: docnITXH1.info,  Node: Troubleshoot Denote in a pristine environment,  Next: Contributing,  Prev: For developers or advanced users,  Up: Top
 
-19 Troubleshoot Denote in a pristine environment
+20 Troubleshoot Denote in a pristine environment
 ************************************************
 
 Sometimes we get reports on bugs that may not be actually caused by some
@@ -6552,9 +6651,9 @@ we need to account for.  Whatever the case, this exercise helps us get a
 better sense of the specifics.
 
 
-File: doctQiigr.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
+File: docnITXH1.info,  Node: Contributing,  Next: Publications about Denote,  Prev: Troubleshoot Denote in a pristine environment,  Up: Top
 
-20 Contributing
+21 Contributing
 ***************
 
 Denote is a GNU ELPA package.  As such, any significant change to the
@@ -6636,9 +6735,9 @@ Emacs in general.
 * Wishlist of what we can do to extend Denote::
 
 
-File: doctQiigr.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
+File: docnITXH1.info,  Node: Wishlist of what we can do to extend Denote,  Up: Contributing
 
-20.1 Wishlist of what we can do to extend Denote
+21.1 Wishlist of what we can do to extend Denote
 ================================================
 
 These are various ideas to extend Denote.  Whether they should be in the
@@ -6685,9 +6784,9 @@ Encode the day in the identifier
 list.
 
 
-File: doctQiigr.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
+File: docnITXH1.info,  Node: Publications about Denote,  Next: Alternatives to Denote,  Prev: Contributing,  Up: Top
 
-21 Publications about Denote
+22 Publications about Denote
 ****************************
 
 The Emacs community is putting Denote to great use.  This section
@@ -6746,9 +6845,9 @@ Denote, feel welcome to tell us about it (*note Contributing::).
      <https://github.com/summeremacs/howiuseemacs/blob/main/full-explanation-of-how-i-use-emacs.org>
 
 
-File: doctQiigr.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
+File: docnITXH1.info,  Node: Alternatives to Denote,  Next: Frequently Asked Questions,  Prev: Publications about Denote,  Up: Top
 
-22 Alternatives to Denote
+23 Alternatives to Denote
 *************************
 
 What follows is a list of Emacs packages for note-taking.  I
@@ -6830,9 +6929,9 @@ should not be mutually exclusive.
 * Alternative implementations and further reading::
 
 
-File: doctQiigr.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
+File: docnITXH1.info,  Node: Alternative implementations and further reading,  Up: Alternatives to Denote
 
-22.1 Alternative implementations and further reading
+23.1 Alternative implementations and further reading
 ====================================================
 
 This section covers blog posts and implementations from the Emacs
@@ -6867,9 +6966,9 @@ unsorted.
    [ Development note: help expand this list.  ]
 
 
-File: doctQiigr.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
+File: docnITXH1.info,  Node: Frequently Asked Questions,  Next: Acknowledgements,  Prev: Alternatives to Denote,  Up: Top
 
-23 Frequently Asked Questions
+24 Frequently Asked Questions
 *****************************
 
 I (Protesilaos) answer some questions I have received or might get.  It
@@ -6892,9 +6991,9 @@ into the specifics of how Denote works.
 * Why do I get a double #+title in Doom Emacs?::
 
 
-File: doctQiigr.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why develop Denote when PACKAGE already exists?,  Next: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
-23.1 Why develop Denote when PACKAGE already exists?
+24.1 Why develop Denote when PACKAGE already exists?
 ====================================================
 
 I wrote Denote because I was using a variant of Denote’s file-naming
@@ -6927,9 +7026,9 @@ package does not guarantee I get what I want in terms of workflow.
 choose whatever you want.
 
 
-File: doctQiigr.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why not rely exclusively on Org?,  Next: Why care about Unix tools when you use Emacs?,  Prev: Why develop Denote when PACKAGE already exists?,  Up: Frequently Asked Questions
 
-23.2 Why not rely exclusively on Org?
+24.2 Why not rely exclusively on Org?
 =====================================
 
 I think Org is one of Emacs’ killer apps.  I also believe it is not the
@@ -6958,9 +7057,9 @@ documentation that needs to be exported to various formats, including
 this very manual.
 
 
-File: doctQiigr.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why care about Unix tools when you use Emacs?,  Next: Why many small files instead of few large ones?,  Prev: Why not rely exclusively on Org?,  Up: Frequently Asked Questions
 
-23.3 Why care about Unix tools when you use Emacs?
+24.3 Why care about Unix tools when you use Emacs?
 ==================================================
 
 My notes form part of my longer-term storage.  I do not want to have to
@@ -6986,9 +7085,9 @@ computing and maintain a growing list of packages for it.  This is just
 me thinking long-term.
 
 
-File: doctQiigr.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why many small files instead of few large ones?,  Next: Does Denote perform well at scale?,  Prev: Why care about Unix tools when you use Emacs?,  Up: Frequently Asked Questions
 
-23.4 Why many small files instead of few large ones?
+24.4 Why many small files instead of few large ones?
 ====================================================
 
 I have read that Org favours the latter method.  If true, I strongly
@@ -7022,9 +7121,9 @@ that for my Org agenda, by the way, as I explained before about using
 the right tool for the job).
 
 
-File: doctQiigr.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Does Denote perform well at scale?,  Next: I add TODOs to my notes; will many files slow down the Org agenda?,  Prev: Why many small files instead of few large ones?,  Up: Frequently Asked Questions
 
-23.5 Does Denote perform well at scale?
+24.5 Does Denote perform well at scale?
 =======================================
 
 Denote does not do anything fancy and has no special requirements: it
@@ -7045,9 +7144,9 @@ Excerpt:
 where necessary, without compromising on the project’s principles.
 
 
-File: doctQiigr.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: I add TODOs to my notes; will many files slow down the Org agenda?,  Next: I want to sort by last modified in Dired why won't Denote let me?,  Prev: Does Denote perform well at scale?,  Up: Frequently Asked Questions
 
-23.6 I add TODOs to my notes; will many files slow down the Org agenda?
+24.6 I add TODOs to my notes; will many files slow down the Org agenda?
 =======================================================================
 
 Yes, many files will slow down the agenda due to how that works.  Org
@@ -7079,9 +7178,9 @@ help figuring out the specifics of this workflow, you are welcome to ask
 for help in our relevant channels (*note Contributing::).
 
 
-File: doctQiigr.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: I want to sort by last modified in Dired why won't Denote let me?,  Next: How do you handle the last modified case?,  Prev: I add TODOs to my notes; will many files slow down the Org agenda?,  Up: Frequently Asked Questions
 
-23.7 I want to sort by last modified in Dired, why won’t Denote let me?
+24.7 I want to sort by last modified in Dired, why won’t Denote let me?
 =======================================================================
 
 Denote does not control how Dired sorts files.  I encourage you to read
@@ -7096,9 +7195,9 @@ option ‘dired-listing-switches’ sets your default preference.
 use the command ‘denote-sort-dired’ (*note Sort files by component::).
 
 
-File: doctQiigr.info,  Node: How do you handle the last modified case?,  Next: Why are some Org links opening outside Emacs?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: How do you handle the last modified case?,  Next: Why are some Org links opening outside Emacs?,  Prev: I want to sort by last modified in Dired why won't Denote let me?,  Up: Frequently Asked Questions
 
-23.8 How do you handle the last modified case?
+24.8 How do you handle the last modified case?
 ==============================================
 
 Denote does not insert any meta data or heading pertaining to edits in
@@ -7123,9 +7222,9 @@ programs deal with searching and narrowing, and version control software
 handle the tracking of changes.
 
 
-File: doctQiigr.info,  Node: Why are some Org links opening outside Emacs?,  Next: Speed up backlinks' buffer creation?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why are some Org links opening outside Emacs?,  Next: Speed up backlinks' buffer creation?,  Prev: How do you handle the last modified case?,  Up: Frequently Asked Questions
 
-23.9 Why are some Org links opening outside Emacs?
+24.9 Why are some Org links opening outside Emacs?
 ==================================================
 
 Org has its own mechanism to determine how best to open a link.  This
@@ -7159,9 +7258,9 @@ their Org or Denote configuration:
 option.  Replace ‘md’ or ‘html’ with the desired file type extension.
 
 
-File: doctQiigr.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: Why are some Org links opening outside Emacs?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Speed up backlinks' buffer creation?,  Next: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Prev: Why are some Org links opening outside Emacs?,  Up: Frequently Asked Questions
 
-23.10 Speed up backlinks’ buffer creation?
+24.10 Speed up backlinks’ buffer creation?
 ==========================================
 
 Denote leverages the built-in ‘xref’ library to search for the
@@ -7195,9 +7294,9 @@ like this:
              'grep)))
 
 
-File: doctQiigr.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Next: Why do I get a double #+title in Doom Emacs?,  Prev: Speed up backlinks' buffer creation?,  Up: Frequently Asked Questions
 
-23.11 Why do I get “Search failed with status 1” when I search for backlinks?
+24.11 Why do I get “Search failed with status 1” when I search for backlinks?
 =============================================================================
 
 Denote uses *note Emacs’ Xref: (emacs)Xref. to find backlinks.  Xref
@@ -7214,9 +7313,9 @@ following code (adjust the git’s installation path if necessary):
      (setenv "PATH" (concat (getenv "PATH") ";" "C:\\Program Files\\Git\\usr\\bin"))
 
 
-File: doctQiigr.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
+File: docnITXH1.info,  Node: Why do I get a double #+title in Doom Emacs?,  Prev: Why do I get ``Search failed with status 1'' when I search for backlinks?,  Up: Frequently Asked Questions
 
-23.12 Why do I get a double ‘#+title’ in Doom Emacs?
+24.12 Why do I get a double ‘#+title’ in Doom Emacs?
 ====================================================
 
 Doom Emacs provides a set of bespoke templates for Org.  One of those
@@ -7229,9 +7328,9 @@ empty by default.  Check how to disable the relevant module in your Doom
 Emacs configuration file.
 
 
-File: doctQiigr.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
+File: docnITXH1.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
 
-24 Acknowledgements
+25 Acknowledgements
 *******************
 
 Denote is meant to be a collective effort.  Every bit of help matters.
@@ -7285,7 +7384,7 @@ scheme, which is the cornerstone of this project.
 contributions to the code base.
 
 
-File: doctQiigr.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
+File: docnITXH1.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
 
 Appendix A GNU Free Documentation License
 *****************************************
@@ -7767,7 +7866,7 @@ software license, such as the GNU General Public License, to permit
 their use in free software.
 
 
-File: doctQiigr.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
+File: docnITXH1.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
 
 B Indices
 *********
@@ -7779,7 +7878,7 @@ B Indices
 * Concept index::
 
 
-File: doctQiigr.info,  Node: Function index,  Next: Variable index,  Up: Indices
+File: docnITXH1.info,  Node: Function index,  Next: Variable index,  Up: Indices
 
 B.1 Function index
 ==================
@@ -8032,6 +8131,20 @@ B.1 Function index
                                                               (line 442)
 * denote-select-linked-file-prompt:      For developers or advanced users.
                                                               (line 611)
+* denote-sequence:                       Write sequence notes or ``folgezettel''.
+                                                              (line  48)
+* denote-sequence-dired:                 Write sequence notes or ``folgezettel''.
+                                                              (line  79)
+* denote-sequence-link:                  Write sequence notes or ``folgezettel''.
+                                                              (line  70)
+* denote-sequence-new-child:             Write sequence notes or ``folgezettel''.
+                                                              (line  60)
+* denote-sequence-new-parent:            Write sequence notes or ``folgezettel''.
+                                                              (line  56)
+* denote-sequence-new-sibling:           Write sequence notes or ``folgezettel''.
+                                                              (line  65)
+* denote-sequence-reparent:              Write sequence notes or ``folgezettel''.
+                                                              (line  74)
 * denote-show-backlinks-buffer:          Aliases for the linking commands.
                                                               (line   6)
 * denote-signature:                      Points of entry.     (line   6)
@@ -8102,7 +8215,7 @@ B.1 Function index
                                                               (line 109)
 
 
-File: doctQiigr.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
+File: docnITXH1.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
 
 B.2 Variable index
 ==================
@@ -8268,7 +8381,7 @@ B.2 Variable index
                                                               (line 522)
 
 
-File: doctQiigr.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
+File: docnITXH1.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 B.3 Concept index
 =================
@@ -8286,154 +8399,155 @@ B.3 Concept index
 
 Tag Table:
 Node: Top857
-Node: Overview9705
-Node: Points of entry13651
-Node: Standard note creation15131
-Node: The denote-prompts option17628
-Node: The denote-history-completion-in-prompts option21906
-Node: The denote-templates option23636
-Node: Convenience commands for note creation27095
-Ref: Write your own convenience commands31152
-Node: The denote-save-buffers option35562
-Node: The denote-kill-buffers option36772
-Node: The denote-date-prompt-use-org-read-date option38136
-Node: Create a note from the current Org subtree38886
-Node: Create note using Org capture41630
-Node: Create note with specific prompts using Org capture44244
-Node: Create note with specific values using Org capture48352
-Node: Create a journal entry using Org capture51838
-Node: Create a note with the region's contents53382
-Node: A custom denote-region that references the source55420
-Node: Open an existing note or create it if missing58239
-Node: Maintain separate directory silos for notes60607
-Node: How to switch a silo65632
-Node: Use custom commands to select a silo66308
-Node: The denote-silo-extrasel69657
-Ref: Switch to a silo directory outright70978
-Node: Make Org export work with silos72476
-Node: Make any Denote command work in a silo from anywhere74894
-Node: Exclude certain files from file prompts76726
-Node: Exclude certain directories from all operations77618
-Node: Exclude certain keywords from being inferred78716
-Node: Use Denote commands from the menu bar or context menu79387
-Node: Renaming files80416
-Node: Rename a single file82869
-Node: The denote-rename-confirmations option88733
-Node: Rename a single file based on its front matter90253
-Node: Rename multiple files interactively92493
-Node: Rename multiple files at once by asking only for keywords93746
-Node: Rename multiple files based on their front matter95894
-Node: Rename a file by changing only its file type96957
-Node: Rename a file by adding or removing a title interactively98454
-Node: Rename a file by adding or removing keywords interactively100261
-Node: Rename a file by adding or removing a signature interactively102279
-Node: Find duplicate identifiers and put them in a Dired buffer104140
-Node: Faces used by rename commands106869
-Node: The file-naming scheme107373
-Node: Change the order of file name components112119
-Node: Sluggification of file name components114899
-Node: User-defined sluggification of file name components117194
-Node: Custom sluggification to remove non-ASCII characters121330
-Node: Features of the file-naming scheme for searching or filtering123241
-Node: Front matter124898
-Node: Change the front matter format127245
-Node: Regenerate front matter130073
-Node: Linking notes130517
-Node: Adding a single link131741
-Node: The denote-open-link-function user option134748
-Node: The denote-org-store-link-to-heading user option135575
-Node: Insert link to an Org file with a further pointer to a heading139216
-Node: Insert links matching a regexp140982
-Node: Insert link to file with signature143225
-Node: Insert links from marked files in Dired144039
-Node: Link to an existing note or create a new one145576
-Node: The backlinks' buffer149759
-Node: Backlinks for Org headings153564
-Node: Writing metanotes154303
-Node: Visiting linked files via the minibuffer155975
-Node: Use the markdown-obsidian file type157202
-Node: Convert denote links to file links in Org157996
-Node: Convert denote links to paths in Markdown or Obsidian style159808
-Node: Fontify links in non-Org buffers162410
-Node: Miscellaneous information about links164109
-Node: Aliases for the linking commands164441
-Node: The denote-link-description-format to format link descriptions165067
-Node: Choose which commands to prompt for167417
-Node: Fontification in Dired168333
-Node: Automatically rename Denote buffers171060
-Node: The denote-rename-buffer-format option172388
-Node: Use Org dynamic blocks175246
-Node: Org dynamic blocks to insert links177329
-Node: The Org dynamic block to insert missing links only182440
-Node: The Org dynamic block to insert backlinks183572
-Node: Org dynamic block to insert file contents185354
-Node: Org dynamic block to insert Org files as headings192189
-Node: Sort files by component196764
-Node: Configure what extra prompts denote-sort-dired issues198626
-Node: Define a sorting function per component200899
-Node: Sort signatures that include Luhmann-style sequences201894
-Node: Keep a journal or diary204378
-Node: Journaling with a timer209127
-Node: Minibuffer histories211639
-Node: Packages that build on Denote212511
-Node: Use the consult-denote package for enhanced minibuffer interactions213215
-Node: Use the denote-explore package to explore your notes214596
-Node: Use the citar-denote package for bibliography notes215440
-Node: Use the consult-notes package216548
-Node: Use the denote-menu package218391
-Node: Use the denote-zettel-interface package219407
-Node: Extending Denote220366
-Node: Create a new note in any directory221527
-Node: Find empty notes and put them in a Dired buffer222611
-Node: Automatically rename the note after saving it230075
-Node: Narrow the list of files in Dired231332
-Node: Use dired-virtual-mode for arbitrary file listings233676
-Node: Use Embark to collect minibuffer candidates237791
-Node: Search file contents239093
-Node: Bookmark the directory with the notes240936
-Node: Treat your notes as a project242303
-Node: Use the tree-based file prompt for select commands243804
-Node: Rename files with Denote in the Image Dired thumbnails buffer245856
-Node: Rename files with Denote using dired-preview249380
-Node: Avoid duplicate identifiers when exporting Denote notes252037
-Node: Export Denote notes with Org Mode253362
-Ref: Manually configure Org export254066
-Ref: Automatically store Org exports in another folder255004
-Ref: Org Mode Publishing257578
-Node: Export Denote notes with Markdown258193
-Node: Set up your workflow for daily or weekly meeting notes258865
-Node: Installation262628
-Node: GNU ELPA package262825
-Node: Manual installation263388
-Node: Sample configuration264159
-Node: Get started with this sample configuration264730
-Node: More comprehensive sample configuration266024
-Node: For developers or advanced users269227
-Node: Troubleshoot Denote in a pristine environment300172
-Node: Contributing301850
-Node: Wishlist of what we can do to extend Denote304876
-Node: Publications about Denote307310
-Node: Alternatives to Denote310099
-Node: Alternative implementations and further reading314737
-Node: Frequently Asked Questions316480
-Node: Why develop Denote when PACKAGE already exists?317562
-Node: Why not rely exclusively on Org?319489
-Node: Why care about Unix tools when you use Emacs?321199
-Node: Why many small files instead of few large ones?322541
-Node: Does Denote perform well at scale?324483
-Node: I add TODOs to my notes; will many files slow down the Org agenda?325616
-Node: I want to sort by last modified in Dired why won't Denote let me?327588
-Node: How do you handle the last modified case?328642
-Node: Why are some Org links opening outside Emacs?330212
-Node: Speed up backlinks' buffer creation?332067
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?333401
-Node: Why do I get a double #+title in Doom Emacs?334457
-Node: Acknowledgements335181
-Node: GNU Free Documentation License338145
-Node: Indices363506
-Node: Function index363682
-Node: Variable index387793
-Node: Concept index399505
+Node: Overview9749
+Node: Points of entry13695
+Node: Standard note creation15175
+Node: The denote-prompts option17672
+Node: The denote-history-completion-in-prompts option21950
+Node: The denote-templates option23680
+Node: Convenience commands for note creation27139
+Ref: Write your own convenience commands31196
+Node: The denote-save-buffers option35606
+Node: The denote-kill-buffers option36816
+Node: The denote-date-prompt-use-org-read-date option38180
+Node: Create a note from the current Org subtree38930
+Node: Create note using Org capture41674
+Node: Create note with specific prompts using Org capture44288
+Node: Create note with specific values using Org capture48396
+Node: Create a journal entry using Org capture51882
+Node: Create a note with the region's contents53426
+Node: A custom denote-region that references the source55464
+Node: Open an existing note or create it if missing58283
+Node: Maintain separate directory silos for notes60651
+Node: How to switch a silo65676
+Node: Use custom commands to select a silo66352
+Node: The denote-silo-extrasel69701
+Ref: Switch to a silo directory outright71022
+Node: Make Org export work with silos72520
+Node: Make any Denote command work in a silo from anywhere74938
+Node: Exclude certain files from file prompts76770
+Node: Exclude certain directories from all operations77662
+Node: Exclude certain keywords from being inferred78760
+Node: Use Denote commands from the menu bar or context menu79431
+Node: Renaming files80460
+Node: Rename a single file82913
+Node: The denote-rename-confirmations option88777
+Node: Rename a single file based on its front matter90297
+Node: Rename multiple files interactively92537
+Node: Rename multiple files at once by asking only for keywords93790
+Node: Rename multiple files based on their front matter95938
+Node: Rename a file by changing only its file type97001
+Node: Rename a file by adding or removing a title interactively98498
+Node: Rename a file by adding or removing keywords interactively100305
+Node: Rename a file by adding or removing a signature interactively102323
+Node: Find duplicate identifiers and put them in a Dired buffer104184
+Node: Faces used by rename commands106913
+Node: The file-naming scheme107417
+Node: Change the order of file name components112163
+Node: Sluggification of file name components114943
+Node: User-defined sluggification of file name components117238
+Node: Custom sluggification to remove non-ASCII characters121374
+Node: Features of the file-naming scheme for searching or filtering123285
+Node: Front matter124942
+Node: Change the front matter format127289
+Node: Regenerate front matter130117
+Node: Linking notes130561
+Node: Adding a single link131785
+Node: The denote-open-link-function user option134792
+Node: The denote-org-store-link-to-heading user option135619
+Node: Insert link to an Org file with a further pointer to a heading139260
+Node: Insert links matching a regexp141026
+Node: Insert link to file with signature143269
+Node: Insert links from marked files in Dired144083
+Node: Link to an existing note or create a new one145620
+Node: The backlinks' buffer149803
+Node: Backlinks for Org headings153608
+Node: Writing metanotes154347
+Node: Visiting linked files via the minibuffer156019
+Node: Use the markdown-obsidian file type157246
+Node: Convert denote links to file links in Org158040
+Node: Convert denote links to paths in Markdown or Obsidian style159852
+Node: Fontify links in non-Org buffers162454
+Node: Miscellaneous information about links164153
+Node: Aliases for the linking commands164485
+Node: The denote-link-description-format to format link descriptions165111
+Node: Choose which commands to prompt for167461
+Node: Fontification in Dired168377
+Node: Automatically rename Denote buffers171104
+Node: The denote-rename-buffer-format option172432
+Node: Use Org dynamic blocks175290
+Node: Org dynamic blocks to insert links177389
+Node: The Org dynamic block to insert missing links only182500
+Node: The Org dynamic block to insert backlinks183632
+Node: Org dynamic block to insert file contents185414
+Node: Org dynamic block to insert Org files as headings192249
+Node: Write sequence notes or ``folgezettel''196824
+Node: Sort files by component201828
+Node: Configure what extra prompts denote-sort-dired issues203707
+Node: Define a sorting function per component205980
+Node: Sort signatures that include Luhmann-style sequences206975
+Node: Keep a journal or diary209464
+Node: Journaling with a timer214213
+Node: Minibuffer histories216725
+Node: Packages that build on Denote217597
+Node: Use the consult-denote package for enhanced minibuffer interactions218301
+Node: Use the denote-explore package to explore your notes219682
+Node: Use the citar-denote package for bibliography notes220526
+Node: Use the consult-notes package221634
+Node: Use the denote-menu package223477
+Node: Use the denote-zettel-interface package224493
+Node: Extending Denote225452
+Node: Create a new note in any directory226613
+Node: Find empty notes and put them in a Dired buffer227697
+Node: Automatically rename the note after saving it235161
+Node: Narrow the list of files in Dired236418
+Node: Use dired-virtual-mode for arbitrary file listings238762
+Node: Use Embark to collect minibuffer candidates242877
+Node: Search file contents244179
+Node: Bookmark the directory with the notes246022
+Node: Treat your notes as a project247389
+Node: Use the tree-based file prompt for select commands248890
+Node: Rename files with Denote in the Image Dired thumbnails buffer250942
+Node: Rename files with Denote using dired-preview254466
+Node: Avoid duplicate identifiers when exporting Denote notes257123
+Node: Export Denote notes with Org Mode258448
+Ref: Manually configure Org export259152
+Ref: Automatically store Org exports in another folder260090
+Ref: Org Mode Publishing262664
+Node: Export Denote notes with Markdown263279
+Node: Set up your workflow for daily or weekly meeting notes263951
+Node: Installation267714
+Node: GNU ELPA package267911
+Node: Manual installation268474
+Node: Sample configuration269245
+Node: Get started with this sample configuration269816
+Node: More comprehensive sample configuration271110
+Node: For developers or advanced users274313
+Node: Troubleshoot Denote in a pristine environment305258
+Node: Contributing306936
+Node: Wishlist of what we can do to extend Denote309962
+Node: Publications about Denote312396
+Node: Alternatives to Denote315185
+Node: Alternative implementations and further reading319823
+Node: Frequently Asked Questions321566
+Node: Why develop Denote when PACKAGE already exists?322648
+Node: Why not rely exclusively on Org?324575
+Node: Why care about Unix tools when you use Emacs?326285
+Node: Why many small files instead of few large ones?327627
+Node: Does Denote perform well at scale?329569
+Node: I add TODOs to my notes; will many files slow down the Org agenda?330702
+Node: I want to sort by last modified in Dired why won't Denote let me?332674
+Node: How do you handle the last modified case?333728
+Node: Why are some Org links opening outside Emacs?335298
+Node: Speed up backlinks' buffer creation?337153
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?338487
+Node: Why do I get a double #+title in Doom Emacs?339543
+Node: Acknowledgements340267
+Node: GNU Free Documentation License343231
+Node: Indices368592
+Node: Function index368768
+Node: Variable index393964
+Node: Concept index405676
 
 End Tag Table
 
