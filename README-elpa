@@ -4796,6 +4796,9 @@ section 7.4
   function that is specific to each component. These are subject to user
   configuration:
 
+  • `denote-sort-identifier-comparison-function' [ This one was missing
+    is older versions and is now added as part of 3.2.0-dev. ]
+
   • `denote-sort-title-comparison-function'
 
   • `denote-sort-keywords-comparison-function'
@@ -7700,20 +7703,20 @@ section 17.11
   Contributions to code or the manual
         Abdul-Lateef Haji-Ali, Abin Simon, Adam Růžička, Alan Schmitt,
         Alexandre Rousseau, Ashton Wiersdorf, Aziz, Benjamin Kästner,
-        Bruno Boal, Charanjit Singh, Clemens Radermacher, Colin McLear,
-        Damien Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron,
-        Florian, Glenna D., Graham Marlow, Hilde Rhyne, Ivan Sokolov,
-        Jack Baty, Jakub Szczerbowski, Jean-Charles Bagneris,
-        Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen
-        Hötzel, Kaushal Modi, Kai von Fintel, Kostas Andreadis,
-        Kristoffer Balintona, Kyle Meyer, Laurent Gatto, Marc Fargas,
-        Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Octavian,
-        Peter Prevos, Philip Kaludercic, Quiliro Ordóñez, Stephen
-        R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin,
-        Tomasz Hołubowicz, Vedang Manerikar, Wesley Harvey, Zhenxu Xu,
-        arsaber101, bryanrinders, ezchi, jarofromel, leinfink (Henrik),
-        l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-        pmenair, relict007, skissue.
+        Bruno Boal, Charanjit Singh, Claudio Migliorelli, Clemens
+        Radermacher, Colin McLear, Damien Cassou, Eduardo Grajeda, Elias
+        Storms, Eshel Yaron, Florian, Glenna D., Graham Marlow, Hilde
+        Rhyne, Ivan Sokolov, Jack Baty, Jakub Szczerbowski, Jean-Charles
+        Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner,
+        Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kostas Andreadis,
+        Kristoffer Balintona, Kyle Meyer, Laurent Gatto, Maikol Solis,
+        Marc Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd,
+        Octavian, Peter Prevos, Philip Kaludercic, Quiliro Ordóñez,
+        Stephen R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut
+        Benjamin, Tomasz Hołubowicz, Vedang Manerikar, Wesley Harvey,
+        Zhenxu Xu, arsaber101, bryanrinders, ezchi, jarofromel, leinfink
+        (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+        mentalisttraceur, pmenair, relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex

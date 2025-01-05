@@ -192,11 +192,10 @@ means to pad the full length of the sequence."
   "Return largest sequence in SEQUENCES given TYPE.
 TYPE is a symbol among `denote-sequence-types'."
   (car (sort sequences
-             :lessp (lambda (s1 s2)
-                      (string<
-                       (denote-sequence--pad s1 type)
-                       (denote-sequence--pad s2 type)))
-             :reverse t)))
+             (lambda (s1 s2)
+               (string<
+                (denote-sequence--pad s1 type)
+                (denote-sequence--pad s2 type))))))
 
 (defun denote-sequence--get-new-parent (&optional sequences)
   "Return a new to increment largest among sequences.
@@ -384,13 +383,16 @@ Optional ID-ONLY has the same meaning as the `denote-link' command."
          (description (denote-get-link-description file)))
     (denote-link file type description id-only)))
 
-(defun denote-sequence-sort (file-with-sequence-1 file-with-sequence-2)
-  "Sort FILE-WITH-SEQUENCE-1 and FILE-WITH-SEQUENCE-2."
-  (let ((s1 (denote-retrieve-filename-signature file-with-sequence-1))
-        (s2 (denote-retrieve-filename-signature file-with-sequence-2)))
-    (string<
-     (denote-sequence--pad s1 'all)
-     (denote-sequence--pad s2 'all))))
+(defun denote-sequence-sort-files (files-with-sequence)
+  "Sort FILES-WITH-SEQUENCE according to their sequence."
+  (sort
+   files-with-sequence
+   (lambda (file-with-sequence-1 file-with-sequence-2)
+     (let ((s1 (denote-retrieve-filename-signature file-with-sequence-1))
+           (s2 (denote-retrieve-filename-signature file-with-sequence-2)))
+       (string<
+        (denote-sequence--pad s1 'all)
+        (denote-sequence--pad s2 'all))))))
 
 (defvar denote-sequence-history nil
   "Minibuffer history of `denote-sequence-prompt'.")
@@ -414,6 +416,18 @@ With optional PROMPT-TEXT use it instead of the generic one."
   (read-number
    (or prompt-text
        "Get sequences up to this depth (e.g. `1=1=2' is `3' levels of depth): ")))
+
+(defun denote-sequence--get-dired-buffer-name (&optional prefix depth)
+  "Return a string for `denote-sequence-dired' buffer.
+Use optional PREFIX and DEPTH to format the string accordingly."
+  (let ((time (format-time-string "%F %T")))
+    (cond
+     ((and prefix depth)
+      (format "*Denote sequences of prefix `%s' and depth `%s', %s*" prefix depth time))
+     ((and prefix (not (string-empty-p prefix)))
+      (format "*Denote sequences of prefix `%s', %s*" prefix time))
+     (t
+      (format "*Denote sequences, %s*" time)))))
 
 ;;;###autoload
 (defun denote-sequence-dired (&optional prefix depth)
@@ -443,15 +457,19 @@ is that many levels deep.  For example, 1=1=2 is three levels deep."
             (files-with-depth (if depth
                                   (denote-sequence-get-all-files-with-max-depth depth all)
                                 all))
-            (files-sorted (sort files-with-depth :lessp #'denote-sequence-sort))
-            (buffer-name (format "Denote sequences at %s" (format-time-string "%T"))))
+            (files-sorted (denote-sequence-sort-files files-with-depth))
+            (buffer-name (denote-sequence--get-dired-buffer-name prefix depth)))
       (let ((dired-buffer (dired (cons buffer-name (mapcar #'file-relative-name files-sorted)))))
         (with-current-buffer dired-buffer
           (setq-local revert-buffer-function
                       (lambda (&rest _)
+                        ;; FIXME 2025-01-04: Killing the buffer has
+                        ;; the unintended side effect of affecting the
+                        ;; window configuration when we call
+                        ;; `denote-update-dired-buffers'.
                         (kill-buffer dired-buffer)
-                        (denote-sequence-dired)))))
-    (user-error "There are no files whose Denote signature conforms with `denote-sequence-p'")))
+                        (denote-sequence-dired prefix depth)))))
+    (user-error "No Denote sequences matching those terms")))
 
 ;;;###autoload
 (defun denote-sequence-reparent (current-file file-with-sequence)

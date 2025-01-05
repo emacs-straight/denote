@@ -42,6 +42,14 @@
 (defconst denote-sort-components '(title keywords signature identifier)
   "List of sorting keys applicable for `denote-sort-files' and related.")
 
+(defcustom denote-sort-identifier-comparison-function denote-sort-comparison-fallback-function
+  "Function to sort the DATE/IDENTIFIER component in file names.
+The function accepts two arguments and must return a non-nil value if
+the first argument is smaller than the second one."
+  :type 'function
+  :package-version '(denote . "3.2.0")
+  :group 'denote-sort)
+
 (defcustom denote-sort-title-comparison-function denote-sort-comparison-fallback-function
   "Function to sort the TITLE component in file names.
 The function accepts two arguments and must return a non-nil value if
@@ -137,6 +145,7 @@ The `%s' performs the comparison."
 
 ;; TODO 2023-12-04: Subject to the above NOTE, we can also sort by
 ;; directory and by file length.
+(denote-sort--define-lessp identifier)
 (denote-sort--define-lessp title)
 (denote-sort--define-lessp keywords)
 (denote-sort--define-lessp signature)
@@ -159,6 +168,7 @@ With optional REVERSE as a non-nil value, reverse the sort order."
   (let* ((files-to-sort (copy-sequence files))
          (sort-fn (pcase component
                     ((pred functionp) component)
+                    ('identifier #'denote-sort-identifier-lessp)
                     ('title #'denote-sort-title-lessp)
                     ('keywords #'denote-sort-keywords-lessp)
                     ('signature #'denote-sort-signature-lessp)))
@@ -310,6 +320,10 @@ When called from Lisp, the arguments are a string, a symbol among
           (with-current-buffer dired-buffer
             (setq-local revert-buffer-function
                         (lambda (&rest _)
+                          ;; FIXME 2025-01-04: Killing the buffer has
+                          ;; the unintended side effect of affecting the
+                          ;; window configuration when we call
+                          ;; `denote-update-dired-buffers'.
                           (kill-buffer dired-buffer)
                           (denote-sort-dired files-matching-regexp component reverse-sort exclude-rx))))
           ;; Because of the above NOTE, I am printing a message.  Not
