@@ -114,7 +114,7 @@ Table of Contents
 .. 3. The Org dynamic block to insert backlinks
 .. 4. Org dynamic block to insert file contents
 .. 5. Org dynamic block to insert Org files as headings
-12. Write sequence notes or “folgezettel”
+12. Sequence notes
 13. Sort files by component
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
@@ -4589,7 +4589,7 @@ section 7.4
 [Linking notes] See section 7
 
 
-12 Write sequence notes or “folgezettel”
+12 Write sequence notes or "folgezettel"
 ════════════════════════════════════════
 
   [ The `denote-sequence.el' is part of 3.2.0-dev. ]
@@ -4652,10 +4652,22 @@ section 7.4
         directly creates a child of an existing sequence, prompting for
         it using minibuffer completion.
 
+  `denote-sequence-new-child-of-current'
+        This will create a new child of the current file’s sequence. If
+        the current file does not have such a sequence, then the command
+        behaves the same as the aforementioned
+        `denote-sequence-new-child'.
+
   `denote-sequence-new-sibling'
         This is a convenience wrapper of `denote-sequence' which
         directly creates a sibling of an existing sequence, prompting
         for it using minibuffer completion.
+
+  `denote-sequence-new-sibling-of-current'
+        This will create a new sibling of the current file’s
+        sequence. If the current file does not have such a sequence,
+        then the command behaves the same as the aforementioned
+        `denote-sequence-new-sibling'.
 
   `denote-sequence-link'
         This is a variant of the standard `denote-link' command which

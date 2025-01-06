@@ -66,6 +66,7 @@
   "Sequence notes extension for Denote."
   :group 'denote
   :link '(info-link "(denote) top")
+  :link '(info-link "(denote) Sequence notes")
   :link '(url-link :tag "homepage" "https://protesilaos.com/emacs/denote"))
 
 (defconst denote-sequence-regexp "=?[0-9]+"
@@ -169,16 +170,14 @@ means to pad the full length of the sequence."
   (let* ((sequence-separator-p (string-match-p "=" sequence))
          (split (denote-sequence-split sequence))
          (s (cond
-             ((eq type 'all)
-              split)
+             ((eq type 'all) split)
              (sequence-separator-p
               (pcase type
                 ('parent (car split))
                 ('sibling split)
                 ('child (car (nreverse split)))
                 (_ (error "The type `%s' is not among `denote-sequence-types'" type))))
-             (t
-              sequence))))
+             (t sequence))))
     (if (listp s)
         (combine-and-quote-strings
          (mapcar
@@ -191,11 +190,13 @@ means to pad the full length of the sequence."
 (defun denote-sequence--get-largest (sequences type)
   "Return largest sequence in SEQUENCES given TYPE.
 TYPE is a symbol among `denote-sequence-types'."
-  (car (sort sequences
-             (lambda (s1 s2)
-               (string<
-                (denote-sequence--pad s1 type)
-                (denote-sequence--pad s2 type))))))
+  (car
+   (reverse
+    (sort sequences
+          (lambda (s1 s2)
+            (string<
+             (denote-sequence--pad s1 type)
+             (denote-sequence--pad s2 type)))))))
 
 (defun denote-sequence--get-new-parent (&optional sequences)
   "Return a new to increment largest among sequences.
@@ -217,8 +218,7 @@ function `denote-sequence-get-all-sequences-with-prefix'."
       (if (= (length all-unfiltered) 1)
           (format "%s=1" (car all-unfiltered))
         (let* ((all (cond
-                     ((= (length all-unfiltered) 1)
-                      all-unfiltered)
+                     ((= (length all-unfiltered) 1) all-unfiltered)
                      ((denote-sequence-get-sequences-with-max-depth depth all-unfiltered))
                      (t all-unfiltered)))
                (largest (denote-sequence--get-largest all 'child)))
@@ -344,6 +344,9 @@ Files available at the minibuffer prompt are those returned by
 ;;;###autoload
 (defun denote-sequence-new-sibling (sequence)
   "Like `denote-sequence' to directly create new sibling of SEQUENCE.
+When called interactively, SEQUENCE is a file among files in the variable
+`denote-directory' that have a sequence (per `denote-sequence-file-p').
+
 When called from Lisp, SEQUENCE is a string that conforms with
 `denote-sequence-p'."
   (interactive
@@ -355,14 +358,45 @@ When called from Lisp, SEQUENCE is a string that conforms with
     (call-interactively 'denote)))
 
 ;;;###autoload
+(defun denote-sequence-new-sibling-of-current (sequence)
+  "Create a new sibling sequence of the current file with SEQUENCE.
+If the current file does not have a sequence, then behave exactly like
+`denote-sequence-new-sibling'."
+  (interactive
+   (list
+    (or (denote-sequence-file-p buffer-file-name)
+        (denote-retrieve-filename-signature
+         (denote-sequence-file-prompt "Make a new sibling of SEQUENCE")))))
+  (let* ((new-sequence (denote-sequence-get 'sibling sequence))
+         (denote-use-signature new-sequence))
+    (call-interactively 'denote)))
+
+;;;###autoload
 (defun denote-sequence-new-child (sequence)
   "Like `denote-sequence' to directly create new child of SEQUENCE.
+When called interactively, SEQUENCE is a file among files in the variable
+`denote-directory' that have a sequence (per `denote-sequence-file-p').
+
 When called from Lisp, SEQUENCE is a string that conforms with
 `denote-sequence-p'."
   (interactive
    (list
     (denote-retrieve-filename-signature
      (denote-sequence-file-prompt "Make a new child of SEQUENCE"))))
+  (let* ((new-sequence (denote-sequence-get 'child sequence))
+         (denote-use-signature new-sequence))
+    (call-interactively 'denote)))
+
+;;;###autoload
+(defun denote-sequence-new-child-of-current (sequence)
+  "Create a new child sequence of the current file with SEQUENCE.
+If the current file does not have a sequence, then behave exactly like
+`denote-sequence-new-child'."
+  (interactive
+   (list
+    (or (denote-sequence-file-p buffer-file-name)
+        (denote-retrieve-filename-signature
+         (denote-sequence-file-prompt "Make a new child of SEQUENCE")))))
   (let* ((new-sequence (denote-sequence-get 'child sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -423,9 +457,9 @@ Use optional PREFIX and DEPTH to format the string accordingly."
   (let ((time (format-time-string "%F %T")))
     (cond
      ((and prefix depth)
-      (format "*Denote sequences of prefix `%s' and depth `%s', %s*" prefix depth time))
+      (format-message "*Denote sequences of prefix `%s' and depth `%s', %s*" prefix depth time))
      ((and prefix (not (string-empty-p prefix)))
-      (format "*Denote sequences of prefix `%s', %s*" prefix time))
+      (format-message "*Denote sequences of prefix `%s', %s*" prefix time))
      (t
       (format "*Denote sequences, %s*" time)))))
 
