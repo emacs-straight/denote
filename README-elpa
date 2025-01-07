@@ -124,11 +124,12 @@ Table of Contents
 15. Minibuffer histories
 16. Packages that build on Denote
 .. 1. Use the `consult-denote' package for enhanced minibuffer interactions
-.. 2. Use the `denote-explore' package to explore your notes
-.. 3. Use the `citar-denote' package for bibliography notes
-.. 4. Use the `consult-notes' package
-.. 5. Use the `denote-menu' package
-.. 6. Use the `denote-zettel-interface' package
+.. 2. Use the `denote-search' package as a search interface
+.. 3. Use the `denote-explore' package to explore your notes
+.. 4. Use the `citar-denote' package for bibliography notes
+.. 5. Use the `consult-notes' package
+.. 6. Use the `denote-menu' package
+.. 7. Use the `denote-zettel-interface' package
 17. Extending Denote
 .. 1. Create a new note in any directory
 .. 2. Find empty notes and put them in a Dired buffer
@@ -5117,10 +5118,27 @@ section 5.4
   `consult-notes' package]).  It also only works with Denote.
 
 
-[Use the `consult-notes' package] See section 16.4
+[Use the `consult-notes' package] See section 16.5
 
 
-16.2 Use the `denote-explore' package to explore your notes
+16.2 Use the `denote-search' package as a search interface
+──────────────────────────────────────────────────────────
+
+  The `denote-search' package by Lucas Quintana provides a search
+  utility for Denote: <https://github.com/lmq-10/denote-search>.
+
+  It allows you to search for a regular expression in the content of
+  your notes. Its main advantages over other similar tools are the
+  possibility of filtering the results by file name and doing further
+  searches in the files matched previously. This allows for advanced
+  usage (think about finding a note with two or three specific words in
+  different lines and with a specific keyword). More features are
+  described in its comprehensive manual. `denote-search' builds upon
+  standard Emacs libraries, namely Xref, and so it doesn’t have external
+  dependencies other than Denote itself.
+
+
+16.3 Use the `denote-explore' package to explore your notes
 ───────────────────────────────────────────────────────────
 
   Peter Prevos has developed the `denote-explore' package which provides
@@ -5139,7 +5157,7 @@ section 5.4
   <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-16.3 Use the `citar-denote' package for bibliography notes
+16.4 Use the `citar-denote' package for bibliography notes
 ──────────────────────────────────────────────────────────
 
   Peter Prevos has produced the `citar-denote' package which makes it
@@ -5156,7 +5174,7 @@ section 5.4
   <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-16.4 Use the `consult-notes' package
+16.5 Use the `consult-notes' package
 ────────────────────────────────────
 
   [ Also check the `consult-denote' package by me (Protesilaos): [Use
@@ -5201,7 +5219,7 @@ See section 16.1
 section 5.4
 
 
-16.5 Use the `denote-menu' package
+16.6 Use the `denote-menu' package
 ──────────────────────────────────
 
   Denote’s file-naming scheme is designed to be efficient and to provide
@@ -5222,7 +5240,7 @@ section 5.4
 <https://github.com/namilus/denote-menu>
 
 
-16.6 Use the `denote-zettel-interface' package
+16.7 Use the `denote-zettel-interface' package
 ──────────────────────────────────────────────
 
   The [`denote-zettel-interface' package by Kristoffer Balintona] is
