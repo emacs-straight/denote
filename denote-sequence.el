@@ -60,6 +60,9 @@
 ;; since (i) it is simpler and (ii) we already have the field
 ;; separator to give a sufficient sense of place.
 
+;; TODO 2025-01-08: Test whether the built-in hierarchy.el can be used
+;; to present the sequences in a nice way.  What do we need and how
+;; exactly do we use that library.
 (require 'denote)
 
 (defgroup denote-sequence ()
@@ -82,18 +85,48 @@
              (not (string-suffix-p "=" sequence)))
     sequence))
 
+(defun denote-sequence-with-error-p (sequence)
+  "Return SEQUENCE string if it matches `denote-sequence-regexp'."
+  (or (denote-sequence-p sequence)
+      (error "The sequence `%s' does not pass `denote-sequence-p'" sequence)))
+
 (defun denote-sequence-file-p (file)
   "Return non-nil if Denote signature of FILE is a sequence.
 A sequence is string that matches `denote-sequence-regexp'."
   (when-let* ((signature (denote-retrieve-filename-signature file)))
     (denote-sequence-p signature)))
 
+(defun denote-sequence--children-implied-p (sequence)
+  "Return non-nil if SEQUENCE implies children.
+This does not actually check if there are children in the variable
+`denote-directory', but only that SEQUENCE contains a =, which means
+that its depth is greater than 1."
+  (string-match-p "=" sequence))
+
+(defun denote-sequence--join (list-of-strings)
+  "Join LIST-OF-STRINGS to form a sequence.
+Return sequence if it conforms with `denote-sequence-p'."
+  (thread-last
+    (mapconcat #'identity list-of-strings "=")
+    (denote-sequence-with-error-p)))
+
+(defun denote-sequence--get-parent (sequence)
+  "Return implied parent of SEQUENCE, else nil.
+Produce an error if SEQUENCE does not conform with `denote-sequence-p'.
+The implied check here has the same meaning as described in
+`denote-sequence--children-implied-p'."
+  (when (and (denote-sequence-with-error-p sequence)
+             (denote-sequence--children-implied-p sequence))
+    (thread-last
+      (denote-sequence-split sequence)
+      (butlast)
+      (denote-sequence--join))))
+
 (defun denote-sequence-split (sequence)
   "Split the SEQUENCE string into a list.
 SEQUENCE conforms with `denote-sequence-p'."
-  (if (denote-sequence-p sequence)
-      (split-string sequence "=" t)
-    (error "The sequence `%s' does not pass `denote-sequence-p'" sequence)))
+  (when (denote-sequence-with-error-p sequence)
+    (split-string sequence "=" t)))
 
 (defun denote-sequence-depth (sequence)
   "Get the depth of SEQUENCE.
@@ -160,14 +193,14 @@ With optional SEQUENCES operate on those, else use the return value of
     (delete-dups
      (mapcar
       (lambda (sequence)
-        (mapconcat #'identity (seq-take sequence depth) "="))
+        (denote-sequence--join (seq-take sequence depth)))
       lists))))
 
 (defun denote-sequence--pad (sequence type)
   "Create a new SEQUENCE with padded spaces for TYPE.
 TYPE is a symbol among `denote-sequence-types'.  The special TYPE `all'
 means to pad the full length of the sequence."
-  (let* ((sequence-separator-p (string-match-p "=" sequence))
+  (let* ((sequence-separator-p (denote-sequence--children-implied-p sequence))
          (split (denote-sequence-split sequence))
          (s (cond
              ((eq type 'all) split)
@@ -222,28 +255,29 @@ function `denote-sequence-get-all-sequences-with-prefix'."
                      ((denote-sequence-get-sequences-with-max-depth depth all-unfiltered))
                      (t all-unfiltered)))
                (largest (denote-sequence--get-largest all 'child)))
-          (if (string-match-p "=" largest)
+          (if (denote-sequence--children-implied-p largest)
               (let* ((components (denote-sequence-split largest))
                      (butlast (butlast components))
                      (last-component (car (nreverse components)))
                      (current-number (string-to-number last-component))
                      (new-number (number-to-string (+ current-number 1))))
-                (if butlast
-                    (mapconcat #'identity (append butlast (list new-number)) "=")
-                  (mapconcat #'identity (list largest new-number) "=")))
+                (denote-sequence--join
+                 (if butlast
+                     (append butlast (list new-number))
+                   (list largest new-number))))
             (format "%s=1" largest))))
     (error "Cannot find sequences given sequence `%s'" sequence)))
 
 (defun denote-sequence--get-prefix-for-siblings (sequence)
   "Get the prefix of SEQUENCE such that it is possible to find its siblings."
-  (when (string-match-p "=" sequence)
-    (mapconcat #'identity (butlast (denote-sequence-split sequence)) "=")))
+  (when (denote-sequence--children-implied-p sequence)
+    (denote-sequence--join (butlast (denote-sequence-split sequence)))))
 
 (defun denote-sequence--get-new-sibling (sequence &optional sequences)
   "Return a new sibling SEQUENCE.
 Optional SEQUENCES has the same meaning as that specified in the
 function `denote-sequence-get-all-sequences-with-prefix'."
-  (let* ((children-p (string-match-p "=" sequence)))
+  (let* ((children-p (denote-sequence--children-implied-p sequence)))
     (if-let* ((depth (denote-sequence-depth sequence))
               (all-unfiltered (if children-p
                                   (denote-sequence-get-all-sequences-with-prefix
@@ -261,7 +295,7 @@ function `denote-sequence-get-all-sequences-with-prefix'."
                    (last-component (car (nreverse components)))
                    (current-number (string-to-number last-component))
                    (new-number (number-to-string (+ current-number 1))))
-              (mapconcat #'identity (append butlast (list new-number)) "="))
+              (denote-sequence--join (append butlast (list new-number))))
           (number-to-string (+ (string-to-number largest) 1)))
       (error "Cannot find sequences given sequence `%s'" sequence))))
 
