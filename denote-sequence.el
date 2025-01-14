@@ -95,7 +95,7 @@ zx (z is 26 and x is 25)."
 (defun denote-sequence-numeric-p (sequence)
   "Return SEQUENCE if it is numeric per `denote-sequence-scheme'."
   (when (and (string-match-p denote-sequence-numeric-regexp sequence)
-             (not (string-match-p "[a-zA-Z]" sequence))
+             (not (string-match-p "[[:alpha:]]" sequence))
              (not (string-suffix-p "=" sequence)))
     sequence))
 
@@ -125,7 +125,7 @@ Also see `denote-sequence-numeric-p' and `denote-sequence-alphanumeric-p'."
 
 (defun denote-sequence--alphanumeric-partial-p (string)
   "Return non-nil if STRING likely is part of an alphanumeric sequence."
-  (and (string-match-p "[a-z]+" string)
+  (and (string-match-p "[[:alpha:]]+" string)
        (not (string-match-p "[0-9[:punct:]]+" string))))
 
 (defun denote-sequence-and-scheme-p (sequence &optional partial)
@@ -155,8 +155,8 @@ Produce an error if the sequencing scheme cannot be established."
     'numeric))
 
 (defun denote-sequence-file-p (file)
-  "Return non-nil if Denote signature of FILE is a sequence.
-A sequence is string that matches `denote-sequence-numeric-regexp'."
+  "Return the sequence if Denote signature of FILE is a sequence.
+A sequence is string that conforms with `denote-sequence-p'."
   (when-let* ((signature (denote-retrieve-filename-signature file)))
     (denote-sequence-p signature)))
 
@@ -362,9 +362,9 @@ With optional FILES, operate on them, else use the return value of
 
 (defun denote-sequence-get-all-sequences (&optional files)
   "Return all sequences in `denote-directory-files'.
-A sequence is a Denote signature that conforms with `denote-sequence-p'.
+With optional FILES return all sequences among them instead.
 
-With optional FILES return all sequences among them instead."
+A sequence is a Denote signature that conforms with `denote-sequence-p'."
   (delq nil
         (mapcar
          #'denote-sequence-file-p
@@ -372,10 +372,10 @@ With optional FILES return all sequences among them instead."
 
 (defun denote-sequence-get-all-sequences-with-prefix (sequence &optional sequences)
   "Get all sequences which extend SEQUENCE.
-A sequence is a Denote signature that conforms with `denote-sequence-p'.
-
 With optional SEQUENCES operate on those, else use the return value of
-`denote-sequence-get-all-sequences'."
+`denote-sequence-get-all-sequences'.
+
+A sequence is a Denote signature that conforms with `denote-sequence-p'."
   (seq-filter
    (lambda (string)
      (string-prefix-p sequence string))
@@ -418,9 +418,8 @@ means to pad the full length of the sequence."
          "=")
       (string-pad s 32 32 :pad-from-start))))
 
-(defun denote-sequence--get-largest (sequences type)
-  "Return largest sequence in SEQUENCES given TYPE.
-TYPE is a symbol among `denote-sequence-types'."
+(defun denote-sequence--get-largest-by-order (sequences type)
+  "Sort SEQUENCES of TYPE to get largest in order, using `denote-sequence--pad'."
   (car
    (reverse
     (sort sequences
@@ -429,10 +428,37 @@ TYPE is a symbol among `denote-sequence-types'."
              (denote-sequence--pad s1 type)
              (denote-sequence--pad s2 type)))))))
 
-(defun denote-sequence--tail-alphanumeric-p (sequence)
-  "Return non-nil if the last character of SEQUENCE is alphanumeric.
-This is for use in `denote-sequence--get-start'."
-  (denote-sequence--alphanumeric-partial-p (substring sequence -1)))
+(defun denote-sequence--string-length-sans-delimiter (string)
+  "Return length of STRING without the equals sign."
+  (if (eq denote-sequence-scheme 'numeric)
+      (length (replace-regexp-in-string "=" "" string))
+    (length string)))
+
+(defun denote-sequence--get-largest-by-length (sequences)
+  "Compare length of SEQUENCES to determine the largest among them.
+If there are more than one sequences of equal length, return them."
+  (let* ((seqs-with-length (mapcar (lambda (sequence)
+                                     (cons (denote-sequence--string-length-sans-delimiter sequence) sequence))
+                                   sequences))
+         (longest (apply #'max (mapcar #'car seqs-with-length)))
+         (largest-sequence (delq nil
+                                 (mapcar (lambda (element)
+                                     (unless (< (car element) longest)
+                                       (cdr element)))
+                                   seqs-with-length))))
+    (if (= (length largest-sequence) 1)
+        (car largest-sequence)
+      largest-sequence)))
+
+(defun denote-sequence--get-largest (sequences type)
+  "Return largest sequence in SEQUENCES given TYPE.
+TYPE is a symbol among `denote-sequence-types'."
+  (if (eq type 'child)
+      (let ((largest (denote-sequence--get-largest-by-length sequences)))
+        (if (listp largest)
+            (denote-sequence--get-largest-by-order largest type)
+          largest))
+    (denote-sequence--get-largest-by-order sequences type)))
 
 (defun denote-sequence--get-start (&optional sequence prepend-delimiter)
   "Return the start of a new sequence.
@@ -442,7 +468,7 @@ optional PREPEND-DELIMITER is non-nil, prepend the equals sign to the
 number if `denote-sequence-scheme' is numeric."
   (pcase denote-sequence-scheme
     ('numeric (if prepend-delimiter "=1" "1"))
-    ('alphanumeric (if (denote-sequence--tail-alphanumeric-p sequence)
+    ('alphanumeric (if (denote-sequence--alphanumeric-partial-p (substring sequence -1))
                        "1"
                      "a"))))
 
@@ -474,7 +500,6 @@ function `denote-sequence-get-all-sequences-with-prefix'."
       (if (= (length all-unfiltered) 1)
           (format "%s%s" (car all-unfiltered) start-child)
         (if-let* ((all-schemeless (cond
-                                   ((= (length all-unfiltered) 1) all-unfiltered)
                                    ((denote-sequence-get-all-sequences-with-max-depth depth all-unfiltered))
                                    (t all-unfiltered)))
                   (all (denote-sequence-filter-scheme all-schemeless))
@@ -575,7 +600,8 @@ completion candidates.  Else use `denote-sequence-get-all-files'."
 ;;;###autoload
 (defun denote-sequence (type &optional file-with-sequence)
   "Create a new sequence note of TYPE among `denote-sequence-types'.
-If TYPE is either `child' or `sibling', then it is an extension of SEQUENCE.
+If TYPE is either `child' or `sibling', then it is an extension of
+FILE-WITH-SEQUENCE.
 
 When called interactively, prompt for TYPE and, when necessary, for
 FILE-WITH-SEQUENCE whose sequence will be used to derive a new sequence.
@@ -587,9 +613,6 @@ Files available at the minibuffer prompt are those returned by
       selected-type
       (when (memq selected-type (delq 'parent denote-sequence-types))
         (denote-sequence-file-prompt (format "Make a new %s of SEQUENCE" selected-type))))))
-  ;; TODO 2024-12-30: Do we need to wrap this in the following?
-  ;;
-  ;; (cl-letf (((alist-get 'signature denote-file-name-slug-functions) #'denote-sluggify-signature))
   (let* ((sequence (when file-with-sequence (denote-retrieve-filename-signature file-with-sequence)))
          (new-sequence (denote-sequence-get type sequence))
          (denote-use-signature new-sequence))
@@ -619,16 +642,22 @@ When called from Lisp, SEQUENCE is a string that conforms with
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
+(defun denote-sequence--get-file-in-dired-or-prompt (prompt-text)
+  "Get the file at point in Dired, the current one, or prompt with PROMPT-TEXT."
+  (cond
+   ((when-let* (((derived-mode-p 'dired-mode))
+                (file-at-point (dired-get-filename nil t)))
+      (denote-sequence-file-p file-at-point)))
+   ((and buffer-file-name (denote-sequence-file-p buffer-file-name)))
+   (t
+    (denote-retrieve-filename-signature (denote-sequence-file-prompt prompt-text)))))
+
 ;;;###autoload
 (defun denote-sequence-new-sibling-of-current (sequence)
   "Create a new sibling sequence of the current file with SEQUENCE.
 If the current file does not have a sequence, then behave exactly like
 `denote-sequence-new-sibling'."
-  (interactive
-   (list
-    (or (denote-sequence-file-p buffer-file-name)
-        (denote-retrieve-filename-signature
-         (denote-sequence-file-prompt "Make a new sibling of SEQUENCE")))))
+  (interactive (list (denote-sequence--get-file-in-dired-or-prompt "Make a new sibling of SEQUENCE")))
   (let* ((new-sequence (denote-sequence-get 'sibling sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -654,11 +683,7 @@ When called from Lisp, SEQUENCE is a string that conforms with
   "Create a new child sequence of the current file with SEQUENCE.
 If the current file does not have a sequence, then behave exactly like
 `denote-sequence-new-child'."
-  (interactive
-   (list
-    (or (denote-sequence-file-p buffer-file-name)
-        (denote-retrieve-filename-signature
-         (denote-sequence-file-prompt "Make a new child of SEQUENCE")))))
+  (interactive (list (denote-sequence--get-file-in-dired-or-prompt "Make a new child of SEQUENCE")))
   (let* ((new-sequence (denote-sequence-get 'child sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
@@ -770,6 +795,10 @@ is that many levels deep.  For example, 1=1=2 is three levels deep."
                         (denote-sequence-dired prefix depth)))))
     (user-error "No Denote sequences matching those terms")))
 
+;; TODO 2025-01-14: We need to have an operation that reparents
+;; recursively.  This can be done inside of the `denote-sequence-reparent',
+;; where if it finds that the current file has children, it prompts
+;; for a confirmation and then continues to reparent all of them.
 ;;;###autoload
 (defun denote-sequence-reparent (current-file file-with-sequence)
   "Re-parent the CURRENT-FILE to be a child of FILE-WITH-SEQUENCE.
