@@ -116,6 +116,7 @@ Table of Contents
 .. 5. Org dynamic block to insert Org files as headings
 12. Sequence notes
 .. 1. Select a sequencing scheme for `denote-sequence-scheme'
+..... 1. Convert from one sequencing scheme to another
 .. 2. Create parent, child, or sibling sequence notes
 .. 3. Link only to sequences
 .. 4. Re-parent a file to extend a given sequence
@@ -4652,7 +4653,8 @@ section 7.4
 
   The user option `denote-sequence-scheme' allows users to select either
   the `numeric' scheme, which is like `1=1=2' or the `alphanumeric'
-  scheme, which is `1a2' for the same sequence:
+  scheme, which is `1a2' for the same sequence ([Convert from one
+  sequencing scheme to another]):
 
   Numeric sequencing scheme
         A numeric sequence consists only of numbers. The level of depth
@@ -4673,6 +4675,39 @@ section 7.4
         number 26 is z, 27 is za, 52 is zz, and so on). In practice,
         large numbers may not be a problem, though this is something to
         keep in mind.
+
+
+[Convert from one sequencing scheme to another] See section 12.1.1
+
+12.1.1 Convert from one sequencing scheme to another
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  [ The `denote-sequence.el' is part of 3.2.0-dev. ]
+
+  The decision on the desired `denote-sequence-scheme' wil affect new
+  notes long-term ([Select a sequencing scheme for
+  `denote-sequence-scheme']).  It thus is important to think through
+  your needs and proceed accordingly.
+
+  Still, one cannot be sure which scheme they prefer until they
+  experiment with it. It then is inconvenient to manually revert to the
+  alternative scheme. To this end, we provide the command
+  `denote-sequence-convert'. It convers one or more files from their
+  current scheme to its counterpart.
+
+  When called from inside a Denote file, it converts that file. When
+  called from a Dired buffer, it operates on the marked files. If no
+  files are marked, it works with the Dired file at point.
+
+  Note that `denote-sequence-convert' DOES NOT REPARENT OR ANYHOW CHECK
+  THE RESULTING SEQUENCES FOR DUPLICATES ([Re-parent a file to extend a
+  given sequence]).
+
+
+[Select a sequencing scheme for `denote-sequence-scheme'] See section
+12.1
+
+[Re-parent a file to extend a given sequence] See section 12.4
 
 
 12.2 Create parent, child, or sibling sequence notes
@@ -7863,9 +7898,9 @@ section 17.11
         Vick (VicZz), Viktor Haag, Vineet C. Kulkarni, Wade Mealing,
         Wilf, Yi Liu, Ypot, atanasj, azegas, babusri, coherentstate,
         doolio, duli, drcxd, elge70, elliottw, fingerknight, hpgisler,
-        hyperfocus1337, jtpavlock, juh, mentalisttraceur, pRot0ta1p,
-        rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
-        yetanotherfossman, zadca123
+        hyperfocus1337, jtpavlock, juh, leafarbelm, mentalisttraceur,
+        pRot0ta1p, rbenit68, relict007, sarcom-sar, sienic, skissue,
+        sundar bp, yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.

@@ -25,21 +25,25 @@
 
 ;; Sequence notes extension for Denote.  It uses the SIGNATURE file
 ;; name component of Denote to establish a hierarchy between notes.
-;; As such, note 1=1 is the child of the note 1.  The rest of the
-;; Denote file naming scheme continues to apply as described in the
-;; manual, as do all the other features of Denote.
+;; As such, with the default numeric `denote-sequence-scheme', note
+;; 1=1=2 is the second child of the first child of note 1.  While with
+;; the alphanumeric scheme, note 1a2 is the equivalent.  The rest of
+;; the Denote file naming scheme continues to apply as described in
+;; the manual, as do all the other features of Denote.
 ;;
 ;; A new sequence note can be of the type `parent', `child', and
 ;; `sibling'.  For the convenience of the user, we provide commands to
 ;; create such "sequence notes", link only between them (as opposed to
 ;; a link to any other file with the Denote file-naminng scheme), and
-;; re-parent them on demand.
+;; re-parent them on demand, as well as display them in a Dired buffer
+;; in accordance with their inherent order.
 ;;
 ;; All the relevant functions we provide take care to automatically
-;; use the right number for a given sequence.  If, for example, we
-;; create a new child for parent 1=1, we make sure that it is the new
-;; largest number among any existing children, so if 1=1=1 already
-;; exists we use 1=1=2, and so on.
+;; use the right number for a given sequence, per the user option
+;; `denote-sequence-scheme'.  If, for example, we create a new child
+;; for parent 1=1, we make sure that it is the new largest number
+;; among any existing children, so if 1=1=1 already exists we use
+;; 1=1=2, and so on.
 ;;
 ;; This optional extension is not necessary for such a workflow.
 ;; Users can always define whatever SIGNATURE they want manually.  The
@@ -58,9 +62,6 @@
   :link '(info-link "(denote) top")
   :link '(info-link "(denote) Sequence notes")
   :link '(url-link :tag "homepage" "https://protesilaos.com/emacs/denote"))
-
-(defconst denote-sequence-schemes '(numeric alphanumeric)
-  "Symbols representing sequence schemes.")
 
 (defcustom denote-sequence-scheme 'numeric
   "Sequencing scheme to establish file hierarchies.
@@ -131,8 +132,8 @@ Also see `denote-sequence-numeric-p' and `denote-sequence-alphanumeric-p'."
 (defun denote-sequence-and-scheme-p (sequence &optional partial)
   "Return the sequencing scheme of SEQUENCE, per `denote-sequence-scheme'.
 Return a cons cell of the form (sequence . scheme), where the `car' is
-SEQUENCE and the `cdr' is its sequencing scheme as a symbol among
-`denote-sequence-schemes'.
+SEQUENCE and the `cdr' is its sequencing scheme as a symbol among those
+mentioned in `denote-sequence-scheme'.
 
 With optional PARTIAL as a non-nil value, assume SEQUENCE to be a string
 that only represents part of a sequence, which itself consists entirely
@@ -162,8 +163,8 @@ A sequence is string that conforms with `denote-sequence-p'."
 
 (defun denote-sequence-join (strings scheme)
   "Join STRINGS to form a sequence according to SCHEME.
-SCHEME is a symbol among `denote-sequence-schemes'.  Return resulting
-sequence if it conforms with `denote-sequence-p'."
+SCHEME is a symbol among those mentioned in `denote-sequence-scheme'.
+Return resulting sequence if it conforms with `denote-sequence-p'."
   (pcase scheme
     ('numeric (mapconcat #'identity strings "="))
     ('alphanumeric (apply #'concat strings))))
@@ -257,7 +258,7 @@ has the same meaning as in `denote-sequence-and-scheme-p'."
                              parts)))
       (denote-sequence-join converted-parts 'alphanumeric))))
 
-(defun denote-sequence-convert (string &optional string-is-sequence)
+(defun denote-sequence-make-conversion (string &optional string-is-sequence)
   "Convert STRING to its counterpart sequencing scheme.
 If STRING-IS-SEQUENCE then assume STRING to be a complete sequence, in
 which case convert the entirety of it.  Also see `denote-sequence-scheme'."
@@ -326,12 +327,15 @@ The implied check here has the same meaning as described in
                        (butlast))))
         (denote-sequence-join strings scheme)))))
 
+(defun denote-sequence--get-files (&optional files)
+  "Return list of files or buffers in the variable `denote-directory'.
+With optional FILES only consider those, otherwise use `denote-directory-files'."
+  (delete-dups (append (denote--buffer-file-names) (or files (denote-directory-files)))))
+
 (defun denote-sequence-get-all-files ()
   "Return all files in variable `denote-directory' with a sequence.
 A sequence is a Denote signature that conforms with `denote-sequence-p'."
-  (seq-filter
-   #'denote-sequence-file-p
-   (append (denote--buffer-file-names) (denote-directory-files))))
+  (seq-filter #'denote-sequence-file-p (denote-sequence--get-files)))
 
 (defun denote-sequence-get-all-files-with-prefix (sequence &optional files)
   "Return all files in variable `denote-directory' with prefix SEQUENCE.
@@ -345,7 +349,7 @@ With optional FILES, operate on them, else use the return value of
            (when-let* ((file-sequence (denote-sequence-file-p file))
                        ((string-prefix-p sequence file-sequence)))
              file))
-         (append (denote--buffer-file-names) (or files (denote-directory-files))))))
+         (denote-sequence--get-files files))))
 
 (defun denote-sequence-get-all-files-with-max-depth (depth &optional files)
   "Return all files with sequence depth up to DEPTH (inclusive).
@@ -358,17 +362,14 @@ With optional FILES, operate on them, else use the return value of
                        (components (denote-sequence-split sequence))
                        ((>= depth (length components))))
              file))
-         (append (denote--buffer-file-names) (or files (denote-directory-files))))))
+         (denote-sequence--get-files files))))
 
 (defun denote-sequence-get-all-sequences (&optional files)
   "Return all sequences in `denote-directory-files'.
 With optional FILES return all sequences among them instead.
 
 A sequence is a Denote signature that conforms with `denote-sequence-p'."
-  (delq nil
-        (mapcar
-         #'denote-sequence-file-p
-         (append (denote--buffer-file-names) (or files (denote-directory-files))))))
+  (delq nil (mapcar #'denote-sequence-file-p (denote-sequence--get-files files))))
 
 (defun denote-sequence-get-all-sequences-with-prefix (sequence &optional sequences)
   "Get all sequences which extend SEQUENCE.
@@ -834,6 +835,34 @@ the target sequence."
                               (user-error "No sequence of `denote-sequence-p' found in `%s'" file-with-sequence)))
          (new-sequence (denote-sequence--get-new-child target-sequence)))
     (denote-rename-file current-file 'keep-current 'keep-current new-sequence 'keep-current)))
+
+;;;###autoload
+(defun denote-sequence-convert (files)
+  "Convert the sequence scheme of FILES to match `denote-sequence-scheme'.
+When called from inside a Denote file, FILES is just the current file.
+When called from a Dired buffer, FILES are the marked files.  If no
+files are marked, then the one at point is considered.
+
+Do not make any changes if the file among the FILES has no sequence or
+if it already matches the value of `denote-sequence-scheme'.  A file has
+a sequence when it conforms with `denote-sequence-file-p'.
+
+This command is for users who once used a `denote-sequence-scheme' and
+have since decided to switch to another.  IT DOES NOT REPARENT OR ANYHOW
+CHECK THE RESULTING SEQUENCES FOR DUPLICATES."
+  (interactive
+   (list
+    (if (derived-mode-p 'dired-mode)
+        (dired-get-marked-files)
+      buffer-file-name))
+   dired-mode)
+  (unless (listp files)
+    (setq files (list files)))
+  (dolist (file files)
+    (when-let* ((old-sequence (denote-sequence-file-p file))
+                (new-sequence (denote-sequence-make-conversion old-sequence :is-complete-sequence)))
+      (denote-rename-file file 'keep-current 'keep-current new-sequence 'keep-current)))
+  (denote-update-dired-buffers))
 
 (provide 'denote-sequence)
 ;;; denote-sequence.el ends here
