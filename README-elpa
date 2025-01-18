@@ -118,9 +118,10 @@ Table of Contents
 .. 1. Select a sequencing scheme for `denote-sequence-scheme'
 ..... 1. Convert from one sequencing scheme to another
 .. 2. Create parent, child, or sibling sequence notes
-.. 3. Link only to sequences
-.. 4. Re-parent a file to extend a given sequence
-.. 5. Show all or some sequences in a Dired buffer
+.. 3. Find a relative of the current sequence
+.. 4. Link only to sequences
+.. 5. Re-parent a file to extend a given sequence
+.. 6. Show all or some sequences in a Dired buffer
 13. Sort files by component
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
@@ -4707,7 +4708,7 @@ section 7.4
 [Select a sequencing scheme for `denote-sequence-scheme'] See section
 12.1
 
-[Re-parent a file to extend a given sequence] See section 12.4
+[Re-parent a file to extend a given sequence] See section 12.5
 
 
 12.2 Create parent, child, or sibling sequence notes
@@ -4772,7 +4773,34 @@ section 7.4
 [Points of entry] See section 3
 
 
-12.3 Link only to sequences
+12.3 Find a relative of the current sequence
+────────────────────────────────────────────
+
+  [ The `denote-sequence.el' is part of 3.2.0-dev. ]
+
+  While reading a file with a sequence, you may want to find what its
+  relatives are about. To this end, the command `denote-sequence-find'
+  prompts for a type among `parent', `sibling', `child', and then asks
+  to select a file among those matching the given type. It then visits
+  the file.
+
+  For convenience, the following commands do the same as
+  `denote-sequence-find' without prompting for the type of relative:
+
+  • `denote-sequence-find-parent'
+  • `denote-sequence-find-sibling'
+  • `denote-sequence-find-child'
+
+  Instead of selecting a single file, the command
+  `denote-sequence-find-relatives-dired' puts all the matching files in
+  a bespoke Dired buffer ([Show all or some sequences in a Dired
+  buffer]).
+
+
+[Show all or some sequences in a Dired buffer] See section 12.6
+
+
+12.4 Link only to sequences
 ───────────────────────────
 
   [ The `denote-sequence.el' is part of 3.2.0-dev. ]
@@ -4791,7 +4819,7 @@ section 7.4
 [Write sequence notes or “folgezettel”] See section 12
 
 
-12.4 Re-parent a file to extend a given sequence
+12.5 Re-parent a file to extend a given sequence
 ────────────────────────────────────────────────
 
   [ The `denote-sequence.el' is part of 3.2.0-dev. ]
@@ -4807,7 +4835,7 @@ section 7.4
 [Write sequence notes or “folgezettel”] See section 12
 
 
-12.5 Show all or some sequences in a Dired buffer
+12.6 Show all or some sequences in a Dired buffer
 ─────────────────────────────────────────────────
 
   [ The `denote-sequence.el' is part of 3.2.0-dev. ]
@@ -4833,9 +4861,14 @@ section 7.4
   empty string at the prefix prompt to not limit the results to any
   prefix.
 
+  A more specialised alternative for only relatives of a given sequence
+  is also available ([Find a relative of the current sequence]).
+
 
 [Select a sequencing scheme for `denote-sequence-scheme'] See section
 12.1
+
+[Find a relative of the current sequence] See section 12.3
 
 
 13 Sort files by component

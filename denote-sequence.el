@@ -332,10 +332,13 @@ The implied check here has the same meaning as described in
 With optional FILES only consider those, otherwise use `denote-directory-files'."
   (delete-dups (append (denote--buffer-file-names) (or files (denote-directory-files)))))
 
-(defun denote-sequence-get-all-files ()
+(defun denote-sequence-get-all-files (&optional files)
   "Return all files in variable `denote-directory' with a sequence.
-A sequence is a Denote signature that conforms with `denote-sequence-p'."
-  (seq-filter #'denote-sequence-file-p (denote-sequence--get-files)))
+A sequence is a Denote signature that conforms with `denote-sequence-p'.
+
+With optional FILES consider only those, otherwise use the return value
+of `denote-directory-files'."
+  (seq-filter #'denote-sequence-file-p (denote-sequence--get-files files)))
 
 (defun denote-sequence-get-all-files-with-prefix (sequence &optional files)
   "Return all files in variable `denote-directory' with prefix SEQUENCE.
@@ -349,7 +352,7 @@ With optional FILES, operate on them, else use the return value of
            (when-let* ((file-sequence (denote-sequence-file-p file))
                        ((string-prefix-p sequence file-sequence)))
              file))
-         (denote-sequence--get-files files))))
+         (denote-sequence-get-all-files files))))
 
 (defun denote-sequence-get-all-files-with-max-depth (depth &optional files)
   "Return all files with sequence depth up to DEPTH (inclusive).
@@ -362,14 +365,14 @@ With optional FILES, operate on them, else use the return value of
                        (components (denote-sequence-split sequence))
                        ((>= depth (length components))))
              file))
-         (denote-sequence--get-files files))))
+         (denote-sequence-get-all-files files))))
 
 (defun denote-sequence-get-all-sequences (&optional files)
   "Return all sequences in `denote-directory-files'.
 With optional FILES return all sequences among them instead.
 
 A sequence is a Denote signature that conforms with `denote-sequence-p'."
-  (delq nil (mapcar #'denote-sequence-file-p (denote-sequence--get-files files))))
+  (delq nil (mapcar #'denote-sequence-file-p (denote-sequence-get-all-files files))))
 
 (defun denote-sequence-get-all-sequences-with-prefix (sequence &optional sequences)
   "Get all sequences which extend SEQUENCE.
@@ -553,26 +556,59 @@ function `denote-sequence-get-all-sequences-with-prefix'."
           (number-to-string (+ (string-to-number largest) 1)))
       (error "Cannot find sequences given sequence `%s' using scheme `%s'" sequence denote-sequence-scheme))))
 
-(defun denote-sequence-get (type &optional sequence)
+(defun denote-sequence-get-new (type &optional sequence sequences)
   "Return a sequence given TYPE among `denote-sequence-types'.
 If TYPE is either `child' or `sibling', then optional SEQUENCE must be
-non-nil and conform with `denote-sequence-p'."
+non-nil and conform with `denote-sequence-p'.
+
+With optional SEQUENCES consider only those, otherwise operate on the
+return value of `denote-sequence-get-all-sequences'."
   (pcase type
-    ('parent (denote-sequence--get-new-parent))
-    ('child (denote-sequence--get-new-child sequence))
-    ('sibling (denote-sequence--get-new-sibling sequence))
+    ('parent (denote-sequence--get-new-parent sequences))
+    ('child (denote-sequence--get-new-child sequence sequences))
+    ('sibling (denote-sequence--get-new-sibling sequence sequences))
     (_ (error "The type `%s' is not among `denote-sequence-types'" type))))
+
+(defun denote-sequence-get-relative (sequence type &optional files)
+  "Get files of TYPE given the SEQUENCE.
+With optional FILES consider only those, otherwise operate on all files
+returned by `denote-sequence-get-all-files'."
+  (let* ((depth (denote-sequence-depth sequence))
+         (scheme (cdr (denote-sequence-and-scheme-p sequence)))
+         (components (denote-sequence-split sequence))
+         (filter-common (lambda (comparison prefix)
+                          (seq-filter
+                           (lambda (file)
+                             (funcall comparison (denote-sequence-depth (denote-retrieve-filename-signature file)) depth))
+                           (denote-sequence-get-all-files-with-prefix prefix files)))))
+    (pcase type
+      ('parent (let ((parents nil)
+                     (butlast (butlast components)))
+                 (while (>= (length butlast) 1)
+                   (when-let* ((prefix (denote-sequence-join butlast scheme))
+                               (parent (seq-find
+                                        (lambda (file)
+                                          (string= (denote-retrieve-filename-signature file) prefix))
+                                        (denote-sequence-get-all-files files))))
+                     (push parent parents)
+                     (setq butlast (butlast butlast))))
+                 parents))
+      ('sibling (funcall filter-common '= (denote-sequence-join (butlast components) scheme)))
+      ('child (funcall filter-common '> sequence))
+      (_ (error "The type `%s' is not among the `denote-sequence-types'" type)))))
 
 (defvar denote-sequence-type-history nil
   "Minibuffer history of `denote-sequence-type-prompt'.")
 
-(defun denote-sequence-type-prompt ()
+(defun denote-sequence-type-prompt (&optional prompt-text)
   "Prompt for sequence type among `denote-sequence-types'.
-Return selected type as a symbol."
+Return selected type as a symbol.
+
+With optional PROMPT-TEXT use it instead of the generic prompt."
   (let ((default (car denote-sequence-type-history)))
     (intern
      (completing-read
-      (format-prompt "Select sequence type" default)
+      (format-prompt (or prompt-text "Select sequence type") default)
       denote-sequence-types nil :require-match nil
       'denote-sequence-type-history default))))
 
@@ -615,7 +651,7 @@ Files available at the minibuffer prompt are those returned by
       (when (memq selected-type (delq 'parent denote-sequence-types))
         (denote-sequence-file-prompt (format "Make a new %s of SEQUENCE" selected-type))))))
   (let* ((sequence (when file-with-sequence (denote-retrieve-filename-signature file-with-sequence)))
-         (new-sequence (denote-sequence-get type sequence))
+         (new-sequence (denote-sequence-get-new type sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
@@ -623,7 +659,7 @@ Files available at the minibuffer prompt are those returned by
 (defun denote-sequence-new-parent ()
   "Like `denote-sequence' to directly create new parent."
   (interactive)
-  (let* ((new-sequence (denote-sequence-get 'parent))
+  (let* ((new-sequence (denote-sequence-get-new 'parent))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
@@ -639,7 +675,7 @@ When called from Lisp, SEQUENCE is a string that conforms with
    (list
     (denote-retrieve-filename-signature
      (denote-sequence-file-prompt "Make a new sibling of SEQUENCE"))))
-  (let* ((new-sequence (denote-sequence-get 'sibling sequence))
+  (let* ((new-sequence (denote-sequence-get-new 'sibling sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
@@ -659,7 +695,7 @@ When called from Lisp, SEQUENCE is a string that conforms with
 If the current file does not have a sequence, then behave exactly like
 `denote-sequence-new-sibling'."
   (interactive (list (denote-sequence--get-file-in-dired-or-prompt "Make a new sibling of SEQUENCE")))
-  (let* ((new-sequence (denote-sequence-get 'sibling sequence))
+  (let* ((new-sequence (denote-sequence-get-new 'sibling sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
@@ -675,7 +711,7 @@ When called from Lisp, SEQUENCE is a string that conforms with
    (list
     (denote-retrieve-filename-signature
      (denote-sequence-file-prompt "Make a new child of SEQUENCE"))))
-  (let* ((new-sequence (denote-sequence-get 'child sequence))
+  (let* ((new-sequence (denote-sequence-get-new 'child sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
 
@@ -685,9 +721,42 @@ When called from Lisp, SEQUENCE is a string that conforms with
 If the current file does not have a sequence, then behave exactly like
 `denote-sequence-new-child'."
   (interactive (list (denote-sequence--get-file-in-dired-or-prompt "Make a new child of SEQUENCE")))
-  (let* ((new-sequence (denote-sequence-get 'child sequence))
+  (let* ((new-sequence (denote-sequence-get-new 'child sequence))
          (denote-use-signature new-sequence))
     (call-interactively 'denote)))
+
+;;;###autoload
+(defun denote-sequence-find (type)
+  "Find relatives of the given TYPE using the current file's sequence.
+Prompt for TYPE among `denote-sequence-types' and then prompt for a file
+among the matching files."
+  (interactive (list (denote-sequence-type-prompt "Find relatives of TYPE")))
+  (if-let* ((sequence (denote-sequence-file-p buffer-file-name)))
+      (if-let* ((relatives (delete buffer-file-name (denote-sequence-get-relative sequence type))))
+          (find-file (denote-sequence-file-prompt "Select a relative" relatives))
+        (user-error "The sequence `%s' has no relatives of type `%s'" sequence type))
+    (user-error "The current file has no sequence")))
+
+;;;###autoload
+(defun denote-sequence-find-parent ()
+  "Convenience wrapper of `denote-sequence-find' to select a parent."
+  (declare (interactive-only t))
+  (interactive)
+  (denote-sequence-find 'parent))
+
+;;;###autoload
+(defun denote-sequence-find-sibling ()
+  "Convenience wrapper of `denote-sequence-find' to select a sibling."
+  (declare (interactive-only t))
+  (interactive)
+  (denote-sequence-find 'sibling))
+
+;;;###autoload
+(defun denote-sequence-find-child ()
+  "Convenience wrapper of `denote-sequence-find' to select a child."
+  (declare (interactive-only t))
+  (interactive)
+  (denote-sequence-find 'child))
 
 ;;;###autoload
 (defun denote-sequence-link (file &optional id-only)
@@ -762,7 +831,9 @@ Sort sequences from smallest to largest.
 With optional PREFIX string, show only files whose sequence matches it.
 
 With optional DEPTH as a number, limit the list to files whose sequence
-is that many levels deep.  For example, 1=1=2 is three levels deep."
+is that many levels deep.  For example, 1=1=2 is three levels deep.
+
+For a more specialised case, see `denote-sequence-find-relatives-dired'."
   (interactive
    (let ((arg (prefix-numeric-value current-prefix-arg)))
      (cond
@@ -795,6 +866,20 @@ is that many levels deep.  For example, 1=1=2 is three levels deep."
                         (kill-buffer dired-buffer)
                         (denote-sequence-dired prefix depth)))))
     (user-error "No Denote sequences matching those terms")))
+
+;;;###autoload
+(defun denote-sequence-find-relatives-dired (type)
+  "Like `denote-sequence-find' for TYPE but put the matching files in Dired.
+Also see `denote-sequence-dired'."
+  (interactive (list (denote-sequence-type-prompt "Find relatives of TYPE")))
+  (if-let* ((sequence (denote-sequence-file-p buffer-file-name)))
+      (if-let* ((default-directory (denote-directory))
+                (relatives (delete buffer-file-name (denote-sequence-get-relative sequence type)))
+                (files-sorted (denote-sequence-sort-files relatives)))
+          (dired (cons (format-message "*`%s' type relatives of `%s'" type sequence)
+                       (mapcar #'file-relative-name files-sorted)))
+        (user-error "The sequence `%s' has no relatives of type `%s'" sequence type))
+    (user-error "The current file has no sequence")))
 
 ;; TODO 2025-01-14: We need to have an operation that reparents
 ;; recursively.  This can be done inside of the `denote-sequence-reparent',
