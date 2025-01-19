@@ -192,7 +192,7 @@ The keywords' prompt supports minibuffer completion.  Available
 candidates are those defined in the user option ~denote-known-keywords~.
 More candidates can be inferred from the names of existing notes, by
 setting ~denote-infer-keywords~ to non-nil (which is the case by
-default).
+default) ([[#h:c0fb477f-4f99-4d76-9cce-132bcfcb351d][Create a controlled vocabulary for keywords]]).
 
 #+vindex: denote-sort-keywords
 Multiple keywords can be inserted by separating them with a comma (or
@@ -262,16 +262,14 @@ of the following:
   of that KEY is used to populate the new note with content, which is
   added after the front matter ([[#h:f635a490-d29e-4608-9372-7bd13b34d56c][The denote-templates option]]).
 
-- =signature=: - Prompts for an arbitrary string that can be used to
-  establish a sequential relationship between files (e.g. 1, 1a, 1b,
-  1b1, 1b2, ...).  Signatures have no strictly defined function and
-  are up to the user to apply as they see fit.  One use-case is to
-  implement Niklas Luhmann's Zettelkasten system for a sequence of
-  notes (Folgezettel).  Signatures are not included in a file's front
-  matter.  They are reserved solely for creating a sequence in a file
-  listing, at least for the time being.  To insert a link that
-  includes the signature, use the command ~denote-link-with-signature~
-  ([[#h:066e5221-9844-474b-8858-398398646f86][Insert link to file with signature]]).
+- =signature=: - Prompts for an arbitrary string that can be used for
+  any kind of workflow, such as a special tag to label the =part1= and
+  =part2= of a large file that is split in half, or to add special
+  contexts like =home= and =work=, or even priorities like =a=, =b=,
+  =c=. One other use-case is to implement a sequencing scheme that
+  makes notes have hierarchical relationships. This is handled by our
+  optional extension =denote-sequence.el=, which is part of the
+  ~denote~ package ([[#h:d5ca722d-e7fa-46fa-9a57-6363b1d4186f][Write sequence notes or "folgezettel"]]).
 
 The prompts occur in the given order.
 
@@ -1562,6 +1560,33 @@ is non-nil.
 
 The match is performed with ~string-match-p~.
 
+** Create a controlled vocabulary for keywords
+:PROPERTIES:
+:CUSTOM_ID: h:c0fb477f-4f99-4d76-9cce-132bcfcb351d
+:END:
+
+Denote has two ways to know about keywords: the predefined list of
+strings specified in the user option ~denote-known-keywords~ as well
+as all the keywords it finds in the files of the ~denote-directory~
+when the user option ~denote-infer-keywords~ is set to a non-nil value
+([[#h:69e518ee-ed43-40ab-a5f4-c780a23e5358][Exclude certain keywords from being inferred]]).
+
+While this is a viable setup, users may prefer to implement a
+"controlled vocabulary". This is a predefined set of keywords whose
+purpose is to avoid the creation of overly specific or inconsistent
+keywords.
+
+To establish such a controlled vocabulary, users need only have
+something like this in their configuration:
+
+#+begin_src emacs-lisp
+;; Do not read keywords from files.  The only source is the `denote-known-keywords'.
+(setq denote-infer-keywords nil)
+
+;; Define the list of keywords.  Each keyword is a string.
+(setq denote-known-keywords (list "politics" "economics" "emacs" "philosophy"))
+#+end_src
+
 ** Use Denote commands from the menu bar or context menu
 :PROPERTIES:
 :CUSTOM_ID: h:c4290e15-e97e-4a9b-b8db-6b9738e37e78
@@ -2135,15 +2160,18 @@ hour-minute-second notation.  The presentation is compact:
 =20220531T091625=.  The =DATE= serves as the unique identifier of each
 note and, as such, is also known as the file's ID or identifier.
 
-File names can include a string of alphanumeric characters in the
-=SIGNATURE= field. Signatures have no clearly defined purpose and are up
-to the user to define. One use-case is to use them to establish
-sequential relations between files (e.g. 1, 1a, 1b, 1b1, 1b2, ...).
-
+File names can include an arbitrary string of alphanumeric characters
+in the =SIGNATURE= field. Signatures have no clearly defined purpose
+and are up to the user to define. They can serve as special labels,
+such as =part1= and =part2= of a large file, or as priority indicators
+like =a=, =b=, =c=, or even context/scope specifiers like =home= and
+=work=. Another use-case is to write sequences of thoughts, such that
+notes form a hierarchy, something we support with the optional and
+comprehensive extension =denote-sequence.el= ([[#h:d5ca722d-e7fa-46fa-9a57-6363b1d4186f][Write sequence notes or "folgezettel"]]).
 Signatures are an optional extension to Denote's file-naming scheme.
-They can be added to newly created files on demand, with the command
-~denote-signature~, or by modifying the value of the user option
-~denote-prompts~.
+In the simplest form, they can be added to newly created files on
+demand, with the command ~denote-signature~, or by modifying the value
+of the user option ~denote-prompts~ ([[#h:f9204f1f-fcee-49b1-8081-16a08a338099][The ~denote-prompts~ option]]).
 
 The =TITLE= field is the title of the note, as provided by the user.
 It automatically gets downcased by default and is also hyphenated
@@ -2699,8 +2727,9 @@ By default, the description of the link is determined thus:
   and so the link is formatted the same way as if using the =C-u=
   prefix argument.
 - If there is no region active, the description consists of the target
-  file's signature and title ([[#h:066e5221-9844-474b-8858-398398646f86][Insert link to file with signature]]). The
-  title is retrieved either from the front matter or the file name.
+  file's signature and title, using the former only if it is present.
+  The title is retrieved either from the front matter or the file
+  name.
 - If the target file has no signature, the title is used.
 
 Links are created only for files which qualify as a "note" for our
@@ -2916,24 +2945,6 @@ above is for interactive usage.
 
 Links are created only for files which qualify as a "note" for our
 purposes ([[#h:fc913d54-26c8-4c41-be86-999839e8ad31][Linking notes]]).
-
-** Insert link to file with signature
-:PROPERTIES:
-:CUSTOM_ID: h:066e5221-9844-474b-8858-398398646f86
-:END:
-
-#+findex: denote-link-with-signature
-The command ~denote-link-with-signature~ prompts for a file among
-those that contain a ===SIGNATURE= and inserts a link to it.  The
-description of the link includes the text of the signature and that of
-the file's title, if any.  For example, a link to the following file:
-
-: 20230925T144303==abc--my-first-signature-note__denote_testing.txt
-
-will get this link: =[[denote:20230925T144303][abc My first signature note]]=.
-
-For more advanced uses, refer to the doc string of the ~denote-link~
-function ([[#h:5e5e3370-12ab-454f-ba09-88ff44214324][Adding a single link]]).
 
 ** Insert links from marked files in Dired
 :PROPERTIES:
@@ -6454,10 +6465,6 @@ might change them without further notice.
 #+findex: denote-link-return-backlinks
 + Function ~denote-link-return-backlinks~ :: Return list of backlinks
   in current or optional =FILE=.  Also see ~denote-link-return-links~.
-
-#+vindex: denote-link-signature-format
-+ Variable ~denote-link-signature-format~ :: Format of link
-  description for ~denote-link-with-signature~.
 
 #+findex: denote-link-description-with-signature-and-title
 + Function ~denote-link-description-with-signature-and-title~ :: Return
