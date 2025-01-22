@@ -4797,17 +4797,9 @@ section 7.4
   to select a file among those matching the given type. It then visits
   the file.
 
-  For convenience, the following commands do the same as
-  `denote-sequence-find' without prompting for the type of relative:
-
-  • `denote-sequence-find-parent'
-  • `denote-sequence-find-sibling'
-  • `denote-sequence-find-child'
-
   Instead of selecting a single file, the command
-  `denote-sequence-find-relatives-dired' puts all the matching files in
-  a bespoke Dired buffer ([Show all or some sequences in a Dired
-  buffer]).
+  `denote-sequence-find-dired' puts all the matching files in a bespoke
+  Dired buffer ([Show all or some sequences in a Dired buffer]).
 
 
 [Show all or some sequences in a Dired buffer] See section 12.6
