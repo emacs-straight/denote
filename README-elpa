@@ -138,22 +138,23 @@ Table of Contents
 .. 6. Use the `denote-menu' package
 .. 7. Use the `denote-zettel-interface' package
 17. Extending Denote
-.. 1. Create a new note in any directory
-.. 2. Find empty notes and put them in a Dired buffer
-.. 3. Automatically rename the note after saving it
-.. 4. Narrow the list of files in Dired
-.. 5. Use `dired-virtual-mode' for arbitrary file listings
-.. 6. Use Embark to collect minibuffer candidates
-.. 7. Search file contents
-.. 8. Bookmark the directory with the notes
-.. 9. Treat your notes as a project
-.. 10. Use the tree-based file prompt for select commands
-.. 11. Rename files with Denote in the Image Dired thumbnails buffer
-.. 12. Rename files with Denote using `dired-preview'
-.. 13. Avoid duplicate identifiers when exporting Denote notes
+.. 1. Access the data of the latest note
+.. 2. Create a new note in any directory
+.. 3. Find empty notes and put them in a Dired buffer
+.. 4. Automatically rename the note after saving it
+.. 5. Narrow the list of files in Dired
+.. 6. Use `dired-virtual-mode' for arbitrary file listings
+.. 7. Use Embark to collect minibuffer candidates
+.. 8. Search file contents
+.. 9. Bookmark the directory with the notes
+.. 10. Treat your notes as a project
+.. 11. Use the tree-based file prompt for select commands
+.. 12. Rename files with Denote in the Image Dired thumbnails buffer
+.. 13. Rename files with Denote using `dired-preview'
+.. 14. Avoid duplicate identifiers when exporting Denote notes
 ..... 1. Export Denote notes with Org Mode
 ..... 2. Export Denote notes with Markdown
-.. 14. Set up your workflow for daily or weekly meeting notes
+.. 15. Set up your workflow for daily or weekly meeting notes
 18. Installation
 .. 1. GNU ELPA package
 .. 2. Manual installation
@@ -328,12 +329,14 @@ Table of Contents
   explained: [The file naming scheme]
 
   The `denote' command runs the hook `denote-after-new-note-hook' after
-  creating the new note. When called from Lisp, it returns the path it
-  generates. Before returning the path, it decides what to do with the
-  buffer of the note, in accordance with the user option
-  `denote-kill-buffers' ([The `denote-kill-buffers' option]). [ As part
-  of 3.2.0-dev, the `denote' command runs the hook and then kills the
-  buffer, whereas it was the other way around before. ]
+  creating the new note ([Access the data of the latest note]). When
+  called from Lisp, it returns the path it generates. Before returning
+  the path, it decides what to do with the buffer of the note, in
+  accordance with the user option `denote-kill-buffers' ([The
+  `denote-kill-buffers' option]).
+
+  [ As part of 3.2.0-dev, the `denote' command runs the hook and then
+    kills the buffer, whereas it was the other way around before. ]
 
   The file type of the new note is determined by the user option
   `denote-file-type' ([Front matter]).
@@ -362,6 +365,8 @@ Table of Contents
 
 
 [The file naming scheme] See section 5
+
+[Access the data of the latest note] See section 17.1
 
 [The `denote-kill-buffers' option] See section 3.1.6
 
@@ -1672,9 +1677,9 @@ Table of Contents
   └────
 
 
-  [Bookmark the directory with the notes] See section 17.8
+  [Bookmark the directory with the notes] See section 17.9
 
-  [Treat your notes as a project] See section 17.9
+  [Treat your notes as a project] See section 17.10
 
 
 3.9.4 Make Org export work with silos
@@ -1925,9 +1930,10 @@ Table of Contents
   mechanisms to facilitate the task of renaming them.
 
   All renaming commands run the `denote-after-rename-file-hook' after a
-  succesful operation. They also construct the file name in accordance
-  with the user option `denote-file-name-components-order' ([Change the
-  order of file name components]).
+  succesful operation ([Access the data of the latest note]). They also
+  construct the file name in accordance with the user option
+  `denote-file-name-components-order' ([Change the order of file name
+  components]).
 
   Apart from renaming files, Denote can also rename only the buffer.
   The idea is that the underlying file name is correct but it can be
@@ -1942,6 +1948,8 @@ Table of Contents
 [The file-naming scheme] See section 5
 
 [Linking notes] See section 7
+
+[Access the data of the latest note] See section 17.1
 
 [Change the order of file name components] See section 5.1
 
@@ -2055,7 +2063,8 @@ Table of Contents
   `denote-file-name-components-order' ([Change the order of file name
   components]).
 
-  Run the `denote-after-rename-file-hook' after renaming `FILE'.
+  Run the `denote-after-rename-file-hook' after renaming `FILE' ([Access
+  the data of the latest note]).
 
   This command is intended to (i) rename Denote files, (ii) convert
   existing supported file types to Denote notes, and (ii) rename
@@ -2078,6 +2087,8 @@ Table of Contents
 [The `denote-save-buffers' option] See section 3.1.5
 
 [Change the order of file name components] See section 5.1
+
+[Access the data of the latest note] See section 17.1
 
 4.1.1 The `denote-rename-confirmations' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -4918,7 +4929,7 @@ section 7.4
 [Configure what extra prompts `denote-sort-dired' issues] See section
 13.1
 
-[Use `dired-virtual-mode' for arbitrary file listings] See section 17.5
+[Use `dired-virtual-mode' for arbitrary file listings] See section 17.6
 
 [Org dynamic block to insert file contents] See section 11.4
 
@@ -5443,7 +5454,23 @@ section 5.4
 
 [Packages that build on Denote] See section 16
 
-17.1 Create a new note in any directory
+17.1 Access the data of the latest note
+───────────────────────────────────────
+
+  The variable `denote-current-data' is updated each time a new note is
+  created as well as after a rename operation.
+
+  This is an alist where each `car' is one among `title', `keywords',
+  `signature', `directory', `date', `id', `file-type', `template'. The
+  value each of them contains is the unprocessed input (e.g. the title
+  before it is sluggified).
+
+  Users who need to access this data as part of their custom code can
+  rely on the hooks `denote-after-new-note-hook' and
+  `denote-after-rename-file-hook'.
+
+
+17.2 Create a new note in any directory
 ───────────────────────────────────────
 
   The commands that create new files are designed to write to the
@@ -5467,7 +5494,7 @@ section 5.4
   └────
 
 
-17.2 Find empty notes and put them in a Dired buffer
+17.3 Find empty notes and put them in a Dired buffer
 ────────────────────────────────────────────────────
 
   [ This feature is based on the command `denote-sort-dired' ([Sort
@@ -5603,7 +5630,7 @@ section 5.4
 [Link to an existing note or create a new one] See section 7.7
 
 
-17.3 Automatically rename the note after saving it
+17.4 Automatically rename the note after saving it
 ──────────────────────────────────────────────────
 
   While experimenting with Denote, users may need to try different
@@ -5628,7 +5655,7 @@ section 5.4
   └────
 
 
-17.4 Narrow the list of files in Dired
+17.5 Narrow the list of files in Dired
 ──────────────────────────────────────
 
   Emacs’ standard file manager (or directory editor) can read a regular
@@ -5690,7 +5717,7 @@ section 5.4
 section 5.4
 
 
-17.5 Use `dired-virtual-mode' for arbitrary file listings
+17.6 Use `dired-virtual-mode' for arbitrary file listings
 ─────────────────────────────────────────────────────────
 
   Emacs’ Dired is a powerful file manager that builds its functionality
@@ -5792,7 +5819,7 @@ section 5.4
 [The file-naming scheme] See section 5
 
 
-17.6 Use Embark to collect minibuffer candidates
+17.7 Use Embark to collect minibuffer candidates
 ────────────────────────────────────────────────
 
   `embark' is a remarkable package that lets you perform relevant,
@@ -5816,10 +5843,10 @@ section 5.4
   power of the minibuffer ([Narrow the list of files in Dired]).
 
 
-[Narrow the list of files in Dired] See section 17.4
+[Narrow the list of files in Dired] See section 17.5
 
 
-17.7 Search file contents
+17.8 Search file contents
 ─────────────────────────
 
   [ Users of `consult' can use the `consult-denote' package instead
@@ -5868,7 +5895,7 @@ section 5.4
 See section 16.1
 
 
-17.8 Bookmark the directory with the notes
+17.9 Bookmark the directory with the notes
 ──────────────────────────────────────────
 
   Part of the reason Denote does not reinvent existing functionality is
@@ -5893,8 +5920,8 @@ See section 16.1
   extras for working with directories, including bookmarks.
 
 
-17.9 Treat your notes as a project
-──────────────────────────────────
+17.10 Treat your notes as a project
+───────────────────────────────────
 
   Emacs has a built-in library for treating a directory tree as a
   “project”.  This means that the contents of this tree are seen as part
@@ -5926,7 +5953,7 @@ See section 16.1
   Git).
 
 
-17.10 Use the tree-based file prompt for select commands
+17.11 Use the tree-based file prompt for select commands
 ────────────────────────────────────────────────────────
 
   Older versions of Denote had a file prompt that resembled that of the
@@ -5965,7 +5992,7 @@ See section 16.1
   └────
 
 
-17.11 Rename files with Denote in the Image Dired thumbnails buffer
+17.12 Rename files with Denote in the Image Dired thumbnails buffer
 ───────────────────────────────────────────────────────────────────
 
   [Rename files with Denote using `dired-preview']
@@ -6030,12 +6057,12 @@ See section 16.1
   └────
 
 
-[Rename files with Denote using `dired-preview'] See section 17.12
+[Rename files with Denote using `dired-preview'] See section 17.13
 
 [Rename multiple files at once] See section 4.3
 
 
-17.12 Rename files with Denote using `dired-preview'
+17.13 Rename files with Denote using `dired-preview'
 ────────────────────────────────────────────────────
 
   The `dired-preview' package (by me/Protesilaos) automatically displays
@@ -6089,10 +6116,10 @@ See section 16.1
 [Rename multiple files at once] See section 4.3
 
 [Rename files with Denote in the Image Dired thumbnails buffer] See
-section 17.11
+section 17.12
 
 
-17.13 Avoid duplicate identifiers when exporting Denote notes
+17.14 Avoid duplicate identifiers when exporting Denote notes
 ─────────────────────────────────────────────────────────────
 
   When exporting Denote notes to, for example, an HTML or PDF file,
@@ -6113,7 +6140,7 @@ section 17.11
 
 [Convenience commands for note creation] See section 3.1.4
 
-17.13.1 Export Denote notes with Org Mode
+17.14.1 Export Denote notes with Org Mode
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Org Mode has a built-in configurable export engine.  You can prevent
@@ -6127,7 +6154,7 @@ section 17.11
 
 [Convert `denote:' links to `file:' links] See section 7.12
 
-◊ 17.13.1.1 Manually configure Org export
+◊ 17.14.1.1 Manually configure Org export
 
   Insert `#+export_file_name: FILENAME' in the front matter before
   exporting to force a filename called whatever the value of `FILENAME'
@@ -6144,10 +6171,10 @@ section 17.11
   this section ([Export Denote notes]).
 
 
-  [Export Denote notes] See section 17.13
+  [Export Denote notes] See section 17.14
 
 
-◊ 17.13.1.2 Automatically store Org exports in another folder
+◊ 17.14.1.2 Automatically store Org exports in another folder
 
   It is possible to automatically place all exports in another folder by
   making Org’s function `org-export-output-file-name' create the target
@@ -6205,7 +6232,7 @@ section 17.11
   [Exclude certain directories from all operations] See section 3.11
 
 
-◊ 17.13.1.3 Org Mode Publishing
+◊ 17.14.1.3 Org Mode Publishing
 
   Org Mode also has a publishing tool for exporting a collection of
   files. Some user might apply this approach to convert their note
@@ -6223,7 +6250,7 @@ section 17.11
   [Exclude certain directories from all operations] See section 3.11
 
 
-17.13.2 Export Denote notes with Markdown
+17.14.2 Export Denote notes with Markdown
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Exporting from Markdown requires an external processor (e.g.,
@@ -6239,7 +6266,7 @@ section 17.11
   of duplicate Denote identifiers.
 
 
-17.14 Set up your workflow for daily or weekly meeting notes
+17.15 Set up your workflow for daily or weekly meeting notes
 ────────────────────────────────────────────────────────────
 
   Perhaps as part of work, we meet with certain people on a regular
