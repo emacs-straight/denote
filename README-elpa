@@ -140,6 +140,14 @@ Table of Contents
 ..... 2. Export Denote notes with Markdown
 .. 15. Set up your workflow for daily or weekly meeting notes
 18. For developers or advanced users
+.. 1. Common building blocks for developers or advanced users
+.. 2. File path interface for developers or advanced users
+.. 3. Data retrieval interface for developers or advanced users
+.. 4. Prompt interface for developers or advanced users
+.. 5. Front matter interface for developers or advanced users
+.. 6. Link interface for developers or advanced users
+.. 7. Xref interface for developers or advanced users
+.. 8. Renaming files interface for developers or advanced users
 19. Troubleshoot Denote in a pristine environment
 20. Contributing
 .. 1. Wishlist of what we can do to extend Denote
@@ -5252,6 +5260,14 @@ section 17.12
   its symbol such as `denote--file-extension'.  Do not use those as we
   might change them without further notice.
 
+  The following sections cover the specifics.
+
+
+[Packages that build on Denote] See section 16
+
+18.1 Common building blocks for developers or advanced users
+────────────────────────────────────────────────────────────
+
   Variable `denote-id-format'
         Format of ID prefix of a note’s filename.  The note’s ID is
         derived from the date and time of its creation ([The file-naming
@@ -5324,12 +5340,24 @@ section 17.12
         though always return something like `.org' even if the actual
         file extension is `.org.gpg'.
 
+  Functions `denote-infer-keywords-from-files'
+        Return list of keywords in `denote-directory-files'. With
+        optional `FILES-MATCHING-REGEXP', only extract keywords from the
+        matching files. Otherwise, do it for all files. Keep any
+        duplicates. Users who do not want duplicates should refer to the
+        functions `denote-keywords'. [ Part of 4.0.0-dev. ]
+
   Function `denote-keywords'
-        Return appropriate list of keyword candidates.  If
+        Return appropriate list of keyword candidates. If
         `denote-infer-keywords' is non-nil, infer keywords from existing
-        notes and combine them into a list with `denote-known-keywords'.
-        Else use only the latter set of keywords ([Standard note
-        creation]).
+        notes and combine them into a list with
+        `denote-known-keywords'. Else use only the latter set of
+        keywords ([Standard note creation]). In the case of keyword
+        inferrence, use optional `FILES-MATCHING-REGEXP', to extract
+        keywords only from the matching files. Otherwise, do it for all
+        files. Filter inferred keywords with the user option
+        `denote-excluded-keywords-regexp'. [ The optional
+        `FILES-MATCHING-REGEXP' parameter is part of 4.0.0-dev. ]
 
   Function `denote-keywords-sort'
         Sort `KEYWORDS' if `denote-sort-keywords' is non-nil.
@@ -5379,15 +5407,20 @@ section 17.12
         `denote-directory' accepts a directory-local value for what we
         call “silos” ([Maintain separate directories for notes]).
 
+
+[The file-naming scheme] See section 7
+
+[Standard note creation] See section 5.1
+
+[Maintain separate directories for notes] See section 5.7
+
+
+18.2 File path interface for developers or advanced users
+─────────────────────────────────────────────────────────
+
   Function `denote-file-name-relative-to-denote-directory'
         Return name of `FILE' relative to the variable
         `denote-directory'.  `FILE' must be an absolute path.
-
-  Function `denote-get-path-by-id'
-        Return absolute path of `ID' string in `denote-directory-files'.
-
-  Function `denote-get-identifier-at-point'
-        Return the identifier at point or `POINT'.
 
   Function `denote-slug-keep-only-ascii'
         Remove all non-ASCII characters from `STR' and replace them with
@@ -5416,18 +5449,6 @@ section 17.12
   Function `denote-sluggify-keywords'
         Sluggify `KEYWORDS', which is a list of strings ([Sluggification
         of file name components]).
-
-  Function `denote-filetype-heuristics'
-        Return likely file type of `FILE'. If in the process of
-        `org-capture', consider the file type to be that of
-        Org. Otherwise, use the file extension to detect the file type
-        of `FILE'.
-
-        If more than one file type correspond to this file extension,
-        use the first file type for which the :title-key-regexp in
-        `denote-file-types' matches in the file.
-
-        Return nil if the file type is not recognized.
 
   Function `denote-use-date'
         The date to be used in a note creation command. See the
@@ -5509,6 +5530,21 @@ section 17.12
         type extension. It can be an empty string or a nil value, in
         which case it is not added to the base file name.
 
+
+[Custom sluggification to remove non-ASCII characters] See section 7.3.1
+
+[Sluggification of file name components] See section 7.2
+
+
+18.3 Data retrieval interface for developers or advanced users
+──────────────────────────────────────────────────────────────
+
+  Function `denote-get-path-by-id'
+        Return absolute path of `ID' string in `denote-directory-files'.
+
+  Function `denote-get-identifier-at-point'
+        Return the identifier at point or `POINT'.
+
   Function `denote-extract-keywords-from-path'
         Extract keywords from `PATH' and return them as a list of
         strings.  `PATH' must be a Denote-style file name where keywords
@@ -5560,6 +5596,13 @@ section 17.12
 
   Function `denote-retrieve-front-matter-keywords-line'
         Return keywords line from `FILE' front matter per `FILE-TYPE'.
+
+
+[The file-naming scheme] See section 7
+
+
+18.4 Prompt interface for developers or advanced users
+──────────────────────────────────────────────────────
 
   Function `denote-add-prompts'
         Add list of `ADDITIONAL-PROMPTS' to `denote-prompts'. This is
@@ -5655,52 +5698,94 @@ section 17.12
         table uses the `file' completion category (so it works with
         packages such as `marginalia' and `embark').
 
-  Function `denote-rename-file-prompt'
-        Prompt to rename file named `OLD-NAME' to `NEW-NAME'. If
-        `denote-rename-confirmations' does not contain
-        `modify-file-name', return t without prompting.
 
-  Function `denote-rename-file-and-buffer'
-        Rename file named `OLD-NAME' to `NEW-NAME', updating buffer
-        name.
+[The `denote-history-completion-in-prompts' option] See section 5.1.2
 
-  Function `denote-prepend-front-matter'
-        Prepend front matter to `FILE'. The `TITLE', `KEYWORDS', `DATE',
-        `ID', `SIGNATURE', and `FILE-TYPE' are passed from the renaming
-        command and are used to construct a new front matter block if
-        appropriate. [ This function is available as part of
-        4.0.0-dev. ]
+[The denote-date-prompt-use-org-read-date option] See section 5.1.7
 
-  Function `denote-rewrite-front-matter'
-        Rewrite front matter of note after `denote-rename-file' (or
-        related) The `FILE', `TITLE', `KEYWORDS', `SIGNATURE', `DATE',
-        `IDENTIFIER', and `FILE-TYPE' arguments are given by the
-        renaming command and are used to construct new front matter
-        values if appropriate. If `denote-rename-confirmations' contains
-        `rewrite-front-matter', prompt to confirm the rewriting of the
-        front matter. Otherwise produce a `y-or-n-p' prompt to that
-        effect. [ This function is changed as part of 4.0.0-dev. ]
+[Points of entry] See section 5
 
-  Function `denote-add-front-matter-prompt'
-        Prompt to add a front-matter to `FILE'. Return non-nil if a new
-        front matter should be added. If `denote-rename-confirmations'
-        does not contain `add-front-matter', return t without prompting.
 
-  Function `denote-rewrite-keywords'
-        Rewrite `KEYWORDS' in `FILE' outright according to
-        `FILE-TYPE'. Do the same as `denote-rewrite-front-matter' for
-        keywords, but do not ask for confirmation. With optional
-        `SAVE-BUFFER', save the buffer corresponding to `FILE'. This
-        function is for use in the commands `denote-keywords-add',
-        `denote-keywords-remove', `denote-dired-rename-files', or
-        related.
+18.5 Front matter interface for developers or advanced users
+────────────────────────────────────────────────────────────
 
-  Function `denote-update-dired-buffers'
-        Update Dired buffers of variable `denote-directory'. Also revert
-        the current Dired buffer even if it is not inside the
-        `denote-directory'. Note that the `denote-directory' accepts a
-        directory-local value for what we internally refer to as “silos”
-        ([Maintain separate directories for notes]).
+  Function `denote-filetype-heuristics'
+        Return likely file type of `FILE'. If in the process of
+        `org-capture', consider the file type to be that of
+        Org. Otherwise, use the file extension to detect the file type
+        of `FILE'.
+
+        If more than one file type correspond to this file extension,
+        use the first file type for which the :title-key-regexp in
+        `denote-file-types' matches in the file.
+
+        Return nil if the file type is not recognized.
+
+  Variable `denote-org-front-matter'
+        Specifies the Org front matter.  It is passed to `format' with
+        arguments `TITLE', `DATE', `KEYWORDS', `ID' ([Change the front
+        matter format])
+
+  Variable `denote-yaml-front-matter'
+        Specifies the YAML (Markdown) front matter.  It is passed to
+        `format' with arguments `TITLE', `DATE', `KEYWORDS', `ID'
+        ([Change the front matter format])
+
+  Variable `denote-toml-front-matter'
+        Specifies the TOML (Markdown) front matter.  It is passed to
+        `format' with arguments `TITLE', `DATE', `KEYWORDS', `ID'
+        ([Change the front matter format])
+
+  Variable `denote-text-front-matter'
+        Specifies the plain text front matter.  It is passed to `format'
+        with arguments `TITLE', `DATE', `KEYWORDS', `ID' ([Change the
+        front matter format])
+
+  Function `denote-date-org-timestamp'
+        Format `DATE' using the Org inactive timestamp notation.
+
+  Function `denote-date-rfc3339'
+        Format `DATE' using the RFC3339 specification.
+
+  Function `denote-date-iso-8601'
+        Format `DATE' according to ISO 8601 standard.
+
+  Function `denote-trim-whitespace'
+        Trim whitespace around string `S'.  This can be used in
+        `denote-file-types' to format front mattter.
+
+  Function `denote-trim-whitespace-then-quotes'
+        Trim whitespace then quotes around string `S'.  This can be used
+        in `denote-file-types' to format front mattter.
+
+  Function `denote-format-string-for-org-front-matter'
+        Return string `S' as-is for Org or plain text front matter. If
+        `S' is not a string, return an empty string.
+
+  Function `denote-format-string-for-md-front-matter'
+        Surround string `S' with quotes. If `S' is not a string, return
+        a literal emptry string. This can be used in `denote-file-types'
+        to format front mattter.
+
+  Function `denote-format-keywords-for-md-front-matter'
+        Format front matter `KEYWORDS' for markdown file type.
+        `KEYWORDS' is a list of strings.  Consult the
+        `denote-file-types' for how this is used.
+
+  Function `denote-format-keywords-for-text-front-matter'
+        Format front matter `KEYWORDS' for text file type.  `KEYWORDS'
+        is a list of strings.  Consult the `denote-file-types' for how
+        this is used.
+
+  Function `denote-format-keywords-for-org-front-matter'
+        Format front matter `KEYWORDS' for org file type.  `KEYWORDS' is
+        a list of strings.  Consult the `denote-file-types' for how this
+        is used.
+
+  Function `denote-extract-keywords-from-front-matter'
+        Format front matter `KEYWORDS' for org file type.  `KEYWORDS' is
+        a list of strings.  Consult the `denote-file-types' for how this
+        is used.
 
   Variable `denote-file-types'
         Alist of `denote-file-type' and their format properties.
@@ -5762,25 +5847,12 @@ section 17.12
         If `denote-file-type' is nil, use the first element of this list
         for new note creation.  The default is `org'.
 
-  Variable `denote-org-front-matter'
-        Specifies the Org front matter.  It is passed to `format' with
-        arguments `TITLE', `DATE', `KEYWORDS', `ID' ([Change the front
-        matter format])
 
-  Variable `denote-yaml-front-matter'
-        Specifies the YAML (Markdown) front matter.  It is passed to
-        `format' with arguments `TITLE', `DATE', `KEYWORDS', `ID'
-        ([Change the front matter format])
+[Change the front matter format] See section 8.1
 
-  Variable `denote-toml-front-matter'
-        Specifies the TOML (Markdown) front matter.  It is passed to
-        `format' with arguments `TITLE', `DATE', `KEYWORDS', `ID'
-        ([Change the front matter format])
 
-  Variable `denote-text-front-matter'
-        Specifies the plain text front matter.  It is passed to `format'
-        with arguments `TITLE', `DATE', `KEYWORDS', `ID' ([Change the
-        front matter format])
+18.6 Link interface for developers or advanced users
+────────────────────────────────────────────────────
 
   Variable `denote-org-link-format'
         Format of Org link to note.  The value is passed to `format'
@@ -5809,52 +5881,6 @@ section 17.12
   Variable `denote-id-only-link-in-context-regexp'
         Regexp to match an identifier-only link in its context.  The
         format of such links is `denote-id-only-link-format'.
-
-  Function `denote-date-org-timestamp'
-        Format `DATE' using the Org inactive timestamp notation.
-
-  Function `denote-date-rfc3339'
-        Format `DATE' using the RFC3339 specification.
-
-  Function `denote-date-iso-8601'
-        Format `DATE' according to ISO 8601 standard.
-
-  Function `denote-trim-whitespace'
-        Trim whitespace around string `S'.  This can be used in
-        `denote-file-types' to format front mattter.
-
-  Function `denote-trim-whitespace-then-quotes'
-        Trim whitespace then quotes around string `S'.  This can be used
-        in `denote-file-types' to format front mattter.
-
-  Function `denote-format-string-for-org-front-matter'
-        Return string `S' as-is for Org or plain text front matter. If
-        `S' is not a string, return an empty string.
-
-  Function `denote-format-string-for-md-front-matter'
-        Surround string `S' with quotes. If `S' is not a string, return
-        a literal emptry string. This can be used in `denote-file-types'
-        to format front mattter.
-
-  Function `denote-format-keywords-for-md-front-matter'
-        Format front matter `KEYWORDS' for markdown file type.
-        `KEYWORDS' is a list of strings.  Consult the
-        `denote-file-types' for how this is used.
-
-  Function `denote-format-keywords-for-text-front-matter'
-        Format front matter `KEYWORDS' for text file type.  `KEYWORDS'
-        is a list of strings.  Consult the `denote-file-types' for how
-        this is used.
-
-  Function `denote-format-keywords-for-org-front-matter'
-        Format front matter `KEYWORDS' for org file type.  `KEYWORDS' is
-        a list of strings.  Consult the `denote-file-types' for how this
-        is used.
-
-  Function `denote-extract-keywords-from-front-matter'
-        Format front matter `KEYWORDS' for org file type.  `KEYWORDS' is
-        a list of strings.  Consult the `denote-file-types' for how this
-        is used.
 
   Function `denote-select-linked-file-prompt'
         Prompt for linked file among `FILES'.
@@ -5887,25 +5913,78 @@ section 17.12
         returned as the description.
 
 
-[Packages that build on Denote] See section 16
+18.7 Xref interface for developers or advanced users
+────────────────────────────────────────────────────
 
-[The file-naming scheme] See section 7
+  [ All of the following are part of 4.0.0-dev. ]
 
-[Standard note creation] See section 5.1
+  Function `denote-retrieve-groups-xref-query'
+        Access location of xrefs for `QUERY' and group them per
+        file. Limit the search to text files.
+
+  Function `denote-retrieve-files-xref-query'
+        Return sorted, deduplicated file names with matches for `QUERY'
+        in their contents.  Limit the search to text files.
+
+  Function `denote-retrieve-xref-alist'
+        Return xref alist of files with location of matches for
+        `QUERY'. With optional `FILES-MATCHING-REGEXP', limit the list
+        of files accordingly (per `denote-directory-files'). At all
+        times limit the search to text files.
+
+
+18.8 Renaming files interface for developers or advanced users
+──────────────────────────────────────────────────────────────
+
+  Function `denote-rename-file-prompt'
+        Prompt to rename file named `OLD-NAME' to `NEW-NAME'. If
+        `denote-rename-confirmations' does not contain
+        `modify-file-name', return t without prompting.
+
+  Function `denote-rename-file-and-buffer'
+        Rename file named `OLD-NAME' to `NEW-NAME', updating buffer
+        name.
+
+  Function `denote-prepend-front-matter'
+        Prepend front matter to `FILE'. The `TITLE', `KEYWORDS', `DATE',
+        `ID', `SIGNATURE', and `FILE-TYPE' are passed from the renaming
+        command and are used to construct a new front matter block if
+        appropriate. [ This function is available as part of
+        4.0.0-dev. ]
+
+  Function `denote-rewrite-front-matter'
+        Rewrite front matter of note after `denote-rename-file' (or
+        related) The `FILE', `TITLE', `KEYWORDS', `SIGNATURE', `DATE',
+        `IDENTIFIER', and `FILE-TYPE' arguments are given by the
+        renaming command and are used to construct new front matter
+        values if appropriate. If `denote-rename-confirmations' contains
+        `rewrite-front-matter', prompt to confirm the rewriting of the
+        front matter. Otherwise produce a `y-or-n-p' prompt to that
+        effect. [ This function is changed as part of 4.0.0-dev. ]
+
+  Function `denote-add-front-matter-prompt'
+        Prompt to add a front-matter to `FILE'. Return non-nil if a new
+        front matter should be added. If `denote-rename-confirmations'
+        does not contain `add-front-matter', return t without prompting.
+
+  Function `denote-rewrite-keywords'
+        Rewrite `KEYWORDS' in `FILE' outright according to
+        `FILE-TYPE'. Do the same as `denote-rewrite-front-matter' for
+        keywords, but do not ask for confirmation. With optional
+        `SAVE-BUFFER', save the buffer corresponding to `FILE'. This
+        function is for use in the commands `denote-keywords-add',
+        `denote-keywords-remove', `denote-dired-rename-files', or
+        related.
+
+  Function `denote-update-dired-buffers'
+        Update Dired buffers of variable `denote-directory'. Also revert
+        the current Dired buffer even if it is not inside the
+        `denote-directory'. Note that the `denote-directory' accepts a
+        directory-local value for what we internally refer to as “silos”
+        ([Maintain separate directories for notes]).
+
 
 [Maintain separate directories for notes] See section 5.7
-
-[Custom sluggification to remove non-ASCII characters] See section 7.3.1
-
-[Sluggification of file name components] See section 7.2
-
-[The `denote-history-completion-in-prompts' option] See section 5.1.2
-
-[The denote-date-prompt-use-org-read-date option] See section 5.1.7
-
-[Points of entry] See section 5
-
-[Change the front matter format] See section 8.1
 
 
 19 Troubleshoot Denote in a pristine environment

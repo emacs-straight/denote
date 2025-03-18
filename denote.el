@@ -1786,33 +1786,41 @@ Also see `denote-retrieve-filename-keywords'."
 (defalias 'denote-retrieve-filename-keywords-as-list 'denote-extract-keywords-from-path
   "Alias for the function `denote-extract-keywords-from-path'")
 
-(defun denote--inferred-keywords (&optional files-matching-regexp)
-  "Extract keywords from `denote-directory-files'.
+(define-obsolete-function-alias
+  'denote--inferred-keywords
+  'denote-infer-keywords-from-files
+  "4.0.0")
+
+(defun denote-infer-keywords-from-files (&optional files-matching-regexp)
+  "Return list of keywords in `denote-directory-files'.
 With optional FILES-MATCHING-REGEXP, only extract keywords from the
 matching files.  Otherwise, do it for all files.
 
-This function returns duplicates.  The `denote-keywords' is the
-one that doesn't."
-  (let ((kw (mapcan #'denote-extract-keywords-from-path (denote-directory-files files-matching-regexp))))
+Keep any duplicates.  Users who do not want duplicates should refer to
+the functions `denote-keywords'."
+  (when-let* ((files (denote-directory-files files-matching-regexp))
+              (keywords (mapcan #'denote-extract-keywords-from-path files)))
     (if-let* ((regexp denote-excluded-keywords-regexp))
-        (seq-remove (apply-partially #'string-match-p regexp) kw)
-      kw)))
+        (seq-remove
+         (lambda (k)
+           (string-match-p regexp k))
+         keywords)
+      keywords)))
 
 (defun denote-keywords (&optional files-matching-regexp)
   "Return appropriate list of keyword candidates.
-If `denote-infer-keywords' is non-nil, infer keywords from
-existing notes and combine them into a list with
-`denote-known-keywords'.  Else use only the latter.
+If `denote-infer-keywords' is non-nil, infer keywords from existing
+notes and combine them into a list with `denote-known-keywords'.  Else
+use only the latter.
 
 In the case of keyword inferrence, use optional FILES-MATCHING-REGEXP,
 to extract keywords only from the matching files.  Otherwise, do it for
 all files.
 
-Inferred keywords are filtered by the user option
-`denote-excluded-keywords-regexp'."
+Filter inferred keywords with the user option `denote-excluded-keywords-regexp'."
   (delete-dups
    (if denote-infer-keywords
-       (append (denote--inferred-keywords files-matching-regexp) denote-known-keywords)
+       (append (denote-infer-keywords-from-files files-matching-regexp) denote-known-keywords)
      denote-known-keywords)))
 
 (defvar denote-keyword-history nil
@@ -2495,25 +2503,44 @@ This is a wrapper for `denote-retrieve-front-matter-title-value' and
           (t
            (file-name-base file)))))
 
-(defun denote--retrieve-location-in-xrefs (identifier)
-  "Return list of xrefs for IDENTIFIER with their respective location.
-Limit the search to text files, per `denote-directory-files' with
-non-nil `text-only' parameter."
-  (when-let* ((files (denote-directory-files nil nil :text-only)))
-    (mapcar #'xref-match-item-location (xref-matches-in-files identifier files))))
+(make-obsolete 'denote--retrieve-location-in-xrefs 'denote-retrieve-groups-xref-query "4.0.0")
 
-(defun denote--retrieve-group-in-xrefs (identifier)
-  "Access location of xrefs for IDENTIFIER and group them per file.
-See `denote--retrieve-locations-in-xrefs'."
-  (mapcar #'xref-location-group
-          (denote--retrieve-location-in-xrefs identifier)))
+(define-obsolete-function-alias
+  'denote--retrieve-group-in-xrefs
+  'denote-retrieve-groups-xref-query
+  "4.0.0")
 
-(defun denote--retrieve-files-in-xrefs (identifier)
-  "Return sorted, deduplicated file names with IDENTIFIER in their contents."
+(defun denote-retrieve-groups-xref-query (query)
+  "Access location of xrefs for QUERY and group them per file.
+Limit the search to text files."
+  (when-let* ((files (denote-directory-files nil nil :text-only))
+              (locations (mapcar #'xref-match-item-location (xref-matches-in-files query files))))
+    (mapcar #'xref-location-group locations)))
+
+(define-obsolete-function-alias
+  'denote--retrieve-files-in-xrefs
+  'denote-retrieve-files-xref-query
+  "4.0.0")
+
+(defun denote-retrieve-files-xref-query (query)
+  "Return sorted, deduplicated file names with matches for QUERY in their contents.
+Limit the search to text files."
   (sort
    (delete-dups
-    (denote--retrieve-group-in-xrefs identifier))
+    (denote-retrieve-groups-xref-query query))
    #'string-collate-lessp))
+
+(defun denote-retrieve-xref-alist (query &optional files-matching-regexp)
+  "Return xref alist of files with location of matches for QUERY.
+With optional FILES-MATCHING-REGEXP, limit the list of files
+accordingly (per `denote-directory-files').
+
+At all times limit the search to text files."
+  (let ((xref-file-name-display 'abs))
+    (xref--analyze
+     (xref-matches-in-files
+      query
+      (denote-directory-files files-matching-regexp :omit-current :text-only)))))
 
 ;;;; New note
 
@@ -4985,7 +5012,7 @@ Also see `denote-link-return-backlinks'."
 Also see `denote-link-return-links'."
   (when-let* ((current-file (or file (buffer-file-name)))
               (id (denote-retrieve-filename-identifier-with-error current-file)))
-    (delete current-file (denote--retrieve-files-in-xrefs id))))
+    (delete current-file (denote-retrieve-files-xref-query id))))
 
 ;; TODO 2024-09-04: Instead of using `denote-link-return-backlinks' we
 ;; should have a function that does not try to find all backlinks but
@@ -5363,10 +5390,7 @@ non-nil value."
          ;; in relative form, but eventually notes may not be all
          ;; under a common directory (or project).
          (xref-file-name-display 'abs)
-         (xref-alist (xref--analyze
-                      (xref-matches-in-files
-                       query
-                       (denote-directory-files files-matching-regexp :omit-current :text-only))))
+         (xref-alist (denote-retrieve-xref-alist query files-matching-regexp))
          (dir (denote-directory)))
     (unless xref-alist
       (error "No backlinks for query `%s'" query))
