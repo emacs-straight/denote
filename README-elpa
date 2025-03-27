@@ -3070,7 +3070,7 @@ section 7.4
 
   [ Revised to also support context links that do not use a `PROPERTIES'
     drawer but which are easier to break. This is done as part of
-    4.0.0-dev. ]
+    4.0.0-dev. Also revised to have a nil value by default. ]
 
   The user option `denote-org-store-link-to-heading' determines whether
   `org-store-link' links to the current Org heading.
@@ -3088,8 +3088,6 @@ section 7.4
   │ [[denote:20240118T060608][Some test]]
   └────
 
-
-  This is what Denote was doing in versions prior to 2.3.0.
 
   If the value is `context', the link consists of the file’s identifier
   and the text of the current heading, like this:
