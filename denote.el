@@ -591,18 +591,7 @@ command."
   :link '(info-link "(denote) The denote-templates option")
   :group 'denote)
 
-(defcustom denote-backlinks-show-context nil
-  "When non-nil, show link context in the backlinks buffer.
-
-The context is the line a link to the current note is found in.
-The context includes multiple links to the same note, if those
-are present.
-
-When nil, only show a simple list of file names that link to the
-current note."
-  :group 'denote
-  :package-version '(denote . "1.2.0")
-  :type 'boolean)
+(make-obsolete-variable 'denote-backlinks-show-context nil "4.0.0")
 
 (make-obsolete-variable 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
 
@@ -612,9 +601,9 @@ current note."
   "3.1.0")
 
 (defcustom denote-backlinks-display-buffer-action
-  '((display-buffer-reuse-window display-buffer-below-selected)
-    (window-height . fit-window-to-buffer)
-    (dedicated . t))
+  '((display-buffer-reuse-mode-window display-buffer-below-selected)
+    (mode . denote-query-mode)
+    (window-height . fit-window-to-buffer))
   "The action used to display the current file's backlinks buffer.
 
 The value has the form (FUNCTION . ALIST), where FUNCTION is
@@ -644,6 +633,25 @@ and/or the documentation string of `display-buffer'."
                  :value-type ,display-buffer--action-custom-type)
           (function :tag "Custom function to return an action alist"))
   :package-version '(denote . "3.1.0")
+  :group 'denote)
+
+(defcustom denote-query-links-display-buffer-action
+  '((display-buffer-reuse-mode-window display-buffer-below-selected)
+    (mode . (denote-query-mode dired))
+    (window-height . 0.3)
+    (preserve-size . (t . t)))
+  "The action used to display query links.
+This is the same as `denote-backlinks-display-buffer-action'.  Refer to
+its documentation for the technicalities."
+  :risky t
+  :type `(choice
+          (alist :key-type
+                 (choice :tag "Condition"
+                         regexp
+                         (function :tag "Matcher function"))
+                 :value-type ,display-buffer--action-custom-type)
+          (function :tag "Custom function to return an action alist"))
+  :package-version '(denote . "4.0.0")
   :group 'denote)
 
 (defcustom denote-rename-confirmations '(rewrite-front-matter modify-file-name)
@@ -1729,7 +1737,7 @@ also prompt for SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
    OMIT-CURRENT have been applied.
 
 When called from Lisp, the arguments are a string, a symbol among
-`denote-sort-components', and a non-nil value, respectively."
+`denote-sort-components', a non-nil value, and a string, respectively."
   (interactive
    (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
   (let ((component (or sort-by-component
@@ -1760,9 +1768,7 @@ When called from Lisp, the arguments are a string, a symbol among
                           ;; `denote-update-dired-buffers'.
                           (kill-buffer dired-buffer)
                           (denote-sort-dired files-matching-regexp component reverse-sort exclude-rx))))
-          ;; Because of the above NOTE, I am printing a message.  Not
-          ;; what I want, but it is better than nothing...
-          (message denote-sort-dired-buffer-name))
+          buffer-name)
       (message "No matching files for: %s" files-matching-regexp))))
 
 (defalias 'denote-dired 'denote-sort-dired
@@ -2506,10 +2512,11 @@ This is a wrapper for `denote-retrieve-front-matter-title-value' and
   'denote-retrieve-groups-xref-query
   "4.0.0")
 
-(defun denote-retrieve-groups-xref-query (query)
+(defun denote-retrieve-groups-xref-query (query &optional files-matching-regexp)
   "Access location of xrefs for QUERY and group them per file.
-Limit the search to text files."
-  (when-let* ((files (denote-directory-files nil nil :text-only))
+Limit the search to text files.  With optional FILES-MATCHING-REGEXP,
+pass it to `denote-directory-files'."
+  (when-let* ((files (denote-directory-files files-matching-regexp nil :text-only))
               (locations (mapcar #'xref-match-item-location (xref-matches-in-files query files))))
     (mapcar #'xref-location-group locations)))
 
@@ -2518,16 +2525,17 @@ Limit the search to text files."
   'denote-retrieve-files-xref-query
   "4.0.0")
 
-(defun denote-retrieve-files-xref-query (query)
+(defun denote-retrieve-files-xref-query (query &optional files-matching-regexp)
   "Return sorted, deduplicated file names with matches for QUERY in their contents.
-Limit the search to text files."
+Limit the search to text files.  With optional FILES-MATCHING-REGEXP,
+pass it to `denote-directory-files'."
   (sort
    (delete-dups
-    (denote-retrieve-groups-xref-query query))
+    (denote-retrieve-groups-xref-query query files-matching-regexp))
    #'string-collate-lessp))
 
 (defun denote-retrieve-xref-alist (query &optional files-matching-regexp)
-  "Return xref alist of files with location of matches for QUERY.
+  "Return xref alist of absolute file paths with location of matches for QUERY.
 With optional FILES-MATCHING-REGEXP, limit the list of files
 accordingly (per `denote-directory-files').
 
@@ -4365,6 +4373,11 @@ Construct the file name in accordance with the user option
   :group 'denote-faces
   :package-version '(denote . "0.5.0"))
 
+(defface denote-faces-query-link '((t :inherit link-visited))
+  "Face used to style Denote query links in the buffer."
+  :group 'denote-faces
+  :package-version '(denote . "4.0.0"))
+
 (defface denote-faces-subdirectory '((t :inherit bold))
   "Face for subdirectory of file name.
 This should only ever needed in the backlinks' buffer (or
@@ -4611,9 +4624,7 @@ and seconds."
   `((denote-faces-dired-file-name-matcher ,@denote-faces-matchers))
   "Keywords for fontification of file names.")
 
-(defconst denote-faces-file-name-keywords-for-backlinks
-  `(("^.+$" ,@denote-faces-matchers))
-  "Keywords for fontification of file names.")
+(make-obsolete-variable 'denote-faces-file-name-keywords-for-backlinks nil "4.0.0")
 
 (defface denote-faces-prompt-old-name '((t :inherit error))
   "Face for the old name shown in the prompt of `denote-rename-file' etc."
@@ -4749,7 +4760,7 @@ Also see `denote-id-only-link-in-context-regexp'.")
 
 (defvar denote-org-link-in-context-regexp
   (concat "\\[\\[" "denote:"
-          "\\(?1:" denote-id-regexp "\\)"
+          "\\(?1:[^][]*?\\)"
           "\\(?:::.*\\)?" "]"
           "\\[" "\\(?2:" ".*?" "\\)" "]]")
   "Regexp to match an Org link in its context.
@@ -4757,12 +4768,12 @@ The format of such links is `denote-org-link-format'.")
 
 (defvar denote-md-link-in-context-regexp
   (concat "\\[" "\\(?2:" ".*?" "\\)" "]"
-          "(denote:"  "\\(?1:" denote-id-regexp "\\)" ")")
+          "(denote:"  "\\(?1:[^][]*?\\)" ")")
   "Regexp to match a Markdown link in its context.
 The format of such links is `denote-md-link-format'.")
 
 (defvar denote-id-only-link-in-context-regexp
-  (concat "\\[\\[" "denote:"  "\\(?1:" denote-id-regexp "\\)" "]]")
+  (concat "\\[\\[" "denote:"  "\\(?1:[^][]*?\\)" "]]")
   "Regexp to match an identifier-only link in its context.
 The format of such links is `denote-id-only-link-format'."  )
 
@@ -5097,22 +5108,237 @@ file's title.  This has the same meaning as in `denote-link'."
 (defalias 'denote-link-to-existing-or-new-note 'denote-link-or-create
   "Alias for `denote-link-or-create' command.")
 
+;;;;; Links' buffer (query links and backlinks using `denote-query-mode')
+
+(make-obsolete 'denote-link--backlink-find-file nil "4.0.0")
+(make-obsolete 'denote-link--display-buffer nil "4.0.0")
+(make-obsolete 'denote-backlinks-mode-next nil "4.0.0")
+(make-obsolete 'denote-backlinks-mode-previous nil "4.0.0")
+(make-obsolete 'denote-backlinks-toggle-context nil "4.0.0")
+(make-obsolete-variable 'denote-backlinks-mode-map nil "4.0.0")
+
+(define-obsolete-function-alias
+  'denote-backlinks-mode
+  'denote-query-mode
+  "4.0.0")
+
+(define-derived-mode denote-query-mode xref--xref-buffer-mode "Denote Query"
+  "Major mode for queries found in the variable `denote-directory'.
+This is used by the command `denote-backlinks' and all links created by
+the `denote-query' command, among others."
+  :interactive nil)
+
+(define-obsolete-function-alias
+  'denote-link--prepare-backlinks
+  'denote-make-links-buffer
+  "4.0.0")
+
+;; NOTE 2025-03-24: The `&rest' is there because we used to have an
+;; extra SHOW-CONTEXT parameter.  This way we do not break anybody's
+;; code, even if we slightly modify the behaviour.
+(defun denote-make-links-buffer (query &optional files-matching-regexp buffer-name display-buffer-action &rest _)
+  "Create links' buffer called BUFFER-NAME for QUERY.
+
+With optional FILES-MATCHING-REGEXP, limit the list of files
+accordingly (per `denote-directory-files').
+
+Optional DISPLAY-BUFFER-ACTION is a `display-buffer' action and
+concomitant alist, such as `denote-backlinks-display-buffer-action'."
+  (let* ((inhibit-read-only t)
+         (file buffer-file-name)
+         (buffer (or buffer-name (format-message "Denote query for `%s'" query)))
+         ;; We retrieve results in absolute form and change the
+         ;; absolute path to a relative path below. We could add a
+         ;; suitable function and the results would be automatically
+         ;; in relative form, but eventually notes may not be all
+         ;; under a common directory (or project).
+         (xref-alist (denote-retrieve-xref-alist query files-matching-regexp))
+         (dir (denote-directory)))
+    (unless xref-alist
+      (error "No matches for query `%s'" query))
+    (with-current-buffer (get-buffer-create buffer)
+      (erase-buffer)
+      (denote-query-mode)
+      ;; In the links' buffer, the values of variables set in a
+      ;; `.dir-locals.el` do not apply.  We need to set
+      ;; `denote-directory' here because the buttons depend on it.
+      ;; Moreover, its value is overwritten after enabling the major
+      ;; mode, so it needs to be set after.
+      (setq-local denote-directory dir)
+      (setq overlay-arrow-position nil)
+      (goto-char (point-min))
+      (xref--insert-xrefs xref-alist)
+      (goto-char (point-min))
+      (setq-local revert-buffer-function
+                  (lambda (_ignore-auto _noconfirm)
+                    (when-let* ((buffer-file-name file))
+                      (denote-make-links-buffer query files-matching-regexp buffer-name display-buffer-action)))))
+    (display-buffer buffer display-buffer-action)))
+
+(defvar denote-query-links-buffer-function #'denote-make-links-buffer
+  "Function to make an Xref buffer showing query link results.
+It accepts the same arguments as `denote-make-links-buffer'.")
+
+;;;;;; Backlinks
+
+(defun denote--backlinks-get-buffer-name (file id)
+  "Format a buffer name for `denote-backlinks'.
+Use FILE to detect a suitable title with which to name the buffer.  Else
+use the ID."
+  (if-let* ((type (denote-filetype-heuristics file))
+            (title (denote-retrieve-front-matter-title-value file type)))
+      (format "*Denote FILE backlinks for %S*" title)
+    (format "*Denote FILE backlinks for %s*" id)))
+
+;;;###autoload
+(defun denote-backlinks ()
+  "Produce a buffer with backlinks to the current note.
+
+Show the names of files linking to the current file.  Include the
+context of each link if the user option `denote-backlinks-show-context'
+is non-nil.
+
+Place the buffer below the current window or wherever the user option
+`denote-backlinks-display-buffer-action' specifies."
+  (interactive)
+  (if-let* ((file buffer-file-name))
+      (when-let* ((identifier (denote-retrieve-filename-identifier-with-error file)))
+        (funcall denote-query-links-buffer-function
+                 identifier nil
+                 (denote--backlinks-get-buffer-name file identifier)
+                 denote-backlinks-display-buffer-action))
+    (user-error "Buffer `%s' is not associated with a file" (current-buffer))))
+
+(defalias 'denote-show-backlinks-buffer 'denote-backlinks
+  "Alias for `denote-backlinks' command.")
+
+;;;;;; Query links
+
+(defvar denote-query-link-history nil
+  "Minibuffer history of `denote-query-link-prompt'.")
+
+(defun denote-query-link-prompt (&optional initial-query prompt-text)
+  "Prompt for query string.
+With optional INITIAL-QUERY use it as the initial minibuffer text.  With
+optional PROMPT-TEXT use it in the minibuffer instead of the default
+prompt.
+
+Previous inputs at this prompt are available for minibuffer completion
+if the user option `denote-history-completion-in-prompts' is set to a
+non-nil value."
+  (when (and initial-query (string-empty-p initial-query))
+    (setq initial-query nil))
+  (denote--with-conditional-completion
+   'denote-signature-prompt
+   (format-prompt (or prompt-text "Query for") nil)
+   denote-query-link-history
+   initial-query))
+
+(defconst denote-query-link-types '(query-contents query-filenames)
+  "Types of query links.")
+
+;; NOTE 2025-03-27: Should we expose a user option for this?  And/or
+;; should we add a DESCRIPTION parameter to `denote--format-query-link'?
+;;
+;; What would make for a good default description in that scenario?
+;; Maybe "QC:query text here" and "QF:query text here" for
+;; `query-contents' and `query-filenames' respectively.
+(defvar denote-query-description-prefix ""
+  "Prefix string for query links to format their description text.
+The description text constists of the value of this variable followed by
+the query")
+
+(defun denote--format-query-link (type query file-type)
+  "Format QUERY link of TYPE for the given FILE-TYPE.
+Return an error if TYPE is not one among the symbols specified in
+`denote-query-link-types'.
+
+If FILE-TYPE is nil, use that of Org."
+  (unless (memq type denote-query-link-types)
+    (error "Type `%s' is not one among `denote-query-link-types'" type))
+  (format (or (denote--link-format file-type) (denote--link-format 'org))
+          (format "%s:%s" type query)
+          (format "%s%s" denote-query-description-prefix query)))
+
+;;;###autoload
+(defun denote-query-contents-link (query)
+  "Insert query link for file contents.
+Prompt for QUERY or use the text of the active region.  When the user
+follows this link, place any matches in a separate buffer (using the
+built-in Xref mechanism).  This is the equivalent of a Unix grep command
+across the variable `denote-directory'."
+  (interactive
+   (list
+    (or (denote--get-active-region-content)
+        (denote-query-link-prompt nil "Query in file CONTENTS"))))
+  (unless (or (denote--file-type-org-extra-p)
+              (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
+    (user-error "The current file type is not recognized by Denote"))
+  (denote--delete-active-region-content)
+  (insert (denote--format-query-link 'query-contents query (denote-filetype-heuristics buffer-file-name))))
+
+;;;###autoload
+(defun denote-query-filenames-link (query)
+  "Insert query link for file names.
+Prompt for QUERY or use the text of the active region.  When the user
+follows this link, place any matches in a separate buffer (using the
+built-in Dired mechanism).  This is the equivalent of a Unix find
+command across the variable `denote-directory'."
+  (interactive
+   (list
+    (or (denote--get-active-region-content)
+        (denote-query-link-prompt nil "Query in file NAMES"))))
+  (unless (or (denote--file-type-org-extra-p)
+              (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
+    (user-error "The current file type is not recognized by Denote"))
+  (denote--delete-active-region-content)
+  (insert (denote--format-query-link 'query-filenames query (denote-filetype-heuristics buffer-file-name))))
+
+(defvar denote--query-last-dired-buffer nil
+  "Buffer object produced by the last query for file names.")
+
+(defun denote--act-on-query-link (query)
+  "Act on QUERY link.
+QUERY is a string of the form TYPE:SEARCH, where TYPE is one among
+`denote-query-link-types' while SEARCH is the regular expression to
+search for."
+  (cond
+   ((string-prefix-p "query-contents:" query)
+    (setq query (replace-regexp-in-string "query-contents:" "" query))
+    (funcall denote-query-links-buffer-function query nil nil denote-query-links-display-buffer-action))
+   ((string-prefix-p "query-filenames:" query)
+    (setq query (replace-regexp-in-string "query-filenames:" "" query))
+    ;; NOTE 2025-03-27: I do not think we need to add another
+    ;; parameter to `denote-sort-dired' for handling the
+    ;; `display-buffer'.  This is a special case, but we can always
+    ;; change it later if the need arises.
+    ;;
+    ;; Here we handle the buffer and window state to make it behave
+    ;; like the Xref buffer.  Otherwise, Dired does not reuse its
+    ;; buffer (which is generally okay).
+    (let ((buffer (save-window-excursion (denote-sort-dired query nil nil nil))))
+      (when (bufferp denote--query-last-dired-buffer)
+        (when-let* ((window (get-buffer-window denote--query-last-dired-buffer))
+                    (_ (window-live-p window)))
+          (delete-window window))
+        (kill-buffer denote--query-last-dired-buffer))
+      (display-buffer buffer denote-query-links-display-buffer-action)
+      (setq denote--query-last-dired-buffer buffer)))
+   (t
+    (error "Cannot open `%s' of unknown link type" query))))
+
 ;;;;; Link buttons
 
-(defun denote-link--find-file-at-button (button)
-  "Visit file referenced by BUTTON."
-  (let* ((id (denote-extract-id-from-string
-              (buffer-substring-no-properties
-               (button-start button)
-               (button-end button))))
-         (file (denote-get-path-by-id id)))
-    (funcall denote-open-link-function file)))
+(make-obsolete 'denote-link--find-file-at-button nil "4.0.0")
 
 (make-obsolete
  'denote-link-buttonize-buffer
  'denote-fontify-links-mode
  "Use the `denote-fontify-links-mode', as it works better than buttonization. Since 3.0.0")
 
+;; NOTE 2025-03-24: This does not work for query links because of how
+;; `markdown-follow-link-at-point' is implemented to always check for
+;; links.
 (defun denote-link-markdown-follow (link)
   "Function to open Denote file present in LINK.
 To be assigned to `markdown-follow-link-functions'."
@@ -5136,67 +5362,79 @@ To be assigned to `markdown-follow-link-functions'."
     map)
   "Keymap for mouse actions over fontified Denote links.")
 
+(defun denote--link-open-at-point-subr ()
+  "Open link at point."
+  (let ((query (get-text-property (point) 'denote-link-query-part)))
+    (if-let* ((path (denote-get-path-by-id query)))
+        (funcall denote-open-link-function path)
+      (denote--act-on-query-link query))))
+
+(defun denote-link-open-at-point ()
+  "Open Denote link at point."
+  (interactive)
+  (denote--link-open-at-point-subr))
+
 (defun denote-link-open-at-mouse (ev)
   "Open Denote link for mouse EV click."
   (interactive "e")
   (mouse-set-point ev)
-  (if-let* ((id (get-text-property (point) 'denote-link-id))
-            (path (denote-get-path-by-id id)))
-      (funcall denote-open-link-function path)
-    (error "Cannot resolve the link at point")))
+  (denote--link-open-at-point-subr))
 
-(defun denote-fontify-links (&optional limit)
-  "Fontify Denote links up until optional LIMIT.
+(defun denote-get-link-face (query)
+  "Return appropriate face for QUERY."
+  (if (denote-identifier-p (string-trim-right query ":.*"))
+      'denote-faces-link
+    'denote-faces-query-link))
 
+(defun denote--fontify-links-subr (query limit)
+  "Do the work of the font-lock match for QUERY up to LIMIT.
 Implementation based on the function `org-activate-links'."
   (catch :exit
-    (when-let* ((type (denote-filetype-heuristics (buffer-file-name))))
-      (while (re-search-forward (denote--link-in-context-regexp type) limit t)
-        (save-match-data  ; to return the matches to font-lock
-          (let* ((start (match-beginning 0))
-                 (end (match-end 0))
-                 (visible-start (match-beginning 2))
-                 (visible-end (match-end 2))
-                 (id (match-string-no-properties 1))
-                 (path (denote-get-path-by-id id))
-                 (file-link (concat "file:" path)))
-            ;; FIXME 2024-06-19: Rewrite this (unless...let...if...)
-            ;; because it is hard to reason about. But it works, so no
-            ;; pressure.
-            (unless (let ((face (get-text-property
-                                 (max (1- start) (point-min)) 'face)))
-                      (if (consp face)
-                          (memq 'font-lock-comment-face face)
-                        (eq 'font-lock-comment-face face)))
-              (let* ((properties `(face denote-faces-link
-                                        mouse-face highlight
-                                        keymap ,denote-link-mouse-map
-                                        denote-link-id ,id
-                                        help-echo ,(or (denote-retrieve-title-or-filename path type)
-                                                       (concat "denote:" id))
-                                        htmlize-link (:uri ,file-link)
-                                        font-lock-multiline t))
-                     (non-sticky-props
-                      '(rear-nonsticky (mouse-face highlight keymap invisible intangible help-echo htmlize-link)))
-                     (face-property 'link)
-                     (hidden (append '(invisible 'denote-link) properties)))
-                (remove-text-properties start end '(invisible nil))
-                (add-text-properties start visible-start hidden)
-                (add-face-text-property start end face-property)
-                (add-text-properties visible-start visible-end properties)
-                (add-text-properties visible-end end hidden)
-                (dolist (pos (list end visible-start visible-end))
-                  (add-text-properties (1- pos) pos non-sticky-props)))
-              (throw :exit t))))))      ; signal success
+    (while (re-search-forward query limit t)
+      (save-match-data  ; to return the matches to font-lock
+        (let* ((start (match-beginning 0))
+               (end (match-end 0))
+               (visible-start (or (match-beginning 2) start))
+               (visible-end (or (match-end 2) end))
+               (query (match-string-no-properties 1)))
+          (let* ((properties `( face ,(denote-get-link-face query)
+                                mouse-face highlight
+                                keymap ,denote-link-mouse-map
+                                denote-link-query-part ,query
+                                help-echo query
+                                htmlize-link (:uri ,query)
+                                font-lock-multiline t))
+                 (non-sticky-props
+                  '(rear-nonsticky (mouse-face highlight keymap invisible intangible help-echo htmlize-link)))
+                 (face-property 'link)
+                 (hidden (append '(invisible 'denote-link) properties)))
+            (remove-text-properties start end '(invisible nil))
+            (add-text-properties start visible-start hidden)
+            (add-face-text-property start end face-property)
+            (add-text-properties visible-start visible-end properties)
+            (add-text-properties visible-end end hidden)
+            (dolist (pos (list end visible-start visible-end))
+              (add-text-properties (1- pos) pos non-sticky-props)))
+          (throw :exit t))))      ; signal success
     nil))
 
-(defun denote-get-identifier-at-point (&optional point)
-  "Return the Denote identifier at point or optional POINT."
+(defun denote-fontify-links (limit)
+  "Provide font-lock matcher to fontify links up to LIMIT."
+  (when-let* ((type (denote-filetype-heuristics (buffer-file-name))))
+    (denote--fontify-links-subr (denote--link-in-context-regexp type) limit)))
+
+(define-obsolete-function-alias
+  'denote-get-identifier-at-point
+  'denote-get-link-identifier-or-query-term-at-point
+  "4.0.0")
+
+(defun denote-get-link-identifier-or-query-term-at-point (&optional point)
+  "Return the Denote identifier or query term at point or optional POINT."
   (when-let* ((position (or point (point)))
               (face-at-point (get-text-property position 'face))
               ((or (eq face-at-point 'denote-faces-link)
                    (member 'denote-faces-link face-at-point))))
-    (or (get-text-property position 'denote-link-id)
+    (or (get-text-property position 'denote-link-query-part)
         (when-let* ((link-data (get-text-property position 'htmlize-link))
                     (link (cadr link-data)))
           (string-match denote-id-regexp link)
@@ -5206,11 +5444,13 @@ Implementation based on the function `org-activate-links'."
   "Return link to the Denote file path at point or optional POINT.
 To be used as a `thing-at' provider."
   (when-let* ((position (or point (point)))
-              (id (get-text-property position 'denote-link-id)))
-    (concat "file:" (denote-get-path-by-id id))))
+              (id (get-text-property position 'denote-link-query-part))
+              (path (denote-get-path-by-id id)))
+    (concat "file:" path)))
 
 (defvar thing-at-point-provider-alist)
 
+;;;###autoload
 (defun denote-fontify-links-mode-maybe ()
   "Enable `denote-fontify-links-mode' in a denote file unless in `org-mode'."
   (when (and buffer-file-name
@@ -5218,6 +5458,7 @@ To be used as a `thing-at' provider."
              (denote-file-is-note-p buffer-file-name))
     (denote-fontify-links-mode)))
 
+;;;###autoload
 (define-minor-mode denote-fontify-links-mode
   "A minor mode to fontify and fold Denote links.
 
@@ -5231,202 +5472,17 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
   (if denote-fontify-links-mode
       (progn
         (add-to-invisibility-spec 'denote-link)
-        (font-lock-add-keywords nil '(denote-fontify-links))
+        (font-lock-add-keywords nil '((denote-fontify-links)))
         (setq-local thing-at-point-provider-alist
                     (append thing-at-point-provider-alist
                             '((url . denote--get-link-file-path-at-point)))))
     (remove-from-invisibility-spec 'denote-link)
-    (font-lock-remove-keywords nil '(denote-fontify-links))
+    (font-lock-remove-keywords nil '((denote-fontify-links)))
     (setq-local thing-at-point-provider-alist
                 (delete
                  '(url . denote--get-link-file-path-at-point)
                  thing-at-point-provider-alist)))
   (font-lock-update))
-
-;;;;; Backlinks' buffer
-
-(define-button-type 'denote-link-backlink-button
-  'follow-link t
-  'action #'denote-link--backlink-find-file
-  'face nil) ; we add fontification in `denote-link--prepare-backlinks'
-
-(defun denote-link--backlink-find-file (button)
-  "Action for BUTTON to `find-file'."
-  (funcall denote-open-link-function
-           (concat (denote-directory)
-                   (buffer-substring (button-start button) (button-end button)))))
-
-(defun denote-link--display-buffer (buf &optional action)
-  "Run `display-buffer' on BUF using optional ACTION alist.
-ACTION is an alist of the form described in the user option
-`denote-backlinks-display-buffer-action'."
-  (display-buffer
-   buf
-   `(,@(or action denote-backlinks-display-buffer-action))))
-
-(define-obsolete-function-alias
-  'denote-backlinks-next
-  'denote-backlinks-mode-next
-  "2.3.0")
-
-(defun denote-backlinks-mode-next (n)
-  "Use appropriate command for forward motion in backlinks buffer.
-With N as a numeric argument, move to the Nth button from point.
-A nil value of N is understood as 1.
-
-When `denote-backlinks-show-context' is nil, move between files
-in the backlinks buffer.
-
-When `denote-backlinks-show-context' is non-nil move between
-matching identifiers."
-  (interactive "p" denote-backlinks-mode)
-  (unless (derived-mode-p 'denote-backlinks-mode)
-    (user-error "Only use this in a Denote backlinks buffer"))
-  (if denote-backlinks-show-context
-      (xref-next-line)
-    (forward-button n)))
-
-(define-obsolete-function-alias
-  'denote-backlinks-prev
-  'denote-backlinks-mode-previous
-  "2.3.0")
-
-(defun denote-backlinks-mode-previous (n)
-  "Use appropriate command for backward motion in backlinks buffer.
-With N as a numeric argument, move to the Nth button from point.
-A nil value of N is understood as 1.
-
-When `denote-backlinks-show-context' is nil, move between files
-in the backlinks buffer.
-
-When `denote-backlinks-show-context' is non-nil move between
-matching identifiers."
-  (interactive "p" denote-backlinks-mode)
-  (unless (derived-mode-p 'denote-backlinks-mode)
-    (user-error "Only use this in a Denote backlinks buffer"))
-  (if denote-backlinks-show-context
-      (xref-prev-line)
-    (backward-button n)))
-
-;; NOTE 2024-07-25: This can be a minor mode, though I do not like
-;; that global minor modes have to be autoloaded.  We do not need to
-;; autoload a secondary piece of functionality.
-;;
-;; NOTE 2024-07-25: We do not need the user option if we turn this
-;; into a minor mode.
-;;
-;; NOTE 2024-07-25: I would prefer to have a buffer-local toggle which
-;; does not affect the global user preference.  The trick is to make
-;; this work with `revert-buffer'.
-(defun denote-backlinks-toggle-context ()
-  "Show or hide the context of links in backlinks buffers.
-This is the same as toggling the `denote-backlinks-show-context' user
-option.
-
-When called inside of a backlinks buffer, also revert the buffer."
-  (interactive)
-  (let ((state))
-    (if denote-backlinks-show-context
-        (setq denote-backlinks-show-context nil
-              state "compact")
-      (setq denote-backlinks-show-context t
-            state "detailed"))
-    (message "Toggled the %s view for the backlinks buffer"
-             (propertize state 'face 'error))
-    (when (derived-mode-p 'denote-backlinks-mode)
-      (revert-buffer)
-      (fit-window-to-buffer))))
-
-(defvar denote-backlinks-mode-map
-  (let ((m (make-sparse-keymap)))
-    (define-key m "n" #'denote-backlinks-mode-next)
-    (define-key m "p" #'denote-backlinks-mode-previous)
-    (define-key m "c" #'denote-backlinks-toggle-context)
-    (define-key m "g" #'revert-buffer)
-    m)
-  "Keymap for `denote-backlinks-mode'.")
-
-(define-derived-mode denote-backlinks-mode xref--xref-buffer-mode "Backlinks"
-  "Major mode for backlinks buffers."
-  :interactive nil)
-
-(defun denote-link--prepare-backlinks (query &optional files-matching-regexp buffer-name display-buffer-action show-context)
-  "Create backlinks' buffer called BUFFER-NAME for the current file matching QUERY.
-
-With optional FILES-MATCHING-REGEXP, limit the list of files
-accordingly (per `denote-directory-files').
-
-Optional DISPLAY-BUFFER-ACTION is a `display-buffer' action and
-concomitant alist, such as `denote-backlinks-display-buffer-action'.
-
-Optional SHOW-CONTEXT displays the lines where matches for QUERY
-occur.  This is the same as setting `denote-backlinks-show-context' to a
-non-nil value."
-  (let* ((inhibit-read-only t)
-         (file (buffer-file-name))
-         (backlinks-buffer (or buffer-name (format "Backlinks for '%s'" query)))
-         ;; We retrieve results in absolute form and change the
-         ;; absolute path to a relative path below. We could add a
-         ;; suitable function and the results would be automatically
-         ;; in relative form, but eventually notes may not be all
-         ;; under a common directory (or project).
-         (xref-file-name-display 'abs)
-         (xref-alist (denote-retrieve-xref-alist query files-matching-regexp))
-         (dir (denote-directory)))
-    (unless xref-alist
-      (error "No backlinks for query `%s'" query))
-    (with-current-buffer (get-buffer-create backlinks-buffer)
-      (erase-buffer)
-      (denote-backlinks-mode)
-      ;; In the backlinks buffer, the values of variables set in a
-      ;; `.dir-locals.el` do not apply.  We need to set `denote-directory' in
-      ;; the backlinks buffer because the buttons depend on it.  Moreover, its
-      ;; value is overwritten after enabling the major mode, so it needs to be
-      ;; set after.
-      (setq-local denote-directory dir)
-      (setq overlay-arrow-position nil)
-      (goto-char (point-min))
-      (if (or show-context denote-backlinks-show-context)
-          (xref--insert-xrefs xref-alist)
-        (dolist (element xref-alist)
-          (insert (denote-get-file-name-relative-to-denote-directory (car element)))
-          (make-button (line-beginning-position) (line-end-position) :type 'denote-link-backlink-button)
-          (insert "\n"))
-        (font-lock-add-keywords nil denote-faces-file-name-keywords-for-backlinks t))
-      (goto-char (point-min))
-      (setq-local revert-buffer-function
-                  (lambda (_ignore-auto _noconfirm)
-                    (when-let* ((buffer-file-name file))
-                      (denote-link--prepare-backlinks query files-matching-regexp buffer-name display-buffer-action show-context)))))
-    (denote-link--display-buffer backlinks-buffer display-buffer-action)))
-
-(defun denote--backlinks-get-buffer-name (file id)
-  "Format a buffer name for `denote-backlinks'.
-Use FILE to detect a suitable title with which to name the buffer.  Else
-use the ID."
-  (if-let* ((type (denote-filetype-heuristics file))
-            (title (denote-retrieve-front-matter-title-value file type)))
-      (format "*Denote FILE backlinks for %S*" title)
-    (format "*Denote FILE backlinks for %s*" id)))
-
-;;;###autoload
-(defun denote-backlinks ()
-  "Produce a buffer with backlinks to the current note.
-
-Show the names of files linking to the current file.  Include the
-context of each link if the user option `denote-backlinks-show-context'
-is non-nil.
-
-Place the buffer below the current window or wherever the user option
-`denote-backlinks-display-buffer-action' specifies."
-  (interactive)
-  (if-let* ((file buffer-file-name))
-      (when-let* ((id (denote-retrieve-filename-identifier-with-error file)))
-        (denote-link--prepare-backlinks id nil (denote--backlinks-get-buffer-name file id)))
-    (user-error "Buffer `%s' is not associated with a file" (current-buffer))))
-
-(defalias 'denote-show-backlinks-buffer 'denote-backlinks
-  "Alias for `denote-backlinks' command.")
 
 ;;;;; Add links matching regexp
 
@@ -5601,10 +5657,17 @@ This command is meant to be used from a Dired buffer."
      :help "Rename marked files in Dired using their front matter as input"
      :enable (derived-mode-p 'dired-mode)]
     "---"
-    ["Insert a link" denote-link
+    ["Insert a direct link" denote-link
      :help "Insert link to a file in the `denote-directory'"
      :enable (derived-mode-p 'text-mode)]
-    ["Insert links with regexp" denote-add-links
+    ["Insert a query link for file contents" denote-query-contents-link
+     :help "Insert query link searching for file contents in the `denote-directory'"
+     :enable (derived-mode-p 'text-mode)]
+    ["Insert a query link for file names" denote-query-filenames-link
+     :help "Insert query link searching for file names in the `denote-directory'"
+     :enable (derived-mode-p 'text-mode)]
+    "---"
+    ["Insert links to files matching regexp" denote-add-links
      :help "Insert links to files matching regexp in the `denote-directory'"
      :enable (derived-mode-p 'text-mode)]
     ["Insert Dired marked files as links" denote-link-dired-marked-notes
@@ -5622,6 +5685,9 @@ This command is meant to be used from a Dired buffer."
     ["Create note in the background with chosen command and link to it directly" denote-link-after-creating-with-command
      :help "Create new note with the chosen command and link to it from the current file"
      :enable (derived-mode-p 'text-mode)]
+    "---"
+    ["Generate sorted and filtered Dired listing" denote-sort-dired
+     :help "Generate a sorted and filtered Dired listing of files in the `denote-directory'"]
     "---"
     ["Highlight Dired file names" denote-dired-mode
      :help "Apply colors to Denote file name components in Dired"
@@ -5664,33 +5730,37 @@ This command is meant to be used from a Dired buffer."
 (declare-function org-link-open-as-file "ol" (path arg))
 
 (defun denote-link--ol-resolve-link-to-target (link &optional full-data)
-  "Resolve LINK to target file, with or without additioanl query terms.
-With optional FULL-DATA return a list in the form of (path id query)."
-  (let* ((query (and (string-match "::\\(.*\\)\\'" link)
-                     (match-string 1 link)))
-         (id (if (and query (not (string-empty-p query)))
-                 (substring link 0 (match-beginning 0))
-               link))
-         (path (denote-get-path-by-id id)))
+  "Resolve LINK to target file, with or without additioanl file-search terms.
+With optional FULL-DATA return a list in the form of (path query file-search)."
+  (let* ((file-search (and (string-match "::\\(.*\\)\\'" link)
+                           (match-string 1 link)))
+         (query (if (and file-search (not (string-empty-p file-search)))
+                    (substring link 0 (match-beginning 0))
+                  link))
+         (path (denote-get-path-by-id query)))
     (cond
      (full-data
-      (list path id query))
-     ((and query (not (string-empty-p query)))
-      (concat path "::" query))
-     (t path))))
+      (list path query file-search))
+     ((and file-search (not (string-empty-p file-search)))
+      (concat path "::" file-search))
+     (t (or path query)))))
 
 ;;;###autoload
 (defun denote-link-ol-follow (link)
   "Find file of type `denote:' matching LINK.
-LINK is the identifier of the note, optionally followed by a
-query option akin to that of standard Org `file:' link types.
-Read Info node `(org) Query Options'.
+LINK is the identifier of the note, optionally followed by a file search
+option akin to that of standard Org `file:' link types.  Read Info
+node `(org) Query Options'.
 
-Uses the function `denote-directory' to establish the path to the
-file."
-  (org-link-open-as-file
-   (denote-link--ol-resolve-link-to-target link)
-   nil))
+If LINK is not an identifier, then it is not pointing to a file but to a
+query of file contents or file names (see the commands
+`denote-query-contents-link' and `denote-query-filenames-link').
+
+Uses the function `denote-directory' to establish the path to the file."
+  (if-let* ((match (denote-link--ol-resolve-link-to-target link))
+            (_ (file-exists-p (string-trim-right match ":.*"))))
+      (org-link-open-as-file match nil)
+    (denote--act-on-query-link match)))
 
 ;;;###autoload
 (defun denote-link-ol-complete ()
@@ -5768,21 +5838,23 @@ Also see the user option `denote-org-store-link-to-heading'."
   "Export a `denote:' link from Org files.
 The LINK, DESCRIPTION, and FORMAT are handled by the export
 backend."
-  (pcase-let* ((`(,path ,id ,query) (denote-link--ol-resolve-link-to-target link :full-data))
-               (anchor (file-relative-name (file-name-sans-extension path)))
+  (pcase-let* ((`(,path ,query ,file-search) (denote-link--ol-resolve-link-to-target link :full-data))
+               (anchor (when path (file-relative-name (file-name-sans-extension path))))
                (desc (cond
                       (description)
-                      (query (format "denote:%s::%s" id query))
-                      (t (concat "denote:" id)))))
-    (pcase format
-      ('html (if query
-                 (format "<a href=\"%s.html%s\">%s</a>" anchor query desc)
-               (format "<a href=\"%s.html\">%s</a>" anchor desc)))
-      ('latex (format "\\href{%s}{%s}" (replace-regexp-in-string "[\\{}$%&_#~^]" "\\\\\\&" path) desc))
-      ('texinfo (format "@uref{%s,%s}" path desc))
-      ('ascii (format "[%s] <denote:%s>" desc path))
-      ('md (format "[%s](%s)" desc path))
-      (_ path))))
+                      (file-search (format "denote:%s::%s" query file-search))
+                      (t (concat "denote:" query)))))
+    (if path
+        (pcase format
+          ('html (if file-search
+                     (format "<a href=\"%s.html%s\">%s</a>" anchor file-search desc)
+                   (format "<a href=\"%s.html\">%s</a>" anchor desc)))
+          ('latex (format "\\href{%s}{%s}" (replace-regexp-in-string "[\\{}$%&_#~^]" "\\\\\\&" path) desc))
+          ('texinfo (format "@uref{%s,%s}" path desc))
+          ('ascii (format "[%s] <denote:%s>" desc path))
+          ('md (format "[%s](%s)" desc path))
+          (_ path))
+      (format-message "[[Denote query for `%s']]" query))))
 
 (defun denote-link-ol-help-echo (_window _object position)
   "Echo the full file path of the identifier at POSITION."
@@ -5806,7 +5878,7 @@ backend."
           (org-link-set-parameters
            "denote"
            :follow #'denote-link-ol-follow
-           :face 'denote-faces-link
+           :face #'denote-get-link-face
            :help-echo #'denote-link-ol-help-echo
            :complete #'denote-link-ol-complete
            :store #'denote-link-ol-store
