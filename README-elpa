@@ -86,20 +86,21 @@ Table of Contents
 .. 1. Change the front matter format
 .. 2. Regenerate front matter
 9. Linking notes
-.. 1. Adding a single direct link
-.. 2. Adding a query link
-.. 3. The `denote-open-link-function' user option
-.. 4. The `denote-org-store-link-to-heading' user option
-.. 5. Insert links matching a regexp
-.. 6. Insert links from marked files in Dired
-.. 7. Link to an existing note or create a new one
-.. 8. The backlinks’ buffer
-.. 9. Writing metanotes
-.. 10. Visiting linked files via the minibuffer
-.. 11. Fontify links in non-Org buffers
-.. 12. Miscellaneous information about links
-..... 1. Aliases for the linking commands
-..... 2. The `denote-link-description-format' to format link descriptions
+.. 1. Add a single direct link using a file name prompt
+.. 2. Add a direct link to a file whose contents include the given query
+.. 3. Add a query link
+.. 4. Insert links to all files matching a query in their file name
+.. 5. Insert links to all files matching a query in their contents
+.. 6. The `denote-open-link-function' user option
+.. 7. The `denote-org-store-link-to-heading' user option
+.. 8. Adding direct links to files matching contents
+.. 9. Insert links from marked files in Dired
+.. 10. Link to an existing note or create a new one
+.. 11. The backlinks’ buffer
+.. 12. Writing metanotes
+.. 13. Visiting linked files via the minibuffer
+.. 14. Fontify links in non-Org buffers
+.. 15. The `denote-link-description-format' to format link descriptions
 10. Choose which commands to prompt for
 11. Fontification in Dired
 12. Automatically rename Denote buffers
@@ -449,7 +450,7 @@ Table of Contents
 
 [Points of entry] See section 5
 
-[Writing metanotes] See section 9.9
+[Writing metanotes] See section 9.12
 
 [Keep a journal or diary] See section 16.4
 
@@ -1448,7 +1449,7 @@ Table of Contents
 
 [Points of entry] See section 5
 
-[Link to a note or create it if missing] See section 9.7
+[Link to a note or create it if missing] See section 9.10
 
 
 5.7 Maintain separate directory silos for notes
@@ -3003,14 +3004,15 @@ section 7.4
 
 [Why are some Org links opening outside Emacs?] See section 23.9
 
-9.1 Adding a single direct link
-───────────────────────────────
+9.1 Add a single direct link using a file name prompt
+─────────────────────────────────────────────────────
 
-  The `denote-link' command inserts a link at point to a file selected
-  at the minibuffer prompt. Links are formatted depending on the file
-  type of the current note. In Org and plain text buffers, links are
-  formatted thus: `[[denote:IDENTIFIER][DESCRIPTION]]'. While in
-  Markdown they are expressed as `[DESCRIPTION](denote:IDENTIFIER)'.
+  The `denote-link' command (alias `denote-insert-link') inserts a link
+  at point to a file selected at the minibuffer prompt. Links are
+  formatted depending on the file type of the current note. In Org and
+  plain text buffers, links are formatted thus:
+  `[[denote:IDENTIFIER][DESCRIPTION]]'.  While in Markdown they are
+  expressed as `[DESCRIPTION](denote:IDENTIFIER)'.
 
   When `denote-link' is called with a prefix argument (`C-u' by
   default), it formats links like `[[denote:IDENTIFIER]]', regardless of
@@ -3030,6 +3032,15 @@ section 7.4
     name.
   • If the target file has no signature, the title is used.
 
+  To insert multiple such links at once, use the command
+  `denote-add-links' ([Insert links matching a regexp in their file
+  name]).
+
+  If you want to directly link to a single file whose contents match a
+  given query, then use the command `denote-link-to-file-with-contents'
+  ([Adding a direct link to a file whose contents include the given
+  query]).
+
   Links are styled with the `denote-faces-link' face, which looks
   exactly like an ordinary link by default.
 
@@ -3039,13 +3050,49 @@ section 7.4
     we cannot generalise this. ]
 
 
-[Fontify links in non-Org buffers] See section 9.11
+[Fontify links in non-Org buffers] See section 9.14
 
-[The `denote-org-store-link-to-heading' user option] See section 9.4
+[Insert links matching a regexp in their file name] See section 9.4
+
+[Adding a direct link to a file whose contents include the given query]
+See section 9.2
+
+[The `denote-org-store-link-to-heading' user option] See section 9.7
 
 
-9.2 Adding a query link
-───────────────────────
+9.2 Add a direct link to a file whose contents include the given query
+──────────────────────────────────────────────────────────────────────
+
+  [ The `denote-link-to-file-with-contents' is part of 4.0.0-dev. ]
+
+  The `denote-link' command that we covered before prompts to select a
+  file among those in the `denote-directory' ([Adding a single direct
+  link using a file name prompt]).  The match is done against the file’s
+  name. Users may, however, be interested to create a link to a file
+  whose contents include some text, regardless of how the file name is
+  called. To this end, the command `denote-link-to-file-with-contents',
+  (i) prompts for a query which is a plain string or regular expression,
+  (ii) if there are matching files, asks to select one among them, and
+  (iii) inserts the direct link at point.
+
+  When called with an optional prefix argument (`C-u' by default), the
+  command `denote-link-to-file-with-contents' creates a link that does
+  not include a description for the target file: it just has the file’s
+  identifier (same as with `denote-link').
+
+  The command `denote-link-to-file-with-contents' is the counterpart of
+  `denote-link-to-all-files-with-contents' ([Insert links to all files
+  matching a query in their contents]).
+
+
+[Adding a single direct link using a file name prompt] See section 9.1
+
+[Insert links to all files matching a query in their contents] See
+section 9.5
+
+
+9.3 Add a query link
+────────────────────
 
   [ Query links are part of 4.0.0-dev. ]
 
@@ -3082,13 +3129,111 @@ section 7.4
   the placement of query link buffers. By default, they are designed to
   appear below the current window.
 
+  Query links are styled with the `denote-faces-query-link' face, which
+  looks a bit different that `denote-faces-link' (though this depends on
+  the active theme).
+
 
 [Linking notes] See section 9
 
 [Speed up backlinks’ or query links’ buffer creation?] See section 23.10
 
 
-9.3 The `denote-open-link-function' user option
+9.4 Insert links to all files matching a query in their file name
+─────────────────────────────────────────────────────────────────
+
+  The command `denote-add-links' adds links at point to all file names
+  in the `denote-directory' that match a regular expression or plain
+  string. This is similar to the `denote-link' command, which
+  establishes a direct link to a specified file ([Adding a single direct
+  link]).  Links to files whose names match the given search terms are
+  inserted as a typographic list, such as:
+
+  ┌────
+  │ - link1
+  │ - link2
+  │ - link3
+  └────
+
+  Each link is formatted according to the file type of the current note,
+  as explained further above about the `denote-link' command.  The
+  current note is excluded from the matching entries (adding a link to
+  itself is pointless).
+
+  When called with a prefix argument (`C-u') `denote-add-links' will
+  format all links as `[[denote:IDENTIFIER]]', hence a typographic list:
+
+  ┌────
+  │ - [[denote:IDENTIFIER-1]]
+  │ - [[denote:IDENTIFIER-2]]
+  │ - [[denote:IDENTIFIER-3]]
+  └────
+
+  Same examples of a regular expression that can be used with this
+  command:
+
+  • `journal' match all files which include `journal' anywhere in their
+    name.
+
+  • `_journal' match all files which include `journal' as a keyword.
+
+  • `^2022.*_journal' match all file names starting with `2022' and
+    including the keyword `journal'.
+
+  • `\.txt' match all files including `.txt'.  In practical terms, this
+    only applies to the file extension, as Denote automatically removes
+    dots (and other characters) from the base file name.
+
+  If files are created with `denote-sort-keywords' as non-nil (the
+  default), then it is easy to write a regexp that includes multiple
+  keywords in alphabetic order:
+
+  • `_denote.*_package' match all files that include both the `denote'
+    and `package' keywords, in this order.
+
+  • `\(.*denote.*package.*\)\|\(.*package.*denote.*\)' is the same as
+    above, but out-of-order.
+
+  Remember that regexp constructs only need to be escaped once (like
+  `\|') when done interactively but twice when called from Lisp.  What
+  we show above is for interactive usage.
+
+  Links are created only for files which qualify as a “note” for our
+  purposes ([Linking notes]).
+
+
+[Adding a single direct link] See section 9.1
+
+[Linking notes] See section 9
+
+
+9.5 Insert links to all files matching a query in their contents
+────────────────────────────────────────────────────────────────
+
+  [ The command `denote-link-to-all-files-with-contents' is part of
+  4.0.0-dev. ]
+
+  The aforementioned `denote-add-links' command takes a query that
+  matches it against file names ([Insert links to all files matching a
+  query in their file name]).  It then creates a typographic list
+  (bullet list) with direct links to all the matching files. Users who
+  wish to achieve the same result but have the query be matched against
+  file contents (not file names), can use the command
+  `denote-link-to-all-files-with-contents'.
+
+  The command `denote-link-to-all-files-with-contents' is the
+  counterpart of `denote-link-to-file-with-contents' ([Add a direct link
+  to a file whose contents include the given query]).
+
+
+[Insert links to all files matching a query in their file name] See
+section 9.4
+
+[Add a direct link to a file whose contents include the given query] See
+section 9.2
+
+
+9.6 The `denote-open-link-function' user option
 ───────────────────────────────────────────────
 
   [ This is part of 4.0.0-dev. ]
@@ -3104,7 +3249,7 @@ section 7.4
   the command `org-open-at-point').
 
 
-9.4 The `denote-org-store-link-to-heading' user option
+9.7 The `denote-org-store-link-to-heading' user option
 ──────────────────────────────────────────────────────
 
   [ Revised to also support context links that do not use a `PROPERTIES'
@@ -3180,70 +3325,11 @@ section 7.4
     the file, even if this user option is set to a non-nil value. ]
 
 
-9.5 Insert links matching a regexp
-──────────────────────────────────
-
-  The command `denote-add-links' adds links at point matching a regular
-  expression or plain string.  The links are inserted as a typographic
-  list, such as:
-
-  ┌────
-  │ - link1
-  │ - link2
-  │ - link3
-  └────
-
-  Each link is formatted according to the file type of the current note,
-  as explained further above about the `denote-link' command.  The
-  current note is excluded from the matching entries (adding a link to
-  itself is pointless).
-
-  When called with a prefix argument (`C-u') `denote-add-links' will
-  format all links as `[[denote:IDENTIFIER]]', hence a typographic list:
-
-  ┌────
-  │ - [[denote:IDENTIFIER-1]]
-  │ - [[denote:IDENTIFIER-2]]
-  │ - [[denote:IDENTIFIER-3]]
-  └────
-
-  Same examples of a regular expression that can be used with this
-  command:
-
-  • `journal' match all files which include `journal' anywhere in their
-    name.
-
-  • `_journal' match all files which include `journal' as a keyword.
-
-  • `^2022.*_journal' match all file names starting with `2022' and
-    including the keyword `journal'.
-
-  • `\.txt' match all files including `.txt'.  In practical terms, this
-    only applies to the file extension, as Denote automatically removes
-    dots (and other characters) from the base file name.
-
-  If files are created with `denote-sort-keywords' as non-nil (the
-  default), then it is easy to write a regexp that includes multiple
-  keywords in alphabetic order:
-
-  • `_denote.*_package' match all files that include both the `denote'
-    and `package' keywords, in this order.
-
-  • `\(.*denote.*package.*\)\|\(.*package.*denote.*\)' is the same as
-    above, but out-of-order.
-
-  Remember that regexp constructs only need to be escaped once (like
-  `\|') when done interactively but twice when called from Lisp.  What
-  we show above is for interactive usage.
-
-  Links are created only for files which qualify as a “note” for our
-  purposes ([Linking notes]).
+9.8 Adding direct links to files matching contents
+──────────────────────────────────────────────────
 
 
-[Linking notes] See section 9
-
-
-9.6 Insert links from marked files in Dired
+9.9 Insert links from marked files in Dired
 ───────────────────────────────────────────
 
   The command `denote-link-dired-marked-notes' is similar to
@@ -3273,15 +3359,15 @@ section 7.4
   `denote-link-dired-marked-notes'. [ The alias is part of 4.0.0-dev. ]
 
 
-[Insert links matching a regexp] See section 9.5
+[Insert links matching a regexp] See section 9.4
 
 [Adding a single link] See section 9.1
 
 [Linking notes] See section 9
 
 
-9.7 Link to an existing note or create a new one
-────────────────────────────────────────────────
+9.10 Link to an existing note or create a new one
+─────────────────────────────────────────────────
 
   In one’s note-taking workflow, there may come a point where they are
   expounding on a certain topic but have an idea about another subject
@@ -3369,8 +3455,8 @@ section 7.4
 [Open an existing note or create it if missing] See section 5.6
 
 
-9.8 The backlinks’ buffer
-─────────────────────────
+9.11 The backlinks’ buffer
+──────────────────────────
 
   [ Older versions of Denote had two types of formatting for the
     backlinks’ buffer. As part of version `4.0.0' (4.0.0-dev), we only
@@ -3378,11 +3464,12 @@ section 7.4
     context. The user option `denote-backlinks-show-context' is thus
     removed. ]
 
-  The command `denote-backlinks' produces a bespoke buffer which
-  displays backlinks to the current note. A “backlink” is a link back to
-  the present entry. Backlinks can be generated for any file type that
-  has a Denote file-naming scheme, such as PDFs, images, and videos, as
-  well as the regular plain text files.
+  The command `denote-backlinks' (alias `denote-show-backlinks-buffer')
+  produces a bespoke buffer which displays backlinks to the current
+  note. A “backlink” is a link back to the present entry. Backlinks can
+  be generated for any file type that has a Denote file-naming scheme,
+  such as PDFs, images, and videos, as well as the regular plain text
+  files.
 
   The backlinks’ buffer is, in essence, the equivalent of a Unix `grep'
   command across the `denote-directory' ([Speed up backlinks’ buffer
@@ -3426,16 +3513,16 @@ section 7.4
 
 [Speed up backlinks’ buffer creation?] See section 23.10
 
-[Adding a query link] See section 9.2
+[Adding a query link] See section 9.3
 
 [Why do I get “Search failed with status 1” when I search for
 backlinks?] See section 23.11
 
-[Visiting linked files via the minibuffer] See section 9.10
+[Visiting linked files via the minibuffer] See section 9.13
 
 
-9.9 Writing metanotes
-─────────────────────
+9.12 Writing metanotes
+──────────────────────
 
   A “metanote” is an entry that describes other entries who have
   something in common.  Writing metanotes can be part of a workflow
@@ -3469,12 +3556,12 @@ backlinks?] See section 23.11
   the knowledge derived from the deliberate self-reflection.
 
 
-[Insert links matching a regexp] See section 9.5
+[Insert links matching a regexp] See section 9.4
 
-[Insert links from marked files in Dired] See section 9.6
+[Insert links from marked files in Dired] See section 9.9
 
 
-9.10 Visiting linked files via the minibuffer
+9.13 Visiting linked files via the minibuffer
 ─────────────────────────────────────────────
 
   Denote has a major-mode-agnostic mechanism to collect all linked file
@@ -3497,10 +3584,10 @@ backlinks?] See section 23.11
 
 [Extending Denote] See section 17
 
-[The backlinks’ buffer] See section 9.8
+[The backlinks’ buffer] See section 9.11
 
 
-9.11 Fontify links in non-Org buffers
+9.14 Fontify links in non-Org buffers
 ─────────────────────────────────────
 
   Denote links are automatically fontified in Org buffers ([Adding a
@@ -3539,22 +3626,8 @@ backlinks?] See section 23.11
 [Adding a single link] See section 9.1
 
 
-9.12 Miscellaneous information about links
-──────────────────────────────────────────
-
-9.12.1 Aliases for the linking commands
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-
-  For convenience, the `denote-link' command has an alias called
-  `denote-insert-link'.  The `denote-backlinks' can also be used as
-  `denote-show-backlinks-buffer'.  While `denote-add-links' is aliased
-  `denote-link-insert-links-matching-regexp'.  The purpose of these
-  aliases is to offer alternative, more descriptive names of select
-  commands.
-
-
-9.12.2 The `denote-link-description-format' to format link descriptions
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+9.15 The `denote-link-description-format' to format link descriptions
+─────────────────────────────────────────────────────────────────────
 
   [ As part of 4.0.0-dev, the old user option
     `denote-link-description-function' is deprecated and superseded by
@@ -3633,7 +3706,7 @@ backlinks?] See section 23.11
 
 [Open an existing note or create it if missing] See section 5.6
 
-[Link to a note or create it if missing] See section 9.7
+[Link to a note or create it if missing] See section 9.10
 
 [Points of entry] See section 5
 
@@ -3855,7 +3928,7 @@ backlinks?] See section 23.11
   ⁃ Backronym: Denote… Ordinarily Restricts Gyrations.
 
 
-[Writing metanotes] See section 9.9
+[Writing metanotes] See section 9.12
 
 
 14 Sort files by component
@@ -4528,7 +4601,7 @@ section 7.4
 
 [Sort files by component] See section 14
 
-[Link to an existing note or create a new one] See section 9.7
+[Link to an existing note or create a new one] See section 9.10
 
 
 17.4 Automatically rename the note after saving it

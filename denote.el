@@ -385,7 +385,12 @@ components are actually used in the order specified herein.
 Before deciding on this, please consider the longer-term implications
 of file names with varying patterns. Consistency makes things
 predictable and thus easier to find. So pick one order and never touch
-it again. When in doubt, leave the default file-naming scheme as-is."
+it again. When in doubt, leave the default file-naming scheme as-is.
+
+This user option should only be used to build a file name.  Custom code
+should not have behaviors that depend on its value.  The reason is that
+its value can change over time and Denote should be able to handle past
+and current notes."
   :group 'denote
   :package-version '(denote . "3.0.0")
   ;; FIXME 2024-05-19: This technically works to display the user
@@ -776,7 +781,7 @@ structure template as soon as `denote-region' is done:
   :type 'hook)
 
 (defvar denote-prompts-with-history-as-completion
-  '(denote-title-prompt denote-signature-prompt denote-files-matching-regexp-prompt)
+  '(denote-title-prompt denote-signature-prompt denote-files-matching-regexp-prompt denote-query-link-prompt)
   "Prompts that conditionally perform completion against their history.
 
 These are minibuffer prompts that ordinarily accept a free form string
@@ -4989,7 +4994,8 @@ Also see `denote-link-return-backlinks'."
 
 ;;;###autoload
 (defun denote-find-link ()
-  "Use minibuffer completion to visit linked file."
+  "Use minibuffer completion to visit linked file.
+Also see `denote-find-backlink'."
   (declare (interactive-only t))
   (interactive)
   (find-file
@@ -4998,34 +5004,6 @@ Also see `denote-link-return-backlinks'."
     (denote-select-linked-file-prompt
      (or (denote-link-return-links)
          (user-error "No links found"))))))
-
-(defun denote-link-return-backlinks (&optional file)
-  "Return list of backlinks in current or optional FILE.
-Also see `denote-link-return-links'."
-  (when-let* ((current-file (or file (buffer-file-name)))
-              (id (denote-retrieve-filename-identifier-with-error current-file)))
-    (delete current-file (denote-retrieve-files-xref-query id))))
-
-;; TODO 2024-09-04: Instead of using `denote-link-return-backlinks' we
-;; should have a function that does not try to find all backlinks but
-;; simply exits as soon as it finds one.
-(defun denote--file-has-backlinks-p (file)
-  "Return non-nil if FILE has backlinks."
-  (not (zerop (length (denote-link-return-backlinks file)))))
-
-;;;###autoload
-(defun denote-find-backlink ()
-  "Use minibuffer completion to visit backlink to current file.
-
-Like `denote-find-link', but select backlink to follow."
-  (declare (interactive-only t))
-  (interactive)
-  (find-file
-   (denote-get-path-by-id
-    (denote-extract-id-from-string
-     (denote-select-linked-file-prompt
-      (or (denote-link-return-backlinks)
-          (user-error "No backlinks found")))))))
 
 ;;;###autoload
 (defun denote-link-after-creating (&optional id-only)
@@ -5212,6 +5190,34 @@ Place the buffer below the current window or wherever the user option
 (defalias 'denote-show-backlinks-buffer 'denote-backlinks
   "Alias for `denote-backlinks' command.")
 
+
+(defun denote-link-return-backlinks (&optional file)
+  "Return list of backlinks in current or optional FILE.
+Also see `denote-link-return-links'."
+  (when-let* ((current-file (or file (buffer-file-name)))
+              (id (denote-retrieve-filename-identifier-with-error current-file)))
+    (delete current-file (denote-retrieve-files-xref-query id))))
+
+;; TODO 2024-09-04: Instead of using `denote-link-return-backlinks' we
+;; should have a function that does not try to find all backlinks but
+;; simply exits as soon as it finds one.
+(defun denote--file-has-backlinks-p (file)
+  "Return non-nil if FILE has backlinks."
+  (not (zerop (length (denote-link-return-backlinks file)))))
+
+;;;###autoload
+(defun denote-find-backlink ()
+  "Use minibuffer completion to visit backlink to current file.
+Alo see `denote-find-link'."
+  (declare (interactive-only t))
+  (interactive)
+  (find-file
+   (denote-get-path-by-id
+    (denote-extract-id-from-string
+     (denote-select-linked-file-prompt
+      (or (denote-link-return-backlinks)
+          (user-error "No backlinks found")))))))
+
 ;;;;;; Query links
 
 (defvar denote-query-link-history nil
@@ -5229,7 +5235,7 @@ non-nil value."
   (when (and initial-query (string-empty-p initial-query))
     (setq initial-query nil))
   (denote--with-conditional-completion
-   'denote-signature-prompt
+   'denote-query-link-prompt
    (format-prompt (or prompt-text "Query for") nil)
    denote-query-link-history
    initial-query))
@@ -5529,10 +5535,10 @@ Optional INCLUDE-DATE has the same meaning as in `denote-format-link'."
 
 ;;;###autoload
 (defun denote-add-links (regexp &optional id-only)
-  "Insert links to all notes matching REGEXP.
-Use this command to reference multiple files at once.
-Particularly useful for the creation of metanotes (read the
-manual for more on the matter).
+  "Insert links to all files whose file names match REGEXP.
+Use this command to reference multiple files at once.  Particularly
+useful for the creation of metanotes (read the manual for more on the
+matter).
 
 Optional ID-ONLY has the same meaning as in `denote-link': it
 inserts links with just the identifier."
@@ -5548,8 +5554,41 @@ inserts links with just the identifier."
         (denote-link--insert-links files file-type id-only)
       (message "No links matching `%s'" regexp))))
 
-(defalias 'denote-link-insert-links-matching-regexp 'denote-add-links
-  "Alias for `denote-add-links' command.")
+;;;;; Link to file with matching contents
+
+;;;###autoload
+(defun denote-link-to-file-with-contents (query &optional id-only)
+  "Link to a file whose contents match QUERY.
+This is similar to `denote-link', except that the file prompt is limited
+to files matching QUERY.  Optional ID-ONLY has the same meaning as in
+`denote-link'."
+  (interactive
+   (list (denote-query-link-prompt nil "Files whose contents include QUERY")))
+  (if-let* ((files (denote-retrieve-files-xref-query query))
+            ;; NOTE 2025-03-29: Maybe we should have a named prompt
+            ;; for this case, but I think we do not need it right now.
+            (file (completing-read
+                   (format "Select FILE with contents `%s': "
+                           (propertize query 'face 'denote-faces-prompt-current-name))
+                   (denote--completion-table 'file files)
+                   nil t nil 'denote-file-history)))
+      (denote-link file
+                   (denote-filetype-heuristics buffer-file-name)
+                   (denote-get-link-description file)
+                   id-only)
+    (user-error "No files include the query `%s' in their contents" query)))
+
+;;;###autoload
+(defun denote-link-to-all-files-with-contents (query &optional id-only)
+  "Link to all files whose contents match QUERY.
+This is similar to `denote-add-links', except it searches inside file
+contents, not file names.  Optional ID-ONLY has the same meaning as in
+`denote-link' and `denote-add-links'."
+  (interactive
+   (list (denote-query-link-prompt nil "Files whose contents include QUERY")))
+  (if-let* ((files (denote-retrieve-files-xref-query query)))
+      (denote-link--insert-links files (denote-filetype-heuristics buffer-file-name) id-only)
+    (user-error "No files include the query `%s' in their contents" query)))
 
 ;;;;; Links from Dired marks
 
@@ -5660,6 +5699,9 @@ This command is meant to be used from a Dired buffer."
     ["Insert a direct link" denote-link
      :help "Insert link to a file in the `denote-directory'"
      :enable (derived-mode-p 'text-mode)]
+    ["Insert a direct link to file with contents" denote-link-to-file-with-contents
+     :help "Insert link to a file in the `denote-directory' whose contents include a query"
+     :enable (derived-mode-p 'text-mode)]
     ["Insert a query link for file contents" denote-query-contents-link
      :help "Insert query link searching for file contents in the `denote-directory'"
      :enable (derived-mode-p 'text-mode)]
@@ -5667,8 +5709,11 @@ This command is meant to be used from a Dired buffer."
      :help "Insert query link searching for file names in the `denote-directory'"
      :enable (derived-mode-p 'text-mode)]
     "---"
-    ["Insert links to files matching regexp" denote-add-links
-     :help "Insert links to files matching regexp in the `denote-directory'"
+    ["Insert links to file names matching regexp" denote-add-links
+     :help "Insert links to file names in the `denote-directory' matching regexp"
+     :enable (derived-mode-p 'text-mode)]
+    ["Insert links to files whose contents match regexp" denote-link-to-all-files-with-contents
+     :help "Insert links to file in the `denote-directory' whose contents match regexp"
      :enable (derived-mode-p 'text-mode)]
     ["Insert Dired marked files as links" denote-link-dired-marked-notes
      :help "Rename marked files in Dired as links in a Denote buffer"
