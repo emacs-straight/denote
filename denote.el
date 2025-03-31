@@ -123,11 +123,6 @@
 
 ;; About the autoload: (info "(elisp) File Local Variables")
 
-(define-obsolete-variable-alias
-  'denote-user-enforced-denote-directory
-  'denote-directory
-  "2.3.0")
-
 ;;;###autoload (put 'denote-directory 'safe-local-variable (lambda (val) (or (stringp val) (eq val 'local) (eq val 'default-directory))))
 (defcustom denote-directory (expand-file-name "~/Documents/notes/")
   "Directory for storing personal notes.
@@ -416,7 +411,7 @@ Note that even though a component may be listed in this variable, it
 will not be present in the front matter if the corresponding line is not
 in the front matter template."
   :group 'denote
-  :package-version '(denote . "3.2.0")
+  :package-version '(denote . "4.0.0")
   :type '(list
           (const :tag "Title" title)
           (const :tag "Keywords" keywords)
@@ -596,68 +591,7 @@ command."
   :link '(info-link "(denote) The denote-templates option")
   :group 'denote)
 
-(make-obsolete-variable 'denote-backlinks-show-context nil "4.0.0")
-
 (make-obsolete-variable 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
-
-(define-obsolete-variable-alias
-  'denote-link-backlinks-display-buffer-action
-  'denote-backlinks-display-buffer-action
-  "3.1.0")
-
-(defcustom denote-backlinks-display-buffer-action
-  '((display-buffer-reuse-mode-window display-buffer-below-selected)
-    (mode . denote-query-mode)
-    (window-height . fit-window-to-buffer))
-  "The action used to display the current file's backlinks buffer.
-
-The value has the form (FUNCTION . ALIST), where FUNCTION is
-either an \"action function\", a list thereof, or possibly an
-empty list.  ALIST is a list of \"action alist\" which may be
-omitted (or be empty).
-
-Sample configuration to display the buffer in a side window on
-the left of the Emacs frame:
-
-    (setq denote-backlinks-display-buffer-action
-          (quote ((display-buffer-reuse-window display-buffer-in-side-window)
-                  (side . left)
-                  (slot . 99)
-                  (window-width . 0.3)
-                  (dedicated . t)
-                  (preserve-size . (t . t)))))
-
-See Info node `(elisp) Displaying Buffers' for more details
-and/or the documentation string of `display-buffer'."
-  :risky t
-  :type `(choice
-          (alist :key-type
-                 (choice :tag "Condition"
-                         regexp
-                         (function :tag "Matcher function"))
-                 :value-type ,display-buffer--action-custom-type)
-          (function :tag "Custom function to return an action alist"))
-  :package-version '(denote . "3.1.0")
-  :group 'denote)
-
-(defcustom denote-query-links-display-buffer-action
-  '((display-buffer-reuse-mode-window display-buffer-below-selected)
-    (mode . (denote-query-mode dired))
-    (window-height . 0.3)
-    (preserve-size . (t . t)))
-  "The action used to display query links.
-This is the same as `denote-backlinks-display-buffer-action'.  Refer to
-its documentation for the technicalities."
-  :risky t
-  :type `(choice
-          (alist :key-type
-                 (choice :tag "Condition"
-                         regexp
-                         (function :tag "Matcher function"))
-                 :value-type ,display-buffer--action-custom-type)
-          (function :tag "Custom function to return an action alist"))
-  :package-version '(denote . "4.0.0")
-  :group 'denote)
 
 (defcustom denote-rename-confirmations '(rewrite-front-matter modify-file-name)
   "Make renaming commands prompt for confirmations.
@@ -882,15 +816,10 @@ have been warned."
                              (const keyword))
                 :value function))
 
-(make-obsolete
- 'denote-file-name-letter-casing
- 'denote-file-name-slug-functions
- "2.3.0")
-
 (define-obsolete-variable-alias
   'denote-link-button-action
   'denote-open-link-function
-  "3.2.0")
+  "4.0.0")
 
 (defcustom denote-open-link-function #'find-file-other-window
   "Function to find the file of a Denote link.
@@ -906,12 +835,12 @@ documentation of the `org-open-at-point' command."
   :type '(choice (function :tag "Other window" find-file-other-window)
                  (function :tag "Current window" find-file)
                  (function :tag "Custom function"))
-  :package-version '(denote . "3.2.0"))
+  :package-version '(denote . "4.0.0"))
 
 (define-obsolete-variable-alias
   'denote-link-description-function
   'denote-link-description-format
-  "3.2.0")
+  "4.0.0")
 
 (defcustom denote-link-description-format #'denote-link-description-with-signature-and-title
   "The format of a link description text.
@@ -956,7 +885,7 @@ If the region is active, its text is used as the link's description."
   :type '(choice
           (string :tag "String with treats format specifiers specially")
           (function :tag "Custom function like `denote-link-description-with-signature-and-title'"))
-  :package-version '(denote . "3.2.0")
+  :package-version '(denote . "4.0.0")
   :group 'denote)
 
 ;;;; Main variables
@@ -982,7 +911,7 @@ The note's ID is derived from the date and time of its creation.")
 (make-obsolete-variable
  'denote-excluded-punctuation-extra-regexp
  'denote-file-name-slug-functions
- "3.2.0")
+ "4.0.0")
 
 ;;;; File helper functions
 
@@ -1065,7 +994,7 @@ This is useful as a helper function to construct
 (define-obsolete-function-alias
   'denote--slug-hyphenate
   'denote-slug-hyphenate
-  "3.2.0")
+  "4.0.0")
 
 (defun denote-slug-hyphenate (str)
   "Replace spaces and underscores with hyphens in STR.
@@ -1136,11 +1065,6 @@ they are used as the keywords separator in file names."
      (denote--replace-consecutive-token-characters
       (denote--remove-dot-characters str-slug) component) component)))
 
-(make-obsolete
- 'denote-letter-case
- 'denote-sluggify
- "2.3.0")
-
 (defun denote-sluggify-title (str)
   "Make STR an appropriate slug for title."
   (downcase
@@ -1157,11 +1081,6 @@ they are used as the keywords separator in file names."
   "Sluggify STR while joining separate words."
   (downcase
    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/_ =-]*" "" str)))
-
-(make-obsolete
- 'denote-sluggify-and-join
- 'denote-sluggify-keyword
- "2.3.0")
 
 (defun denote-sluggify-keywords (keywords)
   "Sluggify KEYWORDS, which is a list of strings."
@@ -1494,7 +1413,7 @@ Return the absolute path to the matching file."
 The function accepts two arguments and must return a non-nil value if
 the first argument is smaller than the second one."
   :type 'function
-  :package-version '(denote . "3.2.0")
+  :package-version '(denote . "4.0.0")
   :group 'denote-sort)
 
 (defcustom denote-sort-title-comparison-function denote-sort-comparison-fallback-function
@@ -1545,7 +1464,7 @@ done according to `denote-sort-dired-default-sort-component' and
                      (const :tag "Sort by file name component" sort-by-component)
                      (const :tag "Reverse the sort" reverse-sort)
                      (const :tag "Exclude files matching regexp" exclude-regexp)))
-  :package-version '(denote . "3.2.0")
+  :package-version '(denote . "4.0.0")
   :group 'denote-sort)
 
 (defcustom denote-sort-dired-default-sort-component 'identifier
@@ -1940,11 +1859,6 @@ signature:  %s
 It is passed to `format' with arguments TITLE, DATE, KEYWORDS,
 ID.  Advanced users are advised to consult Info node `(denote)
 Change the front matter format'.")
-
-(define-obsolete-function-alias
-  'denote-surround-with-quotes
-  'denote-format-string-for-md-front-matter
-  "2.3.0")
 
 (defun denote-format-string-for-md-front-matter (s)
   "Surround string S with quotes.
@@ -2362,7 +2276,7 @@ It should stay nil otherwise.")
 (define-obsolete-function-alias
   'denote-create-unique-file-identifier
   'denote-get-identifier
-  "3.2.0")
+  "4.0.0")
 
 (defun denote-retrieve-filename-keywords (file)
   "Extract keywords from FILE name, if present, else return nil.
@@ -2490,11 +2404,6 @@ or `line', referring to what the function should retrieve."
 (defalias 'denote-retrieve-keywords-line 'denote-retrieve-front-matter-keywords-line
   "Alias for `denote-retrieve-front-matter-keywords-line'.")
 
-(define-obsolete-function-alias
-  'denote--retrieve-title-or-filename
-  'denote-retrieve-title-or-filename
-  "2.3.0")
-
 (defun denote-retrieve-title-or-filename (file type)
   "Return appropriate title for FILE given its TYPE.
 This is a wrapper for `denote-retrieve-front-matter-title-value' and
@@ -2539,17 +2448,30 @@ pass it to `denote-directory-files'."
     (denote-retrieve-groups-xref-query query files-matching-regexp))
    #'string-collate-lessp))
 
-(defun denote-retrieve-xref-alist (query &optional files-matching-regexp)
-  "Return xref alist of absolute file paths with location of matches for QUERY.
-With optional FILES-MATCHING-REGEXP, limit the list of files
-accordingly (per `denote-directory-files').
+(defvar denote-query--last-files nil
+  "List of files matched by the last call to `denote-make-links-buffer'.")
 
-At all times limit the search to text files."
+(defvar denote-query--last-query nil
+  "String of the last call to `denote-make-links-buffer'.")
+
+(defvar denote-query--omit-current t
+  "When non-nil `denote-make-links-buffer' omits the current file.")
+
+(defun denote-retrieve-xref-alist (query &optional files)
+  "Return xref alist of absolute file paths with location of matches for QUERY.
+Optional FILES can be a list of files to search for.  It can also be a
+regular expression, which means to use the text files in the variable
+`denote-directory' that match that regexp.
+
+If FILES is not given, use all text files as returned by
+`denote-directory-files'."
   (let ((xref-file-name-display 'abs))
     (xref--analyze
      (xref-matches-in-files
       query
-      (denote-directory-files files-matching-regexp :omit-current :text-only)))))
+      (if (and files (listp files))
+          files
+        (denote-directory-files files denote-query--omit-current :text-only))))))
 
 ;;;; New note
 
@@ -2698,14 +2620,9 @@ where the former does not read dates without a time component."
     date))
 
 (define-obsolete-function-alias
-  'denote--valid-date
-  'denote-valid-date-p
-  "2.3.0")
-
-(define-obsolete-function-alias
   'denote-parse-date
   'denote-valid-date-p
-  "3.2.0")
+  "4.0.0")
 
 (defun denote-valid-date-p (date)
   "Return DATE as a valid date.
@@ -3497,7 +3414,7 @@ If a buffer is visiting the file, its name is updated."
 (define-obsolete-function-alias
   'denote--add-front-matter
   'denote-prepend-front-matter
-  "3.2.0")
+  "4.0.0")
 
 (defun denote-prepend-front-matter (file title keywords signature date id file-type)
   "Prepend front matter to FILE.
@@ -4808,8 +4725,6 @@ With optional INCLUDE-DATE, convert the identifier using
      identifier
      desc)))
 
-(make-obsolete 'denote-link-signature-format nil "2.3.0")
-
 (defun denote-link-description-with-signature-and-title (file)
   "Return link description for FILE.
 
@@ -4884,7 +4799,7 @@ active, use it as the description."
 (define-obsolete-function-alias
   'denote--link-get-description
   'denote-get-link-description
-  "3.2.0")
+  "4.0.0")
 
 ;;;###autoload
 (defun denote-link (file file-type description &optional id-only)
@@ -5088,6 +5003,42 @@ file's title.  This has the same meaning as in `denote-link'."
 
 ;;;;; Links' buffer (query links and backlinks using `denote-query-mode')
 
+(define-obsolete-function-alias
+  'denote-backlinks-mode
+  'denote-query-mode
+  "4.0.0")
+
+(declare-function outline-cycle "outline" (&optional event))
+(declare-function outline-cycle-buffer "outline" (&optional level))
+(declare-function outline-next-heading "outline" ())
+(declare-function outline-previous-heading "outline" ())
+
+(defvar denote-query-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "a" #'outline-cycle-buffer)
+    (define-key map "f" #'denote-query-focus-last-search)
+    (define-key map "k" #'outline-previous-heading)
+    (define-key map "j" #'outline-next-heading)
+    (define-key map "o" #'delete-other-windows)
+    (define-key map "s" #'denote-grep)
+    (define-key map "v" #'outline-cycle)
+    (define-key map "x" #'denote-query-exclude-files)
+    (define-key map "i" #'denote-query-only-include-files)
+    (define-key map "l" #'recenter-current-error)
+    (define-key map "X" #'denote-query-exclude-files-with-keywords)
+    (define-key map "I" #'denote-query-only-include-files-with-keywords)
+    (define-key map "G" #'denote-query-clear-all-filters)
+    map)
+  "Keymap for `denote-query-mode' buffers.")
+
+(define-derived-mode denote-query-mode xref--xref-buffer-mode "Denote Query"
+  "Major mode for queries found in the variable `denote-directory'.
+This is used by the commands `denote-backlinks', `denote-grep',
+`denote-query-contents-link', among others."
+  :interactive nil
+  (setq-local outline-minor-mode-use-buttons 'in-margins)
+  (outline-minor-mode 1))
+
 (make-obsolete 'denote-link--backlink-find-file nil "4.0.0")
 (make-obsolete 'denote-link--display-buffer nil "4.0.0")
 (make-obsolete 'denote-backlinks-mode-next nil "4.0.0")
@@ -5096,29 +5047,116 @@ file's title.  This has the same meaning as in `denote-link'."
 (make-obsolete-variable 'denote-backlinks-mode-map nil "4.0.0")
 
 (define-obsolete-function-alias
-  'denote-backlinks-mode
-  'denote-query-mode
-  "4.0.0")
-
-(define-derived-mode denote-query-mode xref--xref-buffer-mode "Denote Query"
-  "Major mode for queries found in the variable `denote-directory'.
-This is used by the command `denote-backlinks' and all links created by
-the `denote-query' command, among others."
-  :interactive nil)
-
-(define-obsolete-function-alias
   'denote-link--prepare-backlinks
   'denote-make-links-buffer
   "4.0.0")
 
+(make-obsolete-variable 'denote-backlinks-show-context nil "4.0.0")
+
+(define-obsolete-variable-alias
+  'denote-link-backlinks-display-buffer-action
+  'denote-backlinks-display-buffer-action
+  "3.1.0")
+
+(defgroup denote-query ()
+  "Integration between Denote and Xref for grep/query/backlink buffers."
+  :group 'denote)
+
+(defcustom denote-backlinks-display-buffer-action
+  '((display-buffer-reuse-mode-window display-buffer-below-selected)
+    (mode . denote-query-mode)
+    (window-height . fit-window-to-buffer))
+  "The action used to display the current file's backlinks buffer.
+
+The value has the form (FUNCTION . ALIST), where FUNCTION is
+either an \"action function\", a list thereof, or possibly an
+empty list.  ALIST is a list of \"action alist\" which may be
+omitted (or be empty).
+
+Sample configuration to display the buffer in a side window on
+the left of the Emacs frame:
+
+    (setq denote-backlinks-display-buffer-action
+          (quote ((display-buffer-reuse-window display-buffer-in-side-window)
+                  (side . left)
+                  (slot . 99)
+                  (window-width . 0.3)
+                  (dedicated . t)
+                  (preserve-size . (t . t)))))
+
+See Info node `(elisp) Displaying Buffers' for more details
+and/or the documentation string of `display-buffer'."
+  :risky t
+  :type `(choice
+          (alist :key-type
+                 (choice :tag "Condition"
+                         regexp
+                         (function :tag "Matcher function"))
+                 :value-type ,display-buffer--action-custom-type)
+          (function :tag "Custom function to return an action alist"))
+  :package-version '(denote . "3.1.0")
+  :group 'denote-query)
+
+(defcustom denote-query-links-display-buffer-action
+  '((display-buffer-reuse-mode-window display-buffer-below-selected)
+    (mode . (denote-query-mode dired))
+    (window-height . 0.3)
+    (preserve-size . (t . t)))
+  "The action used to display query links.
+This is the same as `denote-backlinks-display-buffer-action'.  Refer to
+its documentation for the technicalities."
+  :risky t
+  :type `(choice
+          (alist :key-type
+                 (choice :tag "Condition"
+                         regexp
+                         (function :tag "Matcher function"))
+                 :value-type ,display-buffer--action-custom-type)
+          (function :tag "Custom function to return an action alist"))
+  :package-version '(denote . "4.0.0")
+  :group 'denote-query)
+
+(defcustom denote-query-format-heading-function #'identity
+  "Function used to construct headings for files matched by a query.
+
+It is called with a single argument, the path to the note file, and it
+should always return a string."
+  :package-version '(denote . "4.0.0")
+  :link '(info-link "(denote) Use denote-grep to search inside files")
+  :group 'denote-query
+  :type 'function)
+
+(defcustom denote-query-untitled-string "[Untitled]"
+  "String to use as heading for untitled notes in links' buffer.
+
+Used only by `denote-query-extract-title'."
+  :package-version '(denote . "4.0.0")
+  :link '(info-link "(denote) Use denote-grep to search inside files")
+  :group 'denote-query
+  :type 'string)
+
+(defun denote-query-extract-title (file)
+  "Extract note title from FILE front matter.
+
+When no title is found, return title found in FILE name.
+
+When that doesn't work, return `denote-grep-untitled-string'.
+
+Intended to be used as `denote-query-format-heading-function'."
+  (if-let* ((type (denote-filetype-heuristics file))
+            (title (denote-retrieve-title-or-filename file type))
+            (_ (not (string-blank-p title))))
+      title
+    denote-query-untitled-string))
+
 ;; NOTE 2025-03-24: The `&rest' is there because we used to have an
 ;; extra SHOW-CONTEXT parameter.  This way we do not break anybody's
 ;; code, even if we slightly modify the behaviour.
-(defun denote-make-links-buffer (query &optional files-matching-regexp buffer-name display-buffer-action &rest _)
+(defun denote-make-links-buffer (query &optional files buffer-name display-buffer-action &rest _)
   "Create links' buffer called BUFFER-NAME for QUERY.
 
-With optional FILES-MATCHING-REGEXP, limit the list of files
-accordingly (per `denote-directory-files').
+Optional FILES can be a list of files to search for.  It can also be a
+regexp, which limits the files accordingly per `denote-directory-files'.
 
 Optional DISPLAY-BUFFER-ACTION is a `display-buffer' action and
 concomitant alist, such as `denote-backlinks-display-buffer-action'."
@@ -5130,10 +5168,29 @@ concomitant alist, such as `denote-backlinks-display-buffer-action'."
          ;; suitable function and the results would be automatically
          ;; in relative form, but eventually notes may not be all
          ;; under a common directory (or project).
-         (xref-alist (denote-retrieve-xref-alist query files-matching-regexp))
+         (xref-alist (denote-retrieve-xref-alist query files))
          (dir (denote-directory)))
     (unless xref-alist
       (error "No matches for query `%s'" query))
+    ;; Update internal variables
+    (setq denote-query--last-files nil)
+    (setq denote-query--last-query query)
+    (dolist (x xref-alist)
+      (let* ((file-xref (car x))
+             (file
+              ;; NOTE: Unfortunately, the car of the xref construct is
+              ;; not reliable; sometimes it's absolute, sometimes it
+              ;; is not
+              (if (file-name-absolute-p file-xref)
+                  file-xref
+                (xref-location-group
+                 (xref-match-item-location (car (last x)))))))
+        ;; Add to current set of files
+        (push file denote-query--last-files)
+        ;; Format heading
+        (setf (car x) (funcall denote-query-format-heading-function file))))
+    (delete-dups denote-query--last-files)
+    ;; Insert results
     (with-current-buffer (get-buffer-create buffer)
       (erase-buffer)
       (denote-query-mode)
@@ -5150,12 +5207,173 @@ concomitant alist, such as `denote-backlinks-display-buffer-action'."
       (setq-local revert-buffer-function
                   (lambda (_ignore-auto _noconfirm)
                     (when-let* ((buffer-file-name file))
-                      (denote-make-links-buffer query files-matching-regexp buffer-name display-buffer-action)))))
+                      (denote-make-links-buffer query files buffer-name display-buffer-action)))))
     (display-buffer buffer display-buffer-action)))
 
 (defvar denote-query-links-buffer-function #'denote-make-links-buffer
   "Function to make an Xref buffer showing query link results.
 It accepts the same arguments as `denote-make-links-buffer'.")
+
+(defun denote-query-focus-last-search (query)
+  "Search QUERY in the content of files which matched the last search.
+\"Last search\" here means any call to `denote-grep',
+`denote-backlinks', `denote-query-contents-link', or, generally, any
+command that relies on the `denote-make-links-buffer'."
+  (interactive (list (denote-grep-query-prompt :focused)) denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (denote-make-links-buffer
+   query denote-query--last-files
+   nil '(display-buffer-same-window))
+  (message "Searching `%s' in files matched previously" query))
+
+(defun denote-query-exclude-files (regexp)
+  "Exclude files whose name matches REGEXP from current search buffer.
+
+This is useful even if you don't know regular expressions, given the
+Denote file-naming scheme.  For instance, to exclude notes with the
+keyword \"philosophy\" from current search buffer, type
+‘\\<denote-query-mode-map>\\[denote-query-exclude-files] _philosophy
+RET’.
+
+Internally, this works by generating a new call to
+`denote-make-links-buffer' with the same QUERY as the last one, but with
+a set of files gotten from checking REGEXP against last matched files.
+
+When called from Lisp, REGEXP can be a list; in that case, it should be
+a list of fixed strings (NOT regexps) to check against last matched
+files.  Files that match any of the strings get excluded.  Internally,
+the list is processed using `regexp-opt'.  For an example of this usage,
+see `denote-query-exclude-files-with-keywords'."
+  (interactive (list (denote-grep-file-regexp-prompt)) denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (let (final-files)
+    (dolist (file denote-query--last-files)
+      (unless (string-match
+               ;; Support list of strings as REGEXP
+               (if (listp regexp)
+                   (regexp-opt regexp)
+                 regexp)
+               file)
+        (push file final-files)))
+    (if final-files
+        (denote-make-links-buffer denote-query--last-query final-files)
+      (user-error "No remaining files when applying that filter"))
+    (message "Excluding files matching `%s'" regexp)))
+
+(defun denote-query-only-include-files (regexp)
+  "Exclude file names not matching REGEXP from current query buffer.
+
+See `denote-query-exclude-files' for details, including the behaviour
+when REGEXP is a list."
+  (interactive (list (denote-grep-file-regexp-prompt :include)) denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (let (final-files)
+    (dolist (file denote-query--last-files)
+      (when (string-match
+             ;; Support list of strings as REGEXP
+             (if (listp regexp)
+                 (regexp-opt regexp)
+               regexp)
+             file)
+        (push file final-files)))
+    (if final-files
+        (denote-make-links-buffer denote-query--last-query final-files)
+      (user-error "No remaining files when applying that filter"))
+    (message "Only including files matching `%s'" regexp)))
+
+(defun denote-query-exclude-files-with-keywords (keywords)
+  "Exclude files with KEYWORDS from current query buffer.
+
+KEYWORDS should be a list of keywords (without underscore).
+
+Interactively, KEYWORDS are read from the minibuffer using
+`completing-read-multiple', which see."
+  (interactive
+   (list (denote-keywords-prompt "Exclude files with keywords"))
+   denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (denote-query-exclude-files
+   (mapcar (lambda (kw) (concat "_" kw)) keywords)))
+
+(defun denote-query-only-include-files-with-keywords (keywords)
+  "Exclude files without KEYWORDS from current query buffer.
+
+See `denote-query-exclude-files-with-keywords' for details."
+  (interactive
+   (list (denote-keywords-prompt "Only include files with keywords"))
+   denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (denote-query-only-include-files
+   (mapcar (lambda (kw) (concat "_" kw)) keywords)))
+
+(defun denote-query-clear-all-filters ()
+  "Run last search with the full set of files in the variable `denote-directory'.
+
+This effectively gets ride of any interactive filter applied (by the
+means of e.g. `denote-query-exclude-files')."
+  (interactive nil denote-query-mode)
+  (unless (derived-mode-p 'denote-query-mode)
+    (user-error "Only use this command inside the `denote-query-mode'"))
+  (denote-make-links-buffer denote-query--last-query)
+  (message "Cleared all filters"))
+
+;;;;;; Additional features for searching file contents
+
+(defvar denote-grep-history nil
+  "Minibuffer history of content searches performed by `denote-grep'.
+Also see `denote-grep-file-regexp-history'.")
+
+(defun denote-grep-query-prompt (&optional type)
+  "Prompt for a grep query in the minibuffer.
+
+The prompt assumes a search in all files, unless TYPE is non-nil.
+
+For now, the only recognized value for TYPE is :focused (for a focused
+search (a search among matching files), see `denote-query-focus-last-search').
+
+TYPE only affects the prompt, not the returned value."
+  (read-string
+   (cond ((eq type :focused)
+          "Search (only files matched last): ")
+         (t "Search (all Denote files): "))
+   nil 'denote-grep-history))
+
+(defvar denote-grep-file-regexp-history nil
+  "Minibuffer history for `denote-grep' commands asking for a file regexp.
+Also see `denote-grep-history'.")
+
+(defun denote-grep-file-regexp-prompt (&optional include)
+  "Prompt for a file regexp in the minibuffer.
+
+The prompt assumes the user wants to exclude files, unless INCLUDE is
+non-nil."
+  (read-string
+   (if (not include)
+       "Exclude file names matching: "
+     "Only include file names matching: ")
+   nil 'denote-grep-file-regexp-history))
+
+
+(defun denote-grep (query)
+  "Search QUERY in the content of Denote files.
+QUERY should be a regular expression accepted by `xref-search-program'.
+
+The files to search for are those returned by `denote-directory-files'
+with a non-nil TEXT-ONLY argument.
+
+Results are put in a buffer which allows folding and further
+filtering (see the manual for details).
+
+You can insert a link to a grep search in any note by using the command
+`denote-query-contents-link'."
+  (interactive (list (denote-grep-query-prompt)))
+  (let (denote-query--omit-current)
+    (denote-make-links-buffer query)))
 
 ;;;;;; Backlinks
 

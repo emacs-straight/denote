@@ -106,12 +106,14 @@ Table of Contents
 12. Automatically rename Denote buffers
 .. 1. The `denote-rename-buffer-format' option
 13. Use Org dynamic blocks
-14. Sort files by component
+14. Display filtered and sorted files with `denote-sort-dired'
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
 ..... 1. Sort signatures that include Luhmann-style sequences
-15. Minibuffer histories
-16. Packages that build on Denote
+15. Use `denote-grep' to search inside files
+16. Interact with the links buffer
+17. Minibuffer histories
+18. Packages that build on Denote
 .. 1. Use the `consult-denote' package for enhanced minibuffer interactions
 .. 2. Sequence notes
 .. 3. Use the `denote-markdown' package to better integrate Markdown with Denote
@@ -123,7 +125,7 @@ Table of Contents
 .. 9. Use the `consult-notes' package
 .. 10. Use the `denote-menu' package
 .. 11. Use the `denote-zettel-interface' package
-17. Extending Denote
+19. Extending Denote
 .. 1. Access the data of the latest note
 .. 2. Create a new note in any directory
 .. 3. Find empty notes and put them in a Dired buffer
@@ -141,7 +143,7 @@ Table of Contents
 ..... 1. Export Denote notes with Org Mode
 ..... 2. Export Denote notes with Markdown
 .. 15. Set up your workflow for daily or weekly meeting notes
-18. For developers or advanced users
+20. For developers or advanced users
 .. 1. Common building blocks for developers or advanced users
 .. 2. File path interface for developers or advanced users
 .. 3. Data retrieval interface for developers or advanced users
@@ -150,13 +152,13 @@ Table of Contents
 .. 6. Link interface for developers or advanced users
 .. 7. Xref interface for developers or advanced users
 .. 8. Renaming files interface for developers or advanced users
-19. Troubleshoot Denote in a pristine environment
-20. Contributing
+21. Troubleshoot Denote in a pristine environment
+22. Contributing
 .. 1. Wishlist of what we can do to extend Denote
-21. Publications about Denote
-22. Alternatives to Denote
+23. Publications about Denote
+24. Alternatives to Denote
 .. 1. Alternative implementations and further reading
-23. Frequently Asked Questions
+25. Frequently Asked Questions
 .. 1. Why develop Denote when PACKAGE already exists?
 .. 2. Why not rely exclusively on Org?
 .. 3. Why care about Unix tools when you use Emacs?
@@ -169,9 +171,9 @@ Table of Contents
 .. 10. Speed up backlinks’ or query links’ buffer creation?
 .. 11. Why do I get “Search failed with status 1” when I search for backlinks?
 .. 12. Why do I get a double `#+title' in Doom Emacs?
-24. Acknowledgements
-25. GNU Free Documentation License
-26. Indices
+26. Acknowledgements
+27. GNU Free Documentation License
+28. Indices
 .. 1. Function index
 .. 2. Variable index
 .. 3. Concept index
@@ -452,7 +454,7 @@ Table of Contents
 
 [Writing metanotes] See section 9.12
 
-[Keep a journal or diary] See section 16.4
+[Keep a journal or diary] See section 18.4
 
 
 5 Points of entry
@@ -522,7 +524,7 @@ Table of Contents
 
 [The file naming scheme] See section 7
 
-[Access the data of the latest note] See section 17.1
+[Access the data of the latest note] See section 19.1
 
 [The `denote-kill-buffers' option] See section 5.1.6
 
@@ -637,7 +639,7 @@ Table of Contents
 
 [The denote-templates option] See section 5.1.3
 
-[Write sequence notes or “folgezettel”] See section 16.2
+[Write sequence notes or “folgezettel”] See section 18.2
 
 [The file-naming scheme] See section 7
 
@@ -1295,7 +1297,7 @@ Table of Contents
 
 [Create note with specific prompts using Org capture] See section 5.3
 
-[For developers or advanced users] See section 18
+[For developers or advanced users] See section 20
 
 [Write your own convenience commands] See section 5.1.4.1
 
@@ -1569,7 +1571,7 @@ Table of Contents
 
 
 [The `denote-silo' package which formerly was `denote-silo-extras.el']
-See section 16.5
+See section 18.5
 
 5.7.1 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -1655,7 +1657,7 @@ See section 16.5
 
 [Open an existing note or create it if missing] See section 5.6
 
-[For developers or advanced users] See section 18
+[For developers or advanced users] See section 20
 
 
 5.9 Exclude certain directories from all operations
@@ -1683,7 +1685,7 @@ See section 16.5
 
 [Maintain separate directory silos for notes] See section 5.7
 
-[For developers or advanced users] See section 18
+[For developers or advanced users] See section 20
 
 
 5.10 Exclude certain keywords from being inferred
@@ -1793,7 +1795,7 @@ See section 16.5
 
 [Linking notes] See section 9
 
-[Access the data of the latest note] See section 17.1
+[Access the data of the latest note] See section 19.1
 
 [Change the order of file name components] See section 7.1
 
@@ -1932,7 +1934,7 @@ See section 16.5
 
 [Change the order of file name components] See section 7.1
 
-[Access the data of the latest note] See section 17.1
+[Access the data of the latest note] See section 19.1
 
 6.1.1 The `denote-rename-confirmations' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -2480,7 +2482,7 @@ See section 16.5
 
 [Points of entry] See section 5
 
-[Write sequence notes or “folgezettel”] See section 16.2
+[Write sequence notes or “folgezettel”] See section 18.2
 
 [The `denote-prompts' option] See section 5.1.1
 
@@ -3002,7 +3004,7 @@ section 7.4
 
 [The file-naming scheme] See section 7
 
-[Why are some Org links opening outside Emacs?] See section 23.9
+[Why are some Org links opening outside Emacs?] See section 25.9
 
 9.1 Add a single direct link using a file name prompt
 ─────────────────────────────────────────────────────
@@ -3114,16 +3116,17 @@ section 9.5
 
   The command `denote-query-contents-link' inserts a link at point that
   triggers a search in the file contents of all readable documents in
-  the `denote-directory'. This is the equivalent of the Unix `grep'
-  command and uses the built-in Emacs Xref interface ([Speed up
-  backlinks’ or query links’ buffer creation?]).  Matches are displayed
-  in a separate buffer, highlighting the exact text while showing its
-  context.
+  the `denote-directory' ([Interact with the links buffer]). This is the
+  equivalent of the Unix `grep' command and uses the built-in Emacs Xref
+  interface ([Speed up backlinks’ or query links’ buffer creation?]).
+  Matches are displayed in a separate buffer, highlighting the exact
+  text while showing its context.
 
   The command `denote-query-filenames-link' creates a link at point that
   initiates a search across file names in the `denote-directory'. This
   is the equivalent of the Unix `find' command. Results are placed in a
-  Dired buffer.
+  Dired buffer ([Display filtered and sorted files with
+  `denote-sort-dired']).
 
   The user option `denote-query-links-display-buffer-action' controls
   the placement of query link buffers. By default, they are designed to
@@ -3136,7 +3139,12 @@ section 9.5
 
 [Linking notes] See section 9
 
-[Speed up backlinks’ or query links’ buffer creation?] See section 23.10
+[Interact with the links buffer] See section 16
+
+[Speed up backlinks’ or query links’ buffer creation?] See section 25.10
+
+[Display filtered and sorted files with `denote-sort-dired'] See section
+14
 
 
 9.4 Insert links to all files matching a query in their file name
@@ -3465,11 +3473,11 @@ section 9.2
     removed. ]
 
   The command `denote-backlinks' (alias `denote-show-backlinks-buffer')
-  produces a bespoke buffer which displays backlinks to the current
-  note. A “backlink” is a link back to the present entry. Backlinks can
-  be generated for any file type that has a Denote file-naming scheme,
-  such as PDFs, images, and videos, as well as the regular plain text
-  files.
+  produces a bespoke buffer which displays backlinks to the current note
+  ([Interact with the links buffer]). A “backlink” is a link back to the
+  present entry. Backlinks can be generated for any file type that has a
+  Denote file-naming scheme, such as PDFs, images, and videos, as well
+  as the regular plain text files.
 
   The backlinks’ buffer is, in essence, the equivalent of a Unix `grep'
   command across the `denote-directory' ([Speed up backlinks’ buffer
@@ -3511,12 +3519,14 @@ section 9.2
   command ([Visiting linked files via the minibuffer]).
 
 
-[Speed up backlinks’ buffer creation?] See section 23.10
+[Interact with the links buffer] See section 16
+
+[Speed up backlinks’ buffer creation?] See section 25.10
 
 [Adding a query link] See section 9.3
 
 [Why do I get “Search failed with status 1” when I search for
-backlinks?] See section 23.11
+backlinks?] See section 25.11
 
 [Visiting linked files via the minibuffer] See section 9.13
 
@@ -3582,7 +3592,7 @@ backlinks?] See section 23.11
   in a dedicated buffer ([The backlinks’ buffer]).
 
 
-[Extending Denote] See section 17
+[Extending Denote] See section 19
 
 [The backlinks’ buffer] See section 9.11
 
@@ -3931,43 +3941,49 @@ backlinks?] See section 23.11
 [Writing metanotes] See section 9.12
 
 
-14 Sort files by component
-══════════════════════════
+14 Display filtered and sorted files with `denote-sort-dired'
+═════════════════════════════════════════════════════════════
 
-  [ As part of 4.0.0-dev, the code of `denote-sort.el' is merged into
+  [ With 4.0.0-dev, the code of `denote-sort.el' is merged into
     `denote.el' as part of a wider reorganisation of the project. ]
 
-  The `denote.el' file contains functions which empowers user or
+  The `denote.el' file contains functions which empower user or
   developers to sort files by the given file name component ([The
   file-naming scheme]).
 
   The command `denote-sort-dired' (alias `denote-dired') produces a
   Dired file listing with a flat, filtered, and sorted set of files from
   the `denote-directory' ([Define a sorting function per component]). It
-  does so by a series of prompts, which can be configured by the user
+  does so by a series of prompts, which can be configured with the user
   option `denote-sort-dired-extra-prompts' ([Configure what extra
   prompts `denote-sort-dired' issues]).
+
+  Think of `denote-sort-dired' as the counterpart to the Unix `find'
+  command. While `denote-grep' corresponds to the Unix `grep' ([Use
+  `denote-grep' to search inside files]).
 
   The out-of-the-box behaviour of `denote-sort-dired' is as follows:
 
   1. It first asks for a regular expression with which to match Denote
-     files. Remember that due to Denote’s efficient file-naming scheme,
-     you do not need to write some complex regular expression. Even
-     something like `_journal' will match only files with a `journal'
-     keyword.
+     file names. Remember that due to Denote’s efficient file-naming
+     scheme, you usually do not need to write some complex regular
+     expression. For example, something like `_journal' will match only
+     files with a `journal' keyword.
   2. Once the regular expression is provided, the command asks for a
      Denote file name component to sort files by. This is a symbol among
-     `title', `keywords', `signature', and `identifier'.
+     `title', `keywords', `signature', and `identifier' ([Define a
+     sorting function per component]).
   3. Finally, it asks a “yes or no” on whether to reverse the sort
      order.
 
-  The resulting Dired listing is a regular Dired buffer, unlike that of
+  The resulting listing is a regular Dired buffer, unlike that of
   `dired-virtual-mode' ([Use `dired-virtual-mode' for arbitrary file
   listings]).
 
-  As an example, the dynamic Org blocks that the `denote-org' package
-  (by Protesilaos) defines also use this feature internally by means of
-  the non-interactive function `denote-sort-files'.
+  The sorting mechanism can be used by other packages to achieve their
+  ends. As an example, the dynamic Org blocks that the `denote-org'
+  package (by Protesilaos) defines also use this feature internally by
+  means of the non-interactive function `denote-sort-files'.
 
 
 [The file-naming scheme] See section 7
@@ -3977,20 +3993,24 @@ backlinks?] See section 23.11
 [Configure what extra prompts `denote-sort-dired' issues] See section
 14.1
 
-[Use `dired-virtual-mode' for arbitrary file listings] See section 17.6
+[Use `denote-grep' to search inside files] See section 15
+
+[Use `dired-virtual-mode' for arbitrary file listings] See section 19.6
 
 14.1 Configure what extra prompts `denote-sort-dired' issues
 ────────────────────────────────────────────────────────────
 
   By default, the `denote-sort-dired' command prompts for (i) a query to
   match file names, (ii) a file name component to sort by, and (iii)
-  whether to reverse the sorting. Users can configure the latter two by
+  whether to reverse the sorting ([Display filtered and sorted files
+  with denote-sort-dired]).  Users can configure the latter two by
   modifying the user option `denote-sort-dired-extra-prompts'.
 
-  It accepts either a nil value or a list of symbols among
-  `sort-by-component', `reverse-sort', and `exclude-regexp'. The order
-  those symbols appear in the list is significant, with the leftmost
-  coming first. [ The `exclude-regexp' feature is part of 4.0.0-dev. ]
+  The `denote-sort-dired-extra-prompts' accepts either a nil value or a
+  list of symbols among `sort-by-component', `reverse-sort', and
+  `exclude-regexp'. The order those symbols appear in the list is
+  significant, with the leftmost coming first. [ The `exclude-regexp'
+  feature is part of 4.0.0-dev. ]
 
   These symbols correspond to the following:
 
@@ -4000,8 +4020,8 @@ backlinks?] See section 23.11
     results.
 
   In case of a nil value, those extra prompts will not happen, meaning
-  that `denote-sort-dired' will fall back to using
-  `denote-sort-dired-default-sort-component' and
+  that `denote-sort-dired' will fall back to using whatever is defined
+  in the variables `denote-sort-dired-default-sort-component' and
   `denote-sort-dired-default-reverse-sort'.
 
   Here are some examples:
@@ -4027,12 +4047,17 @@ backlinks?] See section 23.11
   └────
 
 
+[Display filtered and sorted files with denote-sort-dired] See section
+14
+
+
 14.2 Define a sorting function per component
 ────────────────────────────────────────────
 
   When sorting by `title', `keywords', or `signature' with the
   `denote-sort-dired' command, Denote will internally apply a sorting
-  function that is specific to each component. These are subject to user
+  function that is specific to each component ([Configure what extra
+  prompts `denote-sort-dired' issues]).  These are subject to user
   configuration:
 
   • `denote-sort-identifier-comparison-function' [ This one was missing
@@ -4050,6 +4075,9 @@ backlinks?] See section 23.11
   ([Sort signatures that include Luhmann-style sequences]).
 
 
+[Configure what extra prompts `denote-sort-dired' issues] See section
+14.1
+
 [Sort signatures that include Luhmann-style sequences] See section
 14.2.1
 
@@ -4057,9 +4085,10 @@ backlinks?] See section 23.11
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ The `denote-sequence' package (by Protesilaos) covers this use-case
-    and many others ([Write sequence notes or folgezettel]). We keep the
-    code below for reference, as there may be users of it who need to
-    revisit it. Though long-term, it is better to use
+    and many others ([Write sequence notes or folgezettel]). It is the
+    superior option for anyone interested in this functionality. We keep
+    the code below for reference, as there may be users of it who need
+    to revisit it. Though long-term, it is better to use
     `denote-sequence'. ]
 
   Niklas Luhmann would edit notes to form sequences of thoughts with
@@ -4107,14 +4136,109 @@ backlinks?] See section 23.11
   └────
 
 
-[Write sequence notes or folgezettel] See section 16.2
+[Write sequence notes or folgezettel] See section 18.2
 
 [The file-naming scheme] See section 7
 
 [Define a sorting function per component] See section 14.2
 
 
-15 Minibuffer histories
+15 Use `denote-grep' to search inside files
+═══════════════════════════════════════════
+
+  [ The `denote-grep' command and everything related to it is part of
+  4.0.0-dev. ]
+
+  The command `denote-grep' searches for the given query across all
+  readable files in the `denote-directory'. It puts the collected
+  results in an Xref buffer (just like with our backlinks and query
+  links functionality). In this buffer, users can do `M-x describe-mode'
+  (`C-h m' with default key bindings) to learn about all the actions
+  they can perform and the keys they are bound to ([Interact with the
+  links buffer]).
+
+  Think of `denote-grep' as the counterpart to the Unix `grep' command.
+  While `denote-sort-dired' corresponds to the Unix `find' ([Display
+  filtered and sorted files with `denote-sort-dired']).
+
+
+[Interact with the links buffer] See section 16
+
+[Display filtered and sorted files with `denote-sort-dired'] See section
+14
+
+
+16 Interact with the links buffer
+═════════════════════════════════
+
+  [ Part of 4.0.0-dev. ]
+
+  Denote commands, such as `denote-grep', `denote-backlinks', and
+  `denote-query-contents-link', produce an Xref buffer with search
+  results ([Speed up backlinks’ or query links’ buffer creation?]).
+  Matching lines are grouped by the file name they belong to.
+
+  • [Use `denote-grep' to search inside files].
+  • [The backlinks’ buffer].
+  • [Add a query link].
+
+  This buffer uses the major mode `denote-query-mode'. It binds commands
+  to keys in the `denote-query-mode-map'. Those allow users to filter
+  the output of the last search. Here, “last search” refers to the list
+  of files that were returned by whichever command produced the buffer
+  (e.g. the last `denote-grep').
+
+  `denote-query-focus-last-search'
+        Perform a search in the contents of files that were matched by
+        the last search.
+
+  `denote-query-exclude-files'
+        Exclude files from the last search whose name matches the given
+        input.
+
+  `denote-query-only-include-files'
+        Only keep files from the last search whose name matches the
+        given input.
+
+  `denote-query-exclude-files-with-keywords'
+        Exclude files from the last search whose name includes the given
+        keywords.
+
+  `denote-query-only-include-files-with-keywords'
+        Only keep files from the last search whose name includes the
+        given keywords.
+
+  `denote-query-clear-all-filters'
+        Clear all the applied filters.
+
+  Remember that these are easy to use even without knowledge of regular
+  expressions, thanks to the efficiency of the Denote file-naming scheme
+  ([Features of the file-naming scheme for searching or filtering]). For
+  instance, to exclude notes with the keyword `philosophy' from current
+  search buffer, use `denote-query-exclude-files' and then type
+  `_philosophy' as your input.
+
+  In addition to those filtering options, the `denote-query-mode' also
+  allows provides an outline mechanism to hide or show the matches as
+  these are grouped per file. There also are some of the default actions
+  provided by the Xref infrastructure. Users can do `M-x describe-mode'
+  (`C-h m' with default key bindings) to learn about all the actions
+  they can perform.
+
+
+[Speed up backlinks’ or query links’ buffer creation?] See section 25.10
+
+[Use `denote-grep' to search inside files] See section 15
+
+[The backlinks’ buffer] See section 9.11
+
+[Add a query link] See section 9.3
+
+[Features of the file-naming scheme for searching or filtering] See
+section 7.4
+
+
+17 Minibuffer histories
 ═══════════════════════
 
   Denote has a dedicated minibuffer history for each one of its prompts.
@@ -4136,7 +4260,7 @@ backlinks?] See section 23.11
   └────
 
 
-16 Packages that build on Denote
+18 Packages that build on Denote
 ════════════════════════════════
 
   This is a list of packages that extend Denote. If you are a package
@@ -4144,7 +4268,7 @@ backlinks?] See section 23.11
   (either use the Git repositories or email Protesilaos directly).
 
 
-16.1 Use the `consult-denote' package for enhanced minibuffer interactions
+18.1 Use the `consult-denote' package for enhanced minibuffer interactions
 ──────────────────────────────────────────────────────────────────────────
 
   The `consult-denote' package by me (Protesilaos) integrates Denote
@@ -4168,10 +4292,10 @@ backlinks?] See section 23.11
   `consult-notes' package]).  It also only works with Denote.
 
 
-[Use the `consult-notes' package] See section 16.9
+[Use the `consult-notes' package] See section 18.9
 
 
-16.2 Use the `denote-sequence' package to write sequence notes or "folgezettel"
+18.2 Use the `denote-sequence' package to write sequence notes or "folgezettel"
 ───────────────────────────────────────────────────────────────────────────────
 
   This section is about the external package `denote-sequence' (by
@@ -4206,7 +4330,7 @@ backlinks?] See section 23.11
 [The file-naming scheme] See section 7
 
 
-16.3 Use the `denote-markdown' package to better integrate Markdown with Denote
+18.3 Use the `denote-markdown' package to better integrate Markdown with Denote
 ───────────────────────────────────────────────────────────────────────────────
 
   The `denote-markdown' package (by Protesilaos) provides some
@@ -4230,7 +4354,7 @@ backlinks?] See section 23.11
     Knowhow to Do Only What’s Necessary.
 
 
-16.4 Use the `denote-journal' package which was formerly `denote-journal-extras.el'
+18.4 Use the `denote-journal' package which was formerly `denote-journal-extras.el'
 ───────────────────────────────────────────────────────────────────────────────────
 
   The `denote-journal' package (by Protesilaos) makes it easier to use
@@ -4252,7 +4376,7 @@ backlinks?] See section 23.11
     Notwithstanding Affectionate Longing.
 
 
-16.5 Use the `denote-silo' package which formerly was `denote-silo-extras.el'
+18.5 Use the `denote-silo' package which formerly was `denote-silo-extras.el'
 ─────────────────────────────────────────────────────────────────────────────
 
   The `denote-silo' package (by Protesilaos) provides convenience
@@ -4275,8 +4399,13 @@ backlinks?] See section 23.11
 [Maintain separate directory silos for notes] See section 5.7
 
 
-16.6 Use the `denote-search' package as a search interface
+18.6 Use the `denote-search' package as a search interface
 ──────────────────────────────────────────────────────────
+
+  [ As part of version `4.0.0' (4.0.0-dev), Denote comes with the
+    `denote-grep' command and related functionality ([Use `denote-grep'
+    to search inside files]).  The core of this feature set was written
+    by Lucas Quintana. ]
 
   The `denote-search' package by Lucas Quintana provides a search
   utility for Denote: <https://github.com/lmq-10/denote-search>.
@@ -4292,7 +4421,10 @@ backlinks?] See section 23.11
   dependencies other than Denote itself.
 
 
-16.7 Use the `denote-explore' package to explore your notes
+[Use `denote-grep' to search inside files] See section 15
+
+
+18.7 Use the `denote-explore' package to explore your notes
 ───────────────────────────────────────────────────────────
 
   Peter Prevos has developed the `denote-explore' package which provides
@@ -4311,7 +4443,7 @@ backlinks?] See section 23.11
   <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-16.8 Use the `citar-denote' package for bibliography notes
+18.8 Use the `citar-denote' package for bibliography notes
 ──────────────────────────────────────────────────────────
 
   Peter Prevos has produced the `citar-denote' package which makes it
@@ -4328,7 +4460,7 @@ backlinks?] See section 23.11
   <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-16.9 Use the `consult-notes' package
+18.9 Use the `consult-notes' package
 ────────────────────────────────────
 
   [ Also check the `consult-denote' package by me (Protesilaos): [Use
@@ -4367,13 +4499,13 @@ backlinks?] See section 23.11
 
 
 [Use the `consult-denote' package for enhanced minibuffer interactions]
-See section 16.1
+See section 18.1
 
 [Features of the file-naming scheme for searching or filtering] See
 section 7.4
 
 
-16.10 Use the `denote-menu' package
+18.10 Use the `denote-menu' package
 ───────────────────────────────────
 
   Denote’s file-naming scheme is designed to be efficient and to provide
@@ -4394,7 +4526,7 @@ section 7.4
 <https://github.com/namilus/denote-menu>
 
 
-16.11 Use the `denote-zettel-interface' package
+18.11 Use the `denote-zettel-interface' package
 ───────────────────────────────────────────────
 
   The [`denote-zettel-interface' package by Kristoffer Balintona] is
@@ -4416,7 +4548,7 @@ section 7.4
 [The file-naming scheme] See section 7
 
 
-17 Extending Denote
+19 Extending Denote
 ═══════════════════
 
   Denote is a tool with a narrow scope: create notes and link between
@@ -4426,9 +4558,9 @@ section 7.4
   Denote]). This section covers the details.
 
 
-[Packages that build on Denote] See section 16
+[Packages that build on Denote] See section 18
 
-17.1 Access the data of the latest note
+19.1 Access the data of the latest note
 ───────────────────────────────────────
 
   The variable `denote-current-data' is updated each time a new note is
@@ -4444,7 +4576,7 @@ section 7.4
   `denote-after-rename-file-hook'.
 
 
-17.2 Create a new note in any directory
+19.2 Create a new note in any directory
 ───────────────────────────────────────
 
   The commands that create new files are designed to write to the
@@ -4468,7 +4600,7 @@ section 7.4
   └────
 
 
-17.3 Find empty notes and put them in a Dired buffer
+19.3 Find empty notes and put them in a Dired buffer
 ────────────────────────────────────────────────────
 
   [ This feature is based on the command `denote-sort-dired' ([Sort
@@ -4604,7 +4736,7 @@ section 7.4
 [Link to an existing note or create a new one] See section 9.10
 
 
-17.4 Automatically rename the note after saving it
+19.4 Automatically rename the note after saving it
 ──────────────────────────────────────────────────
 
   While experimenting with Denote, users may need to try different
@@ -4629,7 +4761,7 @@ section 7.4
   └────
 
 
-17.5 Narrow the list of files in Dired
+19.5 Narrow the list of files in Dired
 ──────────────────────────────────────
 
   Emacs’ standard file manager (or directory editor) can read a regular
@@ -4691,7 +4823,7 @@ section 7.4
 section 7.4
 
 
-17.6 Use `dired-virtual-mode' for arbitrary file listings
+19.6 Use `dired-virtual-mode' for arbitrary file listings
 ─────────────────────────────────────────────────────────
 
   Emacs’ Dired is a powerful file manager that builds its functionality
@@ -4788,12 +4920,12 @@ section 7.4
 
 
 [I want to sort by last modified, why won’t Denote let me?] See section
-23.7
+25.7
 
 [The file-naming scheme] See section 7
 
 
-17.7 Use Embark to collect minibuffer candidates
+19.7 Use Embark to collect minibuffer candidates
 ────────────────────────────────────────────────
 
   `embark' is a remarkable package that lets you perform relevant,
@@ -4817,10 +4949,10 @@ section 7.4
   power of the minibuffer ([Narrow the list of files in Dired]).
 
 
-[Narrow the list of files in Dired] See section 17.5
+[Narrow the list of files in Dired] See section 19.5
 
 
-17.8 Search file contents
+19.8 Search file contents
 ─────────────────────────
 
   [ Users of `consult' can use the `consult-denote' package instead
@@ -4866,10 +4998,10 @@ section 7.4
 
 
 [Use the `consult-denote' package for enhanced minibuffer interactions]
-See section 16.1
+See section 18.1
 
 
-17.9 Bookmark the directory with the notes
+19.9 Bookmark the directory with the notes
 ──────────────────────────────────────────
 
   Part of the reason Denote does not reinvent existing functionality is
@@ -4894,7 +5026,7 @@ See section 16.1
   extras for working with directories, including bookmarks.
 
 
-17.10 Treat your notes as a project
+19.10 Treat your notes as a project
 ───────────────────────────────────
 
   Emacs has a built-in library for treating a directory tree as a
@@ -4927,7 +5059,7 @@ See section 16.1
   Git).
 
 
-17.11 Use the tree-based file prompt for select commands
+19.11 Use the tree-based file prompt for select commands
 ────────────────────────────────────────────────────────
 
   Older versions of Denote had a file prompt that resembled that of the
@@ -4966,7 +5098,7 @@ See section 16.1
   └────
 
 
-17.12 Rename files with Denote in the Image Dired thumbnails buffer
+19.12 Rename files with Denote in the Image Dired thumbnails buffer
 ───────────────────────────────────────────────────────────────────
 
   [Rename files with Denote using `dired-preview']
@@ -5031,12 +5163,12 @@ See section 16.1
   └────
 
 
-[Rename files with Denote using `dired-preview'] See section 17.13
+[Rename files with Denote using `dired-preview'] See section 19.13
 
 [Rename multiple files at once] See section 6.3
 
 
-17.13 Rename files with Denote using `dired-preview'
+19.13 Rename files with Denote using `dired-preview'
 ────────────────────────────────────────────────────
 
   The `dired-preview' package (by me/Protesilaos) automatically displays
@@ -5090,10 +5222,10 @@ See section 16.1
 [Rename multiple files at once] See section 6.3
 
 [Rename files with Denote in the Image Dired thumbnails buffer] See
-section 17.12
+section 19.12
 
 
-17.14 Avoid duplicate identifiers when exporting Denote notes
+19.14 Avoid duplicate identifiers when exporting Denote notes
 ─────────────────────────────────────────────────────────────
 
   When exporting Denote notes to, for example, an HTML or PDF file,
@@ -5114,7 +5246,7 @@ section 17.12
 
 [Convenience commands for note creation] See section 5.1.4
 
-17.14.1 Export Denote notes with Org Mode
+19.14.1 Export Denote notes with Org Mode
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Org Mode has a built-in configurable export engine.  You can prevent
@@ -5126,7 +5258,7 @@ section 17.12
   required pre-processing step for export purposes.
 
 
-◊ 17.14.1.1 Manually configure Org export
+◊ 19.14.1.1 Manually configure Org export
 
   Insert `#+export_file_name: FILENAME' in the front matter before
   exporting to force a filename called whatever the value of `FILENAME'
@@ -5143,10 +5275,10 @@ section 17.12
   this section ([Export Denote notes]).
 
 
-  [Export Denote notes] See section 17.14
+  [Export Denote notes] See section 19.14
 
 
-◊ 17.14.1.2 Automatically store Org exports in another folder
+◊ 19.14.1.2 Automatically store Org exports in another folder
 
   It is possible to automatically place all exports in another folder by
   making Org’s function `org-export-output-file-name' create the target
@@ -5204,7 +5336,7 @@ section 17.12
   [Exclude certain directories from all operations] See section 5.9
 
 
-◊ 17.14.1.3 Org Mode Publishing
+◊ 19.14.1.3 Org Mode Publishing
 
   Org Mode also has a publishing tool for exporting a collection of
   files. Some user might apply this approach to convert their note
@@ -5222,7 +5354,7 @@ section 17.12
   [Exclude certain directories from all operations] See section 5.9
 
 
-17.14.2 Export Denote notes with Markdown
+19.14.2 Export Denote notes with Markdown
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Exporting from Markdown requires an external processor (e.g.,
@@ -5238,7 +5370,7 @@ section 17.12
   of duplicate Denote identifiers.
 
 
-17.15 Set up your workflow for daily or weekly meeting notes
+19.15 Set up your workflow for daily or weekly meeting notes
 ────────────────────────────────────────────────────────────
 
   Perhaps as part of work, we meet with certain people on a regular
@@ -5322,7 +5454,7 @@ section 17.12
 [Use Org dynamic blocks] See section 13
 
 
-18 For developers or advanced users
+20 For developers or advanced users
 ═══════════════════════════════════
 
   Denote is in a stable state and can be relied upon as the basis for
@@ -5345,9 +5477,9 @@ section 17.12
   The following sections cover the specifics.
 
 
-[Packages that build on Denote] See section 16
+[Packages that build on Denote] See section 18
 
-18.1 Common building blocks for developers or advanced users
+20.1 Common building blocks for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   Variable `denote-id-format'
@@ -5497,7 +5629,7 @@ section 17.12
 [Maintain separate directories for notes] See section 5.7
 
 
-18.2 File path interface for developers or advanced users
+20.2 File path interface for developers or advanced users
 ─────────────────────────────────────────────────────────
 
   Function `denote-file-name-relative-to-denote-directory'
@@ -5618,7 +5750,7 @@ section 17.12
 [Sluggification of file name components] See section 7.2
 
 
-18.3 Data retrieval interface for developers or advanced users
+20.3 Data retrieval interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Function `denote-get-path-by-id'
@@ -5683,7 +5815,7 @@ section 17.12
 [The file-naming scheme] See section 7
 
 
-18.4 Prompt interface for developers or advanced users
+20.4 Prompt interface for developers or advanced users
 ──────────────────────────────────────────────────────
 
   Function `denote-add-prompts'
@@ -5788,7 +5920,7 @@ section 17.12
 [Points of entry] See section 5
 
 
-18.5 Front matter interface for developers or advanced users
+20.5 Front matter interface for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   Function `denote-filetype-heuristics'
@@ -5933,7 +6065,7 @@ section 17.12
 [Change the front matter format] See section 8.1
 
 
-18.6 Link interface for developers or advanced users
+20.6 Link interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   Variable `denote-org-link-format'
@@ -5995,7 +6127,7 @@ section 17.12
         returned as the description.
 
 
-18.7 Xref interface for developers or advanced users
+20.7 Xref interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   [ All of the following are part of 4.0.0-dev. ]
@@ -6015,7 +6147,7 @@ section 17.12
         times limit the search to text files.
 
 
-18.8 Renaming files interface for developers or advanced users
+20.8 Renaming files interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Function `denote-rename-file-prompt'
@@ -6069,7 +6201,7 @@ section 17.12
 [Maintain separate directories for notes] See section 5.7
 
 
-19 Troubleshoot Denote in a pristine environment
+21 Troubleshoot Denote in a pristine environment
 ════════════════════════════════════════════════
 
   Sometimes we get reports on bugs that may not be actually caused by
@@ -6114,7 +6246,7 @@ section 17.12
   us get a better sense of the specifics.
 
 
-20 Contributing
+22 Contributing
 ═══════════════
 
   Denote is a GNU ELPA package. As such, any significant change to the
@@ -6194,9 +6326,9 @@ section 17.12
   └────
 
 
-[Acknowledgements] See section 24
+[Acknowledgements] See section 26
 
-20.1 Wishlist of what we can do to extend Denote
+22.1 Wishlist of what we can do to extend Denote
 ────────────────────────────────────────────────
 
   These are various ideas to extend Denote. Whether they should be in
@@ -6243,7 +6375,7 @@ section 17.12
   list.
 
 
-21 Publications about Denote
+23 Publications about Denote
 ════════════════════════════
 
   The Emacs community is putting Denote to great use.  This section
@@ -6298,10 +6430,10 @@ section 17.12
     <https://github.com/summeremacs/howiuseemacs/blob/main/full-explanation-of-how-i-use-emacs.org>
 
 
-[Contributing] See section 20
+[Contributing] See section 22
 
 
-22 Alternatives to Denote
+24 Alternatives to Denote
 ═════════════════════════
 
   What follows is a list of Emacs packages for note-taking.  I
@@ -6389,7 +6521,7 @@ section 17.12
 
 [zetteldeft] <https://github.com/EFLS/zetteldeft>
 
-22.1 Alternative implementations and further reading
+24.1 Alternative implementations and further reading
 ────────────────────────────────────────────────────
 
   This section covers blog posts and implementations from the Emacs
@@ -6418,7 +6550,7 @@ section 17.12
   [ Development note: help expand this list. ]
 
 
-[Alternatives to Denote] See section 22
+[Alternatives to Denote] See section 24
 
 [date2name] <https://github.com/novoid/date2name>
 
@@ -6435,7 +6567,7 @@ section 17.12
 [memacs] <https://github.com/novoid/memacs>
 
 
-23 Frequently Asked Questions
+25 Frequently Asked Questions
 ═════════════════════════════
 
   I (Protesilaos) answer some questions I have received or might get.
@@ -6443,7 +6575,7 @@ section 17.12
   go into the specifics of how Denote works.
 
 
-23.1 Why develop Denote when PACKAGE already exists?
+25.1 Why develop Denote when PACKAGE already exists?
 ────────────────────────────────────────────────────
 
   I wrote Denote because I was using a variant of Denote’s file-naming
@@ -6477,7 +6609,7 @@ section 17.12
   choose whatever you want.
 
 
-23.2 Why not rely exclusively on Org?
+25.2 Why not rely exclusively on Org?
 ─────────────────────────────────────
 
   I think Org is one of Emacs’ killer apps.  I also believe it is not
@@ -6508,7 +6640,7 @@ section 17.12
   this very manual.
 
 
-23.3 Why care about Unix tools when you use Emacs?
+25.3 Why care about Unix tools when you use Emacs?
 ──────────────────────────────────────────────────
 
   My notes form part of my longer-term storage.  I do not want to have
@@ -6534,7 +6666,7 @@ section 17.12
   just me thinking long-term.
 
 
-23.4 Why many small files instead of few large ones?
+25.4 Why many small files instead of few large ones?
 ────────────────────────────────────────────────────
 
   I have read that Org favours the latter method.  If true, I strongly
@@ -6570,7 +6702,7 @@ section 17.12
   about using the right tool for the job).
 
 
-23.5 Does Denote perform well at scale?
+25.5 Does Denote perform well at scale?
 ───────────────────────────────────────
 
   Denote does not do anything fancy and has no special requirements: it
@@ -6592,7 +6724,7 @@ section 17.12
   where necessary, without compromising on the project’s principles.
 
 
-23.6 I add TODOs to my notes; will many files slow down the Org agenda?
+25.6 I add TODOs to my notes; will many files slow down the Org agenda?
 ───────────────────────────────────────────────────────────────────────
 
   Yes, many files will slow down the agenda due to how that works.  Org
@@ -6625,10 +6757,10 @@ section 17.12
   ask for help in our relevant channels ([Contributing]).
 
 
-[Contributing] See section 20
+[Contributing] See section 22
 
 
-23.7 I want to sort by last modified in Dired, why won’t Denote let me?
+25.7 I want to sort by last modified in Dired, why won’t Denote let me?
 ───────────────────────────────────────────────────────────────────────
 
   Denote does not control how Dired sorts files. I encourage you to read
@@ -6646,7 +6778,7 @@ section 17.12
 [Sort files by component] See section 14
 
 
-23.8 How do you handle the last modified case?
+25.8 How do you handle the last modified case?
 ──────────────────────────────────────────────
 
   Denote does not insert any meta data or heading pertaining to edits in
@@ -6672,7 +6804,7 @@ section 17.12
   software handle the tracking of changes.
 
 
-23.9 Why are some Org links opening outside Emacs?
+25.9 Why are some Org links opening outside Emacs?
 ──────────────────────────────────────────────────
 
   Org has its own mechanism to determine how best to open a link. This
@@ -6711,7 +6843,7 @@ section 17.12
 [Renaming files] See section 6
 
 
-23.10 Speed up backlinks’ or query links’ buffer creation?
+25.10 Speed up backlinks’ or query links’ buffer creation?
 ──────────────────────────────────────────────────────────
 
   Denote leverages the built-in `xref' library to search for the
@@ -6749,7 +6881,7 @@ section 17.12
   └────
 
 
-23.11 Why do I get “Search failed with status 1” when I search for backlinks?
+25.11 Why do I get “Search failed with status 1” when I search for backlinks?
 ─────────────────────────────────────────────────────────────────────────────
 
   Denote uses [Emacs’ Xref] to find backlinks.  Xref requires `xargs'
@@ -6770,7 +6902,7 @@ section 17.12
 [Emacs’ Xref] <info:emacs#Xref>
 
 
-23.12 Why do I get a double `#+title' in Doom Emacs?
+25.12 Why do I get a double `#+title' in Doom Emacs?
 ────────────────────────────────────────────────────
 
   Doom Emacs provides a set of bespoke templates for Org. One of those
@@ -6783,7 +6915,7 @@ section 17.12
   Doom Emacs configuration file.
 
 
-24 Acknowledgements
+26 Acknowledgements
 ═══════════════════
 
   Denote is meant to be a collective effort.  Every bit of help matters.
@@ -6801,12 +6933,12 @@ section 17.12
         Bagneris, Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner,
         Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas
         Andreadis, Kristoffer Balintona, Kyle Meyer, Laurent Gatto,
-        Maikol Solis, Marc Fargas, Matthew Lemon, Noboru Ota (nobiot),
-        Norwid Behrnd, Octavian, Peter Prevos, Philip Kaludercic,
-        Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan
-        Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang Manerikar,
-        Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders, eum3l,
-        ezchi, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
+        Lucas Quintana, Maikol Solis, Marc Fargas, Matthew Lemon, Noboru
+        Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
+        Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
+        Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
+        Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders,
+        eum3l, ezchi, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
         mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
         skissue.
 
@@ -6841,20 +6973,20 @@ section 17.12
   contributions to the code base.
 
 
-25 GNU Free Documentation License
+27 GNU Free Documentation License
 ═════════════════════════════════
 
 
-26 Indices
+28 Indices
 ══════════
 
-26.1 Function index
+28.1 Function index
 ───────────────────
 
 
-26.2 Variable index
+28.2 Variable index
 ───────────────────
 
 
-26.3 Concept index
+28.3 Concept index
 ──────────────────

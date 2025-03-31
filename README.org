@@ -2689,16 +2689,17 @@ all cases, the description of the link is the query text itself.
 #+findex: denote-query-contents-link
 The command ~denote-query-contents-link~ inserts a link at point that
 triggers a search in the file contents of all readable documents in
-the ~denote-directory~. This is the equivalent of the Unix ~grep~
-command and uses the built-in Emacs Xref interface ([[#h:893eec49-d7be-4603-bcff-fcc247244011][Speed up backlinks' or query links' buffer creation?]]).
-Matches are displayed in a separate buffer, highlighting the exact text
-while showing its context.
+the ~denote-directory~ ([[#h:435592bc-e896-429f-a599-9f1bcd5ab9b8][Interact with the links buffer]]). This is the
+equivalent of the Unix ~grep~ command and uses the built-in Emacs Xref
+interface ([[#h:893eec49-d7be-4603-bcff-fcc247244011][Speed up backlinks' or query links' buffer creation?]]).
+Matches are displayed in a separate buffer, highlighting the exact
+text while showing its context.
 
 #+findex: denote-query-filenames-link
 The command ~denote-query-filenames-link~ creates a link at point that
 initiates a search across file names in the ~denote-directory~. This
 is the equivalent of the Unix ~find~ command. Results are placed in a
-Dired buffer.
+Dired buffer ([[#h:9fe01e63-f34f-4479-8713-f162a5ca865e][Display filtered and sorted files with ~denote-sort-dired~]]).
 
 #+vindex: denote-query-links-display-buffer-action
 The user option ~denote-query-links-display-buffer-action~ controls
@@ -3004,11 +3005,11 @@ creating a new one ([[#h:ad91ca39-cf10-4e16-b224-fdf78f093883][Open an existing 
 #+findex: denote-backlinks
 #+findex: denote-show-backlinks-buffer
 The command ~denote-backlinks~ (alias ~denote-show-backlinks-buffer~)
-produces a bespoke buffer which displays backlinks to the current
-note. A "backlink" is a link back to the present entry. Backlinks can
-be generated for any file type that has a Denote file-naming scheme,
-such as PDFs, images, and videos, as well as the regular plain text
-files.
+produces a bespoke buffer which displays backlinks to the current note
+([[#h:435592bc-e896-429f-a599-9f1bcd5ab9b8][Interact with the links buffer]]). A "backlink" is a link back to the
+present entry. Backlinks can be generated for any file type that has a
+Denote file-naming scheme, such as PDFs, images, and videos, as well
+as the regular plain text files.
 
 The backlinks' buffer is, in essence, the equivalent of a Unix ~grep~
 command across the ~denote-directory~ ([[#h:893eec49-d7be-4603-bcff-fcc247244011][Speed up backlinks' buffer creation?]]).
@@ -3429,16 +3430,16 @@ reflect on the status of earlier notes ([[#h:6060a7e6-f179-4d42-a9de-a9968aaebec
 + Git repository: <https://github.com/protesilaos/denote-org>
 + Backronym: Denote... Ordinarily Restricts Gyrations.
 
-* Sort files by component
+* Display filtered and sorted files with ~denote-sort-dired~
 :PROPERTIES:
 :CUSTOM_ID: h:9fe01e63-f34f-4479-8713-f162a5ca865e
 :END:
 
-[ As part of {{{development-version}}}, the code of =denote-sort.el=
-  is merged into =denote.el= as part of a wider reorganisation of the
+[ With {{{development-version}}}, the code of =denote-sort.el= is
+  merged into =denote.el= as part of a wider reorganisation of the
   project. ]
 
-The =denote.el= file contains functions which empowers user or
+The =denote.el= file contains functions which empower user or
 developers to sort files by the given file name component ([[#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][The file-naming scheme]]).
 
 #+findex: denote-sort-dired
@@ -3446,29 +3447,32 @@ developers to sort files by the given file name component ([[#h:4e9c7512-84dc-4d
 The command ~denote-sort-dired~ (alias ~denote-dired~) produces a
 Dired file listing with a flat, filtered, and sorted set of files from
 the ~denote-directory~ ([[#h:c958e087-1d23-4a25-afdd-db7bf5606b4c][Define a sorting function per component]]). It
-does so by a series of prompts, which can be configured by the user
+does so by a series of prompts, which can be configured with the user
 option ~denote-sort-dired-extra-prompts~ ([[#h:a34228cb-484f-48fe-9cbc-8e41f313127b][Configure what extra prompts ~denote-sort-dired~ issues]]).
+
+Think of ~denote-sort-dired~ as the counterpart to the Unix ~find~
+command. While ~denote-grep~ corresponds to the Unix ~grep~ ([[#h:e71c9d14-7e88-4386-91d0-9ad249947077][Use ~denote-grep~ to search inside files]]).
 
 The out-of-the-box behaviour of ~denote-sort-dired~ is as follows:
 
 1. It first asks for a regular expression with which to match Denote
-   files. Remember that due to Denote's efficient file-naming scheme,
-   you do not need to write some complex regular expression. Even
-   something like =_journal= will match only files with a =journal=
-   keyword.
+   file names. Remember that due to Denote's efficient file-naming
+   scheme, you usually do not need to write some complex regular
+   expression. For example, something like =_journal= will match only
+   files with a =journal= keyword.
 2. Once the regular expression is provided, the command asks for a
    Denote file name component to sort files by. This is a symbol among
-   =title=, =keywords=, =signature=, and =identifier=.
-3. Finally, it asks a "yes or no" on whether to reverse the sort
-   order.
+   =title=, =keywords=, =signature=, and =identifier= ([[#h:c958e087-1d23-4a25-afdd-db7bf5606b4c][Define a sorting function per component]]).
+3. Finally, it asks a "yes or no" on whether to reverse the sort order.
 
-The resulting Dired listing is a regular Dired buffer, unlike that of
+The resulting listing is a regular Dired buffer, unlike that of
 ~dired-virtual-mode~ ([[#h:d35d8d41-f51b-4139-af8f-9c8cc508e35b][Use ~dired-virtual-mode~ for arbitrary file listings]]).
 
 #+findex: denote-sort-files
-As an example, the dynamic Org blocks that the ~denote-org~ package
-(by Protesilaos) defines also use this feature internally by means of
-the non-interactive function ~denote-sort-files~.
+The sorting mechanism can be used by other packages to achieve their
+ends. As an example, the dynamic Org blocks that the ~denote-org~
+package (by Protesilaos) defines also use this feature internally by
+means of the non-interactive function ~denote-sort-files~.
 
 ** Configure what extra prompts ~denote-sort-dired~ issues
 :PROPERTIES:
@@ -3478,14 +3482,15 @@ the non-interactive function ~denote-sort-files~.
 #+vindex: denote-sort-dired-extra-prompts
 By default, the ~denote-sort-dired~ command prompts for (i) a query to
 match file names, (ii) a file name component to sort by, and (iii)
-whether to reverse the sorting. Users can configure the latter two by
-modifying the user option ~denote-sort-dired-extra-prompts~.
+whether to reverse the sorting ([[#h:9fe01e63-f34f-4479-8713-f162a5ca865e][Display filtered and sorted files with denote-sort-dired]]).
+Users can configure the latter two by modifying the user option
+~denote-sort-dired-extra-prompts~.
 
-It accepts either a nil value or a list of symbols among
-~sort-by-component~, ~reverse-sort~, and ~exclude-regexp~. The order
-those symbols appear in the list is significant, with the leftmost
-coming first. [ The ~exclude-regexp~ feature is part of
-{{{development-version}}}. ]
+The ~denote-sort-dired-extra-prompts~ accepts either a nil value or a
+list of symbols among ~sort-by-component~, ~reverse-sort~, and
+~exclude-regexp~. The order those symbols appear in the list is
+significant, with the leftmost coming first. [ The ~exclude-regexp~
+feature is part of {{{development-version}}}. ]
 
 These symbols correspond to the following:
 
@@ -3497,8 +3502,8 @@ These symbols correspond to the following:
 #+vindex: denote-sort-dired-default-sort-component
 #+vindex: denote-sort-dired-default-reverse-sort
 In case of a nil value, those extra prompts will not happen, meaning
-that ~denote-sort-dired~ will fall back to using
-~denote-sort-dired-default-sort-component~ and
+that ~denote-sort-dired~ will fall back to using whatever is defined
+in the variables ~denote-sort-dired-default-sort-component~ and
 ~denote-sort-dired-default-reverse-sort~.
 
 Here are some examples:
@@ -3530,8 +3535,8 @@ Here are some examples:
 
 When sorting by =title=, =keywords=, or =signature= with the
 ~denote-sort-dired~ command, Denote will internally apply a sorting
-function that is specific to each component. These are subject to user
-configuration:
+function that is specific to each component ([[#h:a34228cb-484f-48fe-9cbc-8e41f313127b][Configure what extra prompts ~denote-sort-dired~ issues]]).
+These are subject to user configuration:
 
 #+vindex: denote-sort-identifier-comparison-function
 - ~denote-sort-identifier-comparison-function~ [ This one was missing
@@ -3557,9 +3562,10 @@ of those file name components can write their own sorting algorithms
 :END:
 
 [ The ~denote-sequence~ package (by Protesilaos) covers this use-case
-  and many others ([[#h:d5ca722d-e7fa-46fa-9a57-6363b1d4186f][Write sequence notes or folgezettel]]). We keep the
-  code below for reference, as there may be users of it who need to
-  revisit it. Though long-term, it is better to use ~denote-sequence~. ]
+  and many others ([[#h:d5ca722d-e7fa-46fa-9a57-6363b1d4186f][Write sequence notes or folgezettel]]). It is the
+  superior option for anyone interested in this functionality. We keep
+  the code below for reference, as there may be users of it who need
+  to revisit it. Though long-term, it is better to use ~denote-sequence~. ]
 
 Niklas Luhmann would edit notes to form sequences of thoughts with
 branching paths, such as =1.1=, =1.1a=, =1.2=, =1.2a=, =1.2b=, etc.
@@ -3603,6 +3609,85 @@ Perform the comparison with `string<'."
 ;; Change the sorting function only when we sort by signature.
 (setq denote-sort-signature-comparison-function #'my-denote-sort-for-signatures)
 #+end_src
+
+* Use ~denote-grep~ to search inside files
+:PROPERTIES:
+:CUSTOM_ID: h:e71c9d14-7e88-4386-91d0-9ad249947077
+:END:
+
+[ The ~denote-grep~ command and everything related to it is part of {{{development-version}}}. ]
+
+#+findex: denote-grep
+The command ~denote-grep~ searches for the given query across all
+readable files in the ~denote-directory~. It puts the collected
+results in an Xref buffer (just like with our backlinks and query
+links functionality). In this buffer, users can do =M-x describe-mode=
+(=C-h m= with default key bindings) to learn about all the actions
+they can perform and the keys they are bound to ([[#h:435592bc-e896-429f-a599-9f1bcd5ab9b8][Interact with the links buffer]]).
+
+Think of ~denote-grep~ as the counterpart to the Unix ~grep~ command.
+While ~denote-sort-dired~ corresponds to the Unix ~find~ ([[#h:9fe01e63-f34f-4479-8713-f162a5ca865e][Display filtered and sorted files with ~denote-sort-dired~]]).
+
+* Interact with the links buffer
+:PROPERTIES:
+:CUSTOM_ID: h:435592bc-e896-429f-a599-9f1bcd5ab9b8
+:END:
+
+[ Part of {{{development-version}}}. ]
+
+Denote commands, such as ~denote-grep~, ~denote-backlinks~, and
+~denote-query-contents-link~, produce an Xref buffer with search
+results ([[#h:893eec49-d7be-4603-bcff-fcc247244011][Speed up backlinks' or query links' buffer creation?]]).
+Matching lines are grouped by the file name they belong to.
+
+- [[#h:e71c9d14-7e88-4386-91d0-9ad249947077][Use ~denote-grep~ to search inside files]].
+- [[#h:c73f1f68-e214-49d5-b369-e694f6a5d708][The backlinks' buffer]].
+- [[#h:d9a84289-2f73-4ef9-b4f0-9a0aa3e9bf0d][Add a query link]].
+
+#+findex: denote-query-mode
+#+vindex: denote-query-mode-map
+This buffer uses the major mode ~denote-query-mode~. It binds commands
+to keys in the ~denote-query-mode-map~. Those allow users to filter
+the output of the last search. Here, "last search" refers to the list
+of files that were returned by whichever command produced the buffer
+(e.g. the last ~denote-grep~).
+
+#+findex: denote-query-focus-last-search
+- ~denote-query-focus-last-search~ :: Perform a search in the contents
+  of files that were matched by the last search.
+
+#+findex: denote-query-exclude-files
+- ~denote-query-exclude-files~ :: Exclude files from the last search
+  whose name matches the given input.
+
+#+findex: denote-query-only-include-files
+- ~denote-query-only-include-files~ :: Only keep files from the last
+  search whose name matches the given input.
+
+#+findex: denote-query-exclude-files-with-keywords
+- ~denote-query-exclude-files-with-keywords~ :: Exclude files from the
+  last search whose name includes the given keywords.
+
+#+findex: denote-query-only-include-files-with-keywords
+- ~denote-query-only-include-files-with-keywords~ :: Only keep files
+  from the last search whose name includes the given keywords.
+
+#+findex: denote-query-clear-all-filters
+- ~denote-query-clear-all-filters~ :: Clear all the applied filters.
+
+Remember that these are easy to use even without knowledge of regular
+expressions, thanks to the efficiency of the Denote file-naming scheme
+([[#h:1a953736-86c2-420b-b566-fb22c97df197][Features of the file-naming scheme for searching or filtering]]). For
+instance, to exclude notes with the keyword =philosophy= from current
+search buffer, use ~denote-query-exclude-files~ and then type
+=_philosophy= as your input.
+
+In addition to those filtering options, the ~denote-query-mode~ also
+allows provides an outline mechanism to hide or show the matches as
+these are grouped per file. There also are some of the default actions
+provided by the Xref infrastructure. Users can do =M-x describe-mode=
+(=C-h m= with default key bindings) to learn about all the actions
+they can perform.
 
 * Minibuffer histories
 :PROPERTIES:
@@ -3766,6 +3851,10 @@ across their configuration.
 :PROPERTIES:
 :CUSTOM_ID: h:c905b733-e959-4aa4-8f2c-0ed9eba459df
 :END:
+
+[ As part of version =4.0.0= ({{{development-version}}}), Denote comes
+  with the ~denote-grep~ command and related functionality ([[#h:e71c9d14-7e88-4386-91d0-9ad249947077][Use ~denote-grep~ to search inside files]]).
+The core of this feature set was written by Lucas Quintana. ]
 
 The ~denote-search~ package by Lucas Quintana provides a search
 utility for Denote: <https://github.com/lmq-10/denote-search>.
@@ -6198,10 +6287,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Szczerbowski, Jean-Charles Bagneris, Jean-Philippe Gagné Guay,
   Jianwei Hou, Joseph Turner, Jürgen Hötzel, Kaushal Modi, Kai von
   Fintel, Kierin Bell, Kostas Andreadis, Kristoffer Balintona, Kyle
-  Meyer, Laurent Gatto, Maikol Solis, Marc Fargas, Matthew Lemon,
-  Noboru Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
-  Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
-  Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
+  Meyer, Laurent Gatto, Lucas Quintana, Maikol Solis, Marc Fargas,
+  Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Octavian, Peter
+  Prevos, Philip Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan
+  Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
   Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders,
   eum3l, ezchi, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
   mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
