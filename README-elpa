@@ -106,7 +106,7 @@ Table of Contents
 12. Automatically rename Denote buffers
 .. 1. The `denote-rename-buffer-format' option
 13. Use Org dynamic blocks
-14. Display filtered and sorted files with `denote-sort-dired'
+14. Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
 ..... 1. Sort signatures that include Luhmann-style sequences
@@ -283,7 +283,8 @@ Table of Contents
   │    ("C-c n r" . denote-rename-file)
   │    ("C-c n l" . denote-link)
   │    ("C-c n b" . denote-backlinks)
-  │    ("C-c n d" . denote-sort-dired))
+  │    ("C-c n d" . denote-dired)
+  │    ("C-c n g" . denote-grep))
   │   :config
   │   (setq denote-directory (expand-file-name "~/Documents/notes/"))
   │ 
@@ -322,7 +323,8 @@ Table of Contents
   │   ;; decide.  For example:
   │   ( :map global-map
   │     ("C-c n n" . denote)
-  │     ("C-c n d" . denote-sort-dired)
+  │     ("C-c n d" . denote-dired)
+  │     ("C-c n g" . denote-grep)
   │     ;; If you intend to use Denote with a variety of file types, it is
   │     ;; easier to bind the link-related commands to the `global-map', as
   │     ;; shown here.  Otherwise follow the same pattern for `org-mode-map',
@@ -330,6 +332,8 @@ Table of Contents
   │     ("C-c n l" . denote-link)
   │     ("C-c n L" . denote-add-links)
   │     ("C-c n b" . denote-backlinks)
+  │     ("C-c n q c" . denote-query-contents-link) ; create link that triggers a grep
+  │     ("C-c n q f" . denote-query-filenames-link) ; create link that triggers a dired
   │     ;; Note that `denote-rename-file' can work from any context, not just
   │     ;; Dired bufffers.  That is why we bind it here to the `global-map'.
   │     ("C-c n r" . denote-rename-file)
@@ -3941,8 +3945,8 @@ backlinks?] See section 25.11
 [Writing metanotes] See section 9.12
 
 
-14 Display filtered and sorted files with `denote-sort-dired'
-═════════════════════════════════════════════════════════════
+14 Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
+═══════════════════════════════════════════════════════════════════════════════
 
   [ With 4.0.0-dev, the code of `denote-sort.el' is merged into
     `denote.el' as part of a wider reorganisation of the project. ]

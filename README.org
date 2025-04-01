@@ -149,7 +149,8 @@ code sample if you need some ideas ([[#h:58c4746b-b0d8-4896-9d88-a99b1d487231][M
    ("C-c n r" . denote-rename-file)
    ("C-c n l" . denote-link)
    ("C-c n b" . denote-backlinks)
-   ("C-c n d" . denote-sort-dired))
+   ("C-c n d" . denote-dired)
+   ("C-c n g" . denote-grep))
   :config
   (setq denote-directory (expand-file-name "~/Documents/notes/"))
 
@@ -185,7 +186,8 @@ Here we include more of what you can configure with Denote ([[#h:998ae528-9276-4
   ;; decide.  For example:
   ( :map global-map
     ("C-c n n" . denote)
-    ("C-c n d" . denote-sort-dired)
+    ("C-c n d" . denote-dired)
+    ("C-c n g" . denote-grep)
     ;; If you intend to use Denote with a variety of file types, it is
     ;; easier to bind the link-related commands to the `global-map', as
     ;; shown here.  Otherwise follow the same pattern for `org-mode-map',
@@ -193,6 +195,8 @@ Here we include more of what you can configure with Denote ([[#h:998ae528-9276-4
     ("C-c n l" . denote-link)
     ("C-c n L" . denote-add-links)
     ("C-c n b" . denote-backlinks)
+    ("C-c n q c" . denote-query-contents-link) ; create link that triggers a grep
+    ("C-c n q f" . denote-query-filenames-link) ; create link that triggers a dired
     ;; Note that `denote-rename-file' can work from any context, not just
     ;; Dired bufffers.  That is why we bind it here to the `global-map'.
     ("C-c n r" . denote-rename-file)
@@ -3430,7 +3434,7 @@ reflect on the status of earlier notes ([[#h:6060a7e6-f179-4d42-a9de-a9968aaebec
 + Git repository: <https://github.com/protesilaos/denote-org>
 + Backronym: Denote... Ordinarily Restricts Gyrations.
 
-* Display filtered and sorted files with ~denote-sort-dired~
+* Display filtered and sorted files with ~denote-sort-dired~ or ~denote-dired~
 :PROPERTIES:
 :CUSTOM_ID: h:9fe01e63-f34f-4479-8713-f162a5ca865e
 :END:
