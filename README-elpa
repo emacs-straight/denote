@@ -274,7 +274,12 @@ Table of Contents
   configuration]).
 
   ┌────
-  │ ;; Another basic setup with a little more to it.
+  │ ;; Remember that the website version of this manual shows the latest
+  │ ;; developments, which may not be available in the package you are
+  │ ;; using.  Instead of copying from the web site, refer to the version
+  │ ;; of the documentation that comes with your package.  Evaluate:
+  │ ;;
+  │ ;;     (info "(denote) Sample configuration")
   │ (use-package denote
   │   :ensure t
   │   :hook (dired-mode . denote-dired-mode)
@@ -306,6 +311,12 @@ Table of Contents
   started with this sample configuration]).
 
   ┌────
+  │ ;; Remember that the website version of this manual shows the latest
+  │ ;; developments, which may not be available in the package you are
+  │ ;; using.  Instead of copying from the web site, refer to the version
+  │ ;; of the documentation that comes with your package.  Evaluate:
+  │ ;;
+  │ ;;     (info "(denote) Sample configuration")
   │ (use-package denote
   │   :ensure t
   │   :hook
@@ -6960,26 +6971,26 @@ section 19.12
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
         Griffin, Alex Hirschfeld, Alexis Purslane, Alfredo Borrás, Alp
-        Eren Kose, Ashton Wiersdorf, Benjamin Kästner, Claudio
-        Migliorelli, Claudiu Tănăselia, Colin McLear, Cosmin-Octavian C,
-        Damien Cassou, Elias Storms, Federico Stilman, Florian, Frédéric
-        Willem Frank Ehmsen, Glenna D., Guo Yong, Hanspeter Gisler
-        Harold Ollivier, IceAsteroid, Jack Baty, Jay Rajput,
-        Jean-Charles Bagneris, Jeff Valk, Jens Östlund, Jeremy Friesen,
-        Jonathan Sahar, Johan Bolmsjö, Jonas Großekathöfer, Jousimies,
-        Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kolmas,
-        Lukas C. Bossert, M. Hadi Timachi, Maikol Solis, Mark Olson,
-        Mirko Hernandez, Niall Dooley, Nick Bell, Oliver Epper, Paul van
-        Gelder, Peter Prevos, Peter Smith, Riccardo Giannitrapani,
-        Samuel W.  Flint, Sergio Rey, Suhail Singh, Shreyas Ragavan,
-        Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus,
-        Vick (VicZz), Viktor Haag, Vineet C. Kulkarni, Wade Mealing,
-        Wilf, Yi Liu, Ypot, atanasj, azegas, babusri, bdillahu,
-        coherentstate, doolio, duli, drcxd, elge70, elliottw,
-        fingerknight, hpgisler, hyperfocus1337, jtpavlock, juh,
-        leafarbelm, mentalisttraceur, pRot0ta1p, rbenit68, relict007,
-        sarcom-sar, sienic, skissue, sundar bp, yetanotherfossman,
-        zadca123
+        Eren Kose, André Bering, Ashton Wiersdorf, Benjamin Kästner,
+        Claudio Migliorelli, Claudiu Tănăselia, Colin McLear,
+        Cosmin-Octavian C, Damien Cassou, Elias Storms, Federico
+        Stilman, Florian, Frédéric Willem Frank Ehmsen, Glenna D., Guo
+        Yong, Hanspeter Gisler Harold Ollivier, IceAsteroid, Jack Baty,
+        Jay Rajput, Jean-Charles Bagneris, Jeff Valk, Jens Östlund,
+        Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö, Jonas
+        Großekathöfer, Jousimies, Juanjo Presa, Julian Hoch, Kai von
+        Fintel, Kaushal Modi, Kolmas, Lukas C. Bossert, M. Hadi Timachi,
+        Maikol Solis, Mark Olson, Mirko Hernandez, Niall Dooley, Nick
+        Bell, Oliver Epper, Paul van Gelder, Peter Prevos, Peter Smith,
+        Riccardo Giannitrapani, Samuel W.  Flint, Sergio Rey, Suhail
+        Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven
+        Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet
+        C. Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
+        babusri, bdillahu, coherentstate, doolio, duli, drcxd, elge70,
+        elliottw, fingerknight, hpgisler, hyperfocus1337, jtpavlock,
+        juh, leafarbelm, mentalisttraceur, pRot0ta1p, rbenit68,
+        relict007, sarcom-sar, sienic, skissue, sundar bp,
+        yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.
