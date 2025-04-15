@@ -5714,8 +5714,8 @@ section 19.12
   Function `denote-use-keywords'
         The keywords to be used in a note creation command. See the
         documentation of `denote' for acceptable values. This variable
-        is ignored if nil. Only ever `let' bind this, otherwise the
-        title will always be the same and the title prompt will be
+        is ignored if `default'. Only ever `let' bind this, otherwise
+        the title will always be the same and the title prompt will be
         skipped.
 
   Function `denote-use-signature'
@@ -6962,11 +6962,11 @@ section 19.12
         Lucas Quintana, Maikol Solis, Marc Fargas, Matthew Lemon, Noboru
         Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
         Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
-        Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, Vedang
-        Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders,
-        eum3l, ezchi, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
-        mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
-        skissue.
+        Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, TomoeMami ,
+        Vedang Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101,
+        bryanrinders, eum3l, ezchi, jarofromel, leinfink (Henrik),
+        l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
+        pmenair, relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
