@@ -11,11 +11,11 @@ This manual, written by Protesilaos Stavrou, describes the customization
 options for the Emacs package called `denote' (or `denote.el'), and
 provides every other piece of information pertinent to it.
 
-The documentation furnished herein corresponds to stable version 3.1.0,
-released on 2024-09-04.  Any reference to a newer feature which does not
+The documentation furnished herein corresponds to stable version 4.0.0,
+released on 2025-04-15.  Any reference to a newer feature which does not
 yet form part of the latest tagged commit, is explicitly marked as such.
 
-Current development target is 4.0.0-dev.
+Current development target is 4.1.0-dev.
 
 ⁃ Package name (GNU ELPA): `denote'
 ⁃ Official manual: <https://protesilaos.com/emacs/denote>
@@ -507,9 +507,6 @@ Table of Contents
   the path, it decides what to do with the buffer of the note, in
   accordance with the user option `denote-kill-buffers' ([The
   `denote-kill-buffers' option]).
-
-  [ As part of 4.0.0-dev, the `denote' command runs the hook and then
-    kills the buffer, whereas it was the other way around before. ]
 
   The file type of the new note is determined by the user option
   `denote-file-type' ([Front matter]).
@@ -2971,10 +2968,10 @@ section 7.4
 8.2 Regenerate front matter
 ───────────────────────────
 
-  As part of version 3.2.0 (currently 4.0.0-dev), the command
-  `denote-add-front-matter' is superseded by `denote-rename-file' and
-  related ([Renaming files]). Those commands will add missing front
-  matter or rewrite the modified lines of existing front matter.
+  As part of version 4.0.0, the command `denote-add-front-matter' is
+  superseded by `denote-rename-file' and related ([Renaming
+  files]). Those commands will add missing front matter or rewrite the
+  modified lines of existing front matter.
 
 
 [Renaming files] See section 6
@@ -2982,8 +2979,6 @@ section 7.4
 
 9 Linking notes
 ═══════════════
-
-  [ Support for query links is part of 4.0.0-dev. ]
 
   Denote offers several commands for linking between notes. Those use
   the `denote:' hyperlink type. There are two types of links supported
@@ -3080,8 +3075,6 @@ See section 9.2
 9.2 Add a direct link to a file whose contents include the given query
 ──────────────────────────────────────────────────────────────────────
 
-  [ The `denote-link-to-file-with-contents' is part of 4.0.0-dev. ]
-
   The `denote-link' command that we covered before prompts to select a
   file among those in the `denote-directory' ([Adding a single direct
   link using a file name prompt]).  The match is done against the file’s
@@ -3110,8 +3103,6 @@ section 9.5
 
 9.3 Add a query link
 ────────────────────
-
-  [ Query links are part of 4.0.0-dev. ]
 
   As noted in the introduction to this section of the manual, the
   `denote:' hyperlink type supports query links ([Linking
@@ -3233,9 +3224,6 @@ section 9.5
 9.5 Insert links to all files matching a query in their contents
 ────────────────────────────────────────────────────────────────
 
-  [ The command `denote-link-to-all-files-with-contents' is part of
-  4.0.0-dev. ]
-
   The aforementioned `denote-add-links' command takes a query that
   matches it against file names ([Insert links to all files matching a
   query in their file name]).  It then creates a typographic list
@@ -3259,8 +3247,6 @@ section 9.2
 9.6 The `denote-open-link-function' user option
 ───────────────────────────────────────────────
 
-  [ This is part of 4.0.0-dev. ]
-
   The user option `denote-open-link-function' specifies the function
   used by Denote to open the file of a link. The default value opens the
   file in the other window. Another common value is the function
@@ -3274,10 +3260,6 @@ section 9.2
 
 9.7 The `denote-org-store-link-to-heading' user option
 ──────────────────────────────────────────────────────
-
-  [ Revised to also support context links that do not use a `PROPERTIES'
-    drawer but which are easier to break. This is done as part of
-    4.0.0-dev. Also revised to have a nil value by default. ]
 
   The user option `denote-org-store-link-to-heading' determines whether
   `org-store-link' links to the current Org heading.
@@ -3379,7 +3361,7 @@ section 9.2
   for our purposes ([Linking notes]).
 
   The `denote-dired-link-marked-notes' is an alias for
-  `denote-link-dired-marked-notes'. [ The alias is part of 4.0.0-dev. ]
+  `denote-link-dired-marked-notes'.
 
 
 [Insert links matching a regexp] See section 9.4
@@ -3482,10 +3464,9 @@ section 9.2
 ──────────────────────────
 
   [ Older versions of Denote had two types of formatting for the
-    backlinks’ buffer. As part of version `4.0.0' (4.0.0-dev), we only
-    support the standard Xref view which shows matches in their
-    context. The user option `denote-backlinks-show-context' is thus
-    removed. ]
+    backlinks’ buffer. As part of version `4.0.0', we only support the
+    standard Xref view which shows matches in their context. The user
+    option `denote-backlinks-show-context' is thus removed. ]
 
   The command `denote-backlinks' (alias `denote-show-backlinks-buffer')
   produces a bespoke buffer which displays backlinks to the current note
@@ -3654,12 +3635,6 @@ backlinks?] See section 25.11
 9.15 The `denote-link-description-format' to format link descriptions
 ─────────────────────────────────────────────────────────────────────
 
-  [ As part of 4.0.0-dev, the old user option
-    `denote-link-description-function' is deprecated and superseded by
-    the new `denote-link-description-format'. The new user option still
-    accepts a custom function as its value, so the old behaviour should
-    be retained. ]
-
   The user option `denote-link-description-format' controls how the
   command `denote-link' and related functions create a link description
   by default.
@@ -3677,6 +3652,11 @@ backlinks?] See section 25.11
   • The `%t' is the Denote `TITLE' in the front matter or the file name.
   • The `%T' is the Denote `TITLE' in the file name.
   • The `%i' is the Denote `IDENTIFIER' of the file.
+  • The `%I' is the identifier converted to `DAYNAME, DAYNUM MONTHNUM
+      YEAR'.
+  • The `%d' is the same as `%i' (`DATE' mnemonic).
+  • The `%D' is a “do what I mean” which behaves the same as `%t' and if
+    that returns nothing, it falls back to `%I', then `%i'.
   • The `%d' is the same as `%i' (`DATE' mnemonic).
   • The `%s' is the Denote `SIGNATURE' of the file.
   • The `%k' is the Denote `KEYWORDS' of the file.
@@ -3813,10 +3793,6 @@ backlinks?] See section 25.11
 12 Automatically rename Denote buffers
 ══════════════════════════════════════
 
-  [ As part of 4.0.0-dev, the code of `denote-rename-buffer.el' is now
-    part of `denote.el' as part of a wider reorganisation of the
-    project. ]
-
   The minor mode `denote-rename-buffer-mode' provides the means to
   automatically rename the buffer of a Denote file upon visiting the
   file. This applies both to existing Denote files as well as new ones
@@ -3851,9 +3827,6 @@ backlinks?] See section 25.11
 12.1 The `denote-rename-buffer-format' option
 ─────────────────────────────────────────────
 
-  [ Updated as part of 4.0.0-dev to use a default “do what I mean”
-    value. ]
-
   The user option `denote-rename-buffer-format' controls how the
   function `denote-rename-buffer' chooses the name of the
   buffer-to-be-renamed.
@@ -3863,15 +3836,13 @@ backlinks?] See section 25.11
   scheme]):
 
   • The `%t' is the Denote `TITLE' in the front matter or the file name.
-  • The `%T' is the Denote `TITLE' in the file name. [ The `%T' is part
-    of 4.0.0-dev. ]
+  • The `%T' is the Denote `TITLE' in the file name.
   • The `%i' is the Denote `IDENTIFIER' of the file.
   • The `%I' is the identifier converted to `DAYNAME, DAYNUM MONTHNUM
-      YEAR'. [ The `%I' is part of 4.0.0-dev. ]
+      YEAR'.
   • The `%d' is the same as `%i' (`DATE' mnemonic).
   • The `%D' is a “do what I mean” which behaves the same as `%t' and if
-    that returns nothing, it falls back to `%I', then `%i'. [ The `%D'
-    is part of 4.0.0-dev. ]
+    that returns nothing, it falls back to `%I', then `%i'.
   • The `%s' is the Denote `SIGNATURE' of the file.
   • The `%k' is the Denote `KEYWORDS' of the file.
   • The `%b' is an indicator of whether or not the file has backlinks
@@ -3940,10 +3911,6 @@ backlinks?] See section 25.11
 13 Use Org dynamic blocks
 ═════════════════════════
 
-  [ The `denote-org' package is developed in tandem with `denote'
-    4.0.0-dev and will be available when the new Denote version is
-    published. ]
-
   This section is about the external package `denote-org' (by
   Protesilaos). The code of `denote-org' used to be available as part of
   the main `denote' package, but we decided to keep each optional
@@ -3958,7 +3925,7 @@ backlinks?] See section 25.11
   reflect on the status of earlier notes ([Writing metanotes]). The
   `denote-org' package defines many of these Org dynamic blocks.
 
-  ⁃ Package name (GNU ELPA): `denote-org' (⚠️ Not available yet)
+  ⁃ Package name (GNU ELPA): `denote-org'
   ⁃ Official manual: <https://protesilaos.com/emacs/denote-org>
   ⁃ Git repository: <https://github.com/protesilaos/denote-org>
   ⁃ Backronym: Denote… Ordinarily Restricts Gyrations.
@@ -3969,9 +3936,6 @@ backlinks?] See section 25.11
 
 14 Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
 ═══════════════════════════════════════════════════════════════════════════════
-
-  [ With 4.0.0-dev, the code of `denote-sort.el' is merged into
-    `denote.el' as part of a wider reorganisation of the project. ]
 
   The `denote.el' file contains functions which empower user or
   developers to sort files by the given file name component ([The
@@ -4035,8 +3999,7 @@ backlinks?] See section 25.11
   The `denote-sort-dired-extra-prompts' accepts either a nil value or a
   list of symbols among `sort-by-component', `reverse-sort', and
   `exclude-regexp'. The order those symbols appear in the list is
-  significant, with the leftmost coming first. [ The `exclude-regexp'
-  feature is part of 4.0.0-dev. ]
+  significant, with the leftmost coming first.
 
   These symbols correspond to the following:
 
@@ -4086,8 +4049,7 @@ backlinks?] See section 25.11
   prompts `denote-sort-dired' issues]).  These are subject to user
   configuration:
 
-  • `denote-sort-identifier-comparison-function' [ This one was missing
-    is older versions and is now added as part of 4.0.0-dev. ]
+  • `denote-sort-identifier-comparison-function'
 
   • `denote-sort-title-comparison-function'
 
@@ -4172,9 +4134,6 @@ backlinks?] See section 25.11
 15 Use `denote-grep' to search inside files
 ═══════════════════════════════════════════
 
-  [ The `denote-grep' command and everything related to it is part of
-  4.0.0-dev. ]
-
   The command `denote-grep' searches for the given query across all
   readable files in the `denote-directory'. It puts the collected
   results in an Xref buffer (just like with our backlinks and query
@@ -4187,17 +4146,36 @@ backlinks?] See section 25.11
   While `denote-sort-dired' corresponds to the Unix `find' ([Display
   filtered and sorted files with `denote-sort-dired']).
 
+  The command `denote-grep-marked-dired-files' is like `denote-grep' but
+  operates on the files that are marked in a Dired buffer.
+
+  The command `denote-grep-files-referenced-in-region' is like
+  `denote-grep' for any files referenced within the boundaries of the
+  marked region. Files are referenced by their identifier. This includes
+  links with just the identifier (as described in `denote-link' and
+  related ([Add a single direct link using a file name prompt])), links
+  written by an Org dynamic block (see the `denote-org' package ([Use
+  Org dynamic blocks])), or even file listings such as those of `dired'
+  and the command-line `ls' program.
+
+  The user option `denote-grep-display-buffer-action' controls where the
+  buffer with the search results is displayed at. By default, they
+  appear in the same window where the command `denote-grep' is called
+  from.
+
 
 [Interact with the links buffer] See section 16
 
 [Display filtered and sorted files with `denote-sort-dired'] See section
 14
 
+[Add a single direct link using a file name prompt] See section 9.1
+
+[Use Org dynamic blocks] See section 13
+
 
 16 Interact with the links buffer
 ═════════════════════════════════
-
-  [ Part of 4.0.0-dev. ]
 
   Denote commands, such as `denote-grep', `denote-backlinks', and
   `denote-query-contents-link', produce an Xref buffer with search
@@ -4346,7 +4324,7 @@ section 7.4
   The `denote-sequence' package has a manual that explains these
   concepts and relevant commands in further detail:
 
-  ⁃ Package name (GNU ELPA): `denote-sequence' (⚠️ Not available yet)
+  ⁃ Package name (GNU ELPA): `denote-sequence'
   ⁃ Official manual: <https://protesilaos.com/emacs/denote-sequence>
   ⁃ Git repository: <https://github.com/protesilaos/denote-sequence>
   ⁃ Backronym: Denote… Sequences Efficiently Queue Unsorted Entries
@@ -4372,7 +4350,7 @@ section 7.4
   replacing all instances of `denote-md-extras' with `denote-markdown'
   across their configuration.
 
-  ⁃ Package name (GNU ELPA): `denote-markdown' (⚠️ Not available yet)
+  ⁃ Package name (GNU ELPA): `denote-markdown'
   ⁃ Official manual: <https://protesilaos.com/emacs/denote-markdown>
   ⁃ Git repository: <https://github.com/protesilaos/denote-markdown>
   ⁃ Backronyms: Denote… Markdown’s Ambitious Reimplimentations Knowingly
@@ -4395,7 +4373,7 @@ section 7.4
   done by replacing all instances of `denote-journal-extras' with
   `denote-journal' across their configuration.
 
-  ⁃ Package name (GNU ELPA): `denote-journal' (⚠️ Not available yet)
+  ⁃ Package name (GNU ELPA): `denote-journal'
   ⁃ Official manual: <https://protesilaos.com/emacs/denote-journal>
   ⁃ Git repository: <https://github.com/protesilaos/denote-journal>
   ⁃ Backronym: Denote… Journaling Obviously Utilises Reasonableness
@@ -4416,7 +4394,7 @@ section 7.4
   replacing all instances of `denote-silo-extras' with `denote-silo'
   across their configuration.
 
-  ⁃ Package name (GNU ELPA): `denote-silo' (⚠️ Not available yet)
+  ⁃ Package name (GNU ELPA): `denote-silo'
   ⁃ Official manual: <https://protesilaos.com/emacs/denote-silo>
   ⁃ Git repository: <https://github.com/protesilaos/denote-silo>
   ⁃ Backronym: Denote… Silos Insulate Localised Objects.
@@ -4428,10 +4406,10 @@ section 7.4
 18.6 Use the `denote-search' package as a search interface
 ──────────────────────────────────────────────────────────
 
-  [ As part of version `4.0.0' (4.0.0-dev), Denote comes with the
-    `denote-grep' command and related functionality ([Use `denote-grep'
-    to search inside files]).  The core of this feature set was written
-    by Lucas Quintana. ]
+  [ As part of version `4.0.0', Denote comes with the `denote-grep'
+    command and related functionality ([Use `denote-grep' to search
+    inside files]).  The core of this feature set was written by Lucas
+    Quintana. ]
 
   The `denote-search' package by Lucas Quintana provides a search
   utility for Denote: <https://github.com/lmq-10/denote-search>.
@@ -5543,8 +5521,7 @@ section 19.12
         Return non-nil if `FILE' respects the file-naming scheme of
         Denote. This tests the rules of Denote’s file-naming
         scheme. Sluggification is ignored. It is done by removing all
-        file name components and validating what remains. [ This
-        function is part of 4.0.0-dev. ]
+        file name components and validating what remains.
 
   Function `denote-file-has-signature-p'
         Return non-nil if `FILE' has a signature.
@@ -5585,7 +5562,7 @@ section 19.12
         optional `FILES-MATCHING-REGEXP', only extract keywords from the
         matching files. Otherwise, do it for all files. Keep any
         duplicates. Users who do not want duplicates should refer to the
-        functions `denote-keywords'. [ Part of 4.0.0-dev. ]
+        functions `denote-keywords'.
 
   Function `denote-keywords'
         Return appropriate list of keyword candidates. If
@@ -5596,8 +5573,7 @@ section 19.12
         inferrence, use optional `FILES-MATCHING-REGEXP', to extract
         keywords only from the matching files. Otherwise, do it for all
         files. Filter inferred keywords with the user option
-        `denote-excluded-keywords-regexp'. [ The optional
-        `FILES-MATCHING-REGEXP' parameter is part of 4.0.0-dev. ]
+        `denote-excluded-keywords-regexp'.
 
   Function `denote-keywords-sort'
         Sort `KEYWORDS' if `denote-sort-keywords' is non-nil.
@@ -5636,8 +5612,7 @@ section 19.12
         text files that satisfy `denote-file-is-note-p'. With optional
         `EXCLUDE-REGEXP' exclude the files that match the given regular
         expression. This is done after `FILES-MATCHING-REGEXP' and
-        `OMIT-CURRENT' have been applied. [ The optional
-        `EXCLUDE-REGEXP' is part of 4.0.0-dev. ]
+        `OMIT-CURRENT' have been applied.
 
   Function `denote-directory-subdirectories'
         Return list of subdirectories in variable
@@ -5752,8 +5727,7 @@ section 19.12
 
         `ID' is a string holding the identifier of the note. It can be
         an empty string, in which case its respective file name
-        component is not added to the base file name. [ This is changed
-        as part of 4.0.0-dev. ]
+        component is not added to the base file name.
 
         `DIR-PATH' and `ID' form the base file name.
 
@@ -5790,9 +5764,7 @@ section 19.12
         strings.  `PATH' must be a Denote-style file name where keywords
         are prefixed with an underscore.  If `PATH' has no such
         keywords, which is possible, return nil ([The file-naming
-        scheme]). [ As part of 4.0.0-dev, this function has an alias
-        `denote-retrieve-filename-keywords-as-list' which should make it
-        easier to discover this functionality. ]
+        scheme]).
 
   Function `denote-extract-id-from-string'
         Return existing Denote identifier in `STRING', else nil.
@@ -5800,8 +5772,7 @@ section 19.12
   Function `denote-retrieve-filename-identifier'
         Extract identifier from `FILE' name, if present, else return
         nil. To create a new one from a date, refer to the
-        `denote-get-identifier' function. [ This is changed as part of
-        4.0.0-dev. ]
+        `denote-get-identifier' function.
 
   Function `denote-retrieve-filename-title'
         Extract Denote title component from `FILE' name, if present,
@@ -5822,7 +5793,7 @@ section 19.12
   Function `denote-get-identifier'
         Convert `DATE' into a Denote identifier using
         `denote-id-format'. If `DATE' is nil, return an empty string as
-        the identifier. [ This is changed as part of 4.0.0-dev. ]
+        the identifier.
 
   Function `denote-retrieve-front-matter-title-value'
         Return title value from `FILE' front matter per `FILE-TYPE'.
@@ -5906,8 +5877,7 @@ section 19.12
         optional `PROMPT-TEXT' use it in the minibuffer instead of the
         default prompt. `INITIAL-DATE' is a string that can be processed
         by `denote-valid-date-p', a value that can be parsed by
-        `decode-time' or nil. [ The `INITIAL-DATE' and `PROMPT-TEXT' are
-        part of 4.0.0-dev. ]
+        `decode-time' or nil.
 
   Function `denote-command-prompt'
         Prompt for command among `denote-commands-for-new-notes'
@@ -6156,8 +6126,6 @@ section 19.12
 20.7 Xref interface for developers or advanced users
 ────────────────────────────────────────────────────
 
-  [ All of the following are part of 4.0.0-dev. ]
-
   Function `denote-retrieve-groups-xref-query'
         Access location of xrefs for `QUERY' and group them per
         file. Limit the search to text files.
@@ -6189,18 +6157,17 @@ section 19.12
         Prepend front matter to `FILE'. The `TITLE', `KEYWORDS', `DATE',
         `ID', `SIGNATURE', and `FILE-TYPE' are passed from the renaming
         command and are used to construct a new front matter block if
-        appropriate. [ This function is available as part of
-        4.0.0-dev. ]
+        appropriate.
 
   Function `denote-rewrite-front-matter'
         Rewrite front matter of note after `denote-rename-file' (or
-        related) The `FILE', `TITLE', `KEYWORDS', `SIGNATURE', `DATE',
+        related). The `FILE', `TITLE', `KEYWORDS', `SIGNATURE', `DATE',
         `IDENTIFIER', and `FILE-TYPE' arguments are given by the
         renaming command and are used to construct new front matter
         values if appropriate. If `denote-rename-confirmations' contains
         `rewrite-front-matter', prompt to confirm the rewriting of the
         front matter. Otherwise produce a `y-or-n-p' prompt to that
-        effect. [ This function is changed as part of 4.0.0-dev. ]
+        effect.
 
   Function `denote-add-front-matter-prompt'
         Prompt to add a front-matter to `FILE'. Return non-nil if a new

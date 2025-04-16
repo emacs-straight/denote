@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 3.1.0
+;; Version: 4.0.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -859,7 +859,10 @@ If the value is a string, it treats specially the following specifiers:
 - The %t is the Denote TITLE in the front matter or the file name.
 - The %T is the Denote TITLE in the file name.
 - The %i is the Denote IDENTIFIER of the file.
+- The %I is the identifier converted to DAYNAME, DAYNUM MONTHNUM YEAR.
 - The %d is the same as %i (DATE mnemonic).
+- The %D is a \"do what I mean\" which behaves the same as %t and if
+  that returns nothing, it falls back to %I, then %i.
 - The %s is the Denote SIGNATURE of the file.
 - The %k is the Denote KEYWORDS of the file.
 - The %% is a literal percent sign.
@@ -4232,7 +4235,7 @@ they have front matter and what that may be."
 
 ;;;;; Creation of front matter
 
-(make-obsolete 'denote-add-front-matter nil "Use `denote-rename-file' or related. Starting with version 3.2.0.")
+(make-obsolete 'denote-add-front-matter nil "Use `denote-rename-file' or related. Starting with version 4.0.0.")
 
 ;;;###autoload
 (defun denote-change-file-type-and-front-matter (file new-file-type)
@@ -4776,19 +4779,34 @@ active, use it as the description."
    ((stringp denote-link-description-format)
     (if-let* ((region (denote--get-active-region-content)))
         region
-      (string-trim
-       (format-spec denote-link-description-format
-                    (list (cons ?t (cond
-                                    ((denote-retrieve-front-matter-title-value file (denote-filetype-heuristics file)))
-                                    ((denote-retrieve-filename-title file))
-                                    (t  "")))
-                          (cons ?T (or (denote-retrieve-filename-title file) ""))
-                          (cons ?i (or (denote-retrieve-filename-identifier file) ""))
-                          (cons ?d (or (denote-retrieve-filename-identifier file) ""))
-                          (cons ?s (or (denote-retrieve-filename-signature file) ""))
-                          (cons ?k (or (denote-retrieve-filename-keywords file) ""))
-                          (cons ?% "%"))
-                    'delete))))
+      (let ((type (denote-filetype-heuristics file)))
+        (string-trim
+         (format-spec denote-link-description-format
+                      (list (cons ?t (cond
+                                      ((denote-retrieve-front-matter-title-value file (denote-filetype-heuristics file)))
+                                      ((denote-retrieve-filename-title file))
+                                      (t  "")))
+                            (cons ?T (or (denote-retrieve-filename-title file) ""))
+                            (cons ?i (or (denote-retrieve-filename-identifier file) ""))
+                            ;; TODO 2025-04-03: Maybe we can have something like `denote-date-format' here,
+                            ;; but I think we are okay with a hardcoded value.
+                            (cons ?I (or (when-let* ((id (denote-retrieve-filename-identifier file))
+                                                     (_ (denote-valid-date-p id)))
+                                           (format-time-string "%A, %e %B %Y" (date-to-time (denote--id-to-date id))))
+                                         ""))
+                            (cons ?D (cond
+                                      ((denote-retrieve-front-matter-title-value file type))
+                                      ((denote-retrieve-filename-title file))
+                                      ((when-let* ((id (denote-retrieve-filename-identifier file)))
+                                         (if (denote-valid-date-p id)
+                                             (format-time-string "%A, %e %B %Y" (date-to-time (denote--id-to-date id)))
+                                           id)))
+                                      (t  "")))
+                            (cons ?d (or (denote-retrieve-filename-identifier file) ""))
+                            (cons ?s (or (denote-retrieve-filename-signature file) ""))
+                            (cons ?k (or (denote-retrieve-filename-keywords file) ""))
+                            (cons ?% "%"))
+                      'delete)))))
    (t
     (error "The `denote-link-description-format' must be a function or string"))))
 
@@ -4838,7 +4856,7 @@ the active region specially, is up to it."
 (defalias 'denote-insert-link 'denote-link
   "Alias for `denote-link' command.")
 
-(make-obsolete 'denote-link-with-signature nil " 3.2.0: Use the `denote-link-description-format'.")
+(make-obsolete 'denote-link-with-signature nil " 4.0.0: Use the `denote-link-description-format'.")
 
 (defun denote-link--collect-identifiers (regexp)
   "Return collection of identifiers in buffer matching REGEXP."
@@ -5378,6 +5396,7 @@ non-nil."
      "Only include file names matching: ")
    nil 'denote-grep-file-regexp-history))
 
+;;;###autoload
 (defun denote-grep (query)
   "Search QUERY in the content of Denote files.
 QUERY should be a regular expression accepted by `xref-search-program'.
@@ -5394,9 +5413,9 @@ You can insert a link to a grep search in any note by using the command
   (let (denote-query--omit-current)
     (denote-make-links-buffer query nil nil denote-grep-display-buffer-action)))
 
+;;;###autoload
 (defun denote-grep-marked-dired-files (query)
-  "Search QUERY in the content of marked Dired files.
-See `denote-grep' for details."
+  "Do the equivalent of `denote-grep' for QUERY in marked Dired files."
   (interactive (list (denote-grep-query-prompt :dired)))
   (if-let* ((files (dired-get-marked-files)))
       (denote-make-links-buffer query files nil denote-grep-display-buffer-action)
@@ -5404,14 +5423,10 @@ See `denote-grep' for details."
 
 (defun denote-grep--get-files-referenced-in-region (start end)
   "Return a list with all Denote files referenced between START and END.
+START and END are buffer positions, as integers.  A reference to a file
+is the mere presence of its identifier.
 
-START and END should be buffer positions, as integers.
-
-\"Referenced\" here means an ID is present in the text, so it'll work with
-plain links, links written by a dynamic block, or even file lists
-returned by ls (and that naturally includes dired).
-
-Returned value is a list with the absoulte path of referenced files."
+Return a list with the absoulte path of referenced files."
   (let (id-list)
     (save-excursion
       (save-restriction
@@ -5421,17 +5436,25 @@ Returned value is a list with the absoulte path of referenced files."
           (push (denote-get-path-by-id (match-string 0)) id-list))))
     id-list))
 
+;;;###autoload
 (defun denote-grep-files-referenced-in-region (query start end)
-  "Search QUERY in the content of files referenced between START and END.
-See `denote-grep' for details.
+  "Perform `denote-grep' QUERY in files referenced between START and END.
+When called interactively, prompt for QUERY.  Also get START and END as
+the buffer positions that delimit the marked region.  When called from
+Lisp, QUERY is a string, while START and END are buffer positions, as
+integers.
 
-START and END should be buffer positions, as integers.  Interactively,
-they are the positions of point and mark (i.e. the region).
-
-See `denote-grep--get-files-referenced-in-region' for an explanation
-of what referenced means (in short: an ID is present somewhere)."
+Find references to files by their identifier.  This includes links with
+just the identifier (as described in `denote-link' and related), links
+written by an Org dynamic block (see the `denote-org' package), or even
+file listings such as those of `dired' and the command-line `ls' program."
   (interactive
-   (list (denote-grep-query-prompt :region) (region-beginning) (region-end)))
+   (if (region-active-p)
+       (list
+        (denote-grep-query-prompt :region)
+        (region-beginning)
+        (region-end))
+     (user-error "No region is active; aborting")))
   (if-let* ((files (denote-grep--get-files-referenced-in-region start end)))
       (denote-make-links-buffer query files nil denote-grep-display-buffer-action)
     (user-error "No files referenced in region")))
