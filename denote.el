@@ -1386,7 +1386,7 @@ Return the absolute path to the matching file."
                  (denote--completion-table 'file relative-files)
                  nil (unless no-require-match :require-match)
                  nil 'denote-file-history))
-         (absolute-file (concat (denote-directory) input)))
+         (absolute-file (expand-file-name input (denote-directory))))
     ;; NOTE: This block is executed when no-require-match is t. It is useful
     ;; for commands such as `denote-open-or-create` or similar.
     (unless (file-exists-p absolute-file)
@@ -3739,6 +3739,12 @@ Respect `denote-generate-identifier-automatically'."
           (current-time))
     nil))
 
+(defvar denote-rename-rewrite-front-matter t
+  "When non-nil, rewrite the front matter if appropriate.
+The purpose of this variable is to be `let' bound to nil by a caller of
+the command `denote-rename-file' or related.  This will have the effect
+of not rewriting the file's front matter.")
+
 (defun denote--rename-file (file title keywords signature date)
   "Rename FILE according to the other parameters.
 Parameters TITLE, KEYWORDS, SIGNATURE and DATE are as described
@@ -3777,7 +3783,8 @@ Respect `denote-rename-confirmations', `denote-save-buffers' and
     (when (denote-rename-file-prompt file new-name)
       (denote-rename-file-and-buffer file new-name))
     ;; Handle front matter if new-name is of a supported type (rewrite or add front matter)
-    (when (and (denote-file-has-supported-extension-p file)
+    (when (and denote-rename-rewrite-front-matter
+               (denote-file-has-supported-extension-p file)
                (denote-file-is-writable-and-supported-p new-name))
       (if (denote--file-has-front-matter-p new-name file-type)
           (denote-rewrite-front-matter new-name title keywords signature date id file-type)
@@ -4868,15 +4875,7 @@ the active region specially, is up to it."
         (push (match-string-no-properties 1) matches)))
     matches))
 
-(defun denote-link--expand-identifiers (regexp)
-  "Expend identifiers matching REGEXP into file paths."
-  (let ((files (denote-directory-files))
-        found-files)
-    (dolist (file files)
-      (dolist (i (denote-link--collect-identifiers regexp))
-        (when (string= i (denote-retrieve-filename-identifier file))
-          (push file found-files))))
-    found-files))
+(make-obsolete 'denote-link--expand-identifiers nil "4.1.0")
 
 (defvar denote-link-find-file-history nil
   "History for `denote-find-link'.")
@@ -4884,27 +4883,36 @@ the active region specially, is up to it."
 (defalias 'denote-link--find-file-history 'denote-link-find-file-history
   "Compatibility alias for `denote-link-find-file-history'.")
 
-(defun denote-select-linked-file-prompt (files)
-  "Prompt for linked file among FILES."
-  (let ((file-names (mapcar #'denote-get-file-name-relative-to-denote-directory files)))
-    (completing-read
-     "Find linked file: "
-     (denote--completion-table 'file file-names)
-     nil t nil 'denote-link-find-file-history)))
-
 (define-obsolete-function-alias
-  'denote-link--find-file-prompt
   'denote-select-linked-file-prompt
-  "3.0.0")
+  'denote-select-from-files-prompt
+  "4.1.0")
 
-(defun denote-link-return-links (&optional file)
+(defun denote-select-from-files-prompt (files &optional prompt-text)
+  "Prompt for linked file among FILES.
+Show relative file names and then return the absolute version of the
+selected one.
+
+With optional PROMPT-TEXT use it for the minibuffer prompt instead of
+the generic one."
+  (let* ((file-names (mapcar #'denote-get-file-name-relative-to-denote-directory files))
+         (selected (completing-read
+                    (format-prompt (or prompt-text "Select file among files") nil)
+                    (denote--completion-table 'file file-names)
+                    nil t nil 'denote-link-find-file-history)))
+    (expand-file-name selected (denote-directory))))
+
+(defun denote-link-return-links (&optional file files)
   "Return list of links in current or optional FILE.
+With optional FILES, consider only those, otherwise use the return value
+of `denote-directory-files'.
+
 Also see `denote-link-return-backlinks'."
   (when-let* ((current-file (or file (buffer-file-name)))
               ((denote-file-has-supported-extension-p current-file))
               (file-type (denote-filetype-heuristics current-file))
               (regexp (denote--link-in-context-regexp file-type))
-              (files (denote-directory-files))
+              (files (or files (denote-directory-files)))
               (file-identifiers
                (with-temp-buffer
                  (insert-file-contents current-file)
@@ -4927,12 +4935,10 @@ Also see `denote-link-return-backlinks'."
 Also see `denote-find-backlink'."
   (declare (interactive-only t))
   (interactive)
-  (find-file
-   (concat
-    (denote-directory)
-    (denote-select-linked-file-prompt
-     (or (denote-link-return-links)
-         (user-error "No links found"))))))
+  (when-let* ((links (or (denote-link-return-links)
+                         (user-error "No links found")))
+              (selected (denote-select-from-files-prompt links "Select among LINKS")))
+  (find-file selected)))
 
 ;;;###autoload
 (defun denote-link-after-creating (&optional id-only)
@@ -5510,15 +5516,27 @@ Also see `denote-link-return-links'."
 ;;;###autoload
 (defun denote-find-backlink ()
   "Use minibuffer completion to visit backlink to current file.
+Visit the file itself, not the location where the link is.  For a
+context-sensitive operation, use `denote-find-backlink-with-location'.
+
 Alo see `denote-find-link'."
   (declare (interactive-only t))
   (interactive)
-  (find-file
-   (denote-get-path-by-id
-    (denote-extract-id-from-string
-     (denote-select-linked-file-prompt
-      (or (denote-link-return-backlinks)
-          (user-error "No backlinks found")))))))
+  (when-let* ((links (or (denote-link-return-backlinks)
+                         (user-error "No backlinks found")))
+              (selected (denote-select-from-files-prompt links "Select among BACKLINKS")))
+    (find-file selected)))
+
+;;;###autoload
+(defun denote-find-backlink-with-location ()
+  "Like `denote-find-backlink' but jump to the exact location of the link."
+  (declare (interactive-only t))
+  (interactive)
+  (when-let* ((current-file buffer-file-name)
+              (id (denote-retrieve-filename-identifier-with-error current-file))
+              (files (denote-directory-files nil :omit-current :text-only))
+              (fetcher (lambda () (xref-matches-in-files id files))))
+    (xref-show-definitions-completing-read fetcher nil)))
 
 ;;;;;; Query links
 
@@ -5891,15 +5909,18 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
 
 ;;;;; Links from Dired marks
 
+;; TODO 2025-04-29: Rewrite the denote-link--buffer-file-prompt to be more general.
+;; TODO 2025-04-29: Rewrite `denote-link-dired-marked-notes' to be more easy to reason about.
+
 ;; NOTE 2022-07-21: I don't think we need a history for this one.
 (defun denote-link--buffer-file-prompt (buffer-file-names)
   "Select file from BUFFER-FILE-NAMES of Denote notes."
-  (let ((relative-buffer-file-names (mapcar #'denote-get-file-name-relative-to-denote-directory buffer-file-names)))
-    (concat (denote-directory)
-            (completing-read
-             "Select open note to add links to: "
-             (denote--completion-table 'file relative-buffer-file-names)
-             nil t))))
+  (let* ((relative-buffer-file-names (mapcar #'denote-get-file-name-relative-to-denote-directory buffer-file-names))
+         (selected (completing-read
+                    "Select open note to add links to: "
+                    (denote--completion-table 'file relative-buffer-file-names)
+                    nil t)))
+    (expand-file-name selected (denote-directory))))
 
 (defun denote-link--map-over-notes ()
   "Return list of `denote-file-has-denoted-filename-p' from Dired marked items."

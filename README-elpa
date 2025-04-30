@@ -3512,7 +3512,9 @@ section 9.2
 
   Backlinks to the current file can also be visited by using the
   minibuffer completion interface with the `denote-find-backlink'
-  command ([Visiting linked files via the minibuffer]).
+  command or the more powerful `denote-find-backlink-with-location'
+  ([Visiting linked files via the minibuffer]). [ The command
+  `denote-find-backlink-with-location' is part of 4.1.0-dev. ]
 
 
 [Interact with the links buffer] See section 16
@@ -3586,6 +3588,19 @@ backlinks?] See section 25.11
   To visit backlinks to the current note via the minibuffer, use
   `denote-find-backlink'.  This is an alternative to placing backlinks
   in a dedicated buffer ([The backlinks’ buffer]).
+
+  As an alternative to `denote-find-backlink', the command
+  `denote-find-backlink-with-location' shows the complete results of all
+  backlinks in their context, grouped by file. It prompts to pick one
+  among them, using minibuffer completion, and then jumps to the
+  corresponding file at that exact location where the link is.
+
+  Think of the `denote-find-backlink-with-location' as the
+  minibuffer-centric variant of the backlinks buffer: the backlinks
+  buffer sticks around, whereas this one is only available for the
+  duration of the command. Depending on the scenario, one is more
+  appropriate than the other. [ The command
+  `denote-find-backlink-with-location' is part of 4.1.0-dev. ]
 
 
 [Extending Denote] See section 19
@@ -6096,8 +6111,11 @@ section 19.12
         Prompt for linked file among `FILES'.
 
   Function `denote-link-return-links'
-        Return list of links in current or optional `FILE'.  Also see
-        `denote-link-return-backlinks'.
+        Return list of links in current or optional `FILE'. With
+        optional `FILES' consider only those, otherwise use the return
+        value of `denote-directory-files'.  Also see
+        `denote-link-return-backlinks'. [ Optional `FILES' is part of
+        4.1.0-dev. ]
 
   Function `denote-link-return-backlinks'
         Return list of backlinks in current or optional `FILE'.  Also
@@ -6143,6 +6161,13 @@ section 19.12
 
 20.8 Renaming files interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
+
+  Variable `denote-rename-rewrite-front-matter'
+        When non-nil, rewrite the front matter if appropriate. The
+        purpose of this variable is to be `let' bound to nil by a caller
+        of the command `denote-rename-file' or related. This will have
+        the effect of not rewriting the file’s front matter [ Part of
+        4.1.0-dev. ]
 
   Function `denote-rename-file-prompt'
         Prompt to rename file named `OLD-NAME' to `NEW-NAME'. If
@@ -6954,9 +6979,9 @@ section 19.12
         Seebeck, Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet
         C. Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
         babusri, bdillahu, coherentstate, doolio, duli, drcxd, elge70,
-        elliottw, fingerknight, hpgisler, hyperfocus1337, jtpavlock,
-        juh, leafarbelm, mentalisttraceur, pRot0ta1p, rbenit68,
-        relict007, sarcom-sar, sienic, skissue, sundar bp,
+        elliottw, fingerknight, hpgisler, hyperfocus1337,johkneisl,
+        jtpavlock, juh, leafarbelm, mentalisttraceur, pRot0ta1p,
+        rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
         yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming

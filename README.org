@@ -3042,7 +3042,8 @@ the current window.
 
 Backlinks to the current file can also be visited by using the
 minibuffer completion interface with the ~denote-find-backlink~
-command ([[#h:1bc2adad-dca3-4878-b9f0-b105d5dec6f4][Visiting linked files via the minibuffer]]).
+command or the more powerful ~denote-find-backlink-with-location~
+([[#h:1bc2adad-dca3-4878-b9f0-b105d5dec6f4][Visiting linked files via the minibuffer]]). [ The command ~denote-find-backlink-with-location~ is part of {{{development-version}}}. ]
 
 ** Writing metanotes
 :PROPERTIES:
@@ -3103,6 +3104,19 @@ session).
 To visit backlinks to the current note via the minibuffer, use
 ~denote-find-backlink~.  This is an alternative to placing backlinks
 in a dedicated buffer ([[#h:c73f1f68-e214-49d5-b369-e694f6a5d708][The backlinks' buffer]]).
+
+#+findex: denote-find-backlink-with-location
+As an alternative to ~denote-find-backlink~, the command
+~denote-find-backlink-with-location~ shows the complete results of all
+backlinks in their context, grouped by file. It prompts to pick one
+among them, using minibuffer completion, and then jumps to the
+corresponding file at that exact location where the link is.
+
+Think of the ~denote-find-backlink-with-location~ as the
+minibuffer-centric variant of the backlinks buffer: the backlinks
+buffer sticks around, whereas this one is only available for the
+duration of the command. Depending on the scenario, one is more
+appropriate than the other. [ The command ~denote-find-backlink-with-location~ is part of {{{development-version}}}. ]
 
 ** Fontify links in non-Org buffers
 :PROPERTIES:
@@ -5496,7 +5510,10 @@ The following sections cover the specifics.
 
 #+findex: denote-link-return-links
 + Function ~denote-link-return-links~ :: Return list of links in
-  current or optional =FILE=.  Also see ~denote-link-return-backlinks~.
+  current or optional =FILE=. With optional =FILES= consider only
+  those, otherwise use the return value of ~denote-directory-files~.
+  Also see ~denote-link-return-backlinks~. [ Optional =FILES= is part
+  of {{{development-version}}}. ]
 
 #+findex: denote-link-return-backlinks
 + Function ~denote-link-return-backlinks~ :: Return list of backlinks
@@ -5544,6 +5561,13 @@ The following sections cover the specifics.
 :PROPERTIES:
 :CUSTOM_ID: h:66d31f42-6092-493a-97db-83b217db9d96
 :END:
+
+#+vindex: denote-rename-rewrite-front-matter
+- Variable ~denote-rename-rewrite-front-matter~ :: When non-nil,
+  rewrite the front matter if appropriate. The purpose of this
+  variable is to be ~let~ bound to nil by a caller of the command
+  ~denote-rename-file~ or related. This will have the effect of not
+  rewriting the file's front matter [ Part of {{{development-version}}}. ]
 
 #+findex: denote-rename-file-prompt
 - Function ~denote-rename-file-prompt~ :: Prompt to rename file named
@@ -6305,10 +6329,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
   Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot,
   atanasj, azegas, babusri, bdillahu, coherentstate, doolio, duli,
-  drcxd, elge70, elliottw, fingerknight, hpgisler, hyperfocus1337,
-  jtpavlock, juh, leafarbelm, mentalisttraceur, pRot0ta1p, rbenit68,
-  relict007, sarcom-sar, sienic, skissue, sundar bp,
-  yetanotherfossman, zadca123
+  drcxd, elge70, elliottw, fingerknight, hpgisler,
+  hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
+  mentalisttraceur, pRot0ta1p, rbenit68, relict007, sarcom-sar,
+  sienic, skissue, sundar bp, yetanotherfossman, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
