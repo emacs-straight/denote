@@ -4058,21 +4058,28 @@ backlinks?] See section 25.11
 14.2 Define a sorting function per component
 ────────────────────────────────────────────
 
-  When sorting by `title', `keywords', or `signature' with the
-  `denote-sort-dired' command, Denote will internally apply a sorting
-  function that is specific to each component ([Configure what extra
-  prompts `denote-sort-dired' issues]).  These are subject to user
-  configuration:
+  When sorting by `title', `keywords', `signature', `identifier', or
+  `random' with the `denote-dired' command (alias `denote-sort-dired'),
+  Denote will internally apply a sorting function that is specific to
+  each component ([Configure what extra prompts `denote-sort-dired'
+  issues]).
 
-  • `denote-sort-identifier-comparison-function'
+  With the exception of `random', the sorting of file name components is
+  subject to user configuration:
 
-  • `denote-sort-title-comparison-function'
+  `denote-sort-identifier-comparison-function'
+        The function to sort by the file name identifier.
 
-  • `denote-sort-keywords-comparison-function'
+  `denote-sort-title-comparison-function'
+        The function to sort by the file name title.
 
-  • `denote-sort-signature-comparison-function'
+  `denote-sort-keywords-comparison-function'
+        The function to sort by the file name keywords.
 
-  By default, all these user options use the same sorting function,
+  `denote-sort-signature-comparison-function'
+        The function to sort by the file name signature.
+
+  By default, all these user options use the same comparison function,
   namely `string-collate-lessp'. Users who have specific needs for any
   of those file name components can write their own sorting algorithms
   ([Sort signatures that include Luhmann-style sequences]).
@@ -6956,9 +6963,9 @@ section 19.12
         Kaludercic, Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier,
         Stefan Thesing, Thibaut Benjamin, Tomasz Hołubowicz, TomoeMami ,
         Vedang Manerikar, Wesley Harvey, Zhenxu Xu, arsaber101,
-        bryanrinders, eum3l, ezchi, jarofromel, leinfink (Henrik),
-        l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-        pmenair, relict007, skissue.
+        bryanrinders, eum3l, experimental-code-86, ezchi, jarofromel,
+        leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+        mentalisttraceur, pmenair, relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
