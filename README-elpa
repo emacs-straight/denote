@@ -112,6 +112,7 @@ Table of Contents
 ..... 1. Sort signatures that include Luhmann-style sequences
 15. Use `denote-grep' to search inside files
 16. Interact with the links buffer
+.. 1. Control the default sort of a query buffer
 17. Minibuffer histories
 18. Packages that build on Denote
 .. 1. Use the `consult-denote' package for enhanced minibuffer interactions
@@ -4237,6 +4238,14 @@ backlinks?] See section 25.11
   `denote-query-clear-all-filters'
         Clear all the applied filters.
 
+  `denote-query-sort-last-search'
+        Change the sorting of files from the last search. The user
+        option `denote-query-sorting' controlls the default sort
+        ([Control the default sort of a query buffer]).
+
+        [ Both the command `denote-query-sorting' and the user option
+          `denote-query-sorting' are part of 4.1.0-dev. ]
+
   Remember that these are easy to use even without knowledge of regular
   expressions, thanks to the efficiency of the Denote file-naming scheme
   ([Features of the file-naming scheme for searching or filtering]). For
@@ -4260,8 +4269,52 @@ backlinks?] See section 25.11
 
 [Add a query link] See section 9.3
 
+[Control the default sort of a query buffer] See section 16.1
+
 [Features of the file-naming scheme for searching or filtering] See
 section 7.4
+
+16.1 Control the default sort of a query buffer
+───────────────────────────────────────────────
+
+  [ Part of 4.1.0-dev. ]
+
+  The user option `denote-query-sorting' controls the order of matching
+  files in a query buffer (buffers that use the `denote-query-mode'. The
+  applies to the buffer that is produced by query links, backlinks, and
+  the `denote-grep' command:
+
+  • [Add a query link].
+  • [The backlinks’ buffer].
+  • [Use `denote-grep' to search inside files].
+
+  By default, no sorting of matching files is performed. They appear in
+  the query buffer in the order they were retrieved.
+
+  The `denote-query-sorting' can be set to a symbol among `title',
+  `keywords', `signature', or `identifier' to sort by the given file
+  name component ([The file-naming scheme]). The symbol `random'
+  produces a random order each time.
+
+  The `denote-query-sorting' can also be set to the symbol of a
+  function. In that case, the given function is used to perform the
+  sorting. This is for advanced users, who may refer to the
+  documentation of the `denote-sort-files' for the technicalities.
+
+  Whatever the value of `denote-query-sorting', users may change the
+  sort of query buffers by calling the command
+  `denote-query-sort-last-search' ([Interact with the links buffer]).
+
+
+[Add a query link] See section 9.3
+
+[The backlinks’ buffer] See section 9.11
+
+[Use `denote-grep' to search inside files] See section 15
+
+[The file-naming scheme] See section 7
+
+[Interact with the links buffer] See section 16
 
 
 17 Minibuffer histories
