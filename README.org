@@ -5557,16 +5557,16 @@ The following sections cover the specifics.
 + Function ~denote-select-linked-file-prompt~ :: Prompt for linked
   file among =FILES=.
 
-#+findex: denote-link-return-links
-+ Function ~denote-link-return-links~ :: Return list of links in
-  current or optional =FILE=. With optional =FILES= consider only
-  those, otherwise use the return value of ~denote-directory-files~.
-  Also see ~denote-link-return-backlinks~. [ Optional =FILES= is part
-  of {{{development-version}}}. ]
+#+findex: denote-get-links
++ Function ~denote-get-links~ :: Return list of links in current or
+  optional =FILE=. With optional =FILES= consider only those,
+  otherwise use the return value of ~denote-directory-files~. Also see
+  ~denote-get-backlinks~. [ Optional =FILES= is part of
+  {{{development-version}}}. ]
 
-#+findex: denote-link-return-backlinks
-+ Function ~denote-link-return-backlinks~ :: Return list of backlinks
-  in current or optional =FILE=.  Also see ~denote-link-return-links~.
+#+findex: denote-get-backlinks
++ Function ~denote-get-backlinks~ :: Return list of backlinks in
+  current or optional =FILE=. Also see ~denote-get-links~.
 
 #+findex: denote-link-description-with-signature-and-title
 + Function ~denote-link-description-with-signature-and-title~ :: Return
@@ -6380,8 +6380,8 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   atanasj, azegas, babusri, bdillahu, coherentstate, doolio, duli,
   drcxd, elge70, elliottw, fingerknight, hpgisler,
   hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
-  mentalisttraceur, pRot0ta1p, rbenit68, relict007, sarcom-sar,
-  sienic, skissue, sundar bp, yetanotherfossman, zadca123
+  mentalisttraceur, mjkalyan, pRot0ta1p, rbenit68, relict007,
+  sarcom-sar, sienic, skissue, sundar bp, yetanotherfossman, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.

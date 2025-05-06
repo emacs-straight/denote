@@ -6170,16 +6170,16 @@ section 19.12
   Function `denote-select-linked-file-prompt'
         Prompt for linked file among `FILES'.
 
-  Function `denote-link-return-links'
+  Function `denote-get-links'
         Return list of links in current or optional `FILE'. With
         optional `FILES' consider only those, otherwise use the return
-        value of `denote-directory-files'.  Also see
-        `denote-link-return-backlinks'. [ Optional `FILES' is part of
+        value of `denote-directory-files'. Also see
+        `denote-get-backlinks'. [ Optional `FILES' is part of
         4.1.0-dev. ]
 
-  Function `denote-link-return-backlinks'
-        Return list of backlinks in current or optional `FILE'.  Also
-        see `denote-link-return-links'.
+  Function `denote-get-backlinks'
+        Return list of backlinks in current or optional `FILE'. Also see
+        `denote-get-links'.
 
   Function `denote-link-description-with-signature-and-title'
         Return link description for `FILE'.  Produce a description as
@@ -7040,9 +7040,9 @@ section 19.12
         C. Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas,
         babusri, bdillahu, coherentstate, doolio, duli, drcxd, elge70,
         elliottw, fingerknight, hpgisler, hyperfocus1337,johkneisl,
-        jtpavlock, juh, leafarbelm, mentalisttraceur, pRot0ta1p,
-        rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
-        yetanotherfossman, zadca123
+        jtpavlock, juh, leafarbelm, mentalisttraceur, mjkalyan,
+        pRot0ta1p, rbenit68, relict007, sarcom-sar, sienic, skissue,
+        sundar bp, yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.

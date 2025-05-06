@@ -1667,6 +1667,23 @@ OMIT-CURRENT have been applied."
         ('exclude-regexp (setq exclude-rx (denote-sort-exclude-files-prompt)))))
     (list sort-by-component reverse-sort exclude-rx)))
 
+(defvar denote-sort-dired-buffer-name-function #'denote-sort-dired-format-buffer-name
+  "Function to format a buffer name for `denote-sort-dired'.
+It is called with all the arguments passed to `denote-sort-dired' and
+must return a string that is appropriate for a buffer name.")
+
+(defun denote-sort-dired-format-buffer-name (files-matching-regexp sort-by-component reverse exclude-regexp)
+  "Format buffer name for `denote-sort-dired'.
+The FILES-MATCHING-REGEXP, SORT-BY-COMPONENT, REVERSE, and
+EXCLUDE-REGEXP all have the same meaning as `denote-sort-dired'.
+Process them to return the buffer name."
+  (format-message
+   "*denote-dired: regexp `%s'; sort `%s'%s%s*"
+   files-matching-regexp
+   sort-by-component
+   (if reverse "; reverse t" "")
+   (if exclude-regexp (format-message "; exclude-regexp `%s'" exclude-regexp) "")))
+
 ;;;###autoload
 (defun denote-sort-dired (files-matching-regexp sort-by-component reverse exclude-regexp)
   "Produce Dired buffer with sorted files from variable `denote-directory'.
@@ -1704,18 +1721,12 @@ When called from Lisp, the arguments are a string, a symbol among
                           nil))
         (exclude-rx (or exclude-regexp nil)))
     (if-let* ((default-directory (denote-directory))
-              (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort nil exclude-rx))
-              ;; NOTE 2023-12-04: Passing the FILES-MATCHING-REGEXP as
-              ;; buffer-name produces an error if the regexp contains a
-              ;; wildcard for a directory. I can reproduce this in emacs
-              ;; -Q and am not sure if it is a bug. Anyway, I will report
-              ;; it upstream, but even if it is fixed we cannot use it
-              ;; for now (whatever fix will be available for Emacs 30+).
-              (denote-sort-dired-buffer-name (format "Denote sort `%s' by `%s'" files-matching-regexp component))
-              (buffer-name (format "Denote sort by `%s' at %s" component (format-time-string "%T"))))
-        (let ((dired-buffer (dired (cons buffer-name (mapcar #'file-relative-name files)))))
+              (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort nil exclude-rx)))
+        (let ((dired-buffer (dired (cons (denote-directory) (mapcar #'file-relative-name files))))
+              (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp component reverse-sort exclude-rx)))
           (setq denote-sort--dired-buffer dired-buffer)
           (with-current-buffer dired-buffer
+            (rename-buffer buffer-name :unique)
             (setq-local revert-buffer-function
                         (lambda (&rest _)
                           ;; FIXME 2025-01-04: Killing the buffer has
@@ -2210,14 +2221,16 @@ this list for new note creation.  The default is `org'.")
         (symbol-value prop)
       prop)))
 
+(defvar denote-id-only-link-in-context-regexp)
+
 (defun denote--link-in-context-regexp (file-type)
   "Return link regexp in context based on FILE-TYPE."
-  (let ((prop (plist-get
-               (alist-get file-type denote-file-types)
-               :link-in-context-regexp)))
-    (if (symbolp prop)
-        (symbol-value prop)
-      prop)))
+  (when-let* ((type (alist-get file-type denote-file-types))
+              (property (plist-get type :link-in-context-regexp))
+              (link-type-regexp (if (symbolp property)
+                                    (symbol-value property)
+                                  property)))
+    (format "%s\\|%s" link-type-regexp denote-id-only-link-in-context-regexp)))
 
 (defun denote-file-type-extensions ()
   "Return all file type extensions in `denote-file-types'."
@@ -4907,8 +4920,7 @@ the active region specially, is up to it."
   (let (matches)
     (save-excursion
       (goto-char (point-min))
-      (while (or (re-search-forward regexp nil t)
-                 (re-search-forward denote-id-only-link-in-context-regexp nil t))
+      (while (re-search-forward regexp nil t)
         (push (match-string-no-properties 1) matches)))
     matches))
 
@@ -4939,12 +4951,17 @@ the generic one."
                     nil t nil 'denote-link-find-file-history)))
     (expand-file-name selected (denote-directory))))
 
-(defun denote-link-return-links (&optional file files)
+(define-obsolete-function-alias
+  'denote-link-return-links
+  'denote-get-links
+  "4.1.0")
+
+(defun denote-get-links (&optional file files)
   "Return list of links in current or optional FILE.
 With optional FILES, consider only those, otherwise use the return value
 of `denote-directory-files'.
 
-Also see `denote-link-return-backlinks'."
+Also see `denote-get-backlinks'."
   (when-let* ((current-file (or file (buffer-file-name)))
               ((denote-file-has-supported-extension-p current-file))
               (file-type (denote-filetype-heuristics current-file))
@@ -4963,16 +4980,13 @@ Also see `denote-link-return-backlinks'."
           (push file found-files)))
       found-files)))
 
-(defalias 'denote-link-return-forelinks 'denote-link-return-links
-  "Alias for `denote-link-return-links'.")
-
 ;;;###autoload
 (defun denote-find-link ()
   "Use minibuffer completion to visit linked file.
 Also see `denote-find-backlink'."
   (declare (interactive-only t))
   (interactive)
-  (when-let* ((links (or (denote-link-return-links)
+  (when-let* ((links (or (denote-get-links)
                          (user-error "No links found")))
               (selected (denote-select-from-files-prompt links "Select among LINKS")))
   (find-file selected)))
@@ -5074,17 +5088,17 @@ file's title.  This has the same meaning as in `denote-link'."
   (let ((map (make-sparse-keymap)))
     (define-key map "a" #'outline-cycle-buffer)
     (define-key map "f" #'denote-query-focus-last-search)
-    (define-key map "k" #'outline-previous-heading)
+    (define-key map "i" #'denote-query-only-include-files)
+    (define-key map "I" #'denote-query-only-include-files-with-keywords)
     (define-key map "j" #'outline-next-heading)
+    (define-key map "k" #'outline-previous-heading)
+    (define-key map "X" #'denote-query-exclude-files-with-keywords)
+    (define-key map "l" #'recenter-current-error)
     (define-key map "o" #'delete-other-windows)
     (define-key map "s" #'denote-grep)
     (define-key map "S" #'denote-query-sort-last-search)
     (define-key map "v" #'outline-cycle)
     (define-key map "x" #'denote-query-exclude-files)
-    (define-key map "i" #'denote-query-only-include-files)
-    (define-key map "l" #'recenter-current-error)
-    (define-key map "X" #'denote-query-exclude-files-with-keywords)
-    (define-key map "I" #'denote-query-only-include-files-with-keywords)
     (define-key map "G" #'denote-query-clear-all-filters)
     map)
   "Keymap for `denote-query-mode' buffers.")
@@ -5582,20 +5596,24 @@ Place the buffer below the current window or wherever the user option
 (defalias 'denote-show-backlinks-buffer 'denote-backlinks
   "Alias for `denote-backlinks' command.")
 
+(define-obsolete-function-alias
+  'denote-link-return-backlinks
+  'denote-get-backlinks
+  "4.1.0")
 
-(defun denote-link-return-backlinks (&optional file)
+(defun denote-get-backlinks (&optional file)
   "Return list of backlinks in current or optional FILE.
-Also see `denote-link-return-links'."
+Also see `denote-get-links'."
   (when-let* ((current-file (or file (buffer-file-name)))
               (id (denote-retrieve-filename-identifier-with-error current-file)))
     (delete current-file (denote-retrieve-files-xref-query id))))
 
-;; TODO 2024-09-04: Instead of using `denote-link-return-backlinks' we
+;; TODO 2024-09-04: Instead of using `denote-get-backlinks' we
 ;; should have a function that does not try to find all backlinks but
 ;; simply exits as soon as it finds one.
 (defun denote--file-has-backlinks-p (file)
   "Return non-nil if FILE has backlinks."
-  (not (zerop (length (denote-link-return-backlinks file)))))
+  (not (zerop (length (denote-get-backlinks file)))))
 
 ;;;###autoload
 (defun denote-find-backlink ()
@@ -5606,7 +5624,7 @@ context-sensitive operation, use `denote-find-backlink-with-location'.
 Alo see `denote-find-link'."
   (declare (interactive-only t))
   (interactive)
-  (when-let* ((links (or (denote-link-return-backlinks)
+  (when-let* ((links (or (denote-get-backlinks)
                          (user-error "No backlinks found")))
               (selected (denote-select-from-files-prompt links "Select among BACKLINKS")))
     (find-file selected)))
@@ -6069,7 +6087,8 @@ This command is meant to be used from a Dired buffer."
 ;;;; Define menu
 
 (defvar denote--menu-contents
-  '(["Create a note" denote
+  '("Denote"
+    ["Create a note" denote
      :help "Create a new note in the `denote-directory'"]
     ["Create a note with given file type" denote-type
      :help "Create a new note with a given file type in the `denote-directory'"]
@@ -6137,6 +6156,30 @@ This command is meant to be used from a Dired buffer."
     "---"
     ["Generate sorted and filtered Dired listing" denote-sort-dired
      :help "Generate a sorted and filtered Dired listing of files in the `denote-directory'"]
+    ["Perform a query in the contents of files" denote-grep
+     :help "Search inside files in the `denote-directory'"]
+    "---"
+    ["Search inside the files of the last search (focused search)" denote-query-exclude-files
+     :help "Perform a query inside only the files that matched the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Exclude files from last search" denote-query-exclude-files
+     :help "Exclude files matching a regular expression from the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Exclude files with keywords from last search" denote-query-exclude-files-with-keywords
+     :help "Exclude files matching the given keywords from the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Include only the given files from last search" denote-query-only-include-files
+     :help "Include only the files matching the given regular expression from the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Include only the given files with keywords from last search" denote-query-only-include-files-with-keywords
+     :help "Include only the files matching the given keywords from the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Sort files of last search" denote-query-sort-last-search
+     :help "Change the order of the files matched in the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
+    ["Clear all filters from last search" denote-query-clear-all-filters
+     :help "Clear all the filters that have been applied to the last search"
+     :enable (derived-mode-p 'denote-query-mode)]
     "---"
     ["Highlight Dired file names" denote-dired-mode
      :help "Apply colors to Denote file name components in Dired"
