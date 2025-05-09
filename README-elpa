@@ -147,13 +147,14 @@ Table of Contents
 .. 15. Set up your workflow for daily or weekly meeting notes
 21. For developers or advanced users
 .. 1. Common building blocks for developers or advanced users
-.. 2. File path interface for developers or advanced users
-.. 3. Data retrieval interface for developers or advanced users
-.. 4. Prompt interface for developers or advanced users
-.. 5. Front matter interface for developers or advanced users
-.. 6. Link interface for developers or advanced users
-.. 7. Xref interface for developers or advanced users
-.. 8. Renaming files interface for developers or advanced users
+.. 2. Predefined note values for developers or advanced users
+.. 3. File path interface for developers or advanced users
+.. 4. Data retrieval interface for developers or advanced users
+.. 5. Prompt interface for developers or advanced users
+.. 6. Front matter interface for developers or advanced users
+.. 7. Link interface for developers or advanced users
+.. 8. Xref interface for developers or advanced users
+.. 9. Renaming files interface for developers or advanced users
 22. Troubleshoot Denote in a pristine environment
 23. Contributing
 .. 1. Wishlist of what we can do to extend Denote
@@ -1116,6 +1117,12 @@ Table of Contents
   the capture process works as intended, especially for the desired
   output of the `denote-org-capture-specifiers'.
 
+  Developers or advanced users who `let' bind the `denote-use-template'
+  must consider setting `denote-org-capture-specifiers' to nil or an
+  appropriate string ([Predefined note values for developers or advanced
+  users]).  Otherwise the contents of the new note may contain
+  duplicates.
+
   [ You may not need `org-capture' to do what you want ([Write your own
   convenience commands]). ]
 
@@ -1127,6 +1134,9 @@ Table of Contents
 [Create note with specific values using Org capture] See section 5.4
 
 [Create note with specific prompts using Org capture] See section 5.3
+
+[Predefined note values for developers or advanced users] See section
+21.2
 
 [Write your own convenience commands] See section 5.1.4.1
 
@@ -1258,24 +1268,9 @@ Table of Contents
   │ 		 :jump-to-captured t)))
   └────
 
-  The values one may predefine in this way are via these variables ([For
-  developers or advanced users]):
-
-  ⁃ `denote-use-date'
-
-  ⁃ `denote-use-directory'
-
-  ⁃ `denote-use-file-type'
-
-  ⁃ `denote-use-keywords'
-
-  ⁃ `denote-use-signature'
-
-  ⁃ `denote-use-template'
-
-  ⁃ `denote-use-title'
-
-  When there exists a binding for the aforementioned variables, the
+  The values one may predefine in this way are described elsewhere in
+  this manual ([Predefined note values for developers or advanced
+  users]).  When there exists a binding for those variables, the
   corresponding prompt is always skipped. It is thus paramount to never
   set those variables outside the scope of a `let' (or equivalent).
 
@@ -1311,7 +1306,8 @@ Table of Contents
 
 [Create note with specific prompts using Org capture] See section 5.3
 
-[For developers or advanced users] See section 21
+[Predefined note values for developers or advanced users] See section
+21.2
 
 [Write your own convenience commands] See section 5.1.4.1
 
@@ -5750,40 +5746,12 @@ section 20.12
 [Maintain separate directories for notes] See section 5.7
 
 
-21.2 File path interface for developers or advanced users
-─────────────────────────────────────────────────────────
+21.2 Predefined note values for developers or advanced users
+────────────────────────────────────────────────────────────
 
-  Function `denote-file-name-relative-to-denote-directory'
-        Return name of `FILE' relative to the variable
-        `denote-directory'.  `FILE' must be an absolute path.
-
-  Function `denote-slug-keep-only-ascii'
-        Remove all non-ASCII characters from `STR' and replace them with
-        spaces. This is useful as a helper function to construct
-        `denote-file-name-slug-functions' ([Custom sluggification to
-        remove non-ASCII characters]).
-
-  Function `denote-sluggify'
-        Make `STR' an appropriate slug for file name `COMPONENT'
-        ([Sluggification of file name components]).  Apply the function
-        specified in `denote-file-name-slug-function' to `COMPONENT'
-        which is one of `title', `signature', `keyword'. If the
-        resulting string still contains consecutive `-',=_= or `=', they
-        are replaced by a single occurence of the character, if
-        necessary according to `COMPONENT'. If `COMPONENT' is `keyword',
-        remove underscores from `STR' as they are used as the keywords
-        separator in file names.
-
-  Function `denote-sluggify-keyword'
-        Sluggify `STR' while joining separate words.
-
-  Function `denote-sluggify-signature'
-        Make `STR' an appropriate slug for signatures ([Sluggification
-        of file name components]).
-
-  Function `denote-sluggify-keywords'
-        Sluggify `KEYWORDS', which is a list of strings ([Sluggification
-        of file name components]).
+  In custom code, it is possible to override what the `denote' command
+  is reading by specifying a value for the following. In that case,
+  there will be no corresponding prompt.
 
   Function `denote-use-date'
         The date to be used in a note creation command. See the
@@ -5834,6 +5802,42 @@ section 20.12
         title will always be the same and the title prompt will be
         skipped.
 
+
+21.3 File path interface for developers or advanced users
+─────────────────────────────────────────────────────────
+
+  Function `denote-file-name-relative-to-denote-directory'
+        Return name of `FILE' relative to the variable
+        `denote-directory'.  `FILE' must be an absolute path.
+
+  Function `denote-slug-keep-only-ascii'
+        Remove all non-ASCII characters from `STR' and replace them with
+        spaces. This is useful as a helper function to construct
+        `denote-file-name-slug-functions' ([Custom sluggification to
+        remove non-ASCII characters]).
+
+  Function `denote-sluggify'
+        Make `STR' an appropriate slug for file name `COMPONENT'
+        ([Sluggification of file name components]).  Apply the function
+        specified in `denote-file-name-slug-function' to `COMPONENT'
+        which is one of `title', `signature', `keyword'. If the
+        resulting string still contains consecutive `-',=_= or `=', they
+        are replaced by a single occurence of the character, if
+        necessary according to `COMPONENT'. If `COMPONENT' is `keyword',
+        remove underscores from `STR' as they are used as the keywords
+        separator in file names.
+
+  Function `denote-sluggify-keyword'
+        Sluggify `STR' while joining separate words.
+
+  Function `denote-sluggify-signature'
+        Make `STR' an appropriate slug for signatures ([Sluggification
+        of file name components]).
+
+  Function `denote-sluggify-keywords'
+        Sluggify `KEYWORDS', which is a list of strings ([Sluggification
+        of file name components]).
+
   Function `denote-format-file-name'
         Format file name. `DIR-PATH', `ID', `KEYWORDS', `TITLE',
         `EXTENSION' and `SIGNATURE' are expected to be supplied by
@@ -5870,7 +5874,7 @@ section 20.12
 [Sluggification of file name components] See section 7.2
 
 
-21.3 Data retrieval interface for developers or advanced users
+21.4 Data retrieval interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Function `denote-get-path-by-id'
@@ -5932,7 +5936,7 @@ section 20.12
 [The file-naming scheme] See section 7
 
 
-21.4 Prompt interface for developers or advanced users
+21.5 Prompt interface for developers or advanced users
 ──────────────────────────────────────────────────────
 
   Function `denote-add-prompts'
@@ -6036,7 +6040,7 @@ section 20.12
 [Points of entry] See section 5
 
 
-21.5 Front matter interface for developers or advanced users
+21.6 Front matter interface for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   Function `denote-filetype-heuristics'
@@ -6181,7 +6185,7 @@ section 20.12
 [Change the front matter format] See section 8.1
 
 
-21.6 Link interface for developers or advanced users
+21.7 Link interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   Variable `denote-org-link-format'
@@ -6246,7 +6250,7 @@ section 20.12
         returned as the description.
 
 
-21.7 Xref interface for developers or advanced users
+21.8 Xref interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   Function `denote-retrieve-groups-xref-query'
@@ -6264,7 +6268,7 @@ section 20.12
         times limit the search to text files.
 
 
-21.8 Renaming files interface for developers or advanced users
+21.9 Renaming files interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Variable `denote-rename-rewrite-front-matter'
@@ -7058,8 +7062,8 @@ section 20.12
         Kierin Bell, Kostas Andreadis, Kristoffer Balintona, Kyle Meyer,
         Laurent Gatto, Lucas Quintana, Maikol Solis, Marc Fargas,
         Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Octavian,
-        Peter Prevos, Philip Kaludercic, Quiliro Ordóñez, Stephen
-        R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin,
+        Peter Prevos, Philip Kaludercic, Ryota, Quiliro Ordóñez, Stephen
+        R.  Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin,
         Tomasz Hołubowicz, TomoeMami , Vedang Manerikar, Wesley Harvey,
         Zhenxu Xu, arsaber101, bryanrinders, eum3l,
         experimental-code-86, ezchi, jarofromel, leinfink (Henrik),
