@@ -5738,6 +5738,10 @@ section 20.12
         `denote-directory' accepts a directory-local value for what we
         call “silos” ([Maintain separate directories for notes]).
 
+  Function `denote-id-to-date'
+        Convert `IDENTIFIER' to a date string of the form
+        `YYYY-MM-DD'. [ Made public as part of 4.1.0-dev. ]
+
 
 [The file-naming scheme] See section 7
 
