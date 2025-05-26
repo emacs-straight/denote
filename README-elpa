@@ -5820,7 +5820,7 @@ section 20.12
         `denote-file-name-slug-functions' ([Custom sluggification to
         remove non-ASCII characters]).
 
-  Function `denote-sluggify'
+  Function `denote-sluggify-and-apply-rules' (alias `denote-sluggify')
         Make `STR' an appropriate slug for file name `COMPONENT'
         ([Sluggification of file name components]).  Apply the function
         specified in `denote-file-name-slug-function' to `COMPONENT'
@@ -5829,7 +5829,10 @@ section 20.12
         are replaced by a single occurence of the character, if
         necessary according to `COMPONENT'. If `COMPONENT' is `keyword',
         remove underscores from `STR' as they are used as the keywords
-        separator in file names.
+        separator in file names. Also enforce the rules of the
+        file-naming scheme.  [ As part of 4.1.0-dev the
+        `denote-sluggify-and-apply-rules' is the new name of
+        `denote-sluggify' to better communicate its application. ]
 
   Function `denote-sluggify-keyword'
         Sluggify `STR' while joining separate words.
@@ -5838,7 +5841,7 @@ section 20.12
         Make `STR' an appropriate slug for signatures ([Sluggification
         of file name components]).
 
-  Function `denote-sluggify-keywords'
+  Function `denote-sluggify-keywords-and-apply-rules'
         Sluggify `KEYWORDS', which is a list of strings ([Sluggification
         of file name components]).
 
