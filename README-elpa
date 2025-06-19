@@ -5930,6 +5930,19 @@ section 20.12
 21.4 Data retrieval interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
+  Variable `denote-get-identifier-function'
+        The function to generate an identifier as a non-empty
+        string. The function takes two arguments: an initial identifier
+        and a date. Both can be nil. The initial identifier is used as a
+        reference to derive a unique variant of it, if possible (e.g. to
+        keep incrementing seconds while keeping the rest of the
+        date+time the same). Existing identifiers are stored in the
+        variable `denote-used-identifiers'. If the initial identifier is
+        nil or an identifier cannot be derived from it, then the date
+        can be used instead. The date has the same format as
+        `current-time'.  When it is nil, the `current-time' is used. [
+        Part of 4.1.0-dev. ]
+
   Function `denote-get-path-by-id'
         Return absolute path of `ID' string in `denote-directory-files'.
 
@@ -5949,7 +5962,8 @@ section 20.12
   Function `denote-retrieve-filename-identifier'
         Extract identifier from `FILE' name, if present, else return
         nil. To create a new one from a date, refer to the
-        `denote--identifier-generation-function' variable.
+        `denote-identifier-generation-function' variable. [ The
+        `denote-identifier-generation-function' is part of 4.1.0-dev. ]
 
   Function `denote-retrieve-filename-title'
         Extract Denote title component from `FILE' name, if present,
