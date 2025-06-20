@@ -5760,6 +5760,18 @@ section 20.12
         value of the variable `denote-directory' to override what this
         function returns.
 
+  Function `denote-directory-get-files'
+        Return list with full path of valid files in variable
+        `denote-directory'. Consider files that satisfy
+        `denote-file-has-identifier-p' and are not backups. [ Part of
+        4.1.0-dev. ]
+
+  Variable `denote-directory-get-files-function'
+        Function to return list of Denote files. Each file is a string
+        representing an absolute file system path. This is intended for
+        use in the function `denote-directory-files'. [ Part of
+        4.1.0-dev. ]
+
   Function `denote-directory-files'
         Return list of absolute file paths in variable
         `denote-directory'. Files that match

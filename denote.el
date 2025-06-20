@@ -970,8 +970,26 @@ Like `denote--completion-table' but also disable sorting."
      ((stringp dir-locals)
       dir-locals))))
 
+(defun denote-directories--make-paths (directories)
+  "Call `make-directory' on each element of DIRECTORIES unless it exists.
+Make any parent directories as well."
+  (dolist (directory directories)
+    (unless (file-directory-p directory)
+      (make-directory directory :parents))))
+
+(defun denote-directories--get-paths ()
+  "Return variable `denote-directory' as a list of directory paths."
+  (let ((get-dir (lambda (directory) (file-name-as-directory (expand-file-name directory)))))
+    (if (listp denote-directory)
+        (mapcar get-dir denote-directory)
+      (list (funcall get-dir denote-directory)))))
+
 (defun denote-directories ()
   "Return path of variable `denote-directory' as a proper directory.
+If the variable `denote-directory' is set to a list of file paths,
+return the list with each element expanded to be a directory.  Create
+any directories and their parents, if needed.
+
 Custom Lisp code can `let' bind the variable `denote-directory'
 to override what this function returns."
   (if-let* (((or (eq denote-directory 'default-directory) (eq denote-directory 'local)))
@@ -982,16 +1000,8 @@ to override what this function returns."
          "Silo value must be a string; `local' or `default-directory' are obsolete"
          :error)
         silo-dir)
-    (let ((denote-directories
-           (if (listp denote-directory)
-               (mapcar (lambda (d)
-                         (file-name-as-directory (expand-file-name d)))
-                       denote-directory)
-             (list (file-name-as-directory (expand-file-name denote-directory))))))
-      (mapc (lambda (d)
-              (when (not (file-directory-p d))
-                (make-directory d :parents)))
-            denote-directories)
+    (let ((denote-directories (denote-directories--get-paths)))
+      (denote-directories--make-paths denote-directories)
       denote-directories)))
 
 (defun denote-has-single-denote-directory-p ()
@@ -1299,7 +1309,12 @@ Avoids traversing dotfiles (unconditionally) and whatever matches
   (and denote-excluded-files-regexp
        (string-match-p denote-excluded-files-regexp file)))
 
-(defun denote--directory-get-files ()
+(define-obsolete-function-alias
+  'denote--directory-get-files
+  'denote-directory-get-files
+  "4.1.0")
+
+(defun denote-directory-get-files ()
   "Return list with full path of valid files in variable `denote-directory'.
 Consider files that satisfy `denote-file-has-identifier-p' and
 are not backups."
@@ -1312,6 +1327,11 @@ are not backups."
            (not (denote--file-excluded-p file))
            (not (backup-file-name-p file))))
     (denote--directory-all-files-recursively))))
+
+(defvar denote-directory-get-files-function #'denote-directory-get-files
+  "Function to return list of Denote files.
+Each file is a string representing an absolute file system path.  This
+is intended for use in the function `denote-directory-files'.")
 
 (defun denote-directory-files (&optional files-matching-regexp omit-current text-only exclude-regexp)
   "Return list of absolute file paths in variable `denote-directory'.
@@ -1334,7 +1354,7 @@ text files that satisfy `denote-file-has-supported-extension-p'.
 With optional EXCLUDE-REGEXP exclude the files that match the given
 regular expression.  This is done after FILES-MATCHING-REGEXP and
 OMIT-CURRENT have been applied."
-  (let ((files (denote--directory-get-files)))
+  (let ((files (funcall denote-directory-get-files-function)))
     (when (and omit-current buffer-file-name (denote-file-has-identifier-p buffer-file-name))
       (setq files (delete buffer-file-name files)))
     (when files-matching-regexp
