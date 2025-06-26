@@ -4147,14 +4147,16 @@ backlinks?] See section 26.11
 15.2 Define a sorting function per component
 ────────────────────────────────────────────
 
-  When sorting by `title', `keywords', `signature', `identifier', or
-  `random' with the `denote-dired' command (alias `denote-sort-dired'),
-  Denote will internally apply a sorting function that is specific to
-  each component ([Configure what extra prompts `denote-sort-dired'
-  issues]).
+  [ The `random' and `last-modified' sort are part of 4.1.0-dev. ]
 
-  With the exception of `random', the sorting of file name components is
-  subject to user configuration:
+  When sorting by `title', `keywords', `signature', `identifier',
+  `random', or `last-modified' with the `denote-dired' command (alias
+  `denote-sort-dired'), Denote will internally apply a sorting function
+  that is specific to each component ([Configure what extra prompts
+  `denote-sort-dired' issues]).
+
+  With the exception of `random' and `last-modified', the sorting of
+  file name components is subject to user configuration:
 
   `denote-sort-identifier-comparison-function'
         The function to sort by the file name identifier.
@@ -4379,10 +4381,11 @@ section 7.4
   By default, no sorting of matching files is performed. They appear in
   the query buffer in the order they were retrieved.
 
-  The `denote-query-sorting' can be set to a symbol among `title',
-  `keywords', `signature', or `identifier' to sort by the given file
-  name component ([The file-naming scheme]). The symbol `random'
-  produces a random order each time.
+  The `denote-query-sorting' can be set to a symbol among those listed
+  in the value of the variable `denote-sort-components' to sort by the
+  given file name component ([The file-naming scheme]). The symbol
+  `random' produces a random order each time, while `last-modified'
+  relies on the file system to sort by the modification time.
 
   The `denote-query-sorting' can also be set to the symbol of a
   function. In that case, the given function is used to perform the
