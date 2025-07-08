@@ -4789,6 +4789,9 @@ section 7.4
   • `my-denote-sort-dired-all-empty-files'
   • `my-denote-sort-dired-without-all-empty-files'
 
+  [ The code in this section depends on functions that are available as
+  part of 4.1.0-dev. ]
+
   ┌────
   │ (defun my-denote--note-has-no-contents-p (file)
   │   "Return non-nil if FILE is an empty note.
@@ -4807,44 +4810,43 @@ section 7.4
   │ (defun my-denote-sort-dired-empty-files (files-matching-regexp sort-by-component reverse exclude-regexp)
   │   "Like `denote-sort-dired' but only cover empty files.
   │ Empty files are those that satisfy `my-denote--note-has-no-contents-p'."
-  │   (interactive
-  │    (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
-  │   (let ((component (or sort-by-component
-  │ 		       denote-sort-dired-default-sort-component
-  │ 		       'identifier))
-  │ 	(reverse-sort (or reverse
-  │ 			  denote-sort-dired-default-reverse-sort
-  │ 			  nil))
-  │ 	(exclude-rx (or exclude-regexp nil)))
-  │     (if-let* ((default-directory (denote-directory))
-  │ 	      (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort))
-  │ 	      (empty-files (seq-filter #'my-denote--note-has-no-contents-p files))
-  │ 	      (denote-sort-dired-buffer-name (format "Denote sort `%s' by `%s'" files-matching-regexp component)))
-  │ 	(let ((dired-buffer (dired (cons default-directory (mapcar #'file-relative-name empty-files))))
-  │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp component reverse-sort exclude-rx)))
-  │ 	  (with-current-buffer dired-buffer
-  │ 	    (rename-buffer buffer-name :unique)))
+  │   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
+  │   (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
+  │ 	       (relative-p (denote-has-single-denote-directory-p))
+  │ 	       (files-fn `(lambda ()
+  │ 			   (let* ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort))
+  │ 				  (empty-files (seq-filter #'my-denote--note-has-no-contents-p files)))
+  │ 			     (if relative-p
+  │ 				 (mapcar #'file-relative-name empty-files)
+  │ 			       empty-files)))))
+  │     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
+  │ 			     (car (denote-directories))
+  │ 			   (denote-sort-dired--find-common-directory (denote-directories))))
+  │ 	      (files (funcall files-fn))
+  │ 	      (dired-name (format-message files-matching-regexp))
+  │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
+  │ 	(denote-sort-dired--prepare-buffer directory files-fn dired-name buffer-name)
   │       (message "No matching files for: %s" files-matching-regexp))))
   │ 
   │ (defun my-denote-sort-dired-without-empty-files (files-matching-regexp sort-by-component reverse exclude-regexp)
-  │   "Like `denote-sort-dired' but only cover empty files.
+  │   "Like `denote-sort-dired' but omit empty files.
   │ Empty files are those that satisfy `my-denote--note-has-no-contents-p'."
-  │   (interactive
-  │    (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
-  │   (let ((component (or sort-by-component
-  │ 		       denote-sort-dired-default-sort-component
-  │ 		       'identifier))
-  │ 	(reverse-sort (or reverse
-  │ 			  denote-sort-dired-default-reverse-sort
-  │ 			  nil))
-  │ 	(exclude-rx (or exclude-regexp nil)))
-  │     (if-let* ((default-directory (denote-directory))
-  │ 	      (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort))
-  │ 	      (empty-files (seq-remove #'my-denote--note-has-no-contents-p files)))
-  │ 	(let ((dired-buffer (dired (cons default-directory (mapcar #'file-relative-name empty-files))))
-  │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp component reverse-sort exclude-rx)))
-  │ 	  (with-current-buffer dired-buffer
-  │ 	    (rename-buffer buffer-name :unique)))
+  │   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
+  │   (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
+  │ 	       (relative-p (denote-has-single-denote-directory-p))
+  │ 	       (files-fn `(lambda ()
+  │ 			   (let* ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort))
+  │ 				  (empty-files (seq-remove #'my-denote--note-has-no-contents-p files)))
+  │ 			     (if relative-p
+  │ 				 (mapcar #'file-relative-name empty-files)
+  │ 			       empty-files)))))
+  │     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
+  │ 			     (car (denote-directories))
+  │ 			   (denote-sort-dired--find-common-directory (denote-directories))))
+  │ 	      (files (funcall files-fn))
+  │ 	      (dired-name (format-message files-matching-regexp))
+  │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (OMIT EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
+  │ 	(denote-sort-dired--prepare-buffer directory files-fn dired-name buffer-name)
   │       (message "No matching files for: %s" files-matching-regexp))))
   │ 
   │ (defun my-denote-sort-dired-all-empty-files ()
@@ -5917,14 +5919,14 @@ section 20.12
   Variable `denote-get-identifier-function'
         The function to generate an identifier as a non-empty
         string. The function takes two arguments: an initial identifier
-        and a date. Both can be nil. The initial identifier is used as a
-        reference to derive a unique variant of it, if possible (e.g. to
-        keep incrementing seconds while keeping the rest of the
-        date+time the same). Existing identifiers are stored in the
-        variable `denote-used-identifiers'. If the initial identifier is
-        nil or an identifier cannot be derived from it, then the date
-        can be used instead. The date has the same format as
-        `current-time'.  When it is nil, the `current-time' is used. [
+        and a date. The initial identifier is used as a reference to
+        derive a unique variant of it, if possible (e.g. to keep
+        incrementing seconds while keeping the rest of the date+time the
+        same). Existing identifiers are stored in the variable
+        `denote-used-identifiers'. If the initial identifier is nil or
+        an identifier cannot be derived from it, then the date can be
+        used instead. The date has the same format as
+        `current-time'. When it is nil, the `current-time' is used. [
         Part of 4.1.0-dev. ]
 
   Function `denote-get-path-by-id'
@@ -7136,16 +7138,16 @@ section 20.12
         Fintel, Kaushal Modi, Kolmas, Lukas C. Bossert, M. Hadi Timachi,
         Maikol Solis, Mark Olson, Mirko Hernandez, Morten Kjeldgaard,
         Niall Dooley, Nick Bell, Oliver Epper, Paul van Gelder, Peter
-        Prevos, Peter Smith, Riccardo Giannitrapani, Samuel W. Flint,
-        Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan Thesing,
-        Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
-        Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi Liu,
-        Ypot, atanasj, azegas, babusri, bdillahu, coherentstate, doolio,
-        duli, drcxd, elge70, elliottw, fingerknight, hpgisler,
-        hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
-        mentalisttraceur, mjkalyan, oatmealm, pRot0ta1p, rbenit68,
-        relict007, sarcom-sar, sienic, skissue, sundar bp,
-        yetanotherfossman, zadca123
+        Prevos, Peter Smith, Riccardo Giannitrapani, Rory Molinari,
+        Samuel W. Flint, Sergio Rey, Suhail Singh, Shreyas Ragavan,
+        Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus,
+        Vick (VicZz), Viktor Haag, Vineet C. Kulkarni, Wade Mealing,
+        Wilf, Yi Liu, Ypot, atanasj, azegas, babusri, bdillahu,
+        coherentstate, doolio, duli, drcxd, elge70, elliottw,
+        fingerknight, hpgisler, hyperfocus1337,johkneisl, jtpavlock,
+        juh, leafarbelm, mentalisttraceur, mjkalyan, oatmealm,
+        pRot0ta1p, rbenit68, relict007, sarcom-sar, sienic, skissue,
+        sundar bp, yetanotherfossman, zadca123
 
   Special thanks to Peter Povinec who helped refine the file-naming
   scheme, which is the cornerstone of this project.

@@ -1817,6 +1817,43 @@ Process them to return the buffer name."
     (if exclude-regexp (format-message "; exclude-regexp `%s'" exclude-regexp) ""))
    :special-buffer))
 
+(defun denote-sort-dired--get-sort-parameters (sort-by-component reverse)
+  "Return (SORT-BY-COMPONENT . REVERSE) for `denote-sort-dired'.
+If SORT-BY-COMPONENT is nil, use the value of the user option
+`denote-sort-dired-default-sort-component' or fall back to `identifier'.
+
+If REVERSE is nil, use the value of the user option
+`denote-sort-dired-default-reverse-sort' or fall back to nil"
+  (cons
+   (or sort-by-component denote-sort-dired-default-sort-component 'identifier)
+   (or reverse denote-sort-dired-default-reverse-sort nil)))
+
+(defun denote-sort-dired--prepare-buffer (directory files-fn dired-name buffer-name)
+  "Prepare buffer for `denote-sort-dired'.
+DIRECTORY is an absolute path to the `default-directory' of the Dired
+listing.
+
+FILES-FN is a function that returns the files to be listed in the Dired
+buffer.
+
+DIRED-NAME is a string passed to Dired as (cons DIRED-NAME FILES)),
+where FILES is the return value of FILES-FN.
+
+BUFFER-NAME is the name of the resulting buffer."
+  (let* ((default-directory directory)
+         (files (funcall files-fn))
+         (dired-buffer (dired (cons dired-name files))))
+    (with-current-buffer dired-buffer
+      (rename-buffer buffer-name :unique)
+      (setq-local revert-buffer-function
+                  (lambda (&rest _)
+                    (if-let* ((default-directory directory)
+                              (files (funcall files-fn)))
+                        (setq-local dired-directory (cons dired-name files))
+                      (setq-local dired-directory (cons "Denote no files" nil)))
+                    (dired-revert))))
+    buffer-name))
+
 (defun denote-sort-dired--find-common-directory (directories)
   "Return common root directory among DIRECTORIES."
   (if-let* ((parts (mapcar (lambda (directory) (split-string directory "/" :omit-nulls)) directories))
@@ -1858,26 +1895,21 @@ also prompt for SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
 
 When called from Lisp, the arguments are a string, a symbol among
 `denote-sort-components', a non-nil value, and a string, respectively."
-  (interactive
-   (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
-  (let ((component (or sort-by-component
-                       denote-sort-dired-default-sort-component
-                       'identifier))
-        (reverse-sort (or reverse
-                          denote-sort-dired-default-reverse-sort
-                          nil))
-        (exclude-rx (or exclude-regexp nil))
-        (single-dir-p (denote-has-single-denote-directory-p)))
-    (if-let* (;; See comment in `denote-file-prompt'.
-              (default-directory (if single-dir-p
-                                     (car (denote-directories))
-                                   (denote-sort-dired--find-common-directory (denote-directories))))
-              (files (denote-sort-get-directory-files files-matching-regexp component reverse-sort nil exclude-rx)))
-        (let ((dired-buffer (dired (cons default-directory (if single-dir-p (mapcar #'file-relative-name files) files))))
-              (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp component reverse-sort exclude-rx)))
-          (with-current-buffer dired-buffer
-            (rename-buffer buffer-name :unique))
-          buffer-name)
+  (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
+  (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
+               (relative-p (denote-has-single-denote-directory-p))
+               (files-fn `(lambda ()
+                            (let ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort nil ,exclude-regexp)))
+                              (if ,relative-p
+                                  (mapcar #'file-relative-name files)
+                                files)))))
+    (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
+                             (car (denote-directories))
+                           (denote-sort-dired--find-common-directory (denote-directories))))
+              (files (funcall files-fn))
+              (dired-name (format-message files-matching-regexp))
+              (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp)))
+        (denote-sort-dired--prepare-buffer directory files-fn dired-name buffer-name)
       (message "No matching files for: %s" files-matching-regexp))))
 
 (defalias 'denote-dired 'denote-sort-dired
@@ -3133,14 +3165,14 @@ and the template prompt will be skipped.")
 (defvar denote-get-identifier-function #'denote-generate-identifier-as-date
   "The function to generate an identifier as a non-empty string.
 
-The function takes two arguments: an initial identifier and a date.
-Both can be nil.  The initial identifier is used as a reference to
-derive a unique variant of it (e.g. to keep incrementing seconds while
-keeping the rest of the date+time the same).  Existing identifiers are
-stored in the variable `denote-used-identifiers'.  If the initial
-identifier is nil or an identifier cannot be derived from it, then the
-date can be used instead.  The date has the same format as
-`current-time'.  When it is nil, the `current-time' is used.")
+The function takes two arguments: an initial identifier and a date.  The
+initial identifier is used as a reference to derive a unique variant of
+it (e.g. to keep incrementing seconds while keeping the rest of the
+date+time the same).  Existing identifiers are stored in the variable
+`denote-used-identifiers'.  If the initial identifier is nil or an
+identifier cannot be derived from it, then the date can be used instead.
+The date has the same format as `current-time'.  When it is nil, the
+`current-time' is used.")
 
 (defun denote--creation-get-note-data-from-prompts ()
   "Retrieve the data necessary for note creation.
