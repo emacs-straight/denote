@@ -1828,6 +1828,27 @@ If REVERSE is nil, use the value of the user option
    (or sort-by-component denote-sort-dired-default-sort-component 'identifier)
    (or reverse denote-sort-dired-default-reverse-sort nil)))
 
+(defvar denote-dired-empty-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "q") #'quit-window)
+    (define-key map (kbd "k") #'kill-buffer-and-window)
+    ;; TODO 2025-07-08: Maybe this is worth implementing.  The idea is
+    ;; to go back to the search.
+    ;;
+    ;; (define-key map (kbd "g") #'denote-dired-empty-revert-buffer)
+    map)
+  "Key map for `denote-dired-empty-mode'.")
+
+(define-derived-mode denote-dired-empty-mode special-mode "Denote Dired Empty"
+  "Major mode of a `denote-sort-dired' that no longer matches anything."
+  :interactive nil
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (delete-all-overlays)
+    (insert (propertize "Denote Dired" 'face 'bold))
+    (insert "\n\n")
+    (insert (propertize "No more matching files" 'face 'warning))))
+
 (defun denote-sort-dired--prepare-buffer (directory files-fn dired-name buffer-name)
   "Prepare buffer for `denote-sort-dired'.
 DIRECTORY is an absolute path to the `default-directory' of the Dired
@@ -1849,9 +1870,10 @@ BUFFER-NAME is the name of the resulting buffer."
                   (lambda (&rest _)
                     (if-let* ((default-directory directory)
                               (files (funcall files-fn)))
-                        (setq-local dired-directory (cons dired-name files))
-                      (setq-local dired-directory (cons "Denote no files" nil)))
-                    (dired-revert))))
+                        (progn
+                          (setq-local dired-directory (cons dired-name files))
+                          (dired-revert))
+                      (denote-dired-empty-mode)))))
     buffer-name))
 
 (defun denote-sort-dired--find-common-directory (directories)
@@ -2456,8 +2478,8 @@ is a list of strings.  FILETYPE is one of the values of variable
           (when (and (not (denote--component-has-value-p component value))
                      (not (memq component denote-front-matter-components-present-even-if-empty-value))
                      (re-search-forward (funcall component-key-regexp-function filetype) nil t 1))
-              (goto-char (line-beginning-position))
-              (delete-region (line-beginning-position) (line-beginning-position 2)))))
+            (goto-char (line-beginning-position))
+            (delete-region (line-beginning-position) (line-beginning-position 2)))))
       (buffer-string))))
 
 ;;;; Front matter or content retrieval functions
@@ -5315,7 +5337,7 @@ Also see `denote-find-backlink'."
   (when-let* ((links (or (denote-get-links)
                          (user-error "No links found")))
               (selected (denote-select-from-files-prompt links "Select among LINKS")))
-  (find-file selected)))
+    (find-file selected)))
 
 ;;;###autoload
 (defun denote-link-after-creating (&optional id-only)
@@ -6655,7 +6677,7 @@ Also see the user option `denote-org-store-link-to-heading'."
                  (concat "denote:" file-id))))
         org-store-link-plist))))
 
- (defun denote-link--ol-export-get-relative-html (path)
+(defun denote-link--ol-export-get-relative-html (path)
   "Return relative PATH for Org export purposes.
 Add an .html extension if PATH is an Org file."
   (file-relative-name
