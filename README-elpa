@@ -79,6 +79,7 @@ Table of Contents
 .. 11. Faces used by rename commands
 7. The file-naming scheme
 .. 1. Change the order of file name components
+..... 1. Retroactively reorder the components of Denote file names
 .. 2. Sluggification of file name components
 .. 3. User-defined sluggification of file name components
 ..... 1. Custom sluggification to remove non-ASCII characters
@@ -2611,6 +2612,48 @@ section 7.4
 [The file-naming scheme] See section 7
 
 [The `denote-prompts' option] See section 5.1.2
+
+7.1.1 Retroactively reorder the components of Denote file names
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  While experimenting with the `denote-file-name-components-order' to
+  change the way Denote formats file names, you may end up with files
+  that look inconsistent. They still work the same way as before, but
+  you prefer to enforce the same order across your Denote files. The
+  following custom command does just that. It technically “renames” the
+  files it is applied to, though only insofar as reordering their Denote
+  file name components, but not changing the contents of those
+  components.
+
+  ┌────
+  │ (defun my-denote-rename-all-to-reorder-components ()
+  │   "Call `denote-dired-rename-files' without any prompts.
+  │ In other words, preserve the value of each Denote file name component.
+  │ 
+  │ Use this command if you want to modify the user option
+  │ `denote-file-name-components-order' and then want your files to
+  │ retroactively follow that order."
+  │   (interactive)
+  │   (let ((denote-prompts nil))
+  │     (call-interactively 'denote-dired-rename-files)))
+  └────
+
+  Simply go to a Dired buffer, mark the files you wish to operate on,
+  and call the command. You may also use the `denote-dired' command to
+  produce a filtered+sorted flat listing of your Denote files, mark
+  them, and then invoke `my-denote-rename-all-to-reorder-components'
+  ([Display filtered and sorted files with `denote-sort-dired' or
+  `denote-dired']).
+
+  Video demonstration:
+  <https://protesilaos.com/codelog/2025-07-09-emacs-denote-reorder-components/>.
+
+  DEVELOPMENT NOTE: If you have a more specific use-case, then we can
+  discuss it and expand the documentation we provide herein.
+
+
+[Display filtered and sorted files with `denote-sort-dired' or
+`denote-dired'] See section 15
 
 
 7.2 Sluggification of file name components
