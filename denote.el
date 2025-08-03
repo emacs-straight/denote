@@ -1802,7 +1802,7 @@ OMIT-CURRENT have been applied."
      default 'denote-sort-exclude-files-history)))
 
 (defun denote-sort-dired--prompts ()
-  "Return list of prompts per `denote-sort-dired-extra-prompts'."
+  "Return list of prompt symbols per `denote-sort-dired-extra-prompts'."
   (let (sort-by-component reverse-sort exclude-rx)
     (dolist (prompt denote-sort-dired-extra-prompts)
       (pcase prompt
@@ -2917,10 +2917,13 @@ Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
 TEMPLATE, and SIGNATURE should be valid for note creation."
   (let* ((path (denote-format-file-name
                 directory id keywords title (denote--file-extension file-type) signature))
-         (buffer (find-file path))
+         ;; NOTE 2025-08-02: Is it safe to assume that an
+         ;; existing+empty file is good for us to use?  Otherwise, we
+         ;; should have a `y-or-n-p' prompt here.
+         (buffer (if (and (file-regular-p path) (not (denote--file-empty-p path)))
+                     (user-error "A file named `%s' already exists and is not empty" path)
+                   (find-file path)))
          (header (denote--format-front-matter title date keywords id signature file-type)))
-    (when (file-regular-p path)
-      (user-error "A file named `%s' already exists" path))
     (with-current-buffer buffer
       (insert header)
       (insert (cond
@@ -6056,15 +6059,15 @@ Place the buffer below the current window or wherever the user option
   "Return list of backlinks in current or optional FILE.
 Also see `denote-get-links'."
   (when-let* ((current-file (or file (buffer-file-name)))
-              (_ (denote-file-is-in-denote-directory-p current-file))
               (id (or (denote-retrieve-filename-identifier current-file)
                       (user-error "The file does not have a Denote identifier")))
+              (_ (denote-file-is-in-denote-directory-p current-file))
               (xrefs (denote-retrieve-xref-alist-for-backlinks id)))
     (mapcar #'car xrefs)))
 
-;; TODO 2024-09-04: Instead of using `denote-get-backlinks' we
-;; should have a function that does not try to find all backlinks but
-;; simply exits as soon as it finds one.
+;; FIXME 2025-08-01: Instead of using `denote-get-backlinks' we should
+;; have a function that does not try to find all backlinks but simply
+;; exits as soon as it finds one.
 (defun denote--file-has-backlinks-p (file)
   "Return non-nil if FILE has backlinks."
   (not (zerop (length (denote-get-backlinks file)))))
@@ -6862,7 +6865,7 @@ the standard front matter we define."
   :group 'denote-org-capture)
 
 (defun denote--org-capture-link-specifiers-p ()
-  "Return non-nil if `denote-org-capture-specifiers' uses link specifiers."
+  "Return non-nil if `denote-org-capture-specifiers' has link specifiers."
   (when (stringp denote-org-capture-specifiers)
     (string-match-p "%^?[aAlL]" denote-org-capture-specifiers)))
 
@@ -6959,7 +6962,7 @@ option `denote-templates'."
   :package-version '(denote . "3.1.0")
   :group 'denote-rename-buffer)
 
-(defcustom denote-rename-buffer-format "%D%b"
+(defcustom denote-rename-buffer-format "%D"
   "The format of the buffer name `denote-rename-buffer' should use.
 This also covers the `denote-rename-buffer-mode'.  The resulting buffer
 name will also include the `denote-buffer-name-prefix'.

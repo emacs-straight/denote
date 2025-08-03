@@ -3467,32 +3467,7 @@ When combined all together, the above are written thus:
 
 : %<flags><width><precision>SPECIFIER-CHARACTER
 
-Any other string it taken as-is.  Users may want, for example, to
-include some text that makes Denote buffers stand out, such as
-a =[D]= prefix.  Examples:
-
-#+begin_src emacs-lisp
-;; The following is the default value.  Use a literal [D] prefix,
-;; followed by the title and then the backlinks indicator.  If there
-;; is no title, use the identifier in its human-readable date
-;; representation, and if that is not possible, use the identifier
-;; as-is.
-(setq denote-rename-buffer-format "[D] %D%b")
-
-;; Customize what the backlink indicator looks like.  This two-faced
-;; arrow is the default.
-(setq denote-rename-buffer-backlinks-indicator  "<-->")
-
-;; Use just the title and keywords with some emoji in between, because
-;; why not?
-(setq denote-rename-buffer-format "%t 🤨 %k")
-
-;; Use the title with a literal "[D]" before it.
-(setq denote-rename-buffer-format "[D] %t")
-
-;; As above, but also add the `denote-rename-buffer-backlinks-indicator' at the end.
-(setq denote-rename-buffer-format "[D] %t%b")
-#+end_src
+Any other string it taken as-is.
 
 Users who need yet more flexibility are best served by writing their
 own function and assigning it to the ~denote-rename-buffer-function~.
@@ -3938,7 +3913,7 @@ concepts and relevant commands in further detail:
 :END:
 
 The ~denote-markdown~ package (by Protesilaos) provides some
-convenience functions to better integrate Markdown with Deonte. This
+convenience functions to better integrate Markdown with Denote. This
 is mostly about converting links from one type to another so that they
 can work in different applications (because Markdown does not have a
 standardised way to define custom link types).
@@ -6444,22 +6419,23 @@ Denote is meant to be a collective effort.  Every bit of help matters.
 + Author/maintainer :: Protesilaos Stavrou.
 
 + Contributions to code or the manual :: Abdul-Lateef Haji-Ali, Abin
-  Simon, Adam Růžička, Alan Schmitt, Alexandre Rousseau, Ashton
-  Wiersdorf, Aziz, Benjamin Kästner, Bruno Boal, Charanjit Singh,
-  Claudio Migliorelli, Clemens Radermacher, Colin McLear, Damien
-  Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna
-  D., Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jakub
-  Szczerbowski, James Kalyan, Jean-Charles Bagneris, Jean-Philippe
-  Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen Hötzel, Kaushal Modi,
-  Kai von Fintel, Kierin Bell, Kostas Andreadis, Kristoffer Balintona,
-  Kyle Meyer, Laurent Gatto, Lucas Quintana, Maikol Solis, Marc
-  Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid Behrnd, Octavian,
-  Peter Prevos, Philip Kaludercic, Ryota, Quiliro Ordóñez, Stephen R.
-  Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin, Tomasz
-  Hołubowicz, TomoeMami , Vedang Manerikar, Wesley Harvey, Zhenxu Xu,
-  arsaber101, bryanrinders, eum3l, experimental-code-86, ezchi,
-  jarofromel, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
-  maxbrieiev, mentalisttraceur, pmenair, relict007, skissue.
+  Simon, Adam Růžička, Alan Schmitt, Alexandre Rousseau, Ashish
+  Panigrahi, Ashton Wiersdorf, Aziz, Benjamin Kästner, Bruno Boal,
+  Charanjit Singh, Claudio Migliorelli, Clemens Radermacher, Colin
+  McLear, Damien Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron,
+  Florian, Glenna D., Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack
+  Baty, Jakub Szczerbowski, James Kalyan, Jean-Charles Bagneris,
+  Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen Hötzel,
+  Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas Andreadis,
+  Kristoffer Balintona, Kyle Meyer, Laurent Gatto, Lucas Quintana,
+  Maikol Solis, Marc Fargas, Matthew Lemon, Noboru Ota (nobiot),
+  Norwid Behrnd, Octavian, Peter Prevos, Philip Kaludercic, Ryota,
+  Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan Thesing,
+  Thibaut Benjamin, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
+  Wesley Harvey, Zhenxu Xu, arsaber101, bryanrinders, eum3l,
+  experimental-code-86, ezchi, jarofromel, leinfink (Henrik), l-o-l-h
+  (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur, pmenair,
+  relict007, skissue.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Griffin, Alex Hirschfeld, Alexis
@@ -6482,7 +6458,7 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   fingerknight, hpgisler, hyperfocus1337,johkneisl, jtpavlock, juh,
   leafarbelm, mentalisttraceur, mjkalyan, oatmealm, pRot0ta1p,
   rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
-  yetanotherfossman, zadca123
+  wuzhihao, yetanotherfossman, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
