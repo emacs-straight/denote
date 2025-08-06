@@ -1015,15 +1015,35 @@ to override what this function returns."
   "Return non-nil if the variable `denote-directory' is a single item."
   (not (cdr (denote-directories))))
 
+(defun denote--get-common-root-directory (directories)
+  "Return common root directory among DIRECTORIES."
+  (if-let* ((parts (mapcar (lambda (directory) (split-string directory "/" :omit-nulls)) directories))
+            (common-parent (seq-reduce
+                            (lambda (dir-parts comparison-parts)
+                              (let ((common nil))
+                                (dolist (part dir-parts)
+                                  (when (member part comparison-parts)
+                                    (push part common)))
+                                (nreverse common)))
+                            parts (car parts))))
+      (format "/%s/" (mapconcat #'identity common-parent "/"))
+    "/"))
+
+(defun denote-directories-get-common-root ()
+  "Get the common root directory of `denote-directories'."
+  (denote--get-common-root-directory (denote-directories)))
+
+;; FIXME 2025-08-05: There are many parts in the code where we
+;; hardcode `(car (denote-directories))' and others where
+;; `(denote-directory)' is used.  This is flawed.  We need to either
+;; prompt for one when one is absolutely necessary (is this ever the
+;; case?) or fall back to the common root as in the function
+;; `denote-directories-get-common-root'.
 (defun denote-directory ()
-  "Return path of variable `denote-directory' as a proper directory.
-
-This function is obsolete.  Use `denote-directories' instead, which
-returns the note directories as a list.  The current function only
-returns the first directory."
+  "Return the `car' of `denote-directories'.
+Unless this is definitely what you need, use the `denote-directories'
+instead.  Also see `denote-directories-get-common-root'."
   (car (denote-directories)))
-
-(make-obsolete 'denote-directory 'denote-directories "4.1.0")
 
 (defvar denote-generate-identifier-automatically t
   "Make creation and renaming commands automatically create and identifier.
@@ -1891,20 +1911,6 @@ BUFFER-NAME is the name of the resulting buffer."
                       (denote-dired-empty-mode)))))
     buffer-name))
 
-(defun denote-sort-dired--find-common-directory (directories)
-  "Return common root directory among DIRECTORIES."
-  (if-let* ((parts (mapcar (lambda (directory) (split-string directory "/" :omit-nulls)) directories))
-            (common-parent (seq-reduce
-                            (lambda (dir-parts comparison-parts)
-                              (let ((common nil))
-                                (dolist (part dir-parts)
-                                  (when (member part comparison-parts)
-                                    (push part common)))
-                                (nreverse common)))
-                            parts (car parts))))
-      (format "/%s/" (mapconcat #'identity common-parent "/"))
-    "/"))
-
 ;;;###autoload
 (defun denote-sort-dired (files-matching-regexp sort-by-component reverse exclude-regexp)
   "Produce Dired buffer with sorted files from variable `denote-directory'.
@@ -1942,7 +1948,7 @@ When called from Lisp, the arguments are a string, a symbol among
                                 files)))))
     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
                              (car (denote-directories))
-                           (denote-sort-dired--find-common-directory (denote-directories))))
+                           (denote-directories-get-common-root (denote-directories))))
               (files (funcall files-fn))
               (dired-name (format-message files-matching-regexp))
               (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp)))

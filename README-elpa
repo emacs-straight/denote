@@ -4839,7 +4839,7 @@ section 7.4
   │ 			       empty-files)))))
   │     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
   │ 			     (car (denote-directories))
-  │ 			   (denote-sort-dired--find-common-directory (denote-directories))))
+  │ 			   (denote-directories-get-common-root)))
   │ 	      (files (funcall files-fn))
   │ 	      (dired-name (format-message files-matching-regexp))
   │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
@@ -4860,7 +4860,7 @@ section 7.4
   │ 			       empty-files)))))
   │     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
   │ 			     (car (denote-directories))
-  │ 			   (denote-sort-dired--find-common-directory (denote-directories))))
+  │ 			   (denote-directories-get-common-root)))
   │ 	      (files (funcall files-fn))
   │ 	      (dired-name (format-message files-matching-regexp))
   │ 	      (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (OMIT EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
@@ -5745,12 +5745,19 @@ section 20.12
         recognise. If `DATE' is nil, return nil.
 
   Function `denote-directory'
-        Return path of the variable `denote-directory' as a proper
-        directory, also because it accepts a directory-local value for
-        what we internally refer to as “silos” ([Maintain separate
-        directories for notes]).  Custom Lisp code can `let' bind the
-        value of the variable `denote-directory' to override what this
-        function returns.
+        Return the `car' of `denote-directories'. Unless this is
+        definitely what you need, use the `denote-directories'
+        instead. Also see `denote-directories-get-common-root'. [
+        Updated as part of 4.1.0-dev because the user option
+        `denote-directory' can now also accept a list of directories. ]
+
+  Function `denote-directories'
+        Return list of paths to the variable `denote-directory'. [ Part
+        of 4.1.0-dev. ]
+
+  Function `denote-directories-get-common-root'
+        Return the closest common root of the `denote-directories'. [
+        Part of 4.1.0-dev. ]
 
   Function `denote-directory-get-files'
         Return list with full path of valid files in variable
@@ -6546,16 +6553,6 @@ section 20.12
         we have for the menu bar. Perhaps this interface can used to
         toggle various options, such as to call `denote' with a
         different set of prompts.
-
-  A `denote-directories' user option
-        This can be either an extension of the `denote-directory'
-        (accept a list of file paths value) or a new variable. The idea
-        is to let the user define separate Denote directories which do
-        know about the presence of each other (unlike silos). This way,
-        a user can have an entry in `~/Documents/notes/' link to
-        something `~/Git/projects/' and everything work as if the
-        `denote-directory' is set to the `~/' (with the status quo as of
-        2024-02-18 08:27 +0200).
 
   Encode the day in the identifier
         The idea is to use some coded reference for Monday, Tuesday,
