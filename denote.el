@@ -1033,12 +1033,6 @@ to override what this function returns."
   "Get the common root directory of `denote-directories'."
   (denote--get-common-root-directory (denote-directories)))
 
-;; FIXME 2025-08-05: There are many parts in the code where we
-;; hardcode `(car (denote-directories))' and others where
-;; `(denote-directory)' is used.  This is flawed.  We need to either
-;; prompt for one when one is absolutely necessary (is this ever the
-;; case?) or fall back to the common root as in the function
-;; `denote-directories-get-common-root'.
 (defun denote-directory ()
   "Return the `car' of `denote-directories'.
 Unless this is definitely what you need, use the `denote-directories'
@@ -1508,33 +1502,33 @@ With optional HAS-IDENTIFIER, only show candidates that have an
 identifier.
 
 Return the absolute path to the matching file."
-  (let* (;; Some external program may use `default-directory' with the
+  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+         ;; Some external program may use `default-directory' with the
          ;; relative file paths of the completion candidates.
-         (default-directory (car (denote-directories)))
+         (default-directory (if single-dir-p
+                                (denote-directory)
+                              (denote-directories-get-common-root)))
          (files (denote-directory-files
                  (or denote-file-prompt-use-files-matching-regexp files-matching-regexp)
                  :omit-current nil nil has-identifier))
-         (relative-files (mapcar
-                          #'denote-get-file-name-relative-to-denote-directory
-                          files))
-         (prompt (if (denote-has-single-denote-directory-p)
+         (relative-files (if single-dir-p
+                             (mapcar #'denote-get-file-name-relative-to-denote-directory files)
+                           files))
+         (prompt (if single-dir-p
                      (format "%s in %s:"
                              (or prompt-text "Select FILE")
-                             (propertize (car (denote-directories)) 'face 'denote-faces-prompt-current-name))
+                             (propertize default-directory 'face 'denote-faces-prompt-current-name))
                    (format "%s: " (or prompt-text "Select FILE"))))
          (input (completing-read
                  prompt
-                 (denote--completion-table 'file
-                                           (if (denote-has-single-denote-directory-p)
-                                               relative-files
-                                             files))
+                 (denote--completion-table 'file relative-files)
                  nil (unless no-require-match :require-match)
                  nil 'denote-file-history))
          (absolute-file (if (denote-has-single-denote-directory-p)
-                            (expand-file-name input (car (denote-directories)))
+                            (expand-file-name input default-directory)
                           input)))
     ;; NOTE: This block is executed when no-require-match is t. It is useful
-    ;; for commands such as `denote-open-or-create` or similar.
+    ;; for commands such as `denote-open-or-create' or similar.
     (unless (file-exists-p absolute-file)
       (setq denote-file-prompt-latest-input input)
       (setq denote-file-history (delete input denote-file-history)))
@@ -1947,8 +1941,8 @@ When called from Lisp, the arguments are a string, a symbol among
                                   (mapcar #'file-relative-name files)
                                 files)))))
     (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
-                             (car (denote-directories))
-                           (denote-directories-get-common-root (denote-directories))))
+                             (denote-directory)
+                           (denote-directories-get-common-root)))
               (files (funcall files-fn))
               (dired-name (format-message files-matching-regexp))
               (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp)))
@@ -3373,7 +3367,7 @@ instead of that of the parameter."
                            (t "")))
          (directory (if (and directory (denote--dir-in-denote-directory-p directory))
                         (file-name-as-directory directory)
-                      (car (denote-directories))))
+                      (denote-directory)))
          (template (if (or (stringp template) (functionp template))
                        template
                      (or (alist-get template denote-templates) "")))
@@ -5394,7 +5388,7 @@ the generic one."
                     (denote--completion-table 'file file-names)
                     nil t nil 'denote-link-find-file-history)))
     (if (denote-has-single-denote-directory-p)
-        (expand-file-name selected (car (denote-directories)))
+        (expand-file-name selected (denote-directory))
       selected)))
 
 (define-obsolete-function-alias
@@ -6491,7 +6485,7 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
                     (denote--completion-table 'file file-names)
                     nil t)))
     (if (denote-has-single-denote-directory-p)
-        (expand-file-name selected (car (denote-directories)))
+        (expand-file-name selected (denote-directory))
       selected)))
 
 (defun denote-link--map-over-notes ()
