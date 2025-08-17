@@ -398,6 +398,13 @@ Table of Contents
   files or file names while providing facilities to link between them
   (where those files are editable).
 
+  A typical note produced by Denote looks like:
+
+  ┌────
+  │ 20240322T131856--some-title__topic1_topic2.org
+  └────
+
+
   Denote’s file-naming scheme is not limited to “notes”.  It can be used
   for all types of file, including those that are not editable in Emacs,
   such as videos.  Naming files in a consistent way makes their
@@ -2432,6 +2439,8 @@ See section 19.5
 7 The file-naming scheme
 ════════════════════════
 
+  [Customization of the identifier format is part of 4.1.0-dev.]
+
   Notes are stored in the `denote-directory'.  The default path is
   `~/Documents/notes'.  The `denote-directory' can be a flat listing,
   meaning that it has no subdirectories, or it can be a directory tree.
@@ -2443,15 +2452,16 @@ See section 19.5
   of entry]):
 
   ┌────
-  │ ID==SIGNATURE--TITLE__KEYWORDS.EXTENSION
+  │ @@ID==SIGNATURE--TITLE__KEYWORDS.EXTENSION
   └────
 
 
   The `ID' field represents the identifier which, by default, is the
   date in year-month-day format followed by the capital letter `T' (for
   “time”) and the current time in hour-minute-second notation. The
-  presentation is compact: `20220531T091625'. The `ID' serves as the
-  unique identifier of each note and, as such, is also known as the
+  presentation is compact: `20220531T091625'. When it has this format
+  (the default), the delimiter (`@@') is optional. The `ID' serves as
+  the unique identifier of each note and, as such, is also known as the
   file’s ID or identifier.
 
   File names can include an arbitrary string of alphanumeric characters
@@ -2469,10 +2479,10 @@ See section 19.5
   `denote-prompts' option]).
 
   The `TITLE' field is the title of the note, as provided by the user.
-  It automatically gets downcased by default and is also hyphenated
-  ([Sluggification of file name components]).  An entry about “Economics
-  in the Euro Area” produces an `economics-in-the-euro-area' string for
-  the `TITLE' of the file name.
+  It can contain any character, though the default is to have it
+  downcased and hyphenated ([Sluggification of file name
+  components]). An entry about “Economics in the Euro Area” produces an
+  `economics-in-the-euro-area' string for the `TITLE' of the file name.
 
   The `KEYWORDS' field consists of one or more entries demarcated by an
   underscore (the separator is inserted automatically).  Each keyword is
@@ -2513,8 +2523,8 @@ See section 19.5
 
   [Features of the file-naming scheme for searching or filtering].
 
-  The `denote-prompts' can be configured in such ways to yield the
-  following file name permutations:
+  All file name fields can contain any character, are optional and can
+  appear in any order. The following permutations are valid:
 
   ┌────
   │ ID.EXT
@@ -2526,6 +2536,9 @@ See section 19.5
   │ ID==SIGNATURE__KEYWORDS.EXT
   └────
 
+
+  Commands such as `denote' or `denote-rename-file' will prompt for the
+  file name fields configured in `denote-prompts'.
 
   When in doubt, stick to the default design, which is carefully
   considered and works well ([Change the order of file name
@@ -2561,11 +2574,12 @@ section 7.4
 
   The value of this user option is a list of the following symbols:
 
-  • `identifier': This is the combination of the date and time. When it
-    is the first on the list, it looks like `20240519T073456' and does
-    not have a component separator of its own due its unambiguous
-    format. When it is placed anywhere else in the file name, it is
-    prefixed with `@@', so it looks like `@@20240519T073456'.
+  • `identifier': By default, this is the combination of the date and
+    time. When it is the first on the list, it looks like
+    `20240519T073456' and does not have a component separator of its own
+    due to its unambiguous format. When it is placed anywhere else in
+    the file name, it is prefixed with `@@', so it looks like
+    `@@20240519T073456'.
 
   • `signature': This is an arbitrary string that can be used to qualify
     the file in some way, according to the user’s methodology (e.g. to
@@ -2581,7 +2595,11 @@ section 7.4
     with `__'.
 
   All four symbols must appear exactly once. Duplicates are ignored. Any
-  missing symbol is added automatically.
+  missing symbol is added automatically. Note that even though all four
+  symbols must appear in the user option
+  `denote-file-name-components-order', actual files may not contain a
+  specific component. For instance, a note without keywords or signature
+  is valid.
 
   Some examples:
 
@@ -2600,8 +2618,8 @@ section 7.4
   └────
 
   Also see how to configure the Denote prompts, which affect which
-  components are actually used in the order specified herein ([The
-  `denote-prompts' option]).
+  components are actually prompted for in creation or renaming commands
+  ([The `denote-prompts' option]).
 
   Before deciding on this, please consider the longer-term implications
   of file names with varying patterns. Consistency makes things
@@ -2659,8 +2677,8 @@ section 7.4
 7.2 Sluggification of file name components
 ──────────────────────────────────────────
 
-  Files names can contain any character that the file system
-  permits. Denote imposes a few additional restrictions:
+  File names can contain any character that the file system permits.
+  Denote imposes a few additional restrictions:
 
   ⁃ The tokens “`=", =__' and `--' are interpreted by Denote and should
     appear only once.
@@ -2673,10 +2691,10 @@ section 7.4
   option `denote-file-name-slug-functions'. These rules are applied to
   file names by default:
 
-  ⁃ What we count as “illegal characters” are removed.
+  ⁃ Many “special characters” are removed.
 
   ⁃ Input for a file title is hyphenated.  The original value is
-    preserved in the note’s contents ([Front matter]).
+    preserved in the note’s content ([Front matter]).
 
   ⁃ Spaces or other delimiters are removed from keywords, meaning that
     `hello-world' becomes `helloworld'.  This is because hyphens in
@@ -5743,13 +5761,6 @@ section 20.12
         can be parsed by either `decode-time' or `date-to-time' .Those
         functions signal an error if `DATE' is a value they do not
         recognise. If `DATE' is nil, return nil.
-
-  Function `denote-directory'
-        Return the `car' of `denote-directories'. Unless this is
-        definitely what you need, use the `denote-directories'
-        instead. Also see `denote-directories-get-common-root'. [
-        Updated as part of 4.1.0-dev because the user option
-        `denote-directory' can now also accept a list of directories. ]
 
   Function `denote-directories'
         Return list of paths to the variable `denote-directory'. [ Part
