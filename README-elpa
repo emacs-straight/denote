@@ -85,6 +85,9 @@ Table of Contents
 ..... 1. Custom sluggification to remove non-ASCII characters
 .. 4. Features of the file-naming scheme for searching or filtering
 .. 5. Define a completely custom identifier scheme
+..... 1. A custom identifier that is a simple incrementing number scheme
+..... 2. A custom identifier that is a simple string given at the prompt each time
+..... 3. A custom identifier to encode publisher data
 8. Front matter
 .. 1. Change the front matter format
 .. 2. Regenerate front matter
@@ -655,7 +658,8 @@ Table of Contents
 
   • `identifier': Prompts with completion for the identifier of the new
     note. It expects a string that has the format of
-    `denote-date-identifier-format'.
+    `denote-date-identifier-format'.  [ Also see: [A custom identifier
+    that is a simple string given at the prompt each time]. ]
 
   • `template': Prompts for a KEY among the `denote-templates'.  The
     value of that KEY is used to populate the new note with content,
@@ -715,6 +719,9 @@ Table of Contents
 [The `denote-directory' option] See section 5.1.1
 
 [The denote-date-prompt-use-org-read-date option] See section 5.1.8
+
+[A custom identifier that is a simple string given at the prompt each
+time] See section 7.5.2
 
 [The denote-templates option] See section 5.1.4
 
@@ -2957,6 +2964,155 @@ section 7.4
   example, this kind of identifier is more useful than the default
   date+time scheme.
 
+
+[The file-naming scheme] See section 7
+
+[Points of entry] See section 5
+
+[Renaming files] See section 6
+
+7.5.1 A custom identifier that is a simple incrementing number scheme
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  This is a sample implementation of custom Denote identifiers ([Define
+  a completely custom identifier scheme]).
+
+  In its simplest form, a custom Denote identifier can be an integer
+  that is incremented each time a new file name is produced. In the
+  following code block, `my~denote-get-identifier' is the function we
+  bind to the variable `denote-get-identifier-function', which then
+  makes Denote use the custom identifier scheme.
+
+  ┌────
+  │ (setq denote-get-identifier-function #'my-denote-get-identifier)
+  │ 
+  │ (defun my-denote--get-all-used-ids ()
+  │   (when-let* ((ids (make-hash-table :test 'equal))
+  │ 	      (files (denote-directory-files nil nil nil nil :has-identifier))
+  │ 	      (file-names (mapcar #'file-name-nondirectory files))
+  │ 	      (names (append file-names (denote--buffer-file-names))))
+  │     (dolist (name names)
+  │       (when-let* ((id (denote-retrieve-filename-identifier name)))
+  │ 	(puthash id t ids)))
+  │     ids))
+  │ 
+  │ (defun my-denote-get-identifier (initial-identifier _date)
+  │   (let ((identifiers (or denote-used-identifiers (my-denote--get-all-used-ids))))
+  │     (cond
+  │      ((and initial-identifier (not (gethash initial-identifier identifiers)))
+  │       initial-identifier)
+  │      (t
+  │       (number-to-string
+  │        (let ((keys nil))
+  │ 	 ;; NOTE 2025-09-19: The `string-to-number' is done with the
+  │ 	 ;; assumption that this is always an integer.  It will break
+  │ 	 ;; with the default Denote identifier scheme or, indeed,
+  │ 	 ;; anything that is not strictly numeric.
+  │ 	 (when identifiers (maphash (lambda (key value) (push (string-to-number key) keys)) identifiers))
+  │ 	 (if keys
+  │ 	     (+ (apply #'max keys) 1)
+  │ 	   1)))))))
+  │ 
+  │ 
+  │ 
+  │ ;; And this is for testing purposes
+  │ 
+  │ ;; (let ((denote-directory "/tmp/"))
+  │ ;;   (my-denote-get-identifier nil nil))
+  │ ;;
+  │ ;; (let* ((denote-used-identifiers (make-hash-table :test #'equal))
+  │ ;;        (_ (progn
+  │ ;;             (puthash "1" 1 denote-used-identifiers)
+  │ ;;             (puthash "2" 2 denote-used-identifiers)
+  │ ;;             (puthash "3" 3 denote-used-identifiers))))
+  │ ;;   (my-denote-get-identifier "1" nil))
+  └────
+
+  An alternative for the above:
+
+  ┌────
+  │ (defun my-denote--find-first-unused-id-as-number (id)
+  │   (while (gethash id denote-used-identifiers)
+  │     (setq id (number-to-string (1+ (string-to-number id)))))
+  │   id)
+  │ 
+  │ (defun my-denote-generate-identifier-as-number (initial-identifier _date)
+  │   (let ((denote-used-identifiers (or denote-used-identifiers (denote--get-all-used-ids))))
+  │     (cond (;; Always use the supplied initial-identifier if possible,
+  │ 	   ;; regardless of format.
+  │ 	   (and initial-identifier
+  │ 		(not (gethash initial-identifier denote-used-identifiers)))
+  │ 	   initial-identifier)
+  │ 	  (;; If the supplied initial-identifier is already used, but
+  │ 	   ;; it has the right format, make is unique.
+  │ 	   (and initial-identifier
+  │ 		(string-match-p "[1-9][0-9]*" initial-identifier))
+  │ 	   (my-denote--find-first-unused-id-as-number initial-identifier))
+  │ 	  (;; Else, the supplied initial-identifier is nil or it is
+  │ 	   ;; already used or it does not match the supplied
+  │ 	   ;; format. Ignore it and generate a valid identifier with
+  │ 	   ;; the right format.
+  │ 	   t
+  │ 	   (my-denote--find-first-unused-id-as-number "1")))))
+  └────
+
+
+[Define a completely custom identifier scheme] See section 7.5
+
+
+7.5.2 A custom identifier that is a simple string given at the prompt each time
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  This is a sample implementation of custom Denote identifiers ([Define
+  a completely custom identifier scheme]).
+
+  While it is possible to implement a certain automatic scheme for the
+  Denote identifier, users may prefer to have a prompt each time that
+  asks them for a simple string which is then used as-is. This can be
+  done by modifying the user option `denote-prompts' to include the
+  `identifier' in the list of file name components to prompt for ([The
+  `denote-prompts' option]).
+
+  For example:
+
+  ┌────
+  │ ;; The default is '(title keywords)
+  │ (setq denote-prompts '(identifier title keywords))
+  └────
+
+  With the above, each time Denote needs to produce a new file name it
+  will prompt for the identifier. Note that it is then up to the user to
+  guarantee the uniqueness of the resulting identifiers. With this code,
+  Denote will fall back to using the current date as the identifier if
+  the provided string is not yielding a unique match.
+
+  In practice, the identifier prompt is a useful tool for wrapper
+  functions that need to do something special in a given context. For
+  example, in a folder with some ancient photos the user wants to have
+  an identifier scheme that is `PLACE+PEOPLE+N' where it is easier to
+  prompt for that value each time than write some extra code to do the
+  work. To this end, here is a sample wrapper function of
+  `denote-rename-file':
+
+  ┌────
+  │ (defun my-denote-rename-file-with-identifier-prompt ()
+  │   (interactive)
+  │   (let ((denote-prompts '(identifier title keywords)))
+  │     (call-interactively 'denote-rename-file)))
+  └────
+
+
+[Define a completely custom identifier scheme] See section 7.5
+
+[The `denote-prompts' option] See section 5.1.2
+
+
+7.5.3 A custom identifier to encode publisher data
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  This is a sample implementation of custom Denote identifiers ([Define
+  a completely custom identifier scheme]).
+
   This custom identifier cannot be derived programmatically though, so
   the function `my-denote-get-identifier' makes a series of prompts to
   get the relevant data. Then it joins them all together with the
@@ -3050,11 +3206,7 @@ section 7.4
   └────
 
 
-[The file-naming scheme] See section 7
-
-[Points of entry] See section 5
-
-[Renaming files] See section 6
+[Define a completely custom identifier scheme] See section 7.5
 
 
 8 Front matter
