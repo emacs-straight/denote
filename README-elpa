@@ -87,7 +87,8 @@ Table of Contents
 .. 5. Define a completely custom identifier scheme
 ..... 1. A custom identifier that is a simple incrementing number scheme
 ..... 2. A custom identifier that is a simple string given at the prompt each time
-..... 3. A custom identifier to encode publisher data
+..... 3. A custom identifier to include the day of the week as a capital letter
+..... 4. A custom identifier to encode publisher data
 8. Front matter
 .. 1. Change the front matter format
 .. 2. Regenerate front matter
@@ -3107,7 +3108,104 @@ section 7.4
 [The `denote-prompts' option] See section 5.1.2
 
 
-7.5.3 A custom identifier to encode publisher data
+7.5.3 A custom identifier to include the day of the week as a capital letter
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The default Denote identifier is a compact version of the date and
+  time. The letter `T' is placed between the two to delimit where the
+  date ends and the time starts. This `T' does not have any special
+  meaning in itself. Users may prefer to have other letters there to
+  represent the day of the week. For example, Monday is `A', Tuesday is
+  `B', and so on.
+
+  Here is a function that takes a number or numeric string argument and
+  returns the corresponding capital letter for the day of the week. We
+  will see further below how this function goes together with the rest
+  of the code necessary for a custom identifier scheme.
+
+  ┌────
+  │ (defun my-denote-get-day-of-week-as-alpha (day)
+  │   "Return the corresponding capital letter for DAY.
+  │ DAY is a string holding a number, as the return value of the %u
+  │ specifier in `format-time-string'.
+  │ 
+  │ If DAY is a number, convert it to a string and then return its
+  │ corresponding letter."
+  │   (pcase (if (numberp day) (number-to-string day) day)
+  │     ("1" "A")
+  │     ("2" "B")
+  │     ("3" "C")
+  │     ("4" "D")
+  │     ("5" "E")
+  │     ("6" "F")
+  │     ("7" "G")
+  │     (_ (error "The day `%S' is not among 1-7" day))))
+  └────
+
+  What we then need is to have a variant of the standard
+  `denote-date-identifier-format' where the letter `T' is replaced by
+  the `%u' `format-time-string' specifier. That is what gives us the
+  numeric representation of the day of the week. Then we copy the
+  default `denote-generate-identifier-as-date' and modify it to use our
+  format, making the small adjustments necessary to recreate the
+  identifier as one string.
+
+  Putting it all together:
+
+  ┌────
+  │ (setq denote-get-identifier-function #'my-denote-generate-identifier-as-date)
+  │ 
+  │ (defun my-denote-get-day-of-week-as-alpha (day)
+  │   "Return the corresponding capital letter for DAY.
+  │ DAY is a string holding a number, as the return value of the %u
+  │ specifier in `format-time-string'.
+  │ 
+  │ If DAY is a number, convert it to a string and then return its
+  │ corresponding letter."
+  │   (pcase (if (numberp day) (number-to-string day) day)
+  │     ("1" "A")
+  │     ("2" "B")
+  │     ("3" "C")
+  │     ("4" "D")
+  │     ("5" "E")
+  │     ("6" "F")
+  │     ("7" "G")
+  │     (_ (error "The day `%S' is not among 1-7" day))))
+  │ 
+  │ (defconst my-denote-date-identifier-format
+  │   (replace-regexp-in-string "T" " %u " denote-date-identifier-format t))
+  │ 
+  │ (defun my-denote-format-date (date)
+  │   "Format DATE using `my-denote-date-identifier-format'."
+  │   (pcase-let* ((identifier-string (format-time-string my-denote-date-identifier-format date))
+  │ 	       (`(,date ,day-of-week ,time) (split-string identifier-string))
+  │ 	       (day-as-letter (my-denote-get-day-of-week-as-alpha day-of-week)))
+  │     (concat date day-as-letter time)))
+  │ 
+  │ (defun my-denote-generate-identifier-as-date (initial-identifier date)
+  │   "Generate an identifier based on DATE.
+  │ 
+  │ If INITIAL-IDENTIFIER is not already used, return it.  Else, if it is
+  │ possible to derive an identifier from it, return this identifier.
+  │ 
+  │ Else, use the DATE.  If it is nil, use `current-time'.
+  │ 
+  │ Slightly modified version of `denote-generate-identifier-as-date'."
+  │   (let ((denote-used-identifiers (or denote-used-identifiers (denote--get-all-used-ids))))
+  │     (cond ((and initial-identifier
+  │ 		(not (gethash initial-identifier denote-used-identifiers)))
+  │ 	   initial-identifier)
+  │ 	  ((and initial-identifier
+  │ 		(string-match-p denote-date-identifier-regexp initial-identifier)
+  │ 		(date-to-time initial-identifier))
+  │ 	   (denote--find-first-unused-id-as-date initial-identifier))
+  │ 	  (t
+  │ 	   (denote--find-first-unused-id-as-date
+  │ 	    (my-denote-format-date (or date (current-time))))))))
+  └────
+
+
+7.5.4 A custom identifier to encode publisher data
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   This is a sample implementation of custom Denote identifiers ([Define
@@ -4701,15 +4799,17 @@ section 7.4
 
   The user option `denote-query-sorting' controls the order of matching
   files in a query buffer (buffers that use the `denote-query-mode'. The
-  applies to the buffer that is produced by query links, backlinks, and
-  the `denote-grep' command:
+  applies to the buffer that is produced by query links for file
+  contents, backlinks, and the `denote-grep' command:
 
   • [Add a query link].
   • [The backlinks’ buffer].
   • [Use `denote-grep' to search inside files].
 
-  By default, no sorting of matching files is performed. They appear in
-  the query buffer in the order they were retrieved.
+  By default (a `nil' value), no sorting of matching files is performed.
+  Files are displayed in the order they are returned by the search
+  program (which often, but not always, means they are sorted by file
+  name).
 
   The `denote-query-sorting' can be set to a symbol among those listed
   in the value of the variable `denote-sort-components' to sort by the
@@ -4723,7 +4823,7 @@ section 7.4
   documentation of the `denote-sort-files' for the technicalities.
 
   Whatever the value of `denote-query-sorting', users may change the
-  sort of query buffers by calling the command
+  sorting of query buffers on demand by calling the command
   `denote-query-sort-last-search' ([Interact with the links buffer]).
 
 
