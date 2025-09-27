@@ -40,8 +40,9 @@ Table of Contents
 3. Sample configuration
 .. 1. Get started with this sample configuration
 .. 2. More comprehensive sample configuration
-4. Overview
-5. Points of entry
+4. Getting started with Denote
+5. Overview
+6. Points of entry
 .. 1. Standard note creation
 ..... 1. The `denote-directory' option
 ..... 2. The `denote-prompts' option
@@ -64,7 +65,7 @@ Table of Contents
 .. 10. Exclude certain keywords from being inferred
 .. 11. Create a controlled vocabulary for keywords
 .. 12. Use Denote commands from the menu bar or context menu
-6. Renaming files
+7. Renaming files
 .. 1. Rename a single file
 ..... 1. The `denote-rename-confirmations' option
 .. 2. Rename a single file based on its front matter
@@ -77,7 +78,7 @@ Table of Contents
 .. 9. Rename a file by adding or removing a signature interactively
 .. 10. Find duplicate identifiers and put them in a Dired buffer
 .. 11. Faces used by rename commands
-7. The file-naming scheme
+8. The file-naming scheme
 .. 1. Change the order of file name components
 ..... 1. Retroactively reorder the components of Denote file names
 .. 2. Sluggification of file name components
@@ -89,10 +90,10 @@ Table of Contents
 ..... 2. A custom identifier that is a simple string given at the prompt each time
 ..... 3. A custom identifier to include the day of the week as a capital letter
 ..... 4. A custom identifier to encode publisher data
-8. Front matter
+9. Front matter
 .. 1. Change the front matter format
 .. 2. Regenerate front matter
-9. Linking notes
+10. Linking notes
 .. 1. Add a single direct link using a file name prompt
 .. 2. Add a direct link to a file whose contents include the given query
 .. 3. Add a query link
@@ -108,21 +109,21 @@ Table of Contents
 .. 13. Visiting linked files via the minibuffer
 .. 14. Fontify links in non-Org buffers
 .. 15. The `denote-link-description-format' to format link descriptions
-10. Choose which commands to prompt for
-11. Fontification in Dired
-12. Set the prefix of all Denote buffers
-13. Automatically rename Denote file buffers
+11. Choose which commands to prompt for
+12. Fontification in Dired
+13. Set the prefix of all Denote buffers
+14. Automatically rename Denote file buffers
 .. 1. The `denote-rename-buffer-format' option
-14. Use Org dynamic blocks
-15. Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
+15. Use Org dynamic blocks
+16. Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
 .. 1. Configure what extra prompts `denote-sort-dired' issues
 .. 2. Define a sorting function per component
 ..... 1. Sort signatures that include Luhmann-style sequences
-16. Use `denote-grep' to search inside files
-17. Interact with the links buffer
+17. Use `denote-grep' to search inside files
+18. Interact with the links buffer
 .. 1. Control the default sort of a query buffer
-18. Minibuffer histories
-19. Packages that build on Denote
+19. Minibuffer histories
+20. Packages that build on Denote
 .. 1. Use the `consult-denote' package for enhanced minibuffer interactions
 .. 2. Sequence notes
 .. 3. Use the `denote-markdown' package to better integrate Markdown with Denote
@@ -134,7 +135,7 @@ Table of Contents
 .. 9. Use the `consult-notes' package
 .. 10. Use the `denote-menu' package
 .. 11. Use the `denote-zettel-interface' package
-20. Extending Denote
+21. Extending Denote
 .. 1. Access the data of the latest note
 .. 2. Create a new note in any directory
 .. 3. Find empty notes and put them in a Dired buffer
@@ -152,7 +153,7 @@ Table of Contents
 ..... 1. Export Denote notes with Org Mode
 ..... 2. Export Denote notes with Markdown
 .. 15. Set up your workflow for daily or weekly meeting notes
-21. For developers or advanced users
+22. For developers or advanced users
 .. 1. Common building blocks for developers or advanced users
 .. 2. Predefined note values for developers or advanced users
 .. 3. File path interface for developers or advanced users
@@ -162,13 +163,13 @@ Table of Contents
 .. 7. Link interface for developers or advanced users
 .. 8. Xref interface for developers or advanced users
 .. 9. Renaming files interface for developers or advanced users
-22. Troubleshoot Denote in a pristine environment
-23. Contributing
+23. Troubleshoot Denote in a pristine environment
+24. Contributing
 .. 1. Wishlist of what we can do to extend Denote
-24. Publications about Denote
-25. Alternatives to Denote
+25. Publications about Denote
+26. Alternatives to Denote
 .. 1. Alternative implementations and further reading
-26. Frequently Asked Questions
+27. Frequently Asked Questions
 .. 1. Why develop Denote when PACKAGE already exists?
 .. 2. Why not rely exclusively on Org?
 .. 3. Why care about Unix tools when you use Emacs?
@@ -181,9 +182,9 @@ Table of Contents
 .. 10. Speed up backlinks’ or query links’ buffer creation?
 .. 11. Why do I get “Search failed with status 1” when I search for backlinks?
 .. 12. Why do I get a double `#+title' in Doom Emacs?
-27. Acknowledgements
-28. GNU Free Documentation License
-29. Indices
+28. Acknowledgements
+29. GNU Free Documentation License
+30. Indices
 .. 1. Function index
 .. 2. Variable index
 .. 3. Concept index
@@ -277,8 +278,9 @@ Table of Contents
 3.1 Get started with this sample configuration
 ──────────────────────────────────────────────
 
-  If you are new to Denote, this a good place to start. Then work your
-  way through the manual and expand your configuration accordingly. Only
+  If you are new to Denote, this a good configuration to get a feel for
+  some main features ([Getting started with Denote]). Then work your way
+  through the manual and expand your configuration accordingly. Only
   include commands/variables that are useful to you. We provide another
   code sample if you need some ideas ([More comprehensive sample
   configuration]).
@@ -310,6 +312,8 @@ Table of Contents
   │   (denote-rename-buffer-mode 1))
   └────
 
+
+[Getting started with Denote] See section 4
 
 [More comprehensive sample configuration] See section 3.2
 
@@ -390,7 +394,66 @@ Table of Contents
 [Get started with this sample configuration] See section 3.1
 
 
-4 Overview
+4 Getting started with Denote
+═════════════════════════════
+
+  At its core, Denote is a file-naming scheme ([The file-naming
+  scheme]).  It is applies to new text files that Denote creates or to
+  existing files of any type (videos, PDFs, images, …). Here is the big
+  picture view on how to get started with Denote:
+
+  1. Create new text files with `M-x denote' ([Points of entry]).
+  2. Rename any file anywhere with `M-x denote-rename-file'. There are
+     many variations of this command, such as
+     `denote-dired-rename-marked-files' ([Renaming files]).
+  3. Link to another Denote file with `M-x denote-link' ([Add a single
+     direct link using a file name prompt]).
+  4. From any file with a Denote file name, view backlinks with `M-x
+        denote-backlinks' ([The backlinks’ buffer]).
+  5. Instead of linking to a file, create a “link” to a search through
+     file contents with `M-x denote-query-contents-link'. This searches
+     the contents of text files in the `denote-directory'. To only
+     search against file names (not file contents!), use `M-x
+     denote-query-filenames-link' ([Add a query link]).
+  6. To produce a Dired buffer with matching files and preferred
+     sorting, do `M-x denote-dired' ([Display filtered and sorted files
+     with `denote-sort-dired' or `denote-dired']).
+  7. To search directly in the contents of your files, do `M-x
+        denote-grep' ([Use `denote-grep' to search inside files]).
+  8. To use shorter buffer names for Denote files, enable the
+     `denote-rename-buffer-mode' ([Automatically rename Denote file
+     buffers]).
+
+  There are many more features documented in this manual. Also, we have
+  standalone packages that provide support for Org dynamic blocks (part
+  of the `denote-org' package), fully fledged journaling with
+  `denote-journal', writing of “sequence notes” with `denote-sequence',
+  and many more ([Packages that build on Denote])!
+
+
+[The file-naming scheme] See section 8
+
+[Points of entry] See section 6
+
+[Renaming files] See section 7
+
+[Add a single direct link using a file name prompt] See section 10.1
+
+[The backlinks’ buffer] See section 10.11
+
+[Add a query link] See section 10.3
+
+[Display filtered and sorted files with `denote-sort-dired' or
+`denote-dired'] See section 16
+
+[Use `denote-grep' to search inside files] See section 17
+
+[Automatically rename Denote file buffers] See section 14
+
+[Packages that build on Denote] See section 20
+
+
+5 Overview
 ══════════
 
   Denote aims to be a simple-to-use, focused-in-scope, and effective
@@ -478,18 +541,18 @@ Table of Contents
   Obligations, Tasks, and Engagements.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Writing metanotes] See section 9.12
+[Writing metanotes] See section 10.12
 
-[Keep a journal or diary] See section 19.4
+[Keep a journal or diary] See section 20.4
 
 
-5 Points of entry
+6 Points of entry
 ═════════════════
 
   There are seven main ways to write a note with Denote: invoke the
@@ -506,9 +569,9 @@ Table of Contents
   name components]).
 
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
-5.1 Standard note creation
+6.1 Standard note creation
 ──────────────────────────
 
   The `denote' command will prompt for a title.  If a region is active,
@@ -551,19 +614,19 @@ Table of Contents
   the alias `denote-create-note'.
 
 
-[The file naming scheme] See section 7
+[The file naming scheme] See section 8
 
-[Access the data of the latest note] See section 20.1
+[Access the data of the latest note] See section 21.1
 
-[The `denote-kill-buffers' option] See section 5.1.7
+[The `denote-kill-buffers' option] See section 6.1.7
 
-[Front matter] See section 8
+[Front matter] See section 9
 
-[Create a controlled vocabulary for keywords] See section 5.11
+[Create a controlled vocabulary for keywords] See section 6.11
 
-[The denote-prompts option] See section 5.1.2
+[The denote-prompts option] See section 6.1.2
 
-5.1.1 The `denote-directory' option
+6.1.1 The `denote-directory' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ Updated as part of 4.1.0-dev to support a list of directories. The
@@ -599,18 +662,18 @@ Table of Contents
   ([The `denote-prompts' option]).
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
-[Maintain separate directory silos for notes] See section 5.7
+[Maintain separate directory silos for notes] See section 6.7
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
 
-5.1.2 The `denote-prompts' option
+6.1.2 The `denote-prompts' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-prompts' determines how the `denote' command
@@ -709,29 +772,29 @@ Table of Contents
   specifies, based on the supplied arguments.
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Convenience commands for note creation] See section 5.1.5
+[Convenience commands for note creation] See section 6.1.5
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-[The `denote-history-completion-in-prompts' option] See section 5.1.3
+[The `denote-history-completion-in-prompts' option] See section 6.1.3
 
-[The `denote-directory' option] See section 5.1.1
+[The `denote-directory' option] See section 6.1.1
 
-[The denote-date-prompt-use-org-read-date option] See section 5.1.8
+[The denote-date-prompt-use-org-read-date option] See section 6.1.8
 
 [A custom identifier that is a simple string given at the prompt each
-time] See section 7.5.2
+time] See section 8.5.2
 
-[The denote-templates option] See section 5.1.4
+[The denote-templates option] See section 6.1.4
 
-[Write sequence notes or “folgezettel”] See section 19.2
+[Write sequence notes or “folgezettel”] See section 20.2
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-5.1.3 The `denote-history-completion-in-prompts' option
+6.1.3 The `denote-history-completion-in-prompts' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-history-completion-in-prompts' toggles history
@@ -764,7 +827,7 @@ time] See section 7.5.2
     histories between sessions.]
 
 
-5.1.4 The `denote-templates' option
+6.1.4 The `denote-templates' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-templates' is an alist of content templates
@@ -850,12 +913,12 @@ time] See section 7.5.2
   sufficient.  We shall expand the manual accordingly.
 
 
-[The denote-prompts option] See section 5.1.2
+[The denote-prompts option] See section 6.1.2
 
-[Convenience commands for note creation] See section 5.1.5
+[Convenience commands for note creation] See section 6.1.5
 
 
-5.1.5 Convenience commands for note creation
+6.1.5 Convenience commands for note creation
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Sometimes the user needs to create a note that has different
@@ -940,15 +1003,15 @@ time] See section 7.5.2
         more discoverable.
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[The denote-prompts option] See section 5.1.2
+[The denote-prompts option] See section 6.1.2
 
-[The denote-date-prompt-use-org-read-date option] See section 5.1.8
+[The denote-date-prompt-use-org-read-date option] See section 6.1.8
 
-[The denote-templates option] See section 5.1.4
+[The denote-templates option] See section 6.1.4
 
-◊ 5.1.5.1 Write your own convenience commands
+◊ 6.1.5.1 Write your own convenience commands
 
   The convenience commands we provide only cover some basic use-cases
   ([Convenience commands for note creation]). The user may require
@@ -1038,16 +1101,16 @@ time] See section 7.5.2
   └────
 
 
-  [Convenience commands for note creation] See section 5.1.5
+  [Convenience commands for note creation] See section 6.1.5
 
-  [The denote-templates option] See section 5.1.4
+  [The denote-templates option] See section 6.1.4
 
-  [The denote-prompts option] See section 5.1.2
+  [The denote-prompts option] See section 6.1.2
 
-  [Choose which commands to prompt for] See section 10
+  [Choose which commands to prompt for] See section 11
 
 
-5.1.6 The `denote-save-buffers' option
+6.1.6 The `denote-save-buffers' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-save-buffers' controls whether commands that
@@ -1059,14 +1122,14 @@ time] See section 7.5.2
   [The `denote-kill-buffers' option].
 
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-[The `denote-kill-buffers' option] See section 5.1.7
+[The `denote-kill-buffers' option] See section 6.1.7
 
 
-5.1.7 The `denote-kill-buffers' option
+6.1.7 The `denote-kill-buffers' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-kill-buffers' controls whether to kill a
@@ -1099,14 +1162,14 @@ time] See section 7.5.2
   operation it is NOT automatically killed.
 
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-[The `denote-save-buffers' option] See section 5.1.6
+[The `denote-save-buffers' option] See section 6.1.6
 
 
-5.1.8 The `denote-date-prompt-use-org-read-date' option
+6.1.8 The `denote-date-prompt-use-org-read-date' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   By default, Denote uses its own simple prompt for date or date+time
@@ -1119,10 +1182,10 @@ time] See section 7.5.2
   `denote-date-prompt-use-org-read-date' to a non-nil value.
 
 
-[The denote-prompts option] See section 5.1.2
+[The denote-prompts option] See section 6.1.2
 
 
-5.2 Create note using Org capture
+6.2 Create note using Org capture
 ─────────────────────────────────
 
   For integration with `org-capture', the user must first add the
@@ -1186,21 +1249,21 @@ time] See section 7.5.2
   convenience commands]). ]
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
-[Create note with specific values using Org capture] See section 5.4
+[Create note with specific values using Org capture] See section 6.4
 
-[Create note with specific prompts using Org capture] See section 5.3
+[Create note with specific prompts using Org capture] See section 6.3
 
 [Predefined note values for developers or advanced users] See section
-21.2
+22.2
 
-[Write your own convenience commands] See section 5.1.5.1
+[Write your own convenience commands] See section 6.1.5.1
 
 
-5.3 Create note with specific prompts using Org capture
+6.3 Create note with specific prompts using Org capture
 ───────────────────────────────────────────────────────
 
   This section assumes knowledge of how Denote+org-capture work, as
@@ -1286,16 +1349,16 @@ time] See section 7.5.2
   convenience commands]). ]
 
 
-[Create note using Org capture] See section 5.2
+[Create note using Org capture] See section 6.2
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Write your own convenience commands] See section 5.1.5.1
+[Write your own convenience commands] See section 6.1.5.1
 
 
-5.4 Create note with specific values using Org capture
+6.4 Create note with specific values using Org capture
 ──────────────────────────────────────────────────────
 
   The ordinary procedure to create a note with `org-capture' respects
@@ -1361,17 +1424,17 @@ time] See section 7.5.2
   ([Write your own convenience commands]).
 
 
-[Create note using Org capture] See section 5.2
+[Create note using Org capture] See section 6.2
 
-[Create note with specific prompts using Org capture] See section 5.3
+[Create note with specific prompts using Org capture] See section 6.3
 
 [Predefined note values for developers or advanced users] See section
-21.2
+22.2
 
-[Write your own convenience commands] See section 5.1.5.1
+[Write your own convenience commands] See section 6.1.5.1
 
 
-5.5 Create a note with the region’s contents
+6.5 Create a note with the region’s contents
 ────────────────────────────────────────────
 
   The command `denote-region' takes the contents of the active region
@@ -1410,7 +1473,7 @@ time] See section 7.5.2
   if `denote-region' is used without an active region.
 
 
-5.5.1 A custom `denote-region' that references the source
+6.5.1 A custom `denote-region' that references the source
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `denote-region' command simply creates a new note and includes the
@@ -1475,10 +1538,10 @@ time] See section 7.5.2
     called.
 
 
-[Create a note with the region’s contents] See section 5.5
+[Create a note with the region’s contents] See section 6.5
 
 
-5.6 Open an existing note or create it if missing
+6.6 Open an existing note or create it if missing
 ─────────────────────────────────────────────────
 
   Sometimes it is necessary to briefly interrupt the ongoing writing
@@ -1516,14 +1579,14 @@ time] See section 7.5.2
   or creating a new one ([Link to a note or create it if missing]).
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Link to a note or create it if missing] See section 9.10
+[Link to a note or create it if missing] See section 10.10
 
 
-5.7 Maintain separate directory silos for notes
+6.7 Maintain separate directory silos for notes
 ───────────────────────────────────────────────
 
   The user option `denote-directory' accepts a value that represents the
@@ -1641,12 +1704,12 @@ time] See section 7.5.2
   sufficient.  The manual shall be expanded accordingly.
 
 
-[The `denote-directory' option] See section 5.1.1
+[The `denote-directory' option] See section 6.1.1
 
 [The `denote-silo' package which formerly was `denote-silo-extras.el']
-See section 19.5
+See section 20.5
 
-5.7.1 Make Org export work with silos
+6.7.1 Make Org export work with silos
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Org export infrastructure is designed to ignore directory-local
@@ -1705,10 +1768,10 @@ See section 19.5
        keywords of the current file. ]
 
 
-[Maintain separate directory silos for notes] See section 5.7
+[Maintain separate directory silos for notes] See section 6.7
 
 
-5.8 Exclude certain files from file prompts
+6.8 Exclude certain files from file prompts
 ───────────────────────────────────────────
 
   The user option `denote-excluded-files-regexp' is a regular expression
@@ -1726,14 +1789,14 @@ See section 19.5
   [For developers or advanced users].
 
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
-[Open an existing note or create it if missing] See section 5.6
+[Open an existing note or create it if missing] See section 6.6
 
-[For developers or advanced users] See section 21
+[For developers or advanced users] See section 22
 
 
-5.9 Exclude certain directories from all operations
+6.9 Exclude certain directories from all operations
 ───────────────────────────────────────────────────
 
   The user option `denote-excluded-directories-regexp' instructs all
@@ -1756,12 +1819,12 @@ See section 19.5
   [For developers or advanced users].
 
 
-[Maintain separate directory silos for notes] See section 5.7
+[Maintain separate directory silos for notes] See section 6.7
 
-[For developers or advanced users] See section 21
+[For developers or advanced users] See section 22
 
 
-5.10 Exclude certain keywords from being inferred
+6.10 Exclude certain keywords from being inferred
 ─────────────────────────────────────────────────
 
   The user option `denote-excluded-keywords-regexp' omits keywords that
@@ -1774,7 +1837,7 @@ See section 19.5
   The match is performed with `string-match-p'.
 
 
-5.11 Create a controlled vocabulary for keywords
+6.11 Create a controlled vocabulary for keywords
 ────────────────────────────────────────────────
 
   Denote has two ways to know about keywords: the predefined list of
@@ -1800,10 +1863,10 @@ See section 19.5
   └────
 
 
-[Exclude certain keywords from being inferred] See section 5.10
+[Exclude certain keywords from being inferred] See section 6.10
 
 
-5.12 Use Denote commands from the menu bar or context menu
+6.12 Use Denote commands from the menu bar or context menu
 ──────────────────────────────────────────────────────────
 
   Denote registers a submenu for the `menu-bar-mode'.  Users will find
@@ -1826,7 +1889,7 @@ See section 19.5
   └────
 
 
-6 Renaming files
+7 Renaming files
 ════════════════
 
   Denote provides commands to rename files and update their front matter
@@ -1864,20 +1927,20 @@ See section 19.5
   [Find duplicate identifiers and put them in a Dired buffer].
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
-[Access the data of the latest note] See section 20.1
+[Access the data of the latest note] See section 21.1
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
-[Automatically rename Denote buffers] See section 13
+[Automatically rename Denote buffers] See section 14
 
 [Find duplicate identifiers and put them in a Dired buffer] See section
-6.10
+7.10
 
-6.1 Rename a single file
+7.1 Rename a single file
 ────────────────────────
 
   The `denote-rename-file' command renames a file and updates existing
@@ -1995,21 +2058,21 @@ See section 19.5
   interactively]).
 
 
-[Rename multiple files interactively] See section 6.3
+[Rename multiple files interactively] See section 7.3
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
-[The `denote-rename-confirmations' option] See section 6.1.1
+[The `denote-rename-confirmations' option] See section 7.1.1
 
-[Front matter] See section 8
+[Front matter] See section 9
 
-[The `denote-save-buffers' option] See section 5.1.6
+[The `denote-save-buffers' option] See section 6.1.6
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
-[Access the data of the latest note] See section 20.1
+[Access the data of the latest note] See section 21.1
 
-6.1.1 The `denote-rename-confirmations' option
+7.1.1 The `denote-rename-confirmations' option
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The user option `denote-rename-confirmations' controls what kind of
@@ -2041,12 +2104,12 @@ See section 19.5
   ([Rename multiple files interactively])).
 
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-[Rename multiple files interactively] See section 6.3
+[Rename multiple files interactively] See section 7.3
 
 
-6.2 Rename a single file based on its front matter
+7.2 Rename a single file based on its front matter
 ──────────────────────────────────────────────────
 
   In the previous section, we covered the more general mechanism of the
@@ -2109,16 +2172,16 @@ See section 19.5
   name components]).
 
 
-[Rename a single file] See section 6.1
+[Rename a single file] See section 7.1
 
-[Front matter] See section 8
+[Front matter] See section 9
 
-[The `denote-rename-confirmations' option] See section 6.1.1
+[The `denote-rename-confirmations' option] See section 7.1.1
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
 
-6.3 Rename multiple files interactively
+7.3 Rename multiple files interactively
 ───────────────────────────────────────
 
   The command `denote-dired-rename-files' (alias
@@ -2139,14 +2202,14 @@ See section 19.5
   • [Rename multiple files based on their front matter]
 
 
-[Rename a single file] See section 6.1
+[Rename a single file] See section 7.1
 
-[Rename by writing only keywords] See section 6.4
+[Rename by writing only keywords] See section 7.4
 
-[Rename multiple files based on their front matter] See section 6.5
+[Rename multiple files based on their front matter] See section 7.5
 
 
-6.4 Rename multiple files at once by asking only for keywords
+7.4 Rename multiple files at once by asking only for keywords
 ─────────────────────────────────────────────────────────────
 
   The `denote-dired-rename-marked-files-with-keywords' command renames
@@ -2190,10 +2253,10 @@ See section 19.5
   `denote-dired-rename-marked-files-remove-keywords', respectively.
 
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
 
-6.5 Rename multiple files based on their front matter
+7.5 Rename multiple files based on their front matter
 ─────────────────────────────────────────────────────
 
   As already noted, Denote can rename a file based on the data in its
@@ -2211,12 +2274,12 @@ See section 19.5
   interactively]).
 
 
-[Rename a single file based on its front matter] See section 6.2
+[Rename a single file based on its front matter] See section 7.2
 
-[Rename multiple files interactively] See section 6.3
+[Rename multiple files interactively] See section 7.3
 
 
-6.6 Rename a file by changing only its file type
+7.6 Rename a file by changing only its file type
 ────────────────────────────────────────────────
 
   The command `denote-change-file-type-and-front-matter' provides the
@@ -2245,10 +2308,10 @@ See section 19.5
   name components]).
 
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
 
-6.7 Rename a file by adding or removing a title interactively
+7.7 Rename a file by adding or removing a title interactively
 ─────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-title' streamlines the process of
@@ -2280,18 +2343,18 @@ See section 19.5
     bound to `M-RET' as of this writing on 2024-06-30 10:37 +0300. ]
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[The `denote-rename-confirmations' option] See section 6.1.1
+[The `denote-rename-confirmations' option] See section 7.1.1
 
-[The `denote-save-buffers' option] See section 5.1.6
+[The `denote-save-buffers' option] See section 6.1.6
 
-[Rename a single file] See section 6.1
+[Rename a single file] See section 7.1
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-6.8 Rename a file by adding or removing keywords interactively
+7.8 Rename a file by adding or removing keywords interactively
 ──────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-keywords' streamlines the process of
@@ -2326,20 +2389,20 @@ See section 19.5
     bound to `M-RET' as of this writing on 2024-06-30 10:37 +0300. ]
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Rename a single file based on its front matter] See section 6.2
+[Rename a single file based on its front matter] See section 7.2
 
-[The `denote-rename-confirmations' option] See section 6.1.1
+[The `denote-rename-confirmations' option] See section 7.1.1
 
-[The `denote-save-buffers' option] See section 5.1.6
+[The `denote-save-buffers' option] See section 6.1.6
 
-[Rename a single file] See section 6.1
+[Rename a single file] See section 7.1
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-6.9 Rename a file by adding or removing a signature interactively
+7.9 Rename a file by adding or removing a signature interactively
 ─────────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-signature' streamlines the process of
@@ -2371,18 +2434,18 @@ See section 19.5
     bound to `M-RET' as of this writing on 2024-06-30 10:37 +0300. ]
 
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[The `denote-rename-confirmations' option] See section 6.1.1
+[The `denote-rename-confirmations' option] See section 7.1.1
 
-[The `denote-save-buffers' option] See section 5.1.6
+[The `denote-save-buffers' option] See section 6.1.6
 
-[Rename a single file] See section 6.1
+[Rename a single file] See section 7.1
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-6.10 Find duplicate identifiers and put them in a Dired buffer
+7.10 Find duplicate identifiers and put them in a Dired buffer
 ──────────────────────────────────────────────────────────────
 
   Denote takes care to create unique identifiers, though its mechanism
@@ -2433,7 +2496,7 @@ See section 19.5
   counter to increment by 1—contact me if you need any help).
 
 
-6.11 Faces used by rename commands
+7.11 Faces used by rename commands
 ──────────────────────────────────
 
   These are the faces used by the various Denote rename commands to
@@ -2445,7 +2508,7 @@ See section 19.5
   • `denote-faces-prompt-old-name'
 
 
-7 The file-naming scheme
+8 The file-naming scheme
 ════════════════════════
 
   Notes are stored in the `denote-directory'.  The default path is
@@ -2560,22 +2623,22 @@ See section 19.5
   low-tech invention.
 
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Define a completely custom identifier scheme] See section 7.5
+[Define a completely custom identifier scheme] See section 8.5
 
-[Write sequence notes or “folgezettel”] See section 19.2
+[Write sequence notes or “folgezettel”] See section 20.2
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
-[Sluggification of file name components] See section 7.2
+[Sluggification of file name components] See section 8.2
 
 [Features of the file-naming scheme for searching or filtering] See
-section 7.4
+section 8.4
 
-[Change the order of file name components] See section 7.1
+[Change the order of file name components] See section 8.1
 
-7.1 Change the order of file name components
+8.1 Change the order of file name components
 ────────────────────────────────────────────
 
   Our standard file-naming scheme prescribes a specific order for the
@@ -2638,11 +2701,11 @@ section 7.4
   it again. When in doubt, leave the default file-naming scheme as-is.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
-7.1.1 Retroactively reorder the components of Denote file names
+8.1.1 Retroactively reorder the components of Denote file names
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   While experimenting with the `denote-file-name-components-order' to
@@ -2682,10 +2745,10 @@ section 7.4
 
 
 [Display filtered and sorted files with `denote-sort-dired' or
-`denote-dired'] See section 15
+`denote-dired'] See section 16
 
 
-7.2 Sluggification of file name components
+8.2 Sluggification of file name components
 ──────────────────────────────────────────
 
   File names can contain any character that the file system permits.
@@ -2730,15 +2793,15 @@ section 7.4
   ([User-defined sluggification of file name components]).
 
 
-[Front matter] See section 8
+[Front matter] See section 9
 
 [Features of the file-naming scheme for searching or filtering] See
-section 7.4
+section 8.4
 
-[User-defined sluggification of file name components] See section 7.3
+[User-defined sluggification of file name components] See section 8.3
 
 
-7.3 User-defined sluggification of file name components
+8.3 User-defined sluggification of file name components
 ───────────────────────────────────────────────────────
 
   The user option `denote-file-name-slug-functions' controls the
@@ -2831,13 +2894,13 @@ section 7.4
   You have been warned.
 
 
-[Sluggification of file name components] See section 7.2
+[Sluggification of file name components] See section 8.2
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Custom sluggification to remove non-ASCII characters] See section 7.3.1
+[Custom sluggification to remove non-ASCII characters] See section 8.3.1
 
-7.3.1 Custom sluggification to remove non-ASCII characters
+8.3.1 Custom sluggification to remove non-ASCII characters
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   A common use-case for Denote is to rename files such as videos
@@ -2879,10 +2942,10 @@ section 7.4
   └────
 
 
-[User-defined sluggification of file name components] See section 7.3
+[User-defined sluggification of file name components] See section 8.3
 
 
-7.4 Features of the file-naming scheme for searching or filtering
+8.4 Features of the file-naming scheme for searching or filtering
 ─────────────────────────────────────────────────────────────────
 
   By default, file names have three fields and two sets of field
@@ -2926,7 +2989,7 @@ section 7.4
   words at the relevant prompts.
 
 
-7.5 Define a completely custom identifier scheme
+8.5 Define a completely custom identifier scheme
 ────────────────────────────────────────────────
 
   [ The following is possible as part of 4.1.0-dev. ]
@@ -2966,13 +3029,13 @@ section 7.4
   date+time scheme.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-7.5.1 A custom identifier that is a simple incrementing number scheme
+8.5.1 A custom identifier that is a simple incrementing number scheme
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   This is a sample implementation of custom Denote identifiers ([Define
@@ -3058,10 +3121,10 @@ section 7.4
   └────
 
 
-[Define a completely custom identifier scheme] See section 7.5
+[Define a completely custom identifier scheme] See section 8.5
 
 
-7.5.2 A custom identifier that is a simple string given at the prompt each time
+8.5.2 A custom identifier that is a simple string given at the prompt each time
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   This is a sample implementation of custom Denote identifiers ([Define
@@ -3103,12 +3166,12 @@ section 7.4
   └────
 
 
-[Define a completely custom identifier scheme] See section 7.5
+[Define a completely custom identifier scheme] See section 8.5
 
-[The `denote-prompts' option] See section 5.1.2
+[The `denote-prompts' option] See section 6.1.2
 
 
-7.5.3 A custom identifier to include the day of the week as a capital letter
+8.5.3 A custom identifier to include the day of the week as a capital letter
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The default Denote identifier is a compact version of the date and
@@ -3205,7 +3268,7 @@ section 7.4
   └────
 
 
-7.5.4 A custom identifier to encode publisher data
+8.5.4 A custom identifier to encode publisher data
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   This is a sample implementation of custom Denote identifiers ([Define
@@ -3304,10 +3367,10 @@ section 7.4
   └────
 
 
-[Define a completely custom identifier scheme] See section 7.5
+[Define a completely custom identifier scheme] See section 8.5
 
 
-8 Front matter
+9 Front matter
 ══════════════
 
   Notes have their own “front matter”.  This is a block of data at the
@@ -3380,7 +3443,7 @@ section 7.4
   described in the doc string of `format-time-string'..
 
 
-8.1 Change the front matter format
+9.1 Change the front matter format
 ──────────────────────────────────
 
   Per Denote’s design principles, the code is hackable.  All front
@@ -3463,7 +3526,7 @@ section 7.4
   feedback and we shall act accordingly.
 
 
-8.2 Regenerate front matter
+9.2 Regenerate front matter
 ───────────────────────────
 
   As part of version 4.0.0, the command `denote-add-front-matter' is
@@ -3472,11 +3535,11 @@ section 7.4
   modified lines of existing front matter.
 
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
 
-9 Linking notes
-═══════════════
+10 Linking notes
+════════════════
 
   Denote offers several commands for linking between notes. Those use
   the `denote:' hyperlink type. There are two types of links supported
@@ -3510,12 +3573,12 @@ section 7.4
   opening outside Emacs?]).
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Why are some Org links opening outside Emacs?] See section 26.9
+[Why are some Org links opening outside Emacs?] See section 27.9
 
-9.1 Add a single direct link using a file name prompt
-─────────────────────────────────────────────────────
+10.1 Add a single direct link using a file name prompt
+──────────────────────────────────────────────────────
 
   The `denote-link' command (alias `denote-insert-link') inserts a link
   at point to a file selected at the minibuffer prompt. Links are
@@ -3560,18 +3623,18 @@ section 7.4
     we cannot generalise this. ]
 
 
-[Fontify links in non-Org buffers] See section 9.14
+[Fontify links in non-Org buffers] See section 10.14
 
-[Insert links matching a regexp in their file name] See section 9.4
+[Insert links matching a regexp in their file name] See section 10.4
 
 [Adding a direct link to a file whose contents include the given query]
-See section 9.2
+See section 10.2
 
-[The `denote-org-store-link-to-heading' user option] See section 9.7
+[The `denote-org-store-link-to-heading' user option] See section 10.7
 
 
-9.2 Add a direct link to a file whose contents include the given query
-──────────────────────────────────────────────────────────────────────
+10.2 Add a direct link to a file whose contents include the given query
+───────────────────────────────────────────────────────────────────────
 
   The `denote-link' command that we covered before prompts to select a
   file among those in the `denote-directory' ([Adding a single direct
@@ -3593,14 +3656,14 @@ See section 9.2
   matching a query in their contents]).
 
 
-[Adding a single direct link using a file name prompt] See section 9.1
+[Adding a single direct link using a file name prompt] See section 10.1
 
 [Insert links to all files matching a query in their contents] See
-section 9.5
+section 10.5
 
 
-9.3 Add a query link
-────────────────────
+10.3 Add a query link
+─────────────────────
 
   As noted in the introduction to this section of the manual, the
   `denote:' hyperlink type supports query links ([Linking
@@ -3641,18 +3704,18 @@ section 9.5
   the active theme).
 
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
-[Interact with the links buffer] See section 17
+[Interact with the links buffer] See section 18
 
-[Speed up backlinks’ or query links’ buffer creation?] See section 26.10
+[Speed up backlinks’ or query links’ buffer creation?] See section 27.10
 
 [Display filtered and sorted files with `denote-sort-dired'] See section
-15
+16
 
 
-9.4 Insert links to all files matching a query in their file name
-─────────────────────────────────────────────────────────────────
+10.4 Insert links to all files matching a query in their file name
+──────────────────────────────────────────────────────────────────
 
   The command `denote-add-links' adds links at point to all file names
   in the `denote-directory' that match a regular expression or plain
@@ -3714,13 +3777,13 @@ section 9.5
   purposes ([Linking notes]).
 
 
-[Adding a single direct link] See section 9.1
+[Adding a single direct link] See section 10.1
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
 
-9.5 Insert links to all files matching a query in their contents
-────────────────────────────────────────────────────────────────
+10.5 Insert links to all files matching a query in their contents
+─────────────────────────────────────────────────────────────────
 
   The aforementioned `denote-add-links' command takes a query that
   matches it against file names ([Insert links to all files matching a
@@ -3736,14 +3799,14 @@ section 9.5
 
 
 [Insert links to all files matching a query in their file name] See
-section 9.4
+section 10.4
 
 [Add a direct link to a file whose contents include the given query] See
-section 9.2
+section 10.2
 
 
-9.6 The `denote-open-link-function' user option
-───────────────────────────────────────────────
+10.6 The `denote-open-link-function' user option
+────────────────────────────────────────────────
 
   The user option `denote-open-link-function' specifies the function
   used by Denote to open the file of a link. The default value opens the
@@ -3756,8 +3819,8 @@ section 9.2
   the command `org-open-at-point').
 
 
-9.7 The `denote-org-store-link-to-heading' user option
-──────────────────────────────────────────────────────
+10.7 The `denote-org-store-link-to-heading' user option
+───────────────────────────────────────────────────────
 
   The user option `denote-org-store-link-to-heading' determines whether
   `org-store-link' links to the current Org heading.
@@ -3828,12 +3891,12 @@ section 9.2
     the file, even if this user option is set to a non-nil value. ]
 
 
-9.8 Adding direct links to files matching contents
-──────────────────────────────────────────────────
+10.8 Adding direct links to files matching contents
+───────────────────────────────────────────────────
 
 
-9.9 Insert links from marked files in Dired
-───────────────────────────────────────────
+10.9 Insert links from marked files in Dired
+────────────────────────────────────────────
 
   The command `denote-link-dired-marked-notes' is similar to
   `denote-add-links' in that it inserts in the buffer a typographic list
@@ -3862,15 +3925,15 @@ section 9.2
   `denote-link-dired-marked-notes'.
 
 
-[Insert links matching a regexp] See section 9.4
+[Insert links matching a regexp] See section 10.4
 
-[Adding a single link] See section 9.1
+[Adding a single link] See section 10.1
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
 
-9.10 Link to an existing note or create a new one
-─────────────────────────────────────────────────
+10.10 Link to an existing note or create a new one
+──────────────────────────────────────────────────
 
   In one’s note-taking workflow, there may come a point where they are
   expounding on a certain topic but have an idea about another subject
@@ -3945,21 +4008,21 @@ section 9.2
   creating a new one ([Open an existing note or create it if missing]).
 
 
-[Linking notes] See section 9
+[Linking notes] See section 10
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Adding a single link] See section 9.1
+[Adding a single link] See section 10.1
 
-[The `denote-save-buffer-after-creation' option] See section 5.1.6
+[The `denote-save-buffer-after-creation' option] See section 6.1.6
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Open an existing note or create it if missing] See section 5.6
+[Open an existing note or create it if missing] See section 6.6
 
 
-9.11 The backlinks’ buffer
-──────────────────────────
+10.11 The backlinks’ buffer
+───────────────────────────
 
   [ Older versions of Denote had two types of formatting for the
     backlinks’ buffer. As part of version `4.0.0', we only support the
@@ -4015,20 +4078,20 @@ section 9.2
   `denote-find-backlink-with-location' is part of 4.1.0-dev. ]
 
 
-[Interact with the links buffer] See section 17
+[Interact with the links buffer] See section 18
 
-[Speed up backlinks’ buffer creation?] See section 26.10
+[Speed up backlinks’ buffer creation?] See section 27.10
 
-[Adding a query link] See section 9.3
+[Adding a query link] See section 10.3
 
 [Why do I get “Search failed with status 1” when I search for
-backlinks?] See section 26.11
+backlinks?] See section 27.11
 
-[Visiting linked files via the minibuffer] See section 9.13
+[Visiting linked files via the minibuffer] See section 10.13
 
 
-9.12 Writing metanotes
-──────────────────────
+10.12 Writing metanotes
+───────────────────────
 
   A “metanote” is an entry that describes other entries who have
   something in common.  Writing metanotes can be part of a workflow
@@ -4062,13 +4125,13 @@ backlinks?] See section 26.11
   the knowledge derived from the deliberate self-reflection.
 
 
-[Insert links matching a regexp] See section 9.4
+[Insert links matching a regexp] See section 10.4
 
-[Insert links from marked files in Dired] See section 9.9
+[Insert links from marked files in Dired] See section 10.9
 
 
-9.13 Visiting linked files via the minibuffer
-─────────────────────────────────────────────
+10.13 Visiting linked files via the minibuffer
+──────────────────────────────────────────────
 
   Denote has a major-mode-agnostic mechanism to collect all linked file
   references in the current buffer and return them as an appropriately
@@ -4101,13 +4164,13 @@ backlinks?] See section 26.11
   `denote-find-backlink-with-location' is part of 4.1.0-dev. ]
 
 
-[Extending Denote] See section 20
+[Extending Denote] See section 21
 
-[The backlinks’ buffer] See section 9.11
+[The backlinks’ buffer] See section 10.11
 
 
-9.14 Fontify links in non-Org buffers
-─────────────────────────────────────
+10.14 Fontify links in non-Org buffers
+──────────────────────────────────────
 
   Denote links are automatically fontified in Org buffers ([Adding a
   single link]).  This means that Org recognises the link and applies
@@ -4142,11 +4205,11 @@ backlinks?] See section 26.11
   function `denote-link-markdown-follow' for the implementation details.
 
 
-[Adding a single link] See section 9.1
+[Adding a single link] See section 10.1
 
 
-9.15 The `denote-link-description-format' to format link descriptions
-─────────────────────────────────────────────────────────────────────
+10.15 The `denote-link-description-format' to format link descriptions
+──────────────────────────────────────────────────────────────────────
 
   The user option `denote-link-description-format' controls how the
   command `denote-link' and related functions create a link description
@@ -4205,7 +4268,7 @@ backlinks?] See section 26.11
   If the region is active, its text is used as the link’s description.
 
 
-10 Choose which commands to prompt for
+11 Choose which commands to prompt for
 ══════════════════════════════════════
 
   The user option `denote-commands-for-new-notes' specifies a list of
@@ -4222,16 +4285,16 @@ backlinks?] See section 26.11
   command in the list ([Write your own convenience commands]).
 
 
-[Open an existing note or create it if missing] See section 5.6
+[Open an existing note or create it if missing] See section 6.6
 
-[Link to a note or create it if missing] See section 9.10
+[Link to a note or create it if missing] See section 10.10
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Write your own convenience commands] See section 5.1.5.1
+[Write your own convenience commands] See section 6.1.5.1
 
 
-11 Fontification in Dired
+12 Fontification in Dired
 ═════════════════════════
 
   One of the upsides of Denote’s file-naming scheme is the predictable
@@ -4300,10 +4363,10 @@ backlinks?] See section 26.11
   and are using its standand attachments’ facility).
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-12 Set the prefix of all Denote buffers
+13 Set the prefix of all Denote buffers
 ═══════════════════════════════════════
 
   [ This is part of 4.1.0-dev. ]
@@ -4325,19 +4388,19 @@ backlinks?] See section 26.11
   even an empty string to not have any such prefix.
 
 
-[Add a query link] See section 9.3
+[Add a query link] See section 10.3
 
-[The backlinks’ buffer] See section 9.11
+[The backlinks’ buffer] See section 10.11
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
 [Display filtered and sorted files with `denote-sort-dired' or
-`denote-dired'] See section 15
+`denote-dired'] See section 16
 
-[Automatically rename Denote file buffers] See section 13
+[Automatically rename Denote file buffers] See section 14
 
 
-13 Automatically rename Denote file buffers
+14 Automatically rename Denote file buffers
 ═══════════════════════════════════════════
 
   The minor mode `denote-rename-buffer-mode' provides the means to
@@ -4365,15 +4428,15 @@ backlinks?] See section 26.11
   available to all programs.
 
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Set the prefix of all Denote buffers] See section 12
+[Set the prefix of all Denote buffers] See section 13
 
-[The denote-rename-buffer-format] See section 13.1
+[The denote-rename-buffer-format] See section 14.1
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
-13.1 The `denote-rename-buffer-format' option
+14.1 The `denote-rename-buffer-format' option
 ─────────────────────────────────────────────
 
   The user option `denote-rename-buffer-format' controls how the
@@ -4433,14 +4496,14 @@ backlinks?] See section 26.11
   own function and assigning it to the `denote-rename-buffer-function'.
 
 
-[Automatically rename Denote file buffers] See section 13
+[Automatically rename Denote file buffers] See section 14
 
-[Set the prefix of all Denote buffers] See section 12
+[Set the prefix of all Denote buffers] See section 13
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-14 Use Org dynamic blocks
+15 Use Org dynamic blocks
 ═════════════════════════
 
   This section is about the external package `denote-org' (by
@@ -4463,10 +4526,10 @@ backlinks?] See section 26.11
   ⁃ Backronym: Denote… Ordinarily Restricts Gyrations.
 
 
-[Writing metanotes] See section 9.12
+[Writing metanotes] See section 10.12
 
 
-15 Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
+16 Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
 ═══════════════════════════════════════════════════════════════════════════════
 
   The `denote.el' file contains functions which empower user or
@@ -4508,18 +4571,18 @@ backlinks?] See section 26.11
   means of the non-interactive function `denote-sort-files'.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Define a sorting function per component] See section 15.2
+[Define a sorting function per component] See section 16.2
 
 [Configure what extra prompts `denote-sort-dired' issues] See section
-15.1
+16.1
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
-[Use `dired-virtual-mode' for arbitrary file listings] See section 20.6
+[Use `dired-virtual-mode' for arbitrary file listings] See section 21.6
 
-15.1 Configure what extra prompts `denote-sort-dired' issues
+16.1 Configure what extra prompts `denote-sort-dired' issues
 ────────────────────────────────────────────────────────────
 
   By default, the `denote-sort-dired' command prompts for (i) a query to
@@ -4569,10 +4632,10 @@ backlinks?] See section 26.11
 
 
 [Display filtered and sorted files with denote-sort-dired] See section
-15
+16
 
 
-15.2 Define a sorting function per component
+16.2 Define a sorting function per component
 ────────────────────────────────────────────
 
   [ The `random' and `last-modified' sort are part of 4.1.0-dev. ]
@@ -4605,12 +4668,12 @@ backlinks?] See section 26.11
 
 
 [Configure what extra prompts `denote-sort-dired' issues] See section
-15.1
+16.1
 
 [Sort signatures that include Luhmann-style sequences] See section
-15.2.1
+16.2.1
 
-15.2.1 Sort signatures that include Luhmann-style sequences
+16.2.1 Sort signatures that include Luhmann-style sequences
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ The `denote-sequence' package (by Protesilaos) covers this use-case
@@ -4665,14 +4728,14 @@ backlinks?] See section 26.11
   └────
 
 
-[Write sequence notes or folgezettel] See section 19.2
+[Write sequence notes or folgezettel] See section 20.2
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Define a sorting function per component] See section 15.2
+[Define a sorting function per component] See section 16.2
 
 
-16 Use `denote-grep' to search inside files
+17 Use `denote-grep' to search inside files
 ═══════════════════════════════════════════
 
   The command `denote-grep' searches for the given query across all
@@ -4705,17 +4768,17 @@ backlinks?] See section 26.11
   from.
 
 
-[Interact with the links buffer] See section 17
+[Interact with the links buffer] See section 18
 
 [Display filtered and sorted files with `denote-sort-dired'] See section
-15
+16
 
-[Add a single direct link using a file name prompt] See section 9.1
+[Add a single direct link using a file name prompt] See section 10.1
 
-[Use Org dynamic blocks] See section 14
+[Use Org dynamic blocks] See section 15
 
 
-17 Interact with the links buffer
+18 Interact with the links buffer
 ═════════════════════════════════
 
   Denote commands, such as `denote-grep', `denote-backlinks', and
@@ -4779,20 +4842,20 @@ backlinks?] See section 26.11
   they can perform.
 
 
-[Speed up backlinks’ or query links’ buffer creation?] See section 26.10
+[Speed up backlinks’ or query links’ buffer creation?] See section 27.10
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
-[The backlinks’ buffer] See section 9.11
+[The backlinks’ buffer] See section 10.11
 
-[Add a query link] See section 9.3
+[Add a query link] See section 10.3
 
-[Control the default sort of a query buffer] See section 17.1
+[Control the default sort of a query buffer] See section 18.1
 
 [Features of the file-naming scheme for searching or filtering] See
-section 7.4
+section 8.4
 
-17.1 Control the default sort of a query buffer
+18.1 Control the default sort of a query buffer
 ───────────────────────────────────────────────
 
   [ Part of 4.1.0-dev. ]
@@ -4827,18 +4890,18 @@ section 7.4
   `denote-query-sort-last-search' ([Interact with the links buffer]).
 
 
-[Add a query link] See section 9.3
+[Add a query link] See section 10.3
 
-[The backlinks’ buffer] See section 9.11
+[The backlinks’ buffer] See section 10.11
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Interact with the links buffer] See section 17
+[Interact with the links buffer] See section 18
 
 
-18 Minibuffer histories
+19 Minibuffer histories
 ═══════════════════════
 
   Denote has a dedicated minibuffer history for each one of its prompts.
@@ -4860,7 +4923,7 @@ section 7.4
   └────
 
 
-19 Packages that build on Denote
+20 Packages that build on Denote
 ════════════════════════════════
 
   This is a list of packages that extend Denote. If you are a package
@@ -4868,7 +4931,7 @@ section 7.4
   (either use the Git repositories or email Protesilaos directly).
 
 
-19.1 Use the `consult-denote' package for enhanced minibuffer interactions
+20.1 Use the `consult-denote' package for enhanced minibuffer interactions
 ──────────────────────────────────────────────────────────────────────────
 
   The `consult-denote' package by me (Protesilaos) integrates Denote
@@ -4892,10 +4955,10 @@ section 7.4
   `consult-notes' package]).  It also only works with Denote.
 
 
-[Use the `consult-notes' package] See section 19.9
+[Use the `consult-notes' package] See section 20.9
 
 
-19.2 Use the `denote-sequence' package to write sequence notes or "folgezettel"
+20.2 Use the `denote-sequence' package to write sequence notes or "folgezettel"
 ───────────────────────────────────────────────────────────────────────────────
 
   This section is about the external package `denote-sequence' (by
@@ -4927,10 +4990,10 @@ section 7.4
     Notwithstanding Curation Efforts.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-19.3 Use the `denote-markdown' package to better integrate Markdown with Denote
+20.3 Use the `denote-markdown' package to better integrate Markdown with Denote
 ───────────────────────────────────────────────────────────────────────────────
 
   The `denote-markdown' package (by Protesilaos) provides some
@@ -4954,7 +5017,7 @@ section 7.4
     Knowhow to Do Only What’s Necessary.
 
 
-19.4 Use the `denote-journal' package which was formerly `denote-journal-extras.el'
+20.4 Use the `denote-journal' package which was formerly `denote-journal-extras.el'
 ───────────────────────────────────────────────────────────────────────────────────
 
   The `denote-journal' package (by Protesilaos) makes it easier to use
@@ -4976,7 +5039,7 @@ section 7.4
     Notwithstanding Affectionate Longing.
 
 
-19.5 Use the `denote-silo' package which formerly was `denote-silo-extras.el'
+20.5 Use the `denote-silo' package which formerly was `denote-silo-extras.el'
 ─────────────────────────────────────────────────────────────────────────────
 
   The `denote-silo' package (by Protesilaos) provides convenience
@@ -4996,10 +5059,10 @@ section 7.4
   ⁃ Backronym: Denote… Silos Insulate Localised Objects.
 
 
-[Maintain separate directory silos for notes] See section 5.7
+[Maintain separate directory silos for notes] See section 6.7
 
 
-19.6 Use the `denote-search' package as a search interface
+20.6 Use the `denote-search' package as a search interface
 ──────────────────────────────────────────────────────────
 
   [ As part of version `4.0.0', Denote comes with the `denote-grep'
@@ -5021,10 +5084,10 @@ section 7.4
   dependencies other than Denote itself.
 
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
 
-19.7 Use the `denote-explore' package to explore your notes
+20.7 Use the `denote-explore' package to explore your notes
 ───────────────────────────────────────────────────────────
 
   Peter Prevos has developed the `denote-explore' package which provides
@@ -5043,7 +5106,7 @@ section 7.4
   <https://lucidmanager.org/productivity/denote-explore/>.
 
 
-19.8 Use the `citar-denote' package for bibliography notes
+20.8 Use the `citar-denote' package for bibliography notes
 ──────────────────────────────────────────────────────────
 
   Peter Prevos has produced the `citar-denote' package which makes it
@@ -5060,7 +5123,7 @@ section 7.4
   <https://lucidmanager.org/productivity/bibliographic-notes-in-emacs-with-citar-denote/>.
 
 
-19.9 Use the `consult-notes' package
+20.9 Use the `consult-notes' package
 ────────────────────────────────────
 
   [ Also check the `consult-denote' package by me (Protesilaos): [Use
@@ -5099,13 +5162,13 @@ section 7.4
 
 
 [Use the `consult-denote' package for enhanced minibuffer interactions]
-See section 19.1
+See section 20.1
 
 [Features of the file-naming scheme for searching or filtering] See
-section 7.4
+section 8.4
 
 
-19.10 Use the `denote-menu' package
+20.10 Use the `denote-menu' package
 ───────────────────────────────────
 
   Denote’s file-naming scheme is designed to be efficient and to provide
@@ -5126,7 +5189,7 @@ section 7.4
 <https://github.com/namilus/denote-menu>
 
 
-19.11 Use the `denote-zettel-interface' package
+20.11 Use the `denote-zettel-interface' package
 ───────────────────────────────────────────────
 
   The [`denote-zettel-interface' package by Kristoffer Balintona] is
@@ -5145,10 +5208,10 @@ section 7.4
 [`denote-zettel-interface' package by Kristoffer Balintona]
 <https://github.com/krisbalintona/denote-zettel-interface>
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-20 Extending Denote
+21 Extending Denote
 ═══════════════════
 
   Denote is a tool with a narrow scope: create notes and link between
@@ -5158,9 +5221,9 @@ section 7.4
   Denote]). This section covers the details.
 
 
-[Packages that build on Denote] See section 19
+[Packages that build on Denote] See section 20
 
-20.1 Access the data of the latest note
+21.1 Access the data of the latest note
 ───────────────────────────────────────
 
   The variable `denote-current-data' is updated each time a new note is
@@ -5176,7 +5239,7 @@ section 7.4
   `denote-after-rename-file-hook'.
 
 
-20.2 Create a new note in any directory
+21.2 Create a new note in any directory
 ───────────────────────────────────────
 
   The commands that create new files are designed to write to the
@@ -5200,7 +5263,7 @@ section 7.4
   └────
 
 
-20.3 Find empty notes and put them in a Dired buffer
+21.3 Find empty notes and put them in a Dired buffer
 ────────────────────────────────────────────────────
 
   [ This feature is based on the command `denote-sort-dired' ([Sort
@@ -5302,12 +5365,12 @@ section 7.4
     easier for users to pick the ones they need. ]
 
 
-[Sort files by component] See section 15
+[Sort files by component] See section 16
 
-[Link to an existing note or create a new one] See section 9.10
+[Link to an existing note or create a new one] See section 10.10
 
 
-20.4 Automatically rename the note after saving it
+21.4 Automatically rename the note after saving it
 ──────────────────────────────────────────────────
 
   While experimenting with Denote, users may need to try different
@@ -5332,7 +5395,7 @@ section 7.4
   └────
 
 
-20.5 Narrow the list of files in Dired
+21.5 Narrow the list of files in Dired
 ──────────────────────────────────────
 
   Emacs’ standard file manager (or directory editor) can read a regular
@@ -5391,10 +5454,10 @@ section 7.4
 
 
 [Features of the file-naming scheme for searching or filtering] See
-section 7.4
+section 8.4
 
 
-20.6 Use `dired-virtual-mode' for arbitrary file listings
+21.6 Use `dired-virtual-mode' for arbitrary file listings
 ─────────────────────────────────────────────────────────
 
   Emacs’ Dired is a powerful file manager that builds its functionality
@@ -5491,12 +5554,12 @@ section 7.4
 
 
 [I want to sort by last modified, why won’t Denote let me?] See section
-26.7
+27.7
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-20.7 Use Embark to collect minibuffer candidates
+21.7 Use Embark to collect minibuffer candidates
 ────────────────────────────────────────────────
 
   `embark' is a remarkable package that lets you perform relevant,
@@ -5520,10 +5583,10 @@ section 7.4
   power of the minibuffer ([Narrow the list of files in Dired]).
 
 
-[Narrow the list of files in Dired] See section 20.5
+[Narrow the list of files in Dired] See section 21.5
 
 
-20.8 Search file contents
+21.8 Search file contents
 ─────────────────────────
 
   [ This is not needed given that we provide the `denote-grep' command
@@ -5567,10 +5630,10 @@ section 7.4
   use than the built-in commands.
 
 
-[Use `denote-grep' to search inside files] See section 16
+[Use `denote-grep' to search inside files] See section 17
 
 
-20.9 Bookmark the directory with the notes
+21.9 Bookmark the directory with the notes
 ──────────────────────────────────────────
 
   Part of the reason Denote does not reinvent existing functionality is
@@ -5595,7 +5658,7 @@ section 7.4
   extras for working with directories, including bookmarks.
 
 
-20.10 Treat your notes as a project
+21.10 Treat your notes as a project
 ───────────────────────────────────
 
   Emacs has a built-in library for treating a directory tree as a
@@ -5628,7 +5691,7 @@ section 7.4
   Git).
 
 
-20.11 Use the tree-based file prompt for select commands
+21.11 Use the tree-based file prompt for select commands
 ────────────────────────────────────────────────────────
 
   Older versions of Denote had a file prompt that resembled that of the
@@ -5667,7 +5730,7 @@ section 7.4
   └────
 
 
-20.12 Rename files with Denote in the Image Dired thumbnails buffer
+21.12 Rename files with Denote in the Image Dired thumbnails buffer
 ───────────────────────────────────────────────────────────────────
 
   [Rename files with Denote using `dired-preview']
@@ -5732,12 +5795,12 @@ section 7.4
   └────
 
 
-[Rename files with Denote using `dired-preview'] See section 20.13
+[Rename files with Denote using `dired-preview'] See section 21.13
 
-[Rename multiple files at once] See section 6.3
+[Rename multiple files at once] See section 7.3
 
 
-20.13 Rename files with Denote using `dired-preview'
+21.13 Rename files with Denote using `dired-preview'
 ────────────────────────────────────────────────────
 
   The `dired-preview' package (by me/Protesilaos) automatically displays
@@ -5788,13 +5851,13 @@ section 7.4
   └────
 
 
-[Rename multiple files at once] See section 6.3
+[Rename multiple files at once] See section 7.3
 
 [Rename files with Denote in the Image Dired thumbnails buffer] See
-section 20.12
+section 21.12
 
 
-20.14 Avoid duplicate identifiers when exporting Denote notes
+21.14 Avoid duplicate identifiers when exporting Denote notes
 ─────────────────────────────────────────────────────────────
 
   When exporting Denote notes to, for example, an HTML or PDF file,
@@ -5813,9 +5876,9 @@ section 20.12
   basis: [Convenience commands for note creation]).
 
 
-[Convenience commands for note creation] See section 5.1.5
+[Convenience commands for note creation] See section 6.1.5
 
-20.14.1 Export Denote notes with Org Mode
+21.14.1 Export Denote notes with Org Mode
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Org Mode has a built-in configurable export engine.  You can prevent
@@ -5827,7 +5890,7 @@ section 20.12
   required pre-processing step for export purposes.
 
 
-◊ 20.14.1.1 Manually configure Org export
+◊ 21.14.1.1 Manually configure Org export
 
   Insert `#+export_file_name: FILENAME' in the front matter before
   exporting to force a filename called whatever the value of `FILENAME'
@@ -5844,10 +5907,10 @@ section 20.12
   this section ([Export Denote notes]).
 
 
-  [Export Denote notes] See section 20.14
+  [Export Denote notes] See section 21.14
 
 
-◊ 20.14.1.2 Automatically store Org exports in another folder
+◊ 21.14.1.2 Automatically store Org exports in another folder
 
   It is possible to automatically place all exports in another folder by
   making Org’s function `org-export-output-file-name' create the target
@@ -5902,10 +5965,10 @@ section 20.12
   <https://emacs.stackexchange.com/questions/45751/org-export-to-different-directory>.
 
 
-  [Exclude certain directories from all operations] See section 5.9
+  [Exclude certain directories from all operations] See section 6.9
 
 
-◊ 20.14.1.3 Org Mode Publishing
+◊ 21.14.1.3 Org Mode Publishing
 
   Org Mode also has a publishing tool for exporting a collection of
   files. Some user might apply this approach to convert their note
@@ -5920,10 +5983,10 @@ section 20.12
   ([Exclude certain directories from all operations]).
 
 
-  [Exclude certain directories from all operations] See section 5.9
+  [Exclude certain directories from all operations] See section 6.9
 
 
-20.14.2 Export Denote notes with Markdown
+21.14.2 Export Denote notes with Markdown
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Exporting from Markdown requires an external processor (e.g.,
@@ -5939,7 +6002,7 @@ section 20.12
   of duplicate Denote identifiers.
 
 
-20.15 Set up your workflow for daily or weekly meeting notes
+21.15 Set up your workflow for daily or weekly meeting notes
 ────────────────────────────────────────────────────────────
 
   Perhaps as part of work, we meet with certain people on a regular
@@ -6016,14 +6079,14 @@ section 20.12
   └────
 
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
-[Sort files by component] See section 15
+[Sort files by component] See section 16
 
-[Use Org dynamic blocks] See section 14
+[Use Org dynamic blocks] See section 15
 
 
-21 For developers or advanced users
+22 For developers or advanced users
 ═══════════════════════════════════
 
   Denote is in a stable state and can be relied upon as the basis for
@@ -6046,9 +6109,9 @@ section 20.12
   The following sections cover the specifics.
 
 
-[Packages that build on Denote] See section 19
+[Packages that build on Denote] See section 20
 
-21.1 Common building blocks for developers or advanced users
+22.1 Common building blocks for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   Variable `denote-date-identifier-format'
@@ -6205,14 +6268,14 @@ section 20.12
         `YYYY-MM-DD'. [ Made public as part of 4.1.0-dev. ]
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
-[Standard note creation] See section 5.1
+[Standard note creation] See section 6.1
 
-[Maintain separate directories for notes] See section 5.7
+[Maintain separate directories for notes] See section 6.7
 
 
-21.2 Predefined note values for developers or advanced users
+22.2 Predefined note values for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   In custom code, it is possible to override what the `denote' command
@@ -6269,7 +6332,7 @@ section 20.12
         skipped.
 
 
-21.3 File path interface for developers or advanced users
+22.3 File path interface for developers or advanced users
 ─────────────────────────────────────────────────────────
 
   Function `denote-file-name-relative-to-denote-directory'
@@ -6338,12 +6401,12 @@ section 20.12
         which case it is not added to the base file name.
 
 
-[Custom sluggification to remove non-ASCII characters] See section 7.3.1
+[Custom sluggification to remove non-ASCII characters] See section 8.3.1
 
-[Sluggification of file name components] See section 7.2
+[Sluggification of file name components] See section 8.2
 
 
-21.4 Data retrieval interface for developers or advanced users
+22.4 Data retrieval interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Variable `denote-get-identifier-function'
@@ -6411,10 +6474,10 @@ section 20.12
         Return keywords line from `FILE' front matter per `FILE-TYPE'.
 
 
-[The file-naming scheme] See section 7
+[The file-naming scheme] See section 8
 
 
-21.5 Prompt interface for developers or advanced users
+22.5 Prompt interface for developers or advanced users
 ──────────────────────────────────────────────────────
 
   Function `denote-add-prompts'
@@ -6517,14 +6580,14 @@ section 20.12
         packages such as `marginalia' and `embark').
 
 
-[The `denote-history-completion-in-prompts' option] See section 5.1.3
+[The `denote-history-completion-in-prompts' option] See section 6.1.3
 
-[The denote-date-prompt-use-org-read-date option] See section 5.1.8
+[The denote-date-prompt-use-org-read-date option] See section 6.1.8
 
-[Points of entry] See section 5
+[Points of entry] See section 6
 
 
-21.6 Front matter interface for developers or advanced users
+22.6 Front matter interface for developers or advanced users
 ────────────────────────────────────────────────────────────
 
   Function `denote-filetype-heuristics'
@@ -6666,10 +6729,10 @@ section 20.12
         for new note creation.  The default is `org'.
 
 
-[Change the front matter format] See section 8.1
+[Change the front matter format] See section 9.1
 
 
-21.7 Link interface for developers or advanced users
+22.7 Link interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   Variable `denote-org-link-format'
@@ -6734,7 +6797,7 @@ section 20.12
         returned as the description.
 
 
-21.8 Xref interface for developers or advanced users
+22.8 Xref interface for developers or advanced users
 ────────────────────────────────────────────────────
 
   Function `denote-retrieve-groups-xref-query'
@@ -6752,7 +6815,7 @@ section 20.12
         times limit the search to text files.
 
 
-21.9 Renaming files interface for developers or advanced users
+22.9 Renaming files interface for developers or advanced users
 ──────────────────────────────────────────────────────────────
 
   Variable `denote-rename-rewrite-front-matter'
@@ -6809,10 +6872,10 @@ section 20.12
         ([Maintain separate directories for notes]).
 
 
-[Maintain separate directories for notes] See section 5.7
+[Maintain separate directories for notes] See section 6.7
 
 
-22 Troubleshoot Denote in a pristine environment
+23 Troubleshoot Denote in a pristine environment
 ════════════════════════════════════════════════
 
   Sometimes we get reports on bugs that may not be actually caused by
@@ -6857,7 +6920,7 @@ section 20.12
   us get a better sense of the specifics.
 
 
-23 Contributing
+24 Contributing
 ═══════════════
 
   Denote is a GNU ELPA package. As such, any significant change to the
@@ -6937,9 +7000,9 @@ section 20.12
   └────
 
 
-[Acknowledgements] See section 27
+[Acknowledgements] See section 28
 
-23.1 Wishlist of what we can do to extend Denote
+24.1 Wishlist of what we can do to extend Denote
 ────────────────────────────────────────────────
 
   These are various ideas to extend Denote. Whether they should be in
@@ -6976,7 +7039,7 @@ section 20.12
   list.
 
 
-24 Publications about Denote
+25 Publications about Denote
 ════════════════════════════
 
   The Emacs community is putting Denote to great use.  This section
@@ -7031,10 +7094,10 @@ section 20.12
     <https://github.com/summeremacs/howiuseemacs/blob/main/full-explanation-of-how-i-use-emacs.org>
 
 
-[Contributing] See section 23
+[Contributing] See section 24
 
 
-25 Alternatives to Denote
+26 Alternatives to Denote
 ═════════════════════════
 
   What follows is a list of Emacs packages for note-taking.  I
@@ -7122,7 +7185,7 @@ section 20.12
 
 [zetteldeft] <https://github.com/EFLS/zetteldeft>
 
-25.1 Alternative implementations and further reading
+26.1 Alternative implementations and further reading
 ────────────────────────────────────────────────────
 
   This section covers blog posts and implementations from the Emacs
@@ -7151,7 +7214,7 @@ section 20.12
   [ Development note: help expand this list. ]
 
 
-[Alternatives to Denote] See section 25
+[Alternatives to Denote] See section 26
 
 [date2name] <https://github.com/novoid/date2name>
 
@@ -7168,7 +7231,7 @@ section 20.12
 [memacs] <https://github.com/novoid/memacs>
 
 
-26 Frequently Asked Questions
+27 Frequently Asked Questions
 ═════════════════════════════
 
   I (Protesilaos) answer some questions I have received or might get.
@@ -7176,7 +7239,7 @@ section 20.12
   go into the specifics of how Denote works.
 
 
-26.1 Why develop Denote when PACKAGE already exists?
+27.1 Why develop Denote when PACKAGE already exists?
 ────────────────────────────────────────────────────
 
   I wrote Denote because I was using a variant of Denote’s file-naming
@@ -7210,7 +7273,7 @@ section 20.12
   choose whatever you want.
 
 
-26.2 Why not rely exclusively on Org?
+27.2 Why not rely exclusively on Org?
 ─────────────────────────────────────
 
   I think Org is one of Emacs’ killer apps.  I also believe it is not
@@ -7241,7 +7304,7 @@ section 20.12
   this very manual.
 
 
-26.3 Why care about Unix tools when you use Emacs?
+27.3 Why care about Unix tools when you use Emacs?
 ──────────────────────────────────────────────────
 
   My notes form part of my longer-term storage.  I do not want to have
@@ -7267,7 +7330,7 @@ section 20.12
   just me thinking long-term.
 
 
-26.4 Why many small files instead of few large ones?
+27.4 Why many small files instead of few large ones?
 ────────────────────────────────────────────────────
 
   I have read that Org favours the latter method.  If true, I strongly
@@ -7303,7 +7366,7 @@ section 20.12
   about using the right tool for the job).
 
 
-26.5 Does Denote perform well at scale?
+27.5 Does Denote perform well at scale?
 ───────────────────────────────────────
 
   Denote does not do anything fancy and has no special requirements: it
@@ -7325,7 +7388,7 @@ section 20.12
   where necessary, without compromising on the project’s principles.
 
 
-26.6 I add TODOs to my notes; will many files slow down the Org agenda?
+27.6 I add TODOs to my notes; will many files slow down the Org agenda?
 ───────────────────────────────────────────────────────────────────────
 
   Yes, many files will slow down the agenda due to how that works.  Org
@@ -7358,10 +7421,10 @@ section 20.12
   ask for help in our relevant channels ([Contributing]).
 
 
-[Contributing] See section 23
+[Contributing] See section 24
 
 
-26.7 I want to sort by last modified in Dired, why won’t Denote let me?
+27.7 I want to sort by last modified in Dired, why won’t Denote let me?
 ───────────────────────────────────────────────────────────────────────
 
   Denote does not control how Dired sorts files. I encourage you to read
@@ -7376,10 +7439,10 @@ section 20.12
   use the command `denote-sort-dired' ([Sort files by component]).
 
 
-[Sort files by component] See section 15
+[Sort files by component] See section 16
 
 
-26.8 How do you handle the last modified case?
+27.8 How do you handle the last modified case?
 ──────────────────────────────────────────────
 
   Denote does not insert any meta data or heading pertaining to edits in
@@ -7405,7 +7468,7 @@ section 20.12
   software handle the tracking of changes.
 
 
-26.9 Why are some Org links opening outside Emacs?
+27.9 Why are some Org links opening outside Emacs?
 ──────────────────────────────────────────────────
 
   Org has its own mechanism to determine how best to open a link. This
@@ -7441,10 +7504,10 @@ section 20.12
   option. Replace `md' or `html' with the desired file type extension.
 
 
-[Renaming files] See section 6
+[Renaming files] See section 7
 
 
-26.10 Speed up backlinks’ or query links’ buffer creation?
+27.10 Speed up backlinks’ or query links’ buffer creation?
 ──────────────────────────────────────────────────────────
 
   Denote leverages the built-in `xref' library to search for the
@@ -7482,7 +7545,7 @@ section 20.12
   └────
 
 
-26.11 Why do I get “Search failed with status 1” when I search for backlinks?
+27.11 Why do I get “Search failed with status 1” when I search for backlinks?
 ─────────────────────────────────────────────────────────────────────────────
 
   Denote uses [Emacs’ Xref] to find backlinks.  Xref requires `xargs'
@@ -7503,7 +7566,7 @@ section 20.12
 [Emacs’ Xref] <info:emacs#Xref>
 
 
-26.12 Why do I get a double `#+title' in Doom Emacs?
+27.12 Why do I get a double `#+title' in Doom Emacs?
 ────────────────────────────────────────────────────
 
   Doom Emacs provides a set of bespoke templates for Org. One of those
@@ -7516,7 +7579,7 @@ section 20.12
   Doom Emacs configuration file.
 
 
-27 Acknowledgements
+28 Acknowledgements
 ═══════════════════
 
   Denote is meant to be a collective effort.  Every bit of help matters.
@@ -7576,20 +7639,20 @@ section 20.12
   contributions to the code base.
 
 
-28 GNU Free Documentation License
+29 GNU Free Documentation License
 ═════════════════════════════════
 
 
-29 Indices
+30 Indices
 ══════════
 
-29.1 Function index
+30.1 Function index
 ───────────────────
 
 
-29.2 Variable index
+30.2 Variable index
 ───────────────────
 
 
-29.3 Concept index
+30.3 Concept index
 ──────────────────
