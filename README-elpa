@@ -4824,8 +4824,8 @@ backlinks?] See section 27.11
         option `denote-query-sorting' controlls the default sort
         ([Control the default sort of a query buffer]).
 
-        [ Both the command `denote-query-sorting' and the user option
-          `denote-query-sorting' are part of 4.1.0-dev. ]
+        [ Both the command `denote-query-sort-last-search' and the user
+          option `denote-query-sorting' are part of 4.1.0-dev. ]
 
   Remember that these are easy to use even without knowledge of regular
   expressions, thanks to the efficiency of the Denote file-naming scheme

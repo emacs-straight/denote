@@ -1627,7 +1627,8 @@ minibuffer prompt for which file name component to sort by."
           (const :tag "Sort by title" title)
           (const :tag "Sort by keywords" keywords)
           (const :tag "Sort by signature" signature)
-          (const :tag "Random order" random))
+          (const :tag "Random order" random)
+          (const :tag "Last modified" last-modified))
   :package-version '(denote . "4.1.0")
   :group 'denote-sort)
 
@@ -3528,10 +3529,7 @@ a value that can be parsed by `decode-time' or nil."
   "Prompt for subdirectory of the variable `denote-directory'.
 The table uses the `file' completion category (so it works with
 packages such as `marginalia' and `embark')."
-  (let* ((roots (mapcar
-                 (lambda (d)
-                   (directory-file-name d))
-                 (denote-directories)))
+  (let* ((roots (mapcar #'directory-file-name (denote-directories)))
          (subdirs (denote-directory-subdirectories))
          (dirs (append roots subdirs)))
     (denote--subdirs-completion-table dirs)))
@@ -6517,9 +6515,11 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
 
 (defun denote-link--map-over-notes ()
   "Return list of `denote-file-has-denoted-filename-p' from Dired marked items."
-  (seq-filter (lambda (file) (and (denote-file-has-denoted-filename-p file)
-                                  (denote-file-has-identifier-p file)))
-              (dired-get-marked-files)))
+  (seq-filter
+   (lambda (file)
+     (and (denote-file-has-denoted-filename-p file)
+          (denote-file-has-identifier-p file)))
+   (dired-get-marked-files)))
 
 ;;;###autoload
 (defun denote-link-dired-marked-notes (files buffer &optional id-only)
