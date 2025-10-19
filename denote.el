@@ -5,7 +5,7 @@
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 4.1.0
+;; Version: 4.1.1
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -915,9 +915,19 @@ If the region is active, its text is used as the link's description."
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
 
+(define-obsolete-variable-alias
+ 'denote-id-format
+ 'denote-date-identifier-format
+ "4.1.0")
+
 (defconst denote-date-identifier-format "%Y%m%dT%H%M%S"
   "Format of ID prefix of a note's filename.
 The note's ID is derived from the date and time of its creation.")
+
+(define-obsolete-variable-alias
+ 'denote-id-regexp
+ 'denote-date-identifier-regexp
+ "4.1.0")
 
 (defconst denote-date-identifier-regexp "\\([0-9]\\{8\\}\\)\\(T[0-9]\\{6\\}\\)"
   "Regular expression to match `denote-date-identifier-format'.")
@@ -933,16 +943,6 @@ The note's ID is derived from the date and time of its creation.")
 
 (defconst denote-keywords-regexp "__\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
   "Regular expression to match the KEYWORDS field in a file name.")
-
-(make-obsolete-variable
- 'denote-id-format
- 'denote-date-identifier-format
- "4.1.0")
-
-(make-obsolete-variable
- 'denote-id-regexp
- 'denote-date-identifier-regexp
- "4.1.0")
 
 (make-obsolete-variable
  'denote-excluded-punctuation-extra-regexp
