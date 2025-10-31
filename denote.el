@@ -134,14 +134,14 @@ The value can also be a list of directories as strings.  In that case,
 the user option `denote-prompts' is configured to prompt for a
 directory, among other possible prompts.  Files within those directories
 can link to each other, as they are considered part of one expansive
-`denote-directory'.
+Denote directory.
 
 Whether the value is a string or a list of strings, all relevant Denote
 commands work with the subdirectories of those directories as well.  In
 other words, a list value is not needed to enumerate all the
 subdirectories of a common parent directory: simply specify the parent.
 
-To create a \"silo\", i.e. a self-contained `denote-directory' whose
+To create a \"silo\", i.e. a self-contained Denote directory whose
 files do no link to any file outside of it, set the value of this user
 option in a .dir-locals file.  Read Info node `(denote) Maintain
 separate directory silos for notes'.
@@ -1184,20 +1184,17 @@ from STR as they are used as the keywords separator in file names.
 
 Also enforce the rules of the file-naming scheme."
   (let* ((slug-function (alist-get component denote-file-name-slug-functions))
-         (str-slug (cond ((eq component 'title)
-                          (funcall (or slug-function #'denote-sluggify-title) str))
-                         ((eq component 'keyword)
-                          (replace-regexp-in-string
-                           "_" ""
-                           (funcall (or slug-function #'denote-sluggify-keyword) str)))
-                         ((eq component 'identifier)
-                          (denote--valid-identifier
-                           (funcall (or slug-function #'identity) str)))
-                         ((eq component 'signature)
-                          (funcall (or slug-function #'denote-sluggify-signature) str)))))
-    (denote--trim-right-token-characters
-     (denote--replace-consecutive-token-characters
-      (denote--remove-dot-characters str-slug) component) component)))
+         (str-slug (pcase component
+                     ('title (funcall (or slug-function #'denote-sluggify-title) str))
+                     ('keyword (replace-regexp-in-string
+                                "_" ""
+                                (funcall (or slug-function #'denote-sluggify-keyword) str)))
+                     ('identifier (denote--valid-identifier (funcall (or slug-function #'identity) str)))
+                     ('signature (funcall (or slug-function #'denote-sluggify-signature) str)))))
+    (thread-first
+      (denote--remove-dot-characters str-slug)
+      (denote--replace-consecutive-token-characters component)
+      (denote--trim-right-token-characters component))))
 
 (defalias 'denote-sluggify 'denote-sluggify-and-apply-rules
   "Alias for the function `denote-sluggify-and-apply-rules'.")
@@ -1567,7 +1564,7 @@ Return the absolute path to the matching file."
                  (denote--completion-table 'file relative-files)
                  nil (unless no-require-match :require-match)
                  nil 'denote-file-history))
-         (absolute-file (if (denote-has-single-denote-directory-p)
+         (absolute-file (if single-dir-p
                             (expand-file-name input default-directory)
                           input)))
     ;; NOTE: This block is executed when no-require-match is t. It is useful
@@ -1978,13 +1975,13 @@ When called from Lisp, the arguments are a string, a symbol among
 `denote-sort-components', a non-nil value, and a string, respectively."
   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
   (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
-               (relative-p (denote-has-single-denote-directory-p))
+               (single-dir-p (denote-has-single-denote-directory-p))
                (files-fn `(lambda ()
                             (let ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort nil ,exclude-regexp)))
-                              (if ,relative-p
+                              (if ,single-dir-p
                                   (mapcar #'file-relative-name files)
                                 files)))))
-    (if-let* ((directory (if relative-p ; see comment in `denote-file-prompt'
+    (if-let* ((directory (if single-dir-p ; see comment in `denote-file-prompt'
                              (car (denote-directories))
                            (denote-directories-get-common-root)))
               (files (funcall files-fn))
@@ -2822,7 +2819,7 @@ If FILES is not given, use all text files as returned by
 
 (defun denote--get-all-backlinks (files)
   "Return hash table of all backlinks in FILES by identifier."
-  (let ((links-hash-table (make-hash-table :test 'equal))
+  (let ((links-hash-table (make-hash-table :test #'equal))
         (file-types (denote--file-type-keys))
         (files-by-file-type (denote--get-files-by-file-type files)))
     (dolist (file-type file-types)
@@ -3075,7 +3072,7 @@ If DATE is nil or an empty string, return nil."
 (defun denote--get-all-used-ids ()
   "Return a hash-table of all used identifiers.
 It checks files in variable `denote-directory' and active buffer files."
-  (let* ((ids (make-hash-table :test 'equal))
+  (let* ((ids (make-hash-table :test #'equal))
          (file-names (mapcar
                       (lambda (file) (file-name-nondirectory file))
                       (denote-directory-files nil nil nil nil :has-identifier)))
@@ -5212,7 +5209,7 @@ The format of such links is `denote-md-link-format'.")
 (defvar denote-id-only-link-in-context-regexp
   (concat "\\[\\[" "denote:"  "\\(?1:[^][]*?\\)" "]]")
   "Regexp to match an identifier-only link in its context.
-The format of such links is `denote-id-only-link-format'."  )
+The format of such links is `denote-id-only-link-format'.")
 
 (defun denote-format-link (file description file-type id-only)
   "Prepare link to FILE using DESCRIPTION.
@@ -5396,14 +5393,15 @@ selected one.
 
 With optional PROMPT-TEXT use it for the minibuffer prompt instead of
 the generic one."
-  (let* ((file-names (if (denote-has-single-denote-directory-p)
+  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+         (file-names (if single-dir-p
                          (mapcar #'denote-get-file-name-relative-to-denote-directory files)
                        files))
          (selected (completing-read
                     (format-prompt (or prompt-text "Select file among files") nil)
                     (denote--completion-table 'file file-names)
                     nil t nil 'denote-link-find-file-history)))
-    (if (denote-has-single-denote-directory-p)
+    (if single-dir-p
         (expand-file-name selected (car (denote-directories)))
       selected)))
 
@@ -5427,7 +5425,7 @@ Also see `denote-get-backlinks'."
                (with-temp-buffer
                  (insert-file-contents current-file)
                  (denote-link--collect-identifiers regexp)))
-              (file-identifiers-hash-table (make-hash-table :test 'equal)))
+              (file-identifiers-hash-table (make-hash-table :test #'equal)))
     (dolist (id file-identifiers)
       (puthash id t file-identifiers-hash-table))
     (let ((found-files))
@@ -6552,14 +6550,15 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
 ;; NOTE 2022-07-21: I don't think we need a history for this one.
 (defun denote-link--buffer-file-prompt (buffer-file-names)
   "Select file from BUFFER-FILE-NAMES of Denote notes."
-  (let* ((file-names (if (denote-has-single-denote-directory-p)
+  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+         (file-names (if single-dir-p
                          (mapcar #'denote-get-file-name-relative-to-denote-directory buffer-file-names)
                        buffer-file-names))
          (selected (completing-read
                     "Select open note to add links to: "
                     (denote--completion-table 'file file-names)
                     nil t)))
-    (if (denote-has-single-denote-directory-p)
+    (if single-dir-p
         (expand-file-name selected (car (denote-directories)))
       selected)))
 
