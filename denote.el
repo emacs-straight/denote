@@ -629,8 +629,6 @@ command."
   :link '(info-link "(denote) The denote-templates option")
   :group 'denote)
 
-(make-obsolete-variable 'denote-rename-no-confirm 'denote-rename-confirmations "3.0.0")
-
 (defcustom denote-rename-confirmations '(rewrite-front-matter modify-file-name)
   "Make renaming commands prompt for confirmations.
 
@@ -1274,8 +1272,15 @@ For our purposes, a note must satisfy `file-regular-p' and
 `denote-filename-is-note-p'."
   (and (file-regular-p file) (denote-filename-is-note-p file)))
 
-(make-obsolete 'denote-filename-is-note-p nil "4.1.0")
-(make-obsolete 'denote-file-is-note-p nil "4.1.0")
+(define-obsolete-function-alias
+  'denote-filename-is-note-p
+  'denote-file-has-denoted-filename-p
+  "4.1.0")
+
+(define-obsolete-function-alias
+  'denote-file-is-note-p
+  'denote-file-has-denoted-filename-p
+  "4.1.0")
 
 (defun denote-file-has-denoted-filename-p (file)
   "Return non-nil if FILE respects the file-naming scheme of Denote.
@@ -2051,11 +2056,6 @@ Filter inferred keywords per `denote-keywords-to-not-infer-regexp'."
 
 (defalias 'denote--keyword-history 'denote-keyword-history
   "Compatibility alias for `denote-keyword-history'.")
-
-(make-obsolete
- 'denote-convert-file-name-keywords-to-crm
- nil
- "3.0.0: Keywords are always returned as a list")
 
 (defun denote--keywords-crm (keywords &optional prompt initial)
   "Use `completing-read-multiple' for KEYWORDS.
@@ -6248,11 +6248,6 @@ search for."
 
 (make-obsolete 'denote-link--find-file-at-button nil "4.0.0")
 
-(make-obsolete
- 'denote-link-buttonize-buffer
- 'denote-fontify-links-mode
- "Use the `denote-fontify-links-mode', as it works better than buttonization. Since 3.0.0")
-
 ;; NOTE 2025-03-24: This does not work for query links because of how
 ;; `markdown-follow-link-at-point' is implemented to always check for
 ;; links.
@@ -6453,8 +6448,6 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
 
 (defvar denote-link--prepare-links-format "- %s\n"
   "Format specifiers for `denote-add-links'.")
-
-(make-obsolete-variable 'denote-link-add-links-sort nil "3.1.0")
 
 (defun denote-link--prepare-links (files current-file-type id-only &optional no-sort)
   "Prepare links to FILES from CURRENT-FILE-TYPE.
