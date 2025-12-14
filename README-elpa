@@ -4782,7 +4782,10 @@ backlinks?] See section 27.11
   Denote commands, such as `denote-grep', `denote-backlinks', and
   `denote-query-contents-link', produce an Xref buffer with search
   results ([Speed up backlinks’ or query links’ buffer creation?]).
-  Matching lines are grouped by the file name they belong to.
+  Matching lines are grouped by the file name they belong to. File names
+  are formatted according to the function bound to the user option
+  `denote-query-format-heading-function'. By default, file names are
+  rendered relative to the `denote-directory'.
 
   • [Use `denote-grep' to search inside files].
   • [The backlinks’ buffer].

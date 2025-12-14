@@ -5668,7 +5668,10 @@ sorting of query buffers on demand by calling the command
 (defcustom denote-backlinks-display-buffer-action
   '((display-buffer-reuse-mode-window display-buffer-below-selected)
     (mode . denote-query-mode)
-    (window-height . fit-window-to-buffer))
+    (dedicated . t)
+    (preserve-size . (t . t))
+    (window-height . fit-window-to-buffer)
+    (body-function . select-window))
   "The action used to display the current file's backlinks buffer.
 
 The value has the form (FUNCTION . ALIST), where FUNCTION is
@@ -5697,14 +5700,16 @@ and/or the documentation string of `display-buffer'."
                          (function :tag "Matcher function"))
                  :value-type ,display-buffer--action-custom-type)
           (function :tag "Custom function to return an action alist"))
-  :package-version '(denote . "3.1.0")
+  :package-version '(denote . "4.2.0")
   :group 'denote-query)
 
 (defcustom denote-query-links-display-buffer-action
   '((display-buffer-reuse-mode-window display-buffer-below-selected)
     (mode . (denote-query-mode dired))
-    (window-height . 0.3)
-    (preserve-size . (t . t)))
+    (dedicated . t)
+    (preserve-size . (t . t))
+    (window-height . fit-window-to-buffer)
+    (body-function . select-window))
   "The action used to display query links.
 This is the same as `denote-backlinks-display-buffer-action'.  Refer to
 its documentation for the technicalities."
@@ -5716,15 +5721,18 @@ its documentation for the technicalities."
                          (function :tag "Matcher function"))
                  :value-type ,display-buffer--action-custom-type)
           (function :tag "Custom function to return an action alist"))
-  :package-version '(denote . "4.0.0")
+  :package-version '(denote . "4.2.0")
   :group 'denote-query)
 
-(defcustom denote-query-format-heading-function #'identity
+(defcustom denote-query-format-heading-function #'denote-get-file-name-relative-to-denote-directory
   "Function used to construct headings for files matched by a query.
 
 It is called with a single argument, the path to the note file, and it
-should always return a string."
-  :package-version '(denote . "4.0.0")
+should always return a string.
+
+This is used in the buffer that shows backlinks, query links for file
+contents, or the results of `denote-grep'."
+  :package-version '(denote . "4.2.0")
   :link '(info-link "(denote) Use denote-grep to search inside files")
   :group 'denote-query
   :type 'function)
@@ -5963,6 +5971,9 @@ When called from Lisp, COMPONENT has the same meaning as in the function
   "Minibuffer history of content searches performed by `denote-grep'.
 Also see `denote-grep-file-regexp-history'.")
 
+;; NOTE 2025-12-12: Unlike `denote-query-links-display-buffer-action'
+;; we want `denote-grep' to behave like `denote-dired', whereby
+;; `dired' normally works in the current window.
 (defcustom denote-grep-display-buffer-action
   '((display-buffer-same-window)
     (mode . denote-query-mode))
@@ -6288,15 +6299,14 @@ search for."
 
 (make-obsolete 'denote-link--find-file-at-button nil "4.0.0")
 
-;; NOTE 2025-03-24: This does not work for query links because of how
-;; `markdown-follow-link-at-point' is implemented to always check for
-;; links.
-(defun denote-link-markdown-follow (link)
-  "Function to open Denote file present in LINK.
+;; NOTE 2025-12-12: The `markdown-follow-link-functions' assumes that
+;; the link of a specific format, but this is not good enough for us
+;; because of the query links we support.  I think it is okay to
+;; ignore LINK and just act on the link at point.
+(defun denote-link-markdown-follow (_link)
+  "Function for to act on Markdown link at point.
 To be assigned to `markdown-follow-link-functions'."
-  (when (ignore-errors (string-match denote-date-identifier-regexp link))
-    (funcall denote-open-link-function
-             (denote-get-path-by-id (match-string 0 link)))))
+  (denote-link-open-at-point))
 
 (eval-after-load 'markdown-mode
   '(add-hook 'markdown-follow-link-functions #'denote-link-markdown-follow))
@@ -6310,7 +6320,6 @@ To be assigned to `markdown-follow-link-functions'."
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-2] #'denote-link-open-at-mouse)
     (define-key map [mouse-3] #'denote-link-open-at-mouse)
-    (define-key map [follow-link] 'mouse-face)
     map)
   "Keymap for mouse actions over fontified Denote links.")
 
@@ -6398,31 +6407,29 @@ Use optional DATA, else get the data with `denote-fontify-links--get-data'."
     (when (and type query)
       (catch 'exit
         (while (re-search-forward query limit t)
-          (save-match-data  ; to return the matches to font-lock
-            (let* ((start (match-beginning 0))
-                   (end (match-end 0))
-                   (visible-start (or (match-beginning 2) start))
-                   (visible-end (or (match-end 2) end))
-                   (query (match-string-no-properties 1)))
-              (let* ((properties `( face ,(denote-get-link-face query)
-                                    mouse-face highlight
-                                    keymap ,denote-link-mouse-map
-                                    denote-link-query-part ,query
-                                    help-echo query
-                                    htmlize-link (:uri ,query)
-                                    font-lock-multiline t))
-                     (non-sticky-props
-                      '(rear-nonsticky (mouse-face highlight keymap invisible intangible help-echo htmlize-link)))
-                     (face-property 'link)
-                     (hidden (append '(invisible 'denote-link) properties)))
-                (remove-text-properties start end '(invisible nil))
-                (add-text-properties start visible-start hidden)
-                (add-face-text-property start end face-property)
-                (add-text-properties visible-start visible-end properties)
-                (add-text-properties visible-end end hidden)
-                (dolist (pos (list end visible-start visible-end))
-                  (add-text-properties (1- pos) pos non-sticky-props)))
-              (throw 'exit t))))
+          (let* ((start (match-beginning 0))
+                 (end (match-end 0))
+                 (visible-start (or (match-beginning 2) start))
+                 (visible-end (or (match-end 2) end))
+                 (query (match-string-no-properties 1)))
+            (let* ((properties `( mouse-face highlight
+                                  keymap ,denote-link-mouse-map
+                                  denote-link-query-part ,query
+                                  help-echo query
+                                  htmlize-link (:uri ,query)
+                                  font-lock-multiline t))
+                   (non-sticky-props
+                    '(rear-nonsticky (mouse-face highlight keymap invisible help-echo htmlize-link)))
+                   (face-property (denote-get-link-face query))
+                   (hidden (append '(invisible 'denote-fontified-link) properties)))
+              (remove-text-properties start end '(invisible nil))
+              (add-text-properties start visible-start hidden)
+              (add-face-text-property start end face-property)
+              (add-text-properties visible-start visible-end properties)
+              (add-text-properties visible-end end hidden)
+              (dolist (pos (list end visible-start visible-end))
+                (add-text-properties (1- pos) pos non-sticky-props)))
+            (throw 'exit t)))
         nil))))
 
 (define-obsolete-function-alias
@@ -6469,13 +6476,13 @@ major mode is not `org-mode' (or derived therefrom).  Consider using
   (require 'thingatpt)
   (if denote-fontify-links-mode
       (progn
-        (add-to-invisibility-spec 'denote-link)
+        (add-to-invisibility-spec 'denote-fontified-link)
         (denote-fontify-links--set-data)
         (font-lock-add-keywords nil '((denote-fontify-links)))
         (setq-local thing-at-point-provider-alist
                     (append thing-at-point-provider-alist
                             '((url . denote--get-link-file-path-at-point)))))
-    (remove-from-invisibility-spec 'denote-link)
+    (remove-from-invisibility-spec 'denote-fontified-link)
     (kill-local-variable 'denote-fontify-links--data)
     (font-lock-remove-keywords nil '((denote-fontify-links)))
     (setq-local thing-at-point-provider-alist
