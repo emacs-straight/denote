@@ -73,11 +73,12 @@ Table of Contents
 .. 4. Rename multiple files at once by asking only for keywords
 .. 5. Rename multiple files based on their front matter
 .. 6. Rename a file by changing only its file type
-.. 7. Rename a file by adding or removing a title interactively
-.. 8. Rename a file by adding or removing keywords interactively
-.. 9. Rename a file by adding or removing a signature interactively
-.. 10. Find duplicate identifiers and put them in a Dired buffer
-.. 11. Faces used by rename commands
+.. 7. Rename a file by changing only its identifier
+.. 8. Rename a file by adding or removing a title interactively
+.. 9. Rename a file by adding or removing keywords interactively
+.. 10. Rename a file by adding or removing a signature interactively
+.. 11. Find duplicate identifiers and put them in a Dired buffer
+.. 12. Faces used by rename commands
 8. The file-naming scheme
 .. 1. Change the order of file name components
 ..... 1. Retroactively reorder the components of Denote file names
@@ -1942,7 +1943,7 @@ See section 20.5
 [Automatically rename Denote buffers] See section 14
 
 [Find duplicate identifiers and put them in a Dired buffer] See section
-7.10
+7.11
 
 7.1 Rename a single file
 ────────────────────────
@@ -2315,7 +2316,19 @@ See section 20.5
 [Change the order of file name components] See section 8.1
 
 
-7.7 Rename a file by adding or removing a title interactively
+7.7 Rename a file by changing only its identifier
+─────────────────────────────────────────────────
+
+  The command `denote-rename-file-identifier' prompts for a new
+  identifier to apply to the given file. The current identifier is added
+  as the initial minibuffer text. An empty input means to remove the
+  identifier altogether.
+
+  An identifier that is already used in links cannot be modified,
+  otherwise all links will break.
+
+
+7.8 Rename a file by adding or removing a title interactively
 ─────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-title' streamlines the process of
@@ -2358,7 +2371,7 @@ See section 20.5
 [The file-naming scheme] See section 8
 
 
-7.8 Rename a file by adding or removing keywords interactively
+7.9 Rename a file by adding or removing keywords interactively
 ──────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-keywords' streamlines the process of
@@ -2406,8 +2419,8 @@ See section 20.5
 [The file-naming scheme] See section 8
 
 
-7.9 Rename a file by adding or removing a signature interactively
-─────────────────────────────────────────────────────────────────
+7.10 Rename a file by adding or removing a signature interactively
+──────────────────────────────────────────────────────────────────
 
   The command `denote-rename-file-signature' streamlines the process of
   interactively adding or removing a signature to/from a file, while
@@ -2449,7 +2462,7 @@ See section 20.5
 [The file-naming scheme] See section 8
 
 
-7.10 Find duplicate identifiers and put them in a Dired buffer
+7.11 Find duplicate identifiers and put them in a Dired buffer
 ──────────────────────────────────────────────────────────────
 
   Denote takes care to create unique identifiers, though its mechanism
@@ -2500,7 +2513,7 @@ See section 20.5
   counter to increment by 1—contact me if you need any help).
 
 
-7.11 Faces used by rename commands
+7.12 Faces used by rename commands
 ──────────────────────────────────
 
   These are the faces used by the various Denote rename commands to

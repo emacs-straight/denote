@@ -993,20 +993,13 @@ The note's ID is derived from the date and time of its creation.")
 
 ;;;; File helper functions
 
-(defun denote--completion-table (category candidates)
-  "Pass appropriate metadata CATEGORY to completion CANDIDATES."
+(defun denote-get-completion-table (candidates &rest metadata)
+  "Return completion table with CANDIDATES and METADATA.
+CANDIDATES is a list of strings.  METADATA is described in
+`completion-metadata'."
   (lambda (string pred action)
     (if (eq action 'metadata)
-        `(metadata (category . ,category))
-      (complete-with-action action candidates string pred))))
-
-(defun denote--completion-table-no-sort (category candidates)
-  "Pass appropriate metadata CATEGORY to completion CANDIDATES.
-Like `denote--completion-table' but also disable sorting."
-  (lambda (string pred action)
-    (if (eq action 'metadata)
-        `(metadata (category . ,category)
-                   (display-sort-function . ,#'identity))
+        (cons 'metadata metadata)
       (complete-with-action action candidates string pred))))
 
 (defun denote--default-directory-is-silo-p ()
@@ -1071,9 +1064,9 @@ to override what this function returns."
       (format "/%s/" (mapconcat #'identity common-parent "/"))
     "/"))
 
-(defun denote-directories-get-common-root ()
-  "Get the common root directory of `denote-directories'."
-  (denote--get-common-root-directory (denote-directories)))
+(defun denote-directories-get-common-root (&optional directories)
+  "Get the common root directory of DIRECTORIES or `denote-directories'."
+  (denote--get-common-root-directory (or directories (denote-directories))))
 
 (defun denote-directory ()
   "Return the `car' of `denote-directories'.
@@ -1323,6 +1316,9 @@ what remains."
   (and (file-writable-p file)
        (denote-file-has-supported-extension-p file)))
 
+;; FIXME 2025-12-14: We are hardcoding the `denote-directories'.  What
+;; we need is a simpler function to get a relative path.  Otherwise we
+;; are probably computing the `denote-directories' multiple times.
 (defun denote-get-file-name-relative-to-denote-directory (file)
   "Return name of FILE relative to the variable `denote-directory'.
 FILE must be an absolute path."
@@ -1356,8 +1352,11 @@ Return t if FILE is valid, else return nil."
      ((denote--exclude-directory-regexp-p rel) nil)
      ((file-readable-p file)))))
 
-(defun denote--directory-all-files-recursively ()
-  "Return list of all files in variable `denote-directory'.
+;; FIXME 2025-12-14: The parameter should not be optional.  I am doing
+;; it like this for now because there are places where the function is
+;; called without an argument.
+(defun denote--directory-all-files-recursively (&optional directories)
+  "Return list of all files in DIRECTORIES or `denote-directories'.
 Avoids traversing dotfiles (unconditionally) and whatever matches
 `denote-excluded-directories-regexp'."
   (apply #'append
@@ -1369,7 +1368,7 @@ Avoids traversing dotfiles (unconditionally) and whatever matches
              :include-directories
              #'denote--directory-files-recursively-predicate
              :follow-symlinks))
-          (denote-directories))))
+          (or directories (denote-directories)))))
 
 (defun denote--file-excluded-p (file)
   "Return non-file if FILE matches `denote-excluded-files-regexp'."
@@ -1381,6 +1380,9 @@ Avoids traversing dotfiles (unconditionally) and whatever matches
   'denote-directory-get-files
   "4.1.0")
 
+;; FIXME 2025-12-14: This should accept DIRECTORIES, which it would
+;; pass to `denote--directory-all-files-recursively'.  I have a
+;; relevant FIXME for `denote--directory-all-files-recursively'.
 (defun denote-directory-get-files ()
   "Return list with full path of valid files in variable `denote-directory'.
 Consider files that satisfy `denote-file-has-denoted-filename-p' and
@@ -1393,7 +1395,7 @@ are not backups."
            (denote-file-has-denoted-filename-p file)
            (not (denote--file-excluded-p file))
            (not (backup-file-name-p file))))
-    (denote--directory-all-files-recursively))))
+    (denote--directory-all-files-recursively (denote-directories)))))
 
 (defvar denote-directory-get-files-function #'denote-directory-get-files
   "Function to return list of Denote files.
@@ -1443,8 +1445,11 @@ files that have an identifier."
                    files)))
     files))
 
-(defun denote-directory-subdirectories ()
-  "Return list of subdirectories in variable `denote-directory'.
+;; FIXME 2025-12-14: The parameter should not be optional.  Also see
+;; the same kind of comment for `denote-directory-get-files' and
+;; `denote--directory-all-files-recursively'.
+(defun denote-directory-subdirectories (&optional directories)
+  "Return list of subdirectories in DIRECTORIES or variable `denote-directory'.
 Omit dotfiles (such as .git) unconditionally.  Also exclude
 whatever matches `denote-excluded-directories-regexp'."
   (seq-remove
@@ -1454,7 +1459,7 @@ whatever matches `denote-excluded-directories-regexp'."
            (string-match-p "\\`\\." rel)
            (string-match-p "/\\." rel)
            (denote--exclude-directory-regexp-p rel))))
-   (denote--directory-all-files-recursively)))
+   (denote--directory-all-files-recursively directories)))
 
 ;; TODO 2023-01-24: Perhaps there is a good reason to make this a user
 ;; option, but I am keeping it as a generic variable for now.
@@ -1533,6 +1538,23 @@ the title prompt of `denote-open-or-create' and related commands.")
 Only ever `let' bind this, otherwise the restriction will always be
 there.")
 
+(defun denote-file-prompt-group (file transform)
+  "Retun group of FILE if TRANSFORM is non-nil, per `completion-metadata'."
+  (cond
+   (transform
+    file)
+   ((string-match-p (regexp-opt denote-encryption-file-extensions) file)
+    "Encrypted")
+   ((string-match-p (regexp-opt (denote-file-type-extensions)) file)
+    "Notes")
+   ((string-match-p "\\.\\(pdf\\|epub\\)" file)
+    "Documents")
+   (t "Other files")))
+
+(defun denote-file-prompt-sort (files)
+  "Sort FILES for `denote-file-prompt', per `completion-metadata'."
+  (sort files #'denote-sort-modified-time-greaterp))
+
 (defun denote-file-prompt (&optional files-matching-regexp prompt-text no-require-match has-identifier)
   "Prompt for file in variable `denote-directory'.
 Files that match `denote-excluded-files-regexp' are excluded from the
@@ -1569,7 +1591,11 @@ Return the absolute path to the matching file."
                              (propertize default-directory 'face 'denote-faces-prompt-current-name))))
          (input (completing-read
                  prompt
-                 (denote--completion-table 'file relative-files)
+                 (denote-get-completion-table
+                  relative-files
+                  '(category . file)
+                  '(group-function . denote-file-prompt-group)
+                  '(display-sort-function . denote-file-prompt-sort))
                  nil (unless no-require-match :require-match)
                  nil 'denote-file-history))
          (absolute-file (if single-dir-p
@@ -1849,7 +1875,7 @@ OMIT-CURRENT have been applied."
     (intern
      (completing-read
       (format-prompt "Sort by file name component" default)
-      (denote--completion-table 'denote-sort-component denote-sort-components)
+      (denote-get-completion-table denote-sort-components '(category . denote-sort-component))
       nil :require-match nil 'denote-sort-component-history default))))
 
 (defvar denote-sort-exclude-files-history nil
@@ -3566,23 +3592,31 @@ a value that can be parsed by `decode-time' or nil."
 (defalias 'denote--subdir-history 'denote-subdirectory-history
   "Compatibility alias for `denote-subdirectory-history'.")
 
-;; Making it a completion table is useful for packages that read the
-;; metadata, such as `marginalia' and `embark'.
-(defun denote--subdirs-completion-table (dirs)
-  "Match DIRS as a completion table."
-  (let* ((def (car denote-subdirectory-history))
-         (table (denote--completion-table 'file dirs))
-         (prompt (format-prompt "Select SUBDIRECTORY" def)))
-    (completing-read prompt table nil t nil 'denote-subdirectory-history def)))
-
+;; NOTE 2025-12-14: I have written several FIXME comments about how we
+;; get files and directories.  We should only be computing the target
+;; directories once.
+;;
+;; TODO 2025-12-14: Explore if we can have relative paths here.  The
+;; problem is that we also return the root `denote-directory', so how
+;; should that be presented?  Maybe as "."?
 (defun denote-subdirectory-prompt ()
   "Prompt for subdirectory of the variable `denote-directory'.
 The table uses the `file' completion category (so it works with
 packages such as `marginalia' and `embark')."
-  (let* ((roots (mapcar #'directory-file-name (denote-directories)))
-         (subdirs (denote-directory-subdirectories))
-         (dirs (append roots subdirs)))
-    (denote--subdirs-completion-table dirs)))
+  (let* ((default (car denote-subdirectory-history))
+         (roots (denote-directories))
+         (single-dir-p (null (cdr roots)))
+         ;; Some external program may use `default-directory' with the
+         ;; relative file paths of the completion candidates.
+         (default-directory (if single-dir-p
+                                (car roots)
+                              (denote-directories-get-common-root roots)))
+         (subdirectories (denote-directory-subdirectories roots))
+         (directories (append roots subdirectories)))
+    (completing-read
+     (format-prompt "Select SUBDIRECTORY" default)
+     (denote-get-completion-table directories '(category . file))
+     nil t nil 'denote-subdirectory-history default)))
 
 (defvar denote-template-history nil
   "Minibuffer history of `denote-template-prompt'.")
@@ -5442,7 +5476,7 @@ the generic one."
                        files))
          (selected (completing-read
                     (format-prompt (or prompt-text "Select file among files") nil)
-                    (denote--completion-table 'file file-names)
+                    (denote-get-completion-table file-names '(category . file))
                     nil t nil 'denote-link-find-file-history)))
     (if single-dir-p
         (expand-file-name selected (car (denote-directories)))
@@ -6565,7 +6599,7 @@ to files matching QUERY.  Optional ID-ONLY has the same meaning as in
             (file (completing-read
                    (format "Select FILE with contents `%s': "
                            (propertize query 'face 'denote-faces-prompt-current-name))
-                   (denote--completion-table 'file files)
+                   (denote-get-completion-table files '(category . file))
                    nil t nil 'denote-file-history)))
       (denote-link file
                    (denote-filetype-heuristics buffer-file-name)
@@ -6599,7 +6633,7 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
                        buffer-file-names))
          (selected (completing-read
                     "Select open note to add links to: "
-                    (denote--completion-table 'file file-names)
+                    (denote-get-completion-table file-names '(category . file))
                     nil t)))
     (if single-dir-p
         (expand-file-name selected (car (denote-directories)))
