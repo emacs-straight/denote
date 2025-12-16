@@ -1542,7 +1542,7 @@ there.")
   "Retun group of FILE if TRANSFORM is non-nil, per `completion-metadata'."
   (cond
    (transform
-    file)
+    (or (denote-retrieve-filename-title file) file))
    ((string-match-p (regexp-opt denote-encryption-file-extensions) file)
     "Encrypted")
    ((string-match-p (regexp-opt (denote-file-type-extensions)) file)
@@ -1551,9 +1551,37 @@ there.")
     "Documents")
    (t "Other files")))
 
+(defun denote-file-prompt-affixate (files)
+  "Affixate FILES.
+Use the identifier as a prefix and the keywords as a suffix."
+  (mapcar
+   (lambda (file)
+     (list
+      file
+      (format "%s " (propertize (denote-id-to-date (denote-retrieve-filename-identifier file)) 'face 'completions-annotations))
+      (format " %s%s"
+              (if (eq completions-format 'one-column)
+                  (propertize " " 'display '(space :align-to 90))
+                " ")
+              (propertize (or (denote-retrieve-filename-keywords file) "") 'face 'completions-annotations))))
+   files))
+
 (defun denote-file-prompt-sort (files)
   "Sort FILES for `denote-file-prompt', per `completion-metadata'."
   (sort files #'denote-sort-modified-time-greaterp))
+
+(defvar denote-file-prompt-extra-metadata
+  (list
+   ;; NOTE 2025-12-15: If we use the `file' category, then we are
+   ;; subject to the `completion-category-overrides'.  This is a
+   ;; problem because the user will want to, for example, sort
+   ;; directories before files, but then we cannot have our sort here.
+   (cons 'category 'file)
+   (cons 'group-function #'denote-file-prompt-group)
+   (cons 'affixation-function #'denote-file-prompt-affixate)
+   (cons 'display-sort-function #'denote-file-prompt-sort))
+  "Extra `completion-metadata' for the `denote-file-prompt'.
+This is in addition to the completion category, which is constant.")
 
 (defun denote-file-prompt (&optional files-matching-regexp prompt-text no-require-match has-identifier)
   "Prompt for file in variable `denote-directory'.
@@ -1572,12 +1600,13 @@ With optional HAS-IDENTIFIER, only show candidates that have an
 identifier.
 
 Return the absolute path to the matching file."
-  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+  (let* ((roots (denote-directories))
+         (single-dir-p (null (cdr roots)))
          ;; Some external program may use `default-directory' with the
          ;; relative file paths of the completion candidates.
          (default-directory (if single-dir-p
-                                (car (denote-directories))
-                              (denote-directories-get-common-root)))
+                                (car roots)
+                              (denote-directories-get-common-root roots)))
          (files (denote-directory-files
                  (or denote-file-prompt-use-files-matching-regexp files-matching-regexp)
                  :omit-current nil nil has-identifier))
@@ -1587,16 +1616,12 @@ Return the absolute path to the matching file."
          (prompt (if single-dir-p
                      (format "%s: " (or prompt-text "Select FILE"))
                    (format "%s in %s: "
-                             (or prompt-text "Select FILE")
-                             (propertize default-directory 'face 'denote-faces-prompt-current-name))))
+                           (or prompt-text "Select FILE")
+                           (propertize default-directory 'face 'denote-faces-prompt-current-name))))
          (input (completing-read
                  prompt
-                 (denote-get-completion-table
-                  relative-files
-                  '(category . file)
-                  '(group-function . denote-file-prompt-group)
-                  '(display-sort-function . denote-file-prompt-sort))
-                 nil (unless no-require-match :require-match)
+                 (apply 'denote-get-completion-table relative-files denote-file-prompt-extra-metadata)
+                 nil (unless no-require-match t)
                  nil 'denote-file-history))
          (absolute-file (if single-dir-p
                             (expand-file-name input default-directory)
@@ -1876,7 +1901,7 @@ OMIT-CURRENT have been applied."
      (completing-read
       (format-prompt "Sort by file name component" default)
       (denote-get-completion-table denote-sort-components '(category . denote-sort-component))
-      nil :require-match nil 'denote-sort-component-history default))))
+      nil t nil 'denote-sort-component-history default))))
 
 (defvar denote-sort-exclude-files-history nil
   "Minibuffer history for `denote-sort-exclude-files-prompt'.")
@@ -2009,15 +2034,16 @@ When called from Lisp, the arguments are a string, a symbol among
 `denote-sort-components', a non-nil value, and a string, respectively."
   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
   (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
-               (single-dir-p (denote-has-single-denote-directory-p))
+               (roots (denote-directories))
+               (single-dir-p (null (cdr roots)))
                (files-fn `(lambda ()
                             (let ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort nil ,exclude-regexp)))
                               (if ,single-dir-p
                                   (mapcar #'file-relative-name files)
                                 files)))))
     (if-let* ((directory (if single-dir-p ; see comment in `denote-file-prompt'
-                             (car (denote-directories))
-                           (denote-directories-get-common-root)))
+                             (car roots)
+                           (denote-directories-get-common-root roots)))
               (files (funcall files-fn))
               (dired-name (format-message files-matching-regexp))
               (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp)))
@@ -3160,8 +3186,8 @@ This is a reference function for `denote-get-identifier-function'."
     (intern
      (completing-read
       (format-prompt "Run note-creating Denote command" default)
-      denote-commands-for-new-notes nil :require-match
-      nil 'denote-command-prompt-history default))))
+      (denote-get-completion-table denote-commands-for-new-notes '(category . command))
+       nil t nil 'denote-command-prompt-history default))))
 
 ;;;;; The `denote' command and its prompts
 
@@ -5470,7 +5496,8 @@ selected one.
 
 With optional PROMPT-TEXT use it for the minibuffer prompt instead of
 the generic one."
-  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+  (let* ((roots (denote-directories))
+         (single-dir-p (null (cdr roots)))
          (file-names (if single-dir-p
                          (mapcar #'denote-get-file-name-relative-to-denote-directory files)
                        files))
@@ -5479,7 +5506,7 @@ the generic one."
                     (denote-get-completion-table file-names '(category . file))
                     nil t nil 'denote-link-find-file-history)))
     (if single-dir-p
-        (expand-file-name selected (car (denote-directories)))
+        (expand-file-name selected (car roots))
       selected)))
 
 (define-obsolete-function-alias
@@ -6627,7 +6654,8 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
 ;; NOTE 2022-07-21: I don't think we need a history for this one.
 (defun denote-link--buffer-file-prompt (buffer-file-names)
   "Select file from BUFFER-FILE-NAMES of Denote notes."
-  (let* ((single-dir-p (denote-has-single-denote-directory-p))
+  (let* ((roots (denote-directories))
+         (single-dir-p (null (cdr roots)))
          (file-names (if single-dir-p
                          (mapcar #'denote-get-file-name-relative-to-denote-directory buffer-file-names)
                        buffer-file-names))
@@ -6636,7 +6664,7 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
                     (denote-get-completion-table file-names '(category . file))
                     nil t)))
     (if single-dir-p
-        (expand-file-name selected (car (denote-directories)))
+        (expand-file-name selected roots)
       selected)))
 
 (defun denote-link--map-over-notes ()
