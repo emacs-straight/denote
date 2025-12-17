@@ -25,86 +25,18 @@
 
 ;;; Commentary:
 
-;; Denote aims to be a simple-to-use, focused-in-scope, and effective
-;; note-taking and file-naming tool for Emacs.
-;;
-;; Denote is based on the idea that files should follow a predictable
-;; and descriptive file-naming scheme.  The file name must offer a
-;; clear indication of what the contents are about, without reference
-;; to any other metadata.  Denote basically streamlines the creation
-;; of such files or file names while providing facilities to link
-;; between them (where those files are editable).
+;; Denote is a simple note-taking tool for Emacs.  It is based on the idea
+;; that notes should follow a predictable and descriptive file-naming
+;; scheme.  The file name must offer a clear indication of what the note is
+;; about, without reference to any other metadata.  Denote basically
+;; streamlines the creation of such files while providing facilities to
+;; link between them.
 ;;
 ;; Denote's file-naming scheme is not limited to "notes".  It can be used
 ;; for all types of file, including those that are not editable in Emacs,
 ;; such as videos.  Naming files in a consistent way makes their
 ;; filtering and retrieval considerably easier.  Denote provides relevant
 ;; facilities to rename files, regardless of file type.
-;;
-;; The manual describes all the technicalities about the file-naming
-;; scheme, points of entry to creating new notes, commands to check
-;; links between notes, and more: ;; <https://protesilaos.com/emacs/denote>.
-;; If you have the info manual available, evaluate:
-;;
-;;    (info "(denote) Top")
-;;
-;; What follows is a general overview of its core core design
-;; principles (again: please read the manual for the technicalities):
-;;
-;; * Predictability :: File names must follow a consistent and
-;;   descriptive naming convention (see the manual's "The file-naming
-;;   scheme").  The file name alone should offer a clear indication of
-;;   what the contents are, without reference to any other metadatum.
-;;   This convention is not specific to note-taking, as it is pertinent
-;;   to any form of file that is part of the user's long-term storage
-;;   (see the manual's "Renaming files").
-;;
-;; * Composability :: Be a good Emacs citizen, by integrating with other
-;;   packages or built-in functionality instead of re-inventing
-;;   functions such as for filtering or greping.  The author of Denote
-;;   (Protesilaos, aka "Prot") writes ordinary notes in plain text
-;;   (`.txt'), switching on demand to an Org file only when its expanded
-;;   set of functionality is required for the task at hand (see the
-;;   manual's "Points of entry").
-;;
-;; * Portability :: Notes are plain text and should remain portable.
-;;   The way Denote writes file names, the front matter it includes in
-;;   the note's header, and the links it establishes must all be
-;;   adequately usable with standard Unix tools.  No need for a databse
-;;   or some specialised software.  As Denote develops and this manual
-;;   is fully fleshed out, there will be concrete examples on how to do
-;;   the Denote-equivalent on the command-line.
-;;
-;; * Flexibility :: Do not assume the user's preference for a
-;;   note-taking methodology.  Denote is conceptually similar to the
-;;   Zettelkasten Method, which you can learn more about in this
-;;   detailed introduction: <https://zettelkasten.de/introduction/>.
-;;   Notes are atomic (one file per note) and have a unique identifier.
-;;   However, Denote does not enforce a particular methodology for
-;;   knowledge management, such as a restricted vocabulary or mutually
-;;   exclusive sets of keywords.  Denote also does not check if the user
-;;   writes thematically atomic notes.  It is up to the user to apply
-;;   the requisite rigor and/or creativity in pursuit of their preferred
-;;   workflow (see the manual's "Writing metanotes").
-;;
-;; * Hackability :: Denote's code base consists of small and reusable
-;;   functions.  They all have documentation strings.  The idea is to
-;;   make it easier for users of varying levels of expertise to
-;;   understand what is going on and make surgical interventions where
-;;   necessary (e.g. to tweak some formatting).  In this manual, we
-;;   provide concrete examples on such user-level configurations (see
-;;   the manual's "Keep a journal or diary").
-;;
-;; Now the important part...  "Denote" is the familiar word, though it
-;; also is a play on the "note" concept.  Plus, we can come up with
-;; acronyms, recursive or otherwise, of increasingly dubious utility
-;; like:
-;;
-;; + Don't Ever Note Only The Epiphenomenal
-;; + Denote Everything Neatly; Omit The Excesses
-;;
-;; But we'll let you get back to work.  Don't Eschew or Neglect your
-;; Obligations, Tasks, and Engagements.
 
 ;;; Code:
 
@@ -1541,14 +1473,11 @@ there.")
 (defun denote-file-prompt-group (file transform)
   "Retun group of FILE if TRANSFORM is non-nil, per `completion-metadata'."
   (cond
-   (transform
-    (or (denote-retrieve-filename-title file) file))
-   ((string-match-p (regexp-opt denote-encryption-file-extensions) file)
-    "Encrypted")
-   ((string-match-p (regexp-opt (denote-file-type-extensions)) file)
-    "Notes")
-   ((string-match-p "\\.\\(pdf\\|epub\\)" file)
-    "Documents")
+   ;; FIXME 2025-12-16: Why do we not get highlights of matched
+   ;; visible words?  It works if I just return FILE.
+   (transform (or (denote-retrieve-filename-title file) file))
+   ((file-name-directory file))
+   ((file-name-extension file))
    (t "Other files")))
 
 (defun denote-file-prompt-affixate (files)
@@ -1576,12 +1505,22 @@ Use the identifier as a prefix and the keywords as a suffix."
    ;; subject to the `completion-category-overrides'.  This is a
    ;; problem because the user will want to, for example, sort
    ;; directories before files, but then we cannot have our sort here.
-   (cons 'category 'file)
+   (cons 'category 'denote-file)
    (cons 'group-function #'denote-file-prompt-group)
    (cons 'affixation-function #'denote-file-prompt-affixate)
    (cons 'display-sort-function #'denote-file-prompt-sort))
   "Extra `completion-metadata' for the `denote-file-prompt'.
 This is in addition to the completion category, which is constant.")
+
+(with-eval-after-load 'all-the-icons
+  (cl-defmethod all-the-icons-completion-get-icon (cand (_cat (eql denote-file)))
+    "Return the icon for the candidate CAND of completion category denote-file."
+    (all-the-icons-completion-get-icon cand 'file)))
+
+(with-eval-after-load 'nerd-icons
+  (cl-defmethod nerd-icons-completion-get-icon (cand (_cat (eql denote-file)))
+    "Return the icon for the candidate CAND of completion category denote-file."
+    (nerd-icons-completion-get-icon cand 'file)))
 
 (defun denote-file-prompt (&optional files-matching-regexp prompt-text no-require-match has-identifier)
   "Prompt for file in variable `denote-directory'.
