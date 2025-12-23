@@ -6238,11 +6238,6 @@ section 21.12
         `denote-directory'. Consider files that satisfy
         `denote-file-has-identifier-p' and are not backups.
 
-  Variable `denote-directory-get-files-function'
-        Function to return list of Denote files. Each file is a string
-        representing an absolute file system path. This is intended for
-        use in the function `denote-directory-files'.
-
   Function `denote-directory-files'
         Return list of absolute file paths in variable
         `denote-directory'. Files that match
@@ -6257,7 +6252,10 @@ section 21.12
         text files that satisfy `denote-file-is-note-p'. With optional
         `EXCLUDE-REGEXP' exclude the files that match the given regular
         expression. This is done after `FILES-MATCHING-REGEXP' and
-        `OMIT-CURRENT' have been applied.
+        `OMIT-CURRENT' have been applied. Optional `DIRECTORIES' is a
+        list of directories to search through instead of looking into
+        the variable `denote-directory'. [ The `DIRECTORIES' is part of
+        4.2.0-dev. ]
 
   Function `denote-directory-subdirectories'
         Return list of subdirectories in variable
