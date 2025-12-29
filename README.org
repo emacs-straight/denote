@@ -992,8 +992,8 @@ consist of only the identifier plus the Org file name extension ([[#h:4e9c7512-8
 
 Otherwise, it produces a minibuffer prompt for every non-nil value
 that corresponds to the =TITLE=, =KEYWORDS=, =SUBDIRECTORY=, =DATE=,
-and =TEMPLATE= arguments.  The prompts are those used by the standard
-~denote~ command and all of its utility commands ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]).
+=TEMPLATE=, and =SIGNATURE= arguments. The prompts are those used by
+the standard ~denote~ command and all of its utility commands ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]).
 
 When returning the contents that fill in the Org capture template, the
 sequence is as follows: front matter, =TEMPLATE=, and then the value
@@ -5540,9 +5540,11 @@ The following sections cover the specifics.
   files that satisfy ~denote-file-is-note-p~. With optional
   =EXCLUDE-REGEXP= exclude the files that match the given regular
   expression. This is done after =FILES-MATCHING-REGEXP= and
-  =OMIT-CURRENT= have been applied. Optional =DIRECTORIES= is a list
-  of directories to search through instead of looking into the
-  variable ~denote-directory~. [ The =DIRECTORIES= is part of
+  =OMIT-CURRENT= have been applied. With optional =HAS-IDENTIFIER= as
+  a non-~nil~ value, limit the results to files that have an
+  identifier. With Optional =DIRECTORIES= as a list of directories,
+  search through instead of looking into the variable
+  ~denote-directory~. [ The optional =DIRECTORIES= is part of
   {{{development-version}}}. ]
 
 #+findex: denote-directory-subdirectories
@@ -6847,11 +6849,11 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Maikol Solis, Marc Fargas, Matthew Lemon, Noboru Ota (nobiot),
   Norwid Behrnd, Octavian, Peter Prevos, Philip Kaludercic, Ryota,
   Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan Thesing,
-  Thibaut Benjamin, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
-  Wesley Harvey, Yann Dutrieux, Zhenxu Xu, arsaber101, bryanrinders,
-  eum3l, experimental-code-86, ezchi, jarofromel, leinfink (Henrik),
-  l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-  pmenair, relict007, skissue.
+  Thibaut Benjamin, Tobias Lidman-Strauss, Tomasz Hołubowicz,
+  TomoeMami , Vedang Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu
+  Xu, arsaber101, bryanrinders, eum3l, experimental-code-86, ezchi,
+  jarofromel, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
+  maxbrieiev, mentalisttraceur, pmenair, relict007, skissue.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Griffin, Alex Hirschfeld, Alexis
