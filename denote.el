@@ -1501,8 +1501,8 @@ Use the identifier as a prefix and the keywords as a suffix."
    (lambda (file)
      (list
       file
-      (denote-file-prompt--format-identifier file)
-      (denote-file-prompt--format-keywords-and-signature file)))
+      (or (denote-file-prompt--format-identifier file) "")
+      (or (denote-file-prompt--format-keywords-and-signature file) "")))
    files))
 
 (defun denote-file-prompt-sort (files)
@@ -6849,7 +6849,7 @@ query of file contents or file names (see the commands
 
 Uses the function `denote-directory' to establish the path to the file."
   (if-let* ((match (denote-link--ol-resolve-link-to-target link))
-            (_ (file-exists-p (string-trim-right match ":[^/]+.*"))))
+            (_ (file-exists-p (string-trim-right match "::.*"))))
       (org-link-open-as-file match nil)
     (denote--act-on-query-link match)))
 
