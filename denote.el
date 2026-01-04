@@ -3171,27 +3171,25 @@ command that needs to supply a default title before calling
 COMMAND is the symbol of a file-creating command to call, such as
 `denote' or `denote-signature'.
 
-With non-nil FORCE-USE-FILE-PROMPT-AS-DEFAULT-TITLE, use the last
-item of `denote-file-history' as the default title of the title
-prompt.  This is useful in a command such as `denote-link' where
-the entry of the file prompt can be reused as the default title.
+With non-nil FORCE-USE-FILE-PROMPT-AS-DEFAULT-TITLE, use the last item
+of `denote-file-history' as the default title of the title prompt.  This
+is useful in a command such as `denote-link' where the entry of the file
+prompt can be reused as the default title.
 
-With non-nil FORCE-IGNORE-REGION, the region is ignore when
-creating the note, i.e. it will not be used as the initial title
-in a title prompt.  Else, the value of
-`denote-ignore-region-in-denote-command' is respected.
+With non-nil FORCE-IGNORE-REGION, ignore the region when creating the
+note: do not use its text as the initial title in a title prompt.  Else,
+do whatever `denote-ignore-region-in-denote-command' entails.
 
-With non-nil FORCE-SAVE, the file is saved at the end of the note
-creation.  Else, the value of `denote-save-buffers' is respected.
+With non-nil FORCE-SAVE, save the file at the end of the note creation.
+Else, do whatever the value of `denote-save-buffers' entails.
 
-With non-nil IN-BACKGROUND, the note creation happens in the
-background, i.e. the note's buffer will not be displayed after
-the note is created.
+With non-nil IN-BACKGROUND, create the note in the background: do not
+display the note's buffer after it is created.
 
 Note that if all parameters except COMMAND are nil, this is
 equivalent to `(call-interactively command)'.
 
-The path of the newly created file is returned."
+Return the path of the newly created file."
   (let ((denote-save-buffers
          (or force-save denote-save-buffers))
         (denote-ignore-region-in-denote-command
@@ -6325,11 +6323,16 @@ To be assigned to `markdown-follow-link-functions'."
 
 ;;;;; Link fontification
 
-;; TODO 2024-06-19: We need to bind RET and maybe even C-c C-o to a
-;; command that opens the link at point.  Then we may also rename this
-;; keymap.
-(defvar denote-link-mouse-map
+(define-obsolete-variable-alias
+  'denote-link-mouse-map
+  'denote-fontify-links-map
+  "4.2.0")
+
+(defvar denote-fontify-links-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'denote-link-open-at-point)
+    (define-key map (kbd "C-c C-o") #'denote-link-open-at-point)
+    (define-key map [mouse-1] #'denote-link-open-at-mouse)
     (define-key map [mouse-2] #'denote-link-open-at-mouse)
     (define-key map [mouse-3] #'denote-link-open-at-mouse)
     map)
@@ -6425,7 +6428,7 @@ Use optional DATA, else get the data with `denote-fontify-links--get-data'."
                  (visible-end (or (match-end 2) end))
                  (query (match-string-no-properties 1)))
             (let* ((properties `( mouse-face highlight
-                                  keymap ,denote-link-mouse-map
+                                  keymap ,denote-fontify-links-map
                                   denote-link-query-part ,query
                                   help-echo query
                                   htmlize-link (:uri ,query)
@@ -6465,43 +6468,53 @@ To be used as a `thing-at' provider."
 
 (defvar thing-at-point-provider-alist)
 
-;;;###autoload
-(defun denote-fontify-links-mode-maybe ()
-  "Enable `denote-fontify-links-mode' in a denote file unless in `org-mode'."
-  (when (and buffer-file-name
-             (not (derived-mode-p 'org-mode))
-             (denote-file-is-in-denote-directory-p buffer-file-name)
-             (denote-file-has-supported-extension-p buffer-file-name)
-             (denote-file-has-denoted-filename-p buffer-file-name))
-    (denote-fontify-links-mode)))
+(define-obsolete-function-alias
+  'denote-fontify-links-mode-maybe
+  'denote-fontify-links-mode
+  "4.2.0")
 
 ;;;###autoload
 (define-minor-mode denote-fontify-links-mode
-  "A minor mode to fontify and fold Denote links.
-
-Enabled this mode only when the current buffer is a Denote note and the
-major mode is not `org-mode' (or derived therefrom).  Consider using
-`denote-fontify-links-mode-maybe' for this purpose."
+  "Fontify Denote links in plain text buffers.
+Do so only when the current buffer is a Denote note and the major mode
+is not `org-mode' or `markdown-mode' (or any major mode derived
+therefrom)."
   :init-value nil
   :global nil
   :group 'denote
   (require 'thingatpt)
-  (if denote-fontify-links-mode
+  (if (and buffer-file-name
+           (not (derived-mode-p 'org-mode 'markdown-mode))
+           (denote-file-is-in-denote-directory-p buffer-file-name)
+           (denote-file-has-supported-extension-p buffer-file-name)
+           (denote-file-has-denoted-filename-p buffer-file-name))
       (progn
-        (add-to-invisibility-spec 'denote-fontified-link)
-        (denote-fontify-links--set-data)
-        (font-lock-add-keywords nil '((denote-fontify-links)))
-        (setq-local thing-at-point-provider-alist
-                    (append thing-at-point-provider-alist
-                            '((url . denote--get-link-file-path-at-point)))))
-    (remove-from-invisibility-spec 'denote-fontified-link)
-    (kill-local-variable 'denote-fontify-links--data)
-    (font-lock-remove-keywords nil '((denote-fontify-links)))
-    (setq-local thing-at-point-provider-alist
-                (delete
-                 '(url . denote--get-link-file-path-at-point)
-                 thing-at-point-provider-alist)))
-  (font-lock-update))
+        (if denote-fontify-links-mode
+            (progn
+              (add-to-invisibility-spec 'denote-fontified-link)
+              (denote-fontify-links--set-data)
+              (font-lock-add-keywords nil '((denote-fontify-links)))
+              (setq-local thing-at-point-provider-alist
+                          (append thing-at-point-provider-alist
+                                  '((url . denote--get-link-file-path-at-point)))))
+          (remove-from-invisibility-spec 'denote-fontified-link)
+          (kill-local-variable 'denote-fontify-links--data)
+          (font-lock-remove-keywords nil '((denote-fontify-links)))
+          (setq-local thing-at-point-provider-alist
+                      (delete
+                       '(url . denote--get-link-file-path-at-point)
+                       thing-at-point-provider-alist)))
+        (font-lock-update))
+    ;; NOTE 2026-01-02: If we do not set the value here, then it is
+    ;; toggled on/off even though the above `if' never reaches its
+    ;; THEN branch.
+    (setq denote-fontify-links-mode nil)
+    ;; NOTE 2026-01-02: In interactive use, we get a message that the
+    ;; mode is disabled if we call it in non-supported buffers.  I
+    ;; tried to `let' bind the `inhibit-message' but that did not
+    ;; work.  So I am doing this instead...
+    (when (called-interactively-p 'interactive)
+      (message "`denote-fontify-links-mode' works only in plain text buffers inside the `denote-directory'"))))
 
 ;;;;; Add links matching regexp
 
@@ -6542,13 +6555,15 @@ Optional NO-SORT is passed to `denote-link--prepare-links'."
 
 ;;;###autoload
 (defun denote-add-links (regexp &optional id-only)
-  "Insert links to all files whose file names match REGEXP.
+  "Insert links to all files whose file name matches REGEXP.
 Use this command to reference multiple files at once.  Particularly
 useful for the creation of metanotes (read the manual for more on the
 matter).
 
 Optional ID-ONLY has the same meaning as in `denote-link': it
-inserts links with just the identifier."
+inserts links with just the identifier.
+
+Also see `denote-link-to-all-files-with-contents'."
   (interactive
    (list
     (denote-files-matching-regexp-prompt "Insert links to files matching REGEXP")
@@ -6560,6 +6575,9 @@ inserts links with just the identifier."
     (if-let* ((files (denote-directory-files regexp :omit-current nil nil :has-identifier)))
         (denote-link--insert-links files file-type id-only)
       (message "No links matching `%s'" regexp))))
+
+(defalias 'denote-link-to-all-files-with-regexp 'denote-add-links
+  "Alias for `denote-add-links'.")
 
 ;;;;; Link to file with matching contents
 
