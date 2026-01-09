@@ -5323,9 +5323,8 @@ section 8.4
   │                              (car (denote-directories))
   │                            (denote-directories-get-common-root)))
   │               (files (funcall files-fn))
-  │               (dired-name (format-message files-matching-regexp))
   │               (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
-  │         (denote-sort-dired--prepare-buffer directory files-fn dired-name buffer-name)
+  │         (denote-sort-dired--prepare-buffer directory files-fn buffer-name)
   │       (message "No matching files for: %s" files-matching-regexp))))
   │ 
   │ (defun my-denote-sort-dired-without-empty-files (files-matching-regexp sort-by-component reverse exclude-regexp)
@@ -5344,9 +5343,8 @@ section 8.4
   │                              (car (denote-directories))
   │                            (denote-directories-get-common-root)))
   │               (files (funcall files-fn))
-  │               (dired-name (format-message files-matching-regexp))
   │               (buffer-name (funcall denote-sort-dired-buffer-name-function (format "%s (OMIT EMPTY)" files-matching-regexp) sort-by-component reverse-sort exclude-regexp)))
-  │         (denote-sort-dired--prepare-buffer directory files-fn dired-name buffer-name)
+  │         (denote-sort-dired--prepare-buffer directory files-fn buffer-name)
   │       (message "No matching files for: %s" files-matching-regexp))))
   │ 
   │ (defun my-denote-sort-dired-all-empty-files ()
@@ -7586,24 +7584,24 @@ section 21.12
 
   Contributions to code or the manual
         Abdul-Lateef Haji-Ali, Abin Simon, Adam Růžička, Alan Schmitt,
-        Alexandre Rousseau, Ashish Panigrahi, Ashton Wiersdorf, Aziz,
-        Benjamin Kästner, Bruno Boal, Charanjit Singh, Claudio
-        Migliorelli, Clemens Radermacher, Colin McLear, Damien Cassou,
-        Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna D.,
-        Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jakub
-        Szczerbowski, James Kalyan, Jean-Charles Bagneris, Jean-Philippe
-        Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen Hötzel, Kaushal
-        Modi, Kai von Fintel, Kierin Bell, Kostas Andreadis, Kristoffer
-        Balintona, Kyle Meyer, Laurent Gatto, Lucas Quintana, Maikol
-        Solis, Marc Fargas, Matthew Lemon, Noboru Ota (nobiot), Norwid
-        Behrnd, Octavian, Peter Prevos, Philip Kaludercic, Ryota,
-        Quiliro Ordóñez, Stephen R. Kifer, Stefan Monnier, Stefan
-        Thesing, Thibaut Benjamin, Tobias Lidman-Strauss, Tomasz
-        Hołubowicz, TomoeMami , Vedang Manerikar, Wesley Harvey, Yann
-        Dutrieux, Zhenxu Xu, alvmts, arsaber101, bryanrinders, eum3l,
-        experimental-code-86, ezchi, jarofromel, leinfink (Henrik),
-        l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-        pmenair, relict007, skissue.
+        Alexandre Rousseau, Alvin Hsu, Ashish Panigrahi, Ashton
+        Wiersdorf, Aziz, Benjamin Kästner, Bruno Boal, Charanjit Singh,
+        Claudio Migliorelli, Clemens Radermacher, Colin McLear, Damien
+        Cassou, Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian,
+        Glenna D., Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty,
+        Jakub Szczerbowski, James Kalyan, Jean-Charles Bagneris,
+        Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen
+        Hötzel, Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas
+        Andreadis, Kristoffer Balintona, Kyle Meyer, Laurent Gatto,
+        Lucas Quintana, Maikol Solis, Marc Fargas, Matthew Lemon, Noboru
+        Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
+        Kaludercic, Ryota, Quiliro Ordóñez, Stephen R. Kifer, Stefan
+        Monnier, Stefan Thesing, Thibaut Benjamin, Tobias
+        Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
+        Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts, arsaber101,
+        bryanrinders, eum3l, experimental-code-86, ezchi, jarofromel,
+        leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+        mentalisttraceur, pmenair, relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
