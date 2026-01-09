@@ -6255,10 +6255,7 @@ section 21.12
         expression. This is done after `FILES-MATCHING-REGEXP' and
         `OMIT-CURRENT' have been applied. With optional `HAS-IDENTIFIER'
         as a non-`nil' value, limit the results to files that have an
-        identifier. With Optional `DIRECTORIES' as a list of
-        directories, search through instead of looking into the variable
-        `denote-directory'. [ The optional `DIRECTORIES' is part of
-        4.2.0-dev. ]
+        identifier.
 
   Function `denote-directory-subdirectories'
         Return list of subdirectories in variable
