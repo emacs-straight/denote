@@ -1,6 +1,6 @@
 ;;; denote.el --- Simple notes with an efficient file-naming scheme -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022-2025  Free Software Foundation, Inc.
+;; Copyright (C) 2022-2026  Free Software Foundation, Inc.
 
 ;; Author: Protesilaos Stavrou <info@protesilaos.com>
 ;; Maintainer: Protesilaos Stavrou <info@protesilaos.com>
@@ -3826,14 +3826,22 @@ matches in the file.
 
 Return nil if the file type is not recognized."
   (when-let* ((extension (denote-get-file-extension-sans-encryption file))
-              (types (denote--file-types-with-extension extension)))
-    (if (= (length types) 1)
-        (caar types)
-      (or (car (seq-find
-                (lambda (type)
-                  (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
-                types))
-          (caar types)))))
+              (types (denote--file-types-with-extension extension))
+              (length (length types)))
+    (cond
+     ((= length 1)
+      (caar types))
+     ((car (seq-find
+            (lambda (type)
+              (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
+            types)))
+     ;; If the user has picked something like `markdown-toml' and this
+     ;; is an ".md" file, we can fall back to this.
+     ((and (> length 1)
+           (memq denote-file-type (mapcar #'car types)))
+      denote-file-type)
+     (t
+      (caar types)))))
 
 (defun denote-filetype-heuristics (file)
   "Return likely file type of FILE.
