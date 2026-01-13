@@ -135,7 +135,8 @@ Table of Contents
 .. 8. Use the `citar-denote' package for bibliography notes
 .. 9. Use the `consult-notes' package
 .. 10. Use the `denote-menu' package
-.. 11. Use the `denote-zettel-interface' package
+.. 11. Use the `denote-review' package
+.. 12. Use the `denote-zettel-interface' package
 21. Extending Denote
 .. 1. Access the data of the latest note
 .. 2. Create a new note in any directory
@@ -5199,7 +5200,26 @@ section 8.4
 <https://github.com/namilus/denote-menu>
 
 
-20.11 Use the `denote-zettel-interface' package
+20.11 Use the `denote-review' package
+─────────────────────────────────────
+
+  The [`denote-review'] package by Matto Fransen implements a a simple
+  review process for Denote notes.
+
+  The package provides options to extend the frontmatter of some notes
+  with a `reviewdate' field. It also provides an ordered tabulated list
+  of notes and their review date. The user is prompted to select either
+  all notes in a directory or to narrow to a single keyword.
+
+  Select a note in this list to edit, or request a random note from the
+  list to edit. Update the `reviewdate' of the note with a single
+  command.
+
+
+[`denote-review'] <https://codeberg.org/mattof/denote-review>
+
+
+20.12 Use the `denote-zettel-interface' package
 ───────────────────────────────────────────────
 
   The [`denote-zettel-interface' package by Kristoffer Balintona] is
@@ -7593,15 +7613,15 @@ section 21.12
         Jean-Philippe Gagné Guay, Jianwei Hou, Joseph Turner, Jürgen
         Hötzel, Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas
         Andreadis, Kristoffer Balintona, Kyle Meyer, Laurent Gatto,
-        Lucas Quintana, Maikol Solis, Marc Fargas, Matthew Lemon, Noboru
-        Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
-        Kaludercic, Ryota, Quiliro Ordóñez, Stephen R. Kifer, Stefan
-        Monnier, Stefan Thesing, Thibaut Benjamin, Tobias
-        Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
-        Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts, arsaber101,
-        bryanrinders, eum3l, experimental-code-86, ezchi, jarofromel,
-        leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
-        mentalisttraceur, pmenair, relict007, skissue.
+        Lucas Quintana, Maikol Solis, Marc Fargas, Matthew Lemon, Matto
+        Fransen, Noboru Ota (nobiot), Norwid Behrnd, Octavian, Peter
+        Prevos, Philip Kaludercic, Ryota, Quiliro Ordóñez, Stephen
+        R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin,
+        Tobias Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang
+        Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts,
+        arsaber101, bryanrinders, eum3l, experimental-code-86, ezchi,
+        jarofromel, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
+        maxbrieiev, mentalisttraceur, pmenair, relict007, skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
