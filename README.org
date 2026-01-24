@@ -1260,9 +1260,9 @@ to, for example, make further edits to the available text.
 
 The ~denote-open-or-create-with-command~ is like the above, except
 when it is about to create the new note it first prompts for the
-specific file-creating command to use ([[#h:17896c8c-d97a-4faa-abf6-31df99746ca6][Points of entry]]).  For example,
-the user may want to specify a signature for this new file, so they
-can select the ~denote-signature~ command.
+specific file-creating command to use ([[#h:98c732ac-da0e-4ebd-a0e3-5c47f9075e51][Choose which commands to prompt for]]).
+For example, the user may want to specify a signature for this
+new file, so they can select the ~denote-signature~ command.
 
 Denote provides similar functionality for linking to an existing note
 or creating a new one ([[#h:b6056e6b-93df-4e6b-a778-eebd105bac46][Link to a note or create it if missing]]).
@@ -3449,10 +3449,10 @@ this end, Denote provides two convenience commands:
 #+findex: denote-link-after-creating-with-command
 + ~denote-link-after-creating-with-command~ :: This command is like
   ~denote-link-after-creating~ except it prompts for a note-creating
-  command ([[*Points of entry][Points of entry]]).  Use this to, for example, call
-  ~denote-signature~ so that the newly created note has a signature as
-  part of its file name.  Optional =ID-ONLY= has the same meaning as
-  in the command ~denote-link-after-creating~.
+  command ([[#h:98c732ac-da0e-4ebd-a0e3-5c47f9075e51][Choose which commands to prompt for]]). Use this to, for
+  example, call ~denote-signature~ so that the newly created note has
+  a signature as part of its file name. Optional =ID-ONLY= has the
+  same meaning as in the command ~denote-link-after-creating~.
 
 #+findex: denote-link-or-create
 + ~denote-link-or-create~ :: Use ~denote-link~ on =TARGET= file,
@@ -3473,6 +3473,12 @@ this end, Denote provides two convenience commands:
 
   This command has the alias ~denote-link-to-existing-or-new-note~,
   which helps with discoverability.
+
+#+findex: denote-link-or-create-with-command
++ ~denote-link-or-create-with-command~ :: This command is the same
+  concept as ~denote-link-or-create~ except it prompts for the
+  specific command for creating a new note ([[#h:98c732ac-da0e-4ebd-a0e3-5c47f9075e51][Choose which commands to prompt for]]).
+  [ The ~denote-link-or-create-with-command~ is part of {{{development-version}}}. ]
 
 In all of the above, an optional prefix argument (=C-u= by default)
 creates a link that consists of just the identifier.  This has the
@@ -4547,6 +4553,29 @@ their files, navigate around, and the like.
 
 Note that the package is in early development as of this writing
 (2024-12-03 10:18 +0200).
+
+** Use the ~mir~ package for incremental reading
+:PROPERTIES:
+:CUSTOM_ID: h:0560dbf3-25a1-4eae-aa9e-5900d7e37a2e
+:END:
+
+The [[https://github.com/gvalson/mir.el][mir package]] builds on top of ~denote~, ~denote-sequence~ and
+Emacs' SQLite support to provide a workflow for prioritizing,
+scheduling and reading a massive amount of text and extracting the
+most useful parts out of it. This is accomplished using a process
+called incremental reading (for more information, see the package's
+README). ~denote~ is used as a backbone for storing imported
+documents such that they are easily modifiable, uniquely identifiable
+and easy to genealogically query. In particular, the file's ID is
+used to store scheduling information in the database and the keyword
+component is used to build a tree-like hierarchy (i.e. a sequence of
+notes) that makes it easy to see where the source of a given
+extracted note is.
+
+As of writing this (January 2026), ~mir~ is still in heavy development
+and does not feature all the functionality that would make it a valid
+replacement of other incremental reading tools. However, work is
+underway to make it feature-complete.
 
 * Extending Denote
 :PROPERTIES:
@@ -6862,9 +6891,9 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   Monnier, Stefan Thesing, Thibaut Benjamin, Tobias Lidman-Strauss,
   Tomasz Hołubowicz, TomoeMami , Vedang Manerikar, Wesley Harvey, Yann
   Dutrieux, Zhenxu Xu, alvmts, arsaber101, bryanrinders, dulikiles,
-  eum3l, experimental-code-86, ezchi, jarofromel, leinfink (Henrik),
-  l-o-l-h (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur,
-  pmenair, relict007, skissue.
+  eum3l, experimental-code-86, ezchi, gvalson, jarofromel, leinfink
+  (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
+  mentalisttraceur, pmenair, relict007, skissue.
 
 + Ideas and/or user feedback :: Abin Simon, Aditya Yadav, Alan
   Schmitt, Aleksandr Vityazev, Alex Griffin, Alex Hirschfeld, Alexis

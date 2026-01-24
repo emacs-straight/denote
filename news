@@ -1,0 +1,95 @@
+                         ━━━━━━━━━━━━━━━━━━━━━━
+                          CHANGE LOG OF DENOTE
+
+                          Protesilaos Stavrou
+                          info@protesilaos.com
+                         ━━━━━━━━━━━━━━━━━━━━━━
+
+
+This document contains the release notes for each tagged commit on the
+project’s main git repository: <https://github.com/protesilaos/denote>.
+
+The newest release is at the top.  For further details, please consult
+the manual: <https://protesilaos.com/emacs/denote>.
+
+Table of Contents
+─────────────────
+
+1. Version 4.1.0 on 2025-10-17
+
+
+1 Version 4.1.0 on 2025-10-17
+═════════════════════════════
+
+  The overarching theme of version `4.1.0' is that of continuing to
+  deliver on the highly hackable/flexible/powerful potential of Denote.
+  All the core functionality is the same as before and you still only
+  need a tiny configuration to use Denote productively. We are adding
+  more refinements and subtle improvements under the hood, while making
+  it even easier for advanced users/developers to piece together a
+  workflow that matches their particular needs.
+
+  Since version `4.0.0', we have moved the “Denote extras” files into
+  their own packages. I cover their changes further down after I
+  elaborate on all the changes to the core Denote package:
+
+  • 
+  • 
+  • 
+
+  Note that I write all the release notes by hand. The reason is that I
+  consider this process an essential part of my role as a maintainer.
+  Taking the time to review and document everything ensures that (i) I
+  am well informed about the state of the package, (ii) I did not forget
+  anything about this development cycle, and (iii) I take another look
+  at the changes we made to ensure everything is in order.
+
+
+1.1 Overview of the new features for core Denote
+────────────────────────────────────────────────
+
+  • The user option `denote-directory' can be assigned to a list of
+    directories. The original string value is also acceptable and
+    remains the default.
+
+  • Advanced users can define a completely custom scheme for
+    identifiers. This can be as simple as automatically assigned ordinal
+    numbers to increasingly complex patterns that may also involve user
+    input.
+
+  • The command `denote-find-backlink-with-location' is like
+    `denote-find-backlink' except it also moves to the exact location of
+    the link in the corresponding file.
+
+  • All Denote buffer names share a common prefix, which is subject to
+    the user option `denote-buffer-name-prefix'. This makes it easier to
+    spot them in the buffer list.
+
+  • The command `denote-dired' (alias `denote-sort-dired') can sort
+    files by `random' and `last-modified' in addition to the methods
+    that involve Denote file name components.
+
+  • The user option `denote-query-sorting' controls how files in all
+    query buffers are sorted by default. This covers backlinks, query
+    links for file contents, and any buffer produced by the
+    `denote-grep' command. It benefits from the internal “Denote sort”
+    mechanism, which is also used by `denote-dired' and the Org dynamic
+    blocks of the `denote-org' package.
+
+  Remember that the release notes are true only at the time of
+  publication. The single source of truth always is the official manual.
+
+
+1.2 Set `denote-directory' to a list of directories
+───────────────────────────────────────────────────
+
+  The user option `denote-directory' can optionally be bound to a list
+  of file system paths, each of which represents a directory root, such
+  as `'("/home/prot/Documents/work/" "=/home/prot/Git/hut/")' (Denote
+  has always supported subdirectories, even for a singular
+  `denote-directory').
+
+  When creating new files, such as with the `denote' command, the first
+  directory on the list will be selected. This can be changed by
+  modifying the `denote-prompts' user option so that it asks for a
+  directory or subdirectory thereof. Or by writing small wrapper …  …
