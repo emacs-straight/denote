@@ -7386,9 +7386,9 @@ Ideas and/or user feedback
      atanasj, azegas, babusri, bdillahu, coherentstate, doolio, duli,
      drcxd, elge70, elliottw, fingerknight, hpgisler,
      hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
-     mentalisttraceur, mjkalyan, oatmealm, pRot0ta1p, rbenit68,
-     relict007, sarcom-sar, sienic, skissue, sundar bp, wuzhihao,
-     yetanotherfossman, zadca123
+     mentalisttraceur, mjkalyan, oatmealm, Pratik-Mishra-4979,
+     pRot0ta1p, rbenit68, relict007, sarcom-sar, sienic, skissue, sundar
+     bp, wuzhihao, yetanotherfossman, zadca123
 
    Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
@@ -8548,11 +8548,11 @@ Node: Speed up backlinks' or query links' buffer creation?343297
 Node: Why do I get ``Search failed with status 1'' when I search for backlinks?344674
 Node: Why do I get a double #+title in Doom Emacs?345735
 Node: Acknowledgements346456
-Node: GNU Free Documentation License349857
-Node: Indices375014
-Node: Function index375187
-Node: Variable index399933
-Node: Concept index412979
+Node: GNU Free Documentation License349877
+Node: Indices375034
+Node: Function index375207
+Node: Variable index399953
+Node: Concept index412999
 
 End Tag Table
 
