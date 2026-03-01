@@ -5293,30 +5293,14 @@ assigned to `denote-link-description-format' accepts a single FILE
 argument.  In that case, the function takes care to find the TYPE on its
 own to return the appropriate description."
   (cond
-   ((when-let* ((_ (functionp denote-link-description-format))
-                ;; NOTE 2025-11-23: We used to have
-                ;; `denote-link-description-format' accept a function
-                ;; with a single parameter.  Now we expect two
-                ;; arguments, but must be backward compatible.
-                ;;
-                ;; By the way, this is how I found `wrong-number-of-arguments':
-                ;;
-                ;;     (let ((errors nil))
-                ;;       (mapatoms
-                ;;        (lambda (symbol)
-                ;;          (when (get symbol 'error-conditions)
-                ;;            (push symbol errors))))
-                ;;       errors)
-                ;;
-                ;; As for `error-conditions', I looked into the source
-                ;; of `define-error' to figure out what an "error" is
-                ;; and saw the property there.
-                (description (ignore-error wrong-number-of-arguments
-                               (funcall denote-link-description-format file file-type))))
-      description))
    ((functionp denote-link-description-format)
-    (display-warning 'denote "The `denote-link-description-format' function is now called with FILE and FILE-TYPE" :warning)
-    (funcall denote-link-description-format file))
+    ;; NOTE 2025-11-23: `denote-link-description-format' used to
+    ;; accept a function with a single parameter.  Now we expect two
+    ;; arguments, but must be backward compatible.
+    (if (> (cdr (func-arity denote-link-description-format)) 1)
+        (funcall denote-link-description-format file file-type)
+      (display-warning 'denote "The `denote-link-description-format' function is now called with FILE and FILE-TYPE" :warning)
+      (funcall denote-link-description-format file)))
    ((stringp denote-link-description-format)
     (if-let* ((region (denote--get-active-region-content)))
         region
@@ -6990,9 +6974,20 @@ backend."
          (target (caar data)))
     (denote-get-path-by-id target)))
 
+(declare-function org-link-preview-file "ol" (ov path link))
+
+;;;###autoload
+(defun denote-link-preview-file (overlay link-target link-data)
+  "Use `org-link-preview-file' for OVERLAY, LINK-TARGET, and LINK-DATA.
+Unless the LINK-TARGET has search options, then try to produce a preview.
+
+For more details, refer to the documentation of `org-link-set-parameters'."
+  (pcase-let* ((`(,path ,_ ,file-search) (denote-link--ol-resolve-link-to-target link-target :full-data)))
+    (unless file-search
+      (org-link-preview-file overlay path link-data))))
+
 ;; The `eval-after-load' part with the quoted lambda is adapted from
 ;; Elfeed: <https://github.com/skeeto/elfeed/>.
-
 ;;;###autoload
 (eval-after-load 'org
   `(funcall
@@ -7003,6 +6998,7 @@ backend."
         (with-no-warnings
           (org-link-set-parameters
            "denote"
+           :preview #'denote-link-preview-file
            :follow #'denote-link-ol-follow
            :face #'denote-get-link-face
            :help-echo #'denote-link-ol-help-echo

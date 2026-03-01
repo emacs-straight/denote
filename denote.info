@@ -7357,13 +7357,14 @@ Contributions to code or the manual
      Balintona, Kyle Meyer, Laurent Gatto, Lucas Quintana, Maikol Solis,
      Marc Fargas, Matthew Batson, Matthew Lemon, Matto Fransen, Noboru
      Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
-     Kaludercic, Ryota, Quiliro Ordóñez, Stephen R.  Kifer, Stefan
-     Monnier, Stefan Thesing, Thibaut Benjamin, Tobias Lidman-Strauss,
-     Tomasz Hołubowicz, TomoeMami , Vedang Manerikar, Wesley Harvey,
-     Yann Dutrieux, Zhenxu Xu, alvmts, arsaber101, bryanrinders,
-     dulikiles, eum3l, experimental-code-86, ezchi, gvalson, jarofromel,
-     leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
-     mentalisttraceur, pmenair, relict007, skissue.
+     Kaludercic, Ryota, Samuel W.  Flint, Quiliro Ordóñez, Stephen R.
+     Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin, Tobias
+     Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
+     Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts, arsaber101,
+     bryanrinders, dulikiles, eum3l, experimental-code-86, ezchi,
+     gvalson, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
+     mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
+     skissue.
 
 Ideas and/or user feedback
      Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
@@ -8548,11 +8549,11 @@ Node: Speed up backlinks' or query links' buffer creation?343297
 Node: Why do I get ``Search failed with status 1'' when I search for backlinks?344674
 Node: Why do I get a double #+title in Doom Emacs?345735
 Node: Acknowledgements346456
-Node: GNU Free Documentation License349877
-Node: Indices375034
-Node: Function index375207
-Node: Variable index399953
-Node: Concept index412999
+Node: GNU Free Documentation License349899
+Node: Indices375056
+Node: Function index375229
+Node: Variable index399975
+Node: Concept index413021
 
 End Tag Table
 
