@@ -90,7 +90,8 @@ Table of Contents
 ..... 1. A custom identifier that is a simple incrementing number scheme
 ..... 2. A custom identifier that is a simple string given at the prompt each time
 ..... 3. A custom identifier to include the day of the week as a capital letter
-..... 4. A custom identifier to encode publisher data
+..... 4. A custom identifier without the time separator
+..... 5. A custom identifier to encode publisher data
 9. Front matter
 .. 1. Change the front matter format
 .. 2. Regenerate front matter
@@ -3294,7 +3295,43 @@ section 8.4
   └────
 
 
-8.5.4 A custom identifier to encode publisher data
+8.5.4 A custom identifier without the time separator
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The default Denote identifier consists of the date as `YYYYMMDD', then
+  the letter `T', and then the time as `HHMMSS'. Users who do not want
+  the letter `T' there can use the following:
+
+  ┌────
+  │ (setq denote-get-identifier-function #'my-denote-generate-identifier-without-time-separator)
+  │ 
+  │ (defconst my-denote-date-identifier-format-without-time-separator
+  │   (replace-regexp-in-string "T" "" denote-date-identifier-format))
+  │ 
+  │ (defun my-denote-generate-identifier-without-time-separator (initial-identifier date)
+  │   "Generate an identifier based on DATE.
+  │ 
+  │ If INITIAL-IDENTIFIER is not already used, return it.  Else, if it is
+  │ possible to derive an identifier from it, return this identifier.
+  │ 
+  │ Else, use the DATE.  If it is nil, use `current-time'.
+  │ 
+  │ Slightly modified version of `denote-generate-identifier-as-date'."
+  │   (let ((denote-used-identifiers (or denote-used-identifiers (denote--get-all-used-ids))))
+  │     (cond ((and initial-identifier
+  │                 (not (gethash initial-identifier denote-used-identifiers)))
+  │            initial-identifier)
+  │           ((and initial-identifier
+  │                 (string-match-p denote-date-identifier-regexp initial-identifier)
+  │                 (date-to-time initial-identifier))
+  │            (denote--find-first-unused-id-as-date initial-identifier))
+  │           (t
+  │            (denote--find-first-unused-id-as-date
+  │             (format-time-string my-denote-date-identifier-format-without-time-separator (or date (current-time))))))))
+  └────
+
+
+8.5.5 A custom identifier to encode publisher data
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   This is a sample implementation of custom Denote identifiers ([Define
