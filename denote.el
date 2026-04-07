@@ -951,12 +951,15 @@ Make any parent directories as well."
     (unless (file-directory-p directory)
       (make-directory directory :parents))))
 
-(defun denote-directories--get-paths ()
-  "Return variable `denote-directory' as a list of directory paths."
+(defun denote-directories--get-paths (directory-or-directories)
+  "Return DIRECTORY-OR-DIRECTORIES as a list of absolute paths."
+  (unless (or (seq-every-p #'stringp directory-or-directories)
+              (stringp directory-or-directories))
+    (error "The `%S' has to be a string or a list of strings" directory-or-directories))
   (let ((get-dir (lambda (directory) (file-name-as-directory (expand-file-name directory)))))
-    (if (listp denote-directory)
-        (mapcar get-dir denote-directory)
-      (list (funcall get-dir denote-directory)))))
+    (if (listp directory-or-directories)
+        (mapcar get-dir directory-or-directories)
+      (list (funcall get-dir directory-or-directories)))))
 
 (defun denote-directories ()
   "Return path of variable `denote-directory' as a proper directory.
@@ -974,7 +977,7 @@ to override what this function returns."
          "Silo value must be a string; `local' or `default-directory' are obsolete"
          :error)
         (list silo-dir))
-    (let ((denote-directories (denote-directories--get-paths)))
+    (let ((denote-directories (denote-directories--get-paths denote-directory)))
       (denote-directories--make-paths denote-directories)
       denote-directories)))
 
@@ -1035,6 +1038,11 @@ Valid values are: t, nil, `on-creation', and `on-rename'.")
 
 (defvar denote-accept-nil-date nil
   "Make creation and renaming commands use `current-time' when date is nil.")
+
+(defun denote--user-error-if-not-major-mode (mode)
+  "Signal `user-error' is MODE is not `derived-mode-p'."
+  (unless (derived-mode-p mode)
+    (user-error "Only use this command in a `%s' buffer" mode)))
 
 ;;;;; Sluggification functions
 
@@ -1228,11 +1236,11 @@ For our purposes, a note must satisfy `file-regular-p' and
   "4.1.0")
 
 (defun denote-file-has-denoted-filename-p (file)
-  "Return non-nil if FILE respects the file-naming scheme of Denote.
+  "Return non-nil if FILE respects the Denote file-naming scheme.
 
-This tests the rules of Denote's file-naming scheme.  Sluggification is
-ignored.  It is done by removing all file name components and validating
-what remains."
+Test the rules of Denote's file-naming scheme, notwithstanding the
+`denote-file-name-slug-functions'.  As such, ignore sluggification, by
+removing all file name components and validating what remains."
   (let* ((initial-filename (file-name-nondirectory file))
          (filename initial-filename)
          (title (denote-retrieve-filename-title file))
@@ -1939,6 +1947,36 @@ If REVERSE is nil, use the value of the user option
             "\n"
             (propertize "No more matching files" 'face 'warning))))
 
+(defun denote-sort-dired--get-files (regexp component reverse-sort exclude-regexp)
+  "Do the work of `denote-sort-dired' to match and sort the FILES.
+If FILES is nil, search for them in the variable `denote-directory',
+applying REGEXP and then EXCLUDE-REGEXP.  Finally, sort them by
+COMPONENT and perform a REVERSE-SORT if it is non-nil."
+  (when-let* ((files (denote-sort-get-directory-files regexp component reverse-sort nil exclude-regexp)))
+    (mapcar
+     (lambda (file)
+       (let ((directory (denote-directories-get-common-root)))
+         (when (string-prefix-p directory file)
+           (substring file (length directory)))))
+     files)))
+
+(defvar-local denote-sort-dired--last-arguments nil
+  "The last `denote-sort-dired' arguments.")
+
+(defun denote-sort-dired-revert (&rest _)
+  "Revert the current `denote-sort-dired' buffer.
+This is used as the `revert-buffer-function' for `denote-sort-dired'
+buffers.  It uses the values stored in the buffer-local variable
+`denote-sort-dired--last-arguments'."
+  (pcase-let* ((`(,regexp ,component ,reverse-sort ,exclude-regexp) denote-sort-dired--last-arguments))
+    (dlet ((ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
+      (if-let* ((directory (denote-directories-get-common-root))
+                (files (denote-sort-dired--get-files regexp component reverse-sort exclude-regexp)))
+          (progn
+            (setq-local dired-directory (cons directory files))
+            (dired-revert))
+        (denote-dired-empty-mode)))))
+
 ;;;###autoload
 (defun denote-sort-dired (files-matching-regexp sort-by-component reverse exclude-regexp)
   "Produce Dired buffer with sorted files from variable `denote-directory'.
@@ -1967,30 +2005,25 @@ also prompt for SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
 When called from Lisp, the arguments are a string, a symbol among
 `denote-sort-components', a non-nil value, and a string, respectively."
   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
-  (pcase-let* ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse))
-               (files-fn `(lambda ()
-                            (let ((files (denote-sort-get-directory-files ,files-matching-regexp ',component ,reverse-sort nil ,exclude-regexp))
-                                  (partial-relative-fn ,(let ((directory (denote-directories-get-common-root)))
-                                                          (lambda (file)
-                                                            (when (string-prefix-p directory file)
-                                                              (substring file (length directory)))))))
-                              (mapcar partial-relative-fn files)))))
+  (pcase-let ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse)))
     (dlet ((ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
       (if-let* ((directory (and (not (null (denote-directories)))
                                 (denote-directories-get-common-root)))
-                (files (funcall files-fn))
+                (files (denote-sort-dired--get-files files-matching-regexp component reverse-sort exclude-regexp))
                 (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp))
                 (dired-buffer (dired (cons directory files))))
           (with-current-buffer dired-buffer
             (rename-buffer buffer-name :unique)
-            (setq-local revert-buffer-function
-                        (lambda (&rest _)
-                          (dlet ((ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
-                            (if-let* ((files (funcall files-fn)))
-                                (progn
-                                  (setq-local dired-directory (cons directory files))
-                                  (dired-revert))
-                              (denote-dired-empty-mode))))))
+            ;; NOTE 2026-04-06: I am adding the `denote-sort-dired--last-arguments' because the previous implementation
+            ;; was not updating the existing Dired buffer after a subsequent `denote-sort-dired' call.
+            (let ((last-arguments (list files-matching-regexp component reverse-sort exclude-regexp)))
+              (cond
+               ((null denote-sort-dired--last-arguments)
+                (setq-local denote-sort-dired--last-arguments last-arguments))
+               ((not (equal denote-sort-dired--last-arguments last-arguments))
+                (setq-local denote-sort-dired--last-arguments last-arguments)
+                (denote-sort-dired-revert))))
+            (setq-local revert-buffer-function #'denote-sort-dired-revert))
         (message "No matching files for: %s" files-matching-regexp)))))
 
 (defalias 'denote-dired 'denote-sort-dired
@@ -2669,6 +2702,11 @@ or `line', referring to what the function should retrieve."
 (denote--define-retrieve-front-matter identifier line)
 (denote--define-retrieve-front-matter date value)
 (denote--define-retrieve-front-matter date line)
+
+(defun denote--regexp-in-file-p (regexp file)
+  "Return t if REGEXP matches in the FILE."
+  (denote--file-with-temp-buffer file
+    (re-search-forward regexp nil t 1)))
 
 ;; These are private front matter retrieval functions, working with a content parameter
 
@@ -3824,7 +3862,8 @@ Return nil if the file type is not recognized."
       (caar types))
      ((car (seq-find
             (lambda (type)
-              (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file))
+              (ignore-errors
+                (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file)))
             types)))
      ;; If the user has picked something like `markdown-toml' and this
      ;; is an ".md" file, we can fall back to this.
@@ -3900,11 +3939,6 @@ if appropriate."
     (with-current-buffer (find-file-noselect file)
       (goto-char (point-min))
       (insert new-front-matter))))
-
-(defun denote--regexp-in-file-p (regexp file)
-  "Return t if REGEXP matches in the FILE."
-  (denote--file-with-temp-buffer file
-    (re-search-forward regexp nil t 1)))
 
 (defun denote-rewrite-keywords (file keywords file-type &optional save-buffer)
   "Rewrite KEYWORDS in FILE outright according to FILE-TYPE.
@@ -5832,25 +5866,50 @@ concomitant alist, such as `denote-backlinks-display-buffer-action'."
   "Function to make an Xref buffer showing query link results.
 It accepts the same arguments as `denote-make-links-buffer'.")
 
-(defun denote--user-error-if-not-major-mode (mode)
-  "Signal `user-error' is MODE is not `derived-mode-p'."
-  (unless (derived-mode-p mode)
-    (user-error "Only use this command inside the `%s'" mode)))
+(define-obsolete-function-alias
+  'denote-grep-query-prompt
+  'denote-query-prompt
+  "4.2.0")
+
+(defvar denote-query-prompt-history nil
+  "Minibuffer history for `denote-query-prompt'.")
+
+(defun denote-query-prompt (&optional prompt-text)
+  "Prompt for a grep query in the minibuffer.
+With optional PROMPT-TEXT use it for the minibuffer prompt.
+
+For backward-compatibility, PROMPT-TEXT can also be a keyword among
+`:focused', `:dired', and `:region', to format the prompt accordingly
+for the given type of search.  Developers should not rely on this, as we
+will remove it in future versions of Denote---just use PROMPT-TEXT as a
+string."
+  (let ((default (car denote-query-prompt-history)))
+    (read-string
+     (format-prompt
+      (pcase prompt-text
+        ((pred stringp) prompt-text)
+        (:focus
+         "Search for REGEXP in all files")
+        (:dired
+         "Search for REGEXP in marked Dired files")
+        (:region
+         "Search for REGEXP in the active region files")
+        (_ "Search (all Denote files)"))
+      default)
+     nil 'denote-grep-history default)))
 
 (defun denote-query-focus-last-search (query)
-  "Search QUERY in the content of files which matched the last search.
-\"Last search\" here means any call to `denote-grep',
-`denote-backlinks', `denote-query-contents-link', or, generally, any
-command that relies on the `denote-make-links-buffer'."
+  "Search QUERY in the content of files in the current Denote query buffer.
+A query buffer is one that contains the results of commands such as
+`denote-grep', `denote-backlinks', `denote-query-contents-link', or,
+generally, any command that relies on the `denote-make-links-buffer'."
   (interactive
    (or (denote--user-error-if-not-major-mode 'denote-query-mode)
-       (list (denote-grep-query-prompt "Search (only files matched last): ")))
+       (list (denote-query-prompt :focus)))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (denote-make-links-buffer
-   query denote-query--last-files
-   nil '(display-buffer-same-window))
-  (message "Searching `%s' in files matched previously" query))
+  (denote-make-links-buffer query denote-query--last-files nil '(display-buffer-same-window))
+  (message "Searching `%s' in files: `%S'" query denote-query--last-files))
 
 (defun denote-query-exclude-files (regexp)
   "Exclude files whose name matches REGEXP from current search buffer.
@@ -5995,27 +6054,7 @@ its documentation for the technicalities."
   :package-version '(denote . "4.0.0")
   :group 'denote-query)
 
-(defun denote-grep-query-prompt (&optional prompt-text)
-  "Prompt for a grep query in the minibuffer.
-With optional PROMPT-TEXT use it for the minibuffer prompt.
-
-For backward-compatibility, PROMPT-TEXT can also be a keyword among
-`:focused', `:dired', and `:region', to format the prompt accordingly
-for the given type of search.  Developers should not rely on this, as we
-will remove it in future versions of Denote---just use PROMPT-TEXT as a
-string."
-  (read-string
-   (pcase prompt-text
-     ((pred stringp) prompt-text)
-     (:focus
-      "Search (only files matched last): ")
-     (:dired
-      "Search (only marked dired files): ")
-     (:region
-      "Search (only files referenced in region): ")
-     (_ "Search (all Denote files): "))
-   nil 'denote-grep-history))
-
+;; FIXME 2026-04-06: Do we need an extra prompt in light of `denote-query-prompt'?
 (defvar denote-grep-file-regexp-history nil
   "Minibuffer history for `denote-grep' commands asking for a file regexp.
 Also see `denote-grep-history'.")
@@ -6044,14 +6083,14 @@ filtering (see the manual for details).
 
 You can insert a link to a grep search in any note by using the command
 `denote-query-contents-link'."
-  (interactive (list (denote-grep-query-prompt)))
+  (interactive (list (denote-query-prompt)))
   (let (denote-query--omit-current)
     (denote-make-links-buffer query nil nil denote-grep-display-buffer-action)))
 
 ;;;###autoload
 (defun denote-grep-marked-dired-files (query)
   "Do the equivalent of `denote-grep' for QUERY in marked Dired files."
-  (interactive (list (denote-grep-query-prompt "Search (only marked dired files): ")))
+  (interactive (list (denote-query-prompt :dired)))
   (if-let* ((files (dired-get-marked-files)))
       (denote-make-links-buffer query files nil denote-grep-display-buffer-action)
     (user-error "No marked files")))
@@ -6086,7 +6125,7 @@ file listings such as those of `dired' and the command-line `ls' program."
   (interactive
    (if (region-active-p)
        (list
-        (denote-grep-query-prompt "Search (only files referenced in region): ")
+        (denote-query-prompt :region)
         (region-beginning)
         (region-end))
      (user-error "No region is active; aborting")))
