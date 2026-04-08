@@ -118,8 +118,9 @@ Table of Contents
 .. 1. The `denote-rename-buffer-format' option
 15. Use Org dynamic blocks
 16. Display filtered and sorted files with `denote-sort-dired' or `denote-dired'
-.. 1. Configure what extra prompts `denote-sort-dired' issues
-.. 2. Define a sorting function per component
+.. 1. Focus the `denote-dired' buffer with `denote-dired-focus'
+.. 2. Configure what extra prompts `denote-sort-dired' issues
+.. 3. Define a sorting function per component
 ..... 1. Sort signatures that include Luhmann-style sequences
 17. Use `denote-grep' to search inside files
 18. Interact with the links buffer
@@ -4638,16 +4639,40 @@ backlinks?] See section 27.11
 
 [The file-naming scheme] See section 8
 
-[Define a sorting function per component] See section 16.2
+[Define a sorting function per component] See section 16.3
 
 [Configure what extra prompts `denote-sort-dired' issues] See section
-16.1
+16.2
 
 [Use `denote-grep' to search inside files] See section 17
 
 [Use `dired-virtual-mode' for arbitrary file listings] See section 21.7
 
-16.1 Configure what extra prompts `denote-sort-dired' issues
+16.1 Focus the `denote-dired' buffer with `denote-dired-focus'
+──────────────────────────────────────────────────────────────
+
+  [ This is part of 4.2.0-dev. The specifics may change. ]
+
+  The command `denote-dired-focus' (alias `denote-sort-dired-focus')
+  gives users the option to further filter an existing Dired buffer that
+  was produced by the `denote-dired' command ([Display filtered and
+  sorted files with `denote-sort-dired' or `denote-dired']).
+
+  Call `denote-dired-focus' from inside such a Dired buffer to further
+  limit its contents to files matching the given regular expression or
+  plain string. This is not a new query. It builds on top of the current
+  Dired buffer’s file list to operate only on those files.
+
+  Call `denote-dired-focus' with a prefix argument (`C-u' by default) to
+  invert the logic: all the files that match the given regular
+  expression are removed from the Dired buffer.
+
+
+[Display filtered and sorted files with `denote-sort-dired' or
+`denote-dired'] See section 16
+
+
+16.2 Configure what extra prompts `denote-sort-dired' issues
 ────────────────────────────────────────────────────────────
 
   By default, the `denote-sort-dired' command prompts for (i) a query to
@@ -4700,7 +4725,7 @@ backlinks?] See section 27.11
 16
 
 
-16.2 Define a sorting function per component
+16.3 Define a sorting function per component
 ────────────────────────────────────────────
 
   When sorting by `title', `keywords', `signature', `identifier',
@@ -4731,12 +4756,12 @@ backlinks?] See section 27.11
 
 
 [Configure what extra prompts `denote-sort-dired' issues] See section
-16.1
+16.2
 
 [Sort signatures that include Luhmann-style sequences] See section
-16.2.1
+16.3.1
 
-16.2.1 Sort signatures that include Luhmann-style sequences
+16.3.1 Sort signatures that include Luhmann-style sequences
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   [ The `denote-sequence' package (by Protesilaos) covers this use-case
@@ -4795,7 +4820,7 @@ backlinks?] See section 27.11
 
 [The file-naming scheme] See section 8
 
-[Define a sorting function per component] See section 16.2
+[Define a sorting function per component] See section 16.3
 
 
 17 Use `denote-grep' to search inside files
@@ -7766,8 +7791,8 @@ section 21.13
         Molinari, Samuel W. Flint, Sergio Rey, Suhail Singh, Shreyas
         Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
         Stankus, Vick (VicZz), Viktor Haag, Vineet C. Kulkarni, Wade
-        Mealing, Wilf, Yi Liu, Ypot, atanasj, azegas, babusri, bdillahu,
-        coherentstate, doolio, duli, drcxd, elge70, elliottw,
+        Mealing, Wilf, Yi Liu, Ypot, 82Kang, atanasj, azegas, babusri,
+        bdillahu, coherentstate, doolio, duli, drcxd, elge70, elliottw,
         fingerknight, hpgisler, hyperfocus1337,johkneisl, jtpavlock,
         juh, leafarbelm, mentalisttraceur, mjkalyan, oatmealm,
         Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007, sarcom-sar,

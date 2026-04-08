@@ -1947,45 +1947,55 @@ If REVERSE is nil, use the value of the user option
             "\n"
             (propertize "No more matching files" 'face 'warning))))
 
-(defun denote-sort-dired--get-files (regexp component reverse-sort exclude-regexp)
+(defun denote-sort-dired--get-files (regexp component reverse-sort exclude-regexp files directory)
   "Do the work of `denote-sort-dired' to match and sort the FILES.
+Apply REGEXP to narrow FILES and EXCLUDE-REGEXP to omit matches from the
+resulting list.
+
 If FILES is nil, search for them in the variable `denote-directory',
-applying REGEXP and then EXCLUDE-REGEXP.  Finally, sort them by
-COMPONENT and perform a REVERSE-SORT if it is non-nil."
-  (when-let* ((files (denote-sort-get-directory-files regexp component reverse-sort nil exclude-regexp)))
+and then collect them relative to DIRECTORY.
+
+At all times, sort by COMPONENT and do REVERSE-SORT if it is non-nil."
+  (if files
+      (setq files (denote-sort-files files component reverse-sort)
+            files (seq-filter (lambda (file) (string-match-p regexp file)) files)
+            files (seq-remove (lambda (file) (when exclude-regexp (string-match-p exclude-regexp file))) files))
     (mapcar
      (lambda (file)
-       (let ((directory (denote-directories-get-common-root)))
-         (when (string-prefix-p directory file)
-           (substring file (length directory)))))
-     files)))
+       (if (string-prefix-p directory file)
+           (substring file (length directory))
+         file))
+     (denote-sort-get-directory-files regexp component reverse-sort nil exclude-regexp))))
 
 (defvar-local denote-sort-dired--last-arguments nil
   "The last `denote-sort-dired' arguments.")
+
+(defvar-local denote-sort-dired--last-files nil
+  "The last `denote-sort-dired' matched files (absolute paths).")
 
 (defun denote-sort-dired-revert (&rest _)
   "Revert the current `denote-sort-dired' buffer.
 This is used as the `revert-buffer-function' for `denote-sort-dired'
 buffers.  It uses the values stored in the buffer-local variable
 `denote-sort-dired--last-arguments'."
-  (pcase-let* ((`(,regexp ,component ,reverse-sort ,exclude-regexp) denote-sort-dired--last-arguments))
+  (pcase-let* ((`(,regexp ,component ,reverse-sort ,exclude-regexp ,files) denote-sort-dired--last-arguments))
     (dlet ((ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
       (if-let* ((directory (denote-directories-get-common-root))
-                (files (denote-sort-dired--get-files regexp component reverse-sort exclude-regexp)))
+                (matched-files (denote-sort-dired--get-files regexp component reverse-sort exclude-regexp files directory)))
           (progn
-            (setq-local dired-directory (cons directory files))
+            (setq-local dired-directory (cons directory matched-files))
             (dired-revert))
         (denote-dired-empty-mode)))))
 
 ;;;###autoload
-(defun denote-sort-dired (files-matching-regexp sort-by-component reverse exclude-regexp)
+(defun denote-sort-dired (regexp sort-by-component reverse exclude-regexp &optional files)
   "Produce Dired buffer with sorted files from variable `denote-directory'.
-When called interactively, prompt for FILES-MATCHING-REGEXP and,
-depending on the value of the user option `denote-sort-dired-extra-prompts',
-also prompt for SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
+When called interactively, prompt for REGEXP and, depending on the value
+of the user option `denote-sort-dired-extra-prompts', also prompt for
+SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
 
-1. FILES-MATCHING-REGEXP limits the list of Denote files to
-   those matching the provided regular expression.
+1. REGEXP limits the list of Denote files to those matching the provided
+   regular expression.
 
 2. SORT-BY-COMPONENT sorts the files by their file name component (one
    among `denote-sort-components').  If it is nil, sorting is performed
@@ -1999,35 +2009,69 @@ also prompt for SORT-BY-COMPONENT, REVERSE, and EXCLUDE-REGEXP.
    nil (i.e. no reverse sort).
 
 4. EXCLUDE-REGEXP excludes the files that match the given regular
-   expression.  This is done after FILES-MATCHING-REGEXP and
-   OMIT-CURRENT have been applied.
+   expression.  This is done after REGEXP and OMIT-CURRENT have been
+   applied.
 
-When called from Lisp, the arguments are a string, a symbol among
-`denote-sort-components', a non-nil value, and a string, respectively."
+5. Optional FILES is a list of file paths.  If it is provided,
+  REGEXP and EXCLUDE-REGEXP are applied to it.  In
+  interactive use, FILES is ignored.
+
+When called from Lisp, the mandatory arguments are (i) a string,(ii) a
+symbol among `denote-sort-components', (iii) a nil or non-nil value,
+and (iv) a string, respectively."
   (interactive (append (list (denote-files-matching-regexp-prompt)) (denote-sort-dired--prompts)))
   (pcase-let ((`(,component . ,reverse-sort) (denote-sort-dired--get-sort-parameters sort-by-component reverse)))
-    (dlet ((ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
+    (dlet ((dired-buffers nil)
+           (ls-lisp-use-insert-directory-program (progn (require 'ls-lisp) nil)))
       (if-let* ((directory (and (not (null (denote-directories)))
                                 (denote-directories-get-common-root)))
-                (files (denote-sort-dired--get-files files-matching-regexp component reverse-sort exclude-regexp))
-                (buffer-name (funcall denote-sort-dired-buffer-name-function files-matching-regexp sort-by-component reverse-sort exclude-regexp))
-                (dired-buffer (dired (cons directory files))))
+                (matched-files (denote-sort-dired--get-files regexp component reverse-sort exclude-regexp files directory))
+                (buffer-name (funcall denote-sort-dired-buffer-name-function regexp sort-by-component reverse-sort exclude-regexp))
+                (dired-buffer (dired (cons directory matched-files))))
           (with-current-buffer dired-buffer
             (rename-buffer buffer-name :unique)
             ;; NOTE 2026-04-06: I am adding the `denote-sort-dired--last-arguments' because the previous implementation
             ;; was not updating the existing Dired buffer after a subsequent `denote-sort-dired' call.
-            (let ((last-arguments (list files-matching-regexp component reverse-sort exclude-regexp)))
+            (let ((last-arguments (list regexp component reverse-sort exclude-regexp files)))
               (cond
                ((null denote-sort-dired--last-arguments)
                 (setq-local denote-sort-dired--last-arguments last-arguments))
                ((not (equal denote-sort-dired--last-arguments last-arguments))
                 (setq-local denote-sort-dired--last-arguments last-arguments)
                 (denote-sort-dired-revert))))
+            (setq-local denote-sort-dired--last-files matched-files)
             (setq-local revert-buffer-function #'denote-sort-dired-revert))
-        (message "No matching files for: %s" files-matching-regexp)))))
+        (message "No matching files for: %s" regexp)))))
 
 (defalias 'denote-dired 'denote-sort-dired
   "Alias for `denote-sort-dired' command.")
+
+(defun denote-sort-dired-focus (regexp &optional exclude-match)
+  "Filter the current `denote-dired' buffer to include only files matching REGEXP.
+With optional EXCLUDE-MATCH as a prefix argument remove the files
+matching REGEXP from the buffer.
+
+This is not a new query.  It builds on top of the current `denote-dired'
+buffer's file list to operate only on those files."
+  (interactive
+   (or (denote--user-error-if-not-major-mode 'dired-mode)
+       (let ((exclude-p current-prefix-arg))
+         (list
+          (denote-files-matching-regexp-prompt
+           (if exclude-p
+               "Remove files matching REGEXP in Denote Dired buffer"
+             "Show only files matching REGEXP in Denote Dired buffer"))
+          exclude-p))))
+  (denote--user-error-if-not-major-mode 'dired-mode)
+  (if-let* ((files denote-sort-dired--last-files))
+      (pcase-let* ((`(,last-regexp ,component ,reverse-sort ,exclude-regexp ,_) denote-sort-dired--last-arguments))
+        (if exclude-match
+            (denote-sort-dired last-regexp component reverse-sort regexp files)
+          (denote-sort-dired regexp component reverse-sort exclude-regexp files)))
+    (user-error "No last `denote-sort-dired' results to focus on")))
+
+(defalias 'denote-dired-focus 'denote-sort-dired-focus
+  "Alias for `denote-sort-dired-focus'.")
 
 ;;;; Keywords
 
@@ -5894,9 +5938,13 @@ string."
          "Search for REGEXP in marked Dired files")
         (:region
          "Search for REGEXP in the active region files")
+        (:include
+         "Only show files whose name matches REGEXP")
+        (:exclude
+         "Exclude files whose name matches REGEXP")
         (_ "Search (all Denote files)"))
       default)
-     nil 'denote-grep-history default)))
+     nil 'denote-query-prompt-history default)))
 
 (defun denote-query-focus-last-search (query)
   "Search QUERY in the content of files in the current Denote query buffer.
@@ -5911,71 +5959,52 @@ generally, any command that relies on the `denote-make-links-buffer'."
   (denote-make-links-buffer query denote-query--last-files nil '(display-buffer-same-window))
   (message "Searching `%s' in files: `%S'" query denote-query--last-files))
 
+;; TODO 2026-04-06: The `denote-query-exclude-files' and
+;; `denote-query-only-include-files' can be defined with a macro.
 (defun denote-query-exclude-files (regexp)
-  "Exclude files whose name matches REGEXP from current search buffer.
-
-This is useful even if you don't know regular expressions, given the
-Denote file-naming scheme.  For instance, to exclude notes with the
-keyword \"philosophy\" from current search buffer, type
-‘\\<denote-query-mode-map>\\[denote-query-exclude-files] _philosophy
-RET’.
-
-Internally, this works by generating a new call to
-`denote-make-links-buffer' with the same QUERY as the last one, but with
-a set of files gotten from checking REGEXP against last matched files.
-
-When called from Lisp, REGEXP can be a list; in that case, it should be
-a list of fixed strings (NOT regexps) to check against last matched
-files.  Files that match any of the strings get excluded.  Internally,
-the list is processed using `regexp-opt'.  For an example of this usage,
-see `denote-query-exclude-files-with-keywords'."
+  "Exclude files matching REGEXP from the current Denote query buffer.
+REGEXP is matched against the file name."
   (interactive
    (or (denote--user-error-if-not-major-mode 'denote-query-mode)
-       (list (denote-grep-file-regexp-prompt)))
+       (list (denote-query-prompt :exclude)))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (let (final-files)
+  (let ((final-files nil))
     (dolist (file denote-query--last-files)
-      (unless (string-match
-               ;; Support list of strings as REGEXP
-               (if (listp regexp)
-                   (regexp-opt regexp)
-                 regexp)
-               file)
+      (unless (string-match-p regexp file)
         (push file final-files)))
     (if final-files
-        (denote-make-links-buffer denote-query--last-query final-files
-                                  (and (eq major-mode 'denote-query-mode) (buffer-name))
-                                  '(display-buffer-same-window))
+        (denote-make-links-buffer denote-query--last-query final-files (buffer-name) '(display-buffer-same-window))
       (user-error "No remaining files when applying that filter"))
     (message "Excluding files matching `%s'" regexp)))
 
 (defun denote-query-only-include-files (regexp)
-  "Exclude file names not matching REGEXP from current query buffer.
-
-See `denote-query-exclude-files' for details, including the behaviour
-when REGEXP is a list."
+  "Only show files matching REGEXP in the current Denote query buffer.
+REGEXP is matched against the file name."
   (interactive
    (or (denote--user-error-if-not-major-mode 'denote-query-mode)
-       (list (denote-grep-file-regexp-prompt :include)))
+       (list (denote-query-prompt :include)))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (let (final-files)
+  (let ((final-files nil))
     (dolist (file denote-query--last-files)
-      (when (string-match
-             ;; Support list of strings as REGEXP
-             (if (listp regexp)
-                 (regexp-opt regexp)
-               regexp)
-             file)
+      (when (string-match-p regexp file)
         (push file final-files)))
     (if final-files
-        (denote-make-links-buffer denote-query--last-query final-files
-                                  (and (eq major-mode 'denote-query-mode) (buffer-name))
-                                  '(display-buffer-same-window))
+        (denote-make-links-buffer denote-query--last-query final-files (buffer-name) '(display-buffer-same-window))
       (user-error "No remaining files when applying that filter"))
     (message "Only including files matching `%s'" regexp)))
 
+(defun denote-query--keywords-as-regexp (keywords)
+  "Return KEYWORDS as a single regular expression.
+KEYWORDS is a list of strings."
+  (if (seq-every-p #'stringp keywords)
+      (format "_%s" (regexp-opt keywords))
+    (error "KEYWORDS must be a list of strings; got `%S'" keywords)))
+
+;; TODO 2026-04-06: The `denote-query-exclude-files-with-keywords' and
+;; the `denote-query-include-files-with-keywords' can be defined via a
+;; macro.
 (defun denote-query-exclude-files-with-keywords (keywords)
   "Exclude files with KEYWORDS from current query buffer.
 
@@ -5988,8 +6017,7 @@ Interactively, KEYWORDS are read from the minibuffer using
        (list (denote-keywords-prompt "Exclude files with keywords")))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (denote-query-exclude-files
-   (mapcar (lambda (kw) (concat "_" kw)) keywords)))
+  (denote-query-exclude-files (denote-query--keywords-as-regexp keywords)))
 
 (defun denote-query-only-include-files-with-keywords (keywords)
   "Exclude files without KEYWORDS from current query buffer.
@@ -6000,8 +6028,7 @@ See `denote-query-exclude-files-with-keywords' for details."
        (list (denote-keywords-prompt "Only include files with keywords")))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (denote-query-only-include-files
-   (mapcar (lambda (kw) (concat "_" kw)) keywords)))
+  (denote-query-only-include-files (denote-query--keywords-as-regexp keywords)))
 
 (defun denote-query-clear-all-filters ()
   "Run last search with the full set of files in the variable `denote-directory'.
@@ -6010,9 +6037,7 @@ This effectively gets ride of any interactive filter applied (by the
 means of e.g. `denote-query-exclude-files')."
   (interactive nil denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (denote-make-links-buffer denote-query--last-query nil
-                            (and (eq major-mode 'denote-query-mode) (buffer-name))
-                            '(display-buffer-same-window))
+  (denote-make-links-buffer denote-query--last-query nil (buffer-name) '(display-buffer-same-window))
   (message "Cleared all filters"))
 
 (defun denote-query-sort-last-search (component)
@@ -6024,15 +6049,12 @@ When called from Lisp, COMPONENT has the same meaning as in the function
 `denote-sort-files'."
   (interactive (list (denote-sort-component-prompt)))
   (let ((denote-query-sorting component))
-    (denote-make-links-buffer denote-query--last-query denote-query--last-files
-                              (and (eq major-mode 'denote-query-mode) (buffer-name))
-                              '(display-buffer-same-window))))
+    (denote-make-links-buffer denote-query--last-query denote-query--last-files (buffer-name) '(display-buffer-same-window))))
 
 ;;;;;; Additional features for searching file contents
 
-(defvar denote-grep-history nil
-  "Minibuffer history of content searches performed by `denote-grep'.
-Also see `denote-grep-file-regexp-history'.")
+;; TODO 2026-04-06: I need to review `denote-grep' and all its
+;; ancillary functions.
 
 ;; NOTE 2025-12-12: Unlike `denote-query-links-display-buffer-action'
 ;; we want `denote-grep' to behave like `denote-dired', whereby
@@ -6040,7 +6062,7 @@ Also see `denote-grep-file-regexp-history'.")
 (defcustom denote-grep-display-buffer-action
   '((display-buffer-same-window)
     (mode . denote-query-mode))
-  "The action used to display search results from `denote-grep'.
+  "`display-buffer' action for the results of `denote-grep'.
 This is the same as `denote-backlinks-display-buffer-action'.  Refer to
 its documentation for the technicalities."
   :risky t
@@ -6054,21 +6076,9 @@ its documentation for the technicalities."
   :package-version '(denote . "4.0.0")
   :group 'denote-query)
 
-;; FIXME 2026-04-06: Do we need an extra prompt in light of `denote-query-prompt'?
-(defvar denote-grep-file-regexp-history nil
-  "Minibuffer history for `denote-grep' commands asking for a file regexp.
-Also see `denote-grep-history'.")
-
-(defun denote-grep-file-regexp-prompt (&optional include)
-  "Prompt for a file regexp in the minibuffer.
-
-The prompt assumes the user wants to exclude files, unless INCLUDE is
-non-nil."
-  (read-string
-   (if include
-       "Only include file names matching: "
-     "Exclude file names matching: ")
-   nil 'denote-grep-file-regexp-history))
+(make-obsolete-variable 'denote-grep-history 'denote-query-prompt-history "4.2.0")
+(make-obsolete-variable 'denote-grep-file-regexp-history 'denote-query-prompt-history "4.2.0")
+(make-obsolete 'denote-grep-file-regexp-prompt 'denote-query-prompt "4.2.0")
 
 ;;;###autoload
 (defun denote-grep (query)
@@ -6084,7 +6094,7 @@ filtering (see the manual for details).
 You can insert a link to a grep search in any note by using the command
 `denote-query-contents-link'."
   (interactive (list (denote-query-prompt)))
-  (let (denote-query--omit-current)
+  (let ((denote-query--omit-current nil))
     (denote-make-links-buffer query nil nil denote-grep-display-buffer-action)))
 
 ;;;###autoload
@@ -6101,7 +6111,7 @@ START and END are buffer positions, as integers.  A reference to a file
 is the mere presence of its identifier.
 
 Return a list with the absoulte path of referenced files."
-  (let (id-list)
+  (let ((id-list nil))
     (save-excursion
       (save-restriction
         (narrow-to-region start end)
