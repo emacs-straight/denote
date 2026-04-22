@@ -7429,9 +7429,9 @@ Contributions to code or the manual
      Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang Manerikar,
      Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts, arsaber101,
      bplubell, bryanrinders, dulikiles, eum3l, experimental-code-86,
-     ezchi, gvalson, jarofromel, leinfink (Henrik), l-o-l-h (Lincoln),
-     mattyonweb, maxbrieiev, mentalisttraceur, pmenair, relict007,
-     skissue.
+     ezchi, gnuhack, gvalson, jarofromel, leinfink (Henrik), l-o-l-h
+     (Lincoln), mattyonweb, maxbrieiev, mentalisttraceur, pmenair,
+     relict007, skissue.
 
 Ideas and/or user feedback
      Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
@@ -8622,11 +8622,11 @@ Node: Speed up backlinks' or query links' buffer creation?346916
 Node: Why do I get ``Search failed with status 1'' when I search for backlinks?348292
 Node: Why do I get a double #+title in Doom Emacs?349353
 Node: Acknowledgements350074
-Node: GNU Free Documentation License353535
-Node: Indices378692
-Node: Function index378865
-Node: Variable index403949
-Node: Concept index416995
+Node: GNU Free Documentation License353544
+Node: Indices378701
+Node: Function index378874
+Node: Variable index403958
+Node: Concept index417004
 
 End Tag Table
 
