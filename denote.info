@@ -6239,6 +6239,15 @@ File: denote.info,  Node: Data retrieval interface for developers or advanced us
 21.4 Data retrieval interface for developers or advanced users
 ==============================================================
 
+Function ‘denote-file-type’
+     Use the file extension to detect the file type of FILE.  Do so in
+     accordance with ‘denote-file-types’.  If more than one file type
+     correspond to this file extension, return the first file type whose
+     ‘:get-file-type-function’ returns non-nil.  If
+     ‘:get-file-type-function’ is nil rely on the ‘:title-key-regexp’
+     and return the first matching file type.  Return nil if FILE is not
+     recognized.  [ Revised as part of 4.2.0-dev.  ]
+
 Variable ‘denote-get-identifier-function’
      The function to generate an identifier as a non-empty string.  The
      function takes two arguments: an initial identifier and a date.
@@ -6488,6 +6497,16 @@ Function ‘denote-extract-keywords-from-front-matter’
      list of strings.  Consult the ‘denote-file-types’ for how this is
      used.
 
+Function ‘denote-get-file-type-markdown-yaml’
+     Return ‘markdown-yaml’ if FILE has YAML front matter.  YAML front
+     matter starts with ‘---’ on the first line.  Consult the
+     ‘denote-file-types’ for how this is used.  [ Part of 4.2.0-dev.  ]
+
+Function ‘denote-get-file-type-markdown-toml’
+     Return ‘markdown-toml’ if FILE has TOML front matter.  Consult the
+     ‘denote-file-types’ for how this is used.  TOML front matter starts
+     with ‘+++’ on the first line.  [ Part of 4.2.0-dev.  ]
+
 Variable ‘denote-file-types’
      Alist of ‘denote-file-type’ and their format properties.
 
@@ -6500,46 +6519,53 @@ Variable ‘denote-file-types’
        1. ‘:extension’ is a string with the file extension including the
           period.
 
-       2. ‘:date-function’ is a function that can format a date.  See
+       2. ‘:get-file-type-function’ a function with one parameter, a
+          given file, that reads the file contents and returns the file
+          type as a symbol or nil.  If there is no function, Denote will
+          fall back to a search for a title in the front matter (per
+          ‘:title-key-regexp’, which is described below).  [ Part of
+          4.2.0-dev.  ]
+
+       3. ‘:date-function’ is a function that can format a date.  See
           the functions ‘denote--date-iso-8601’, ‘denote--date-rfc3339’,
           and ‘denote--date-org-timestamp’.
 
-       3. ‘:front-matter’ is either a string passed to ‘format’ or a
+       4. ‘:front-matter’ is either a string passed to ‘format’ or a
           variable holding such a string.  The ‘format’ function accepts
           four arguments, which come from ‘denote’ in this order:
           ‘TITLE’, ‘DATE’, ‘KEYWORDS’, ‘IDENTIFIER’.  Read the docstring
           of ‘format’ on how to reorder arguments.
 
-       4. ‘:title-key-regexp’ is a regular expression that is used to
+       5. ‘:title-key-regexp’ is a regular expression that is used to
           retrieve the title line in a file.  The first line matching
           this regexp is considered the title line.
 
-       5. ‘:title-value-function’ is the function used to format the raw
+       6. ‘:title-value-function’ is the function used to format the raw
           title string for inclusion in the front matter (e.g.  to
           surround it with quotes).  Use the ‘identity’ function if no
           further processing is required.
 
-       6. ‘:title-value-reverse-function’ is the function used to
+       7. ‘:title-value-reverse-function’ is the function used to
           retrieve the raw title string from the front matter.  It
           performs the reverse of ‘:title-value-function’.
 
-       7. ‘:keywords-key-regexp’ is a regular expression used to
+       8. ‘:keywords-key-regexp’ is a regular expression used to
           retrieve the keywords' line in the file.  The first line
           matching this regexp is considered the keywords' line.
 
-       8. ‘:keywords-value-function’ is the function used to format the
+       9. ‘:keywords-value-function’ is the function used to format the
           keywords' list of strings as a single string, with appropriate
           delimiters, for inclusion in the front matter.
 
-       9. ‘:keywords-value-reverse-function’ is the function used to
+       10. ‘:keywords-value-reverse-function’ is the function used to
           retrieve the keywords' value from the front matter.  It
           performs the reverse of the ‘:keywords-value-function’.
 
-       10. ‘:link’ is a string, or variable holding a string, that
+       11. ‘:link’ is a string, or variable holding a string, that
           specifies the format of a link.  See the variables
           ‘denote-org-link-format’, ‘denote-md-link-format’.
 
-       11. ‘:link-in-context-regexp’ is a regular expression that is
+       12. ‘:link-in-context-regexp’ is a regular expression that is
           used to match the aforementioned link format.  See the
           variables ‘denote-org-link-in-context-regexp’,
           ‘denote-md-link-in-context-regexp’.
@@ -7452,7 +7478,7 @@ Ideas and/or user feedback
      Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick (VicZz),
      Viktor Haag, Vineet C.  Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot,
      82Kang, atanasj, azegas, babusri, bdillahu, coherentstate, doolio,
-     duli, drcxd, elge70, elliottw, fingerknight, hpgisler,
+     duli, drcxd, elge70, elliottw, fingerknight, GuutBoy, hpgisler,
      hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
      mentalisttraceur, mjkalyan, oatmealm, Pratik-Mishra-4979,
      pRot0ta1p, rbenit68, relict007, sarcom-sar, sienic, skissue, sundar
@@ -8034,11 +8060,11 @@ B.1 Function index
 * denote-dired-rename-marked-files-with-keywords: Rename multiple files at once by asking only for keywords.
                                                               (line   6)
 * denote-extract-id-from-string:         Data retrieval interface for developers or advanced users.
-                                                              (line  30)
+                                                              (line  39)
 * denote-extract-keywords-from-front-matter: Front matter interface for developers or advanced users.
                                                               (line  79)
 * denote-extract-keywords-from-path:     Data retrieval interface for developers or advanced users.
-                                                              (line  24)
+                                                              (line  33)
 * denote-file-has-denoted-filename-p:    Common building blocks for developers or advanced users.
                                                               (line  36)
 * denote-file-has-identifier-p:          Common building blocks for developers or advanced users.
@@ -8055,6 +8081,8 @@ B.1 Function index
                                                               (line   6)
 * denote-file-prompt:                    Prompt interface for developers or advanced users.
                                                               (line  30)
+* denote-file-type:                      Data retrieval interface for developers or advanced users.
+                                                              (line   6)
 * denote-file-type-extensions:           Common building blocks for developers or advanced users.
                                                               (line  53)
 * denote-file-type-extensions-with-encryption: Common building blocks for developers or advanced users.
@@ -8091,12 +8119,16 @@ B.1 Function index
                                                               (line  63)
 * denote-get-file-extension-sans-encryption: Common building blocks for developers or advanced users.
                                                               (line  69)
+* denote-get-file-type-markdown-toml:    Front matter interface for developers or advanced users.
+                                                              (line  89)
+* denote-get-file-type-markdown-yaml:    Front matter interface for developers or advanced users.
+                                                              (line  84)
 * denote-get-identifier-at-point:        Data retrieval interface for developers or advanced users.
-                                                              (line  21)
+                                                              (line  30)
 * denote-get-links:                      Link interface for developers or advanced users.
                                                               (line  37)
 * denote-get-path-by-id:                 Data retrieval interface for developers or advanced users.
-                                                              (line  18)
+                                                              (line  27)
 * denote-grep:                           Use denote-grep to search inside files.
                                                               (line   6)
 * denote-grep-files-referenced-in-region: Use denote-grep to search inside files.
@@ -8191,23 +8223,23 @@ B.1 Function index
 * denote-rename-file-using-front-matter: Rename a single file based on its front matter.
                                                               (line   6)
 * denote-retrieve-filename-identifier:   Data retrieval interface for developers or advanced users.
-                                                              (line  33)
-* denote-retrieve-filename-keywords:     Data retrieval interface for developers or advanced users.
                                                               (line  42)
+* denote-retrieve-filename-keywords:     Data retrieval interface for developers or advanced users.
+                                                              (line  51)
 * denote-retrieve-filename-signature:    Data retrieval interface for developers or advanced users.
-                                                              (line  46)
+                                                              (line  55)
 * denote-retrieve-filename-title:        Data retrieval interface for developers or advanced users.
-                                                              (line  38)
+                                                              (line  47)
 * denote-retrieve-front-matter-keywords-line: Data retrieval interface for developers or advanced users.
-                                                              (line  64)
+                                                              (line  73)
 * denote-retrieve-front-matter-keywords-value: Data retrieval interface for developers or advanced users.
-                                                              (line  60)
+                                                              (line  69)
 * denote-retrieve-front-matter-title-line: Data retrieval interface for developers or advanced users.
-                                                              (line  57)
+                                                              (line  66)
 * denote-retrieve-front-matter-title-value: Data retrieval interface for developers or advanced users.
-                                                              (line  54)
+                                                              (line  63)
 * denote-retrieve-title-or-filename:     Data retrieval interface for developers or advanced users.
-                                                              (line  49)
+                                                              (line  58)
 * denote-rewrite-front-matter:           Renaming files interface for developers or advanced users.
                                                               (line  26)
 * denote-rewrite-keywords:               Renaming files interface for developers or advanced users.
@@ -8338,11 +8370,11 @@ B.2 Variable index
 * denote-file-types:                     Define a custom file type to automatically encrypt new notes.
                                                                (line  6)
 * denote-file-types <1>:                 Front matter interface for developers or advanced users.
-                                                               (line 84)
+                                                               (line 94)
 * denote-get-identifier-function:        Define a completely custom identifier scheme.
                                                                (line 15)
 * denote-get-identifier-function <1>:    Data retrieval interface for developers or advanced users.
-                                                               (line  6)
+                                                               (line 15)
 * denote-grep-display-buffer-action:     Use denote-grep to search inside files.
                                                                (line 31)
 * denote-history-completion-in-prompts:  The denote-history-completion-in-prompts option.
@@ -8597,36 +8629,36 @@ Node: Common building blocks for developers or advanced users279992
 Node: Predefined note values for developers or advanced users287041
 Node: File path interface for developers or advanced users289821
 Node: Data retrieval interface for developers or advanced users293224
-Node: Prompt interface for developers or advanced users296446
-Node: Front matter interface for developers or advanced users301995
-Node: Link interface for developers or advanced users308641
-Node: Xref interface for developers or advanced users311639
-Node: Renaming files interface for developers or advanced users312614
-Node: Troubleshoot Denote in a pristine environment315624
-Node: Contributing317299
-Node: Wishlist of what we can do to extend Denote320316
-Node: Publications about Denote322191
-Node: Alternatives to Denote324975
-Node: Alternative implementations and further reading329567
-Node: Frequently Asked Questions331301
-Node: Why develop Denote when PACKAGE already exists?332394
-Node: Why not rely exclusively on Org?334308
-Node: Why care about Unix tools when you use Emacs?336004
-Node: Why many small files instead of few large ones?337339
-Node: Does Denote perform well at scale?339271
-Node: I add TODOs to my notes; will many files slow down the Org agenda?340397
-Node: I want to sort by last modified in Dired why won't Denote let me?342365
-Node: How do you handle the last modified case?343487
-Node: Why are some Org links opening outside Emacs?345048
-Node: Speed up backlinks' or query links' buffer creation?346916
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?348292
-Node: Why do I get a double #+title in Doom Emacs?349353
-Node: Acknowledgements350074
-Node: GNU Free Documentation License353544
-Node: Indices378701
-Node: Function index378874
-Node: Variable index403958
-Node: Concept index417004
+Node: Prompt interface for developers or advanced users296957
+Node: Front matter interface for developers or advanced users302506
+Node: Link interface for developers or advanced users310074
+Node: Xref interface for developers or advanced users313072
+Node: Renaming files interface for developers or advanced users314047
+Node: Troubleshoot Denote in a pristine environment317057
+Node: Contributing318732
+Node: Wishlist of what we can do to extend Denote321749
+Node: Publications about Denote323624
+Node: Alternatives to Denote326408
+Node: Alternative implementations and further reading331000
+Node: Frequently Asked Questions332734
+Node: Why develop Denote when PACKAGE already exists?333827
+Node: Why not rely exclusively on Org?335741
+Node: Why care about Unix tools when you use Emacs?337437
+Node: Why many small files instead of few large ones?338772
+Node: Does Denote perform well at scale?340704
+Node: I add TODOs to my notes; will many files slow down the Org agenda?341830
+Node: I want to sort by last modified in Dired why won't Denote let me?343798
+Node: How do you handle the last modified case?344920
+Node: Why are some Org links opening outside Emacs?346481
+Node: Speed up backlinks' or query links' buffer creation?348349
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?349725
+Node: Why do I get a double #+title in Doom Emacs?350786
+Node: Acknowledgements351507
+Node: GNU Free Documentation License354986
+Node: Indices380143
+Node: Function index380316
+Node: Variable index405915
+Node: Concept index418961
 
 End Tag Table
 

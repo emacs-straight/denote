@@ -2300,9 +2300,28 @@ Consult the `denote-file-types' for how this is used."
         nil
       (date-to-time date-string))))
 
+(defun denote-get-file-type-markdown-yaml (file)
+  "Return `markdown-yaml' if FILE has YAML front matter.
+YAML front matter starts with --- on the first line."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (when (looking-at (format "^%s" (make-string 3 ?-)))
+      'markdown-yaml)))
+
+(defun denote-get-file-type-markdown-toml (file)
+  "Return `markdown-toml' if FILE has TOML front matter.
+TOML front matter starts with +++ on the first line."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (when (looking-at (format "^%s" (make-string 3 ?+)))
+      'markdown-toml)))
+
 (defvar denote-file-types
   '((org
      :extension ".org"
+     :get-file-type-function nil
      :front-matter denote-org-front-matter
      :title-key-regexp "^#\\+title\\s-*:"
      :title-value-function denote-format-string-for-org-front-matter
@@ -2324,6 +2343,7 @@ Consult the `denote-file-types' for how this is used."
      :link-in-context-regexp denote-org-link-in-context-regexp)
     (markdown-yaml
      :extension ".md"
+     :get-file-type-function denote-get-file-type-markdown-yaml
      :front-matter denote-yaml-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function denote-format-string-for-md-front-matter
@@ -2345,6 +2365,7 @@ Consult the `denote-file-types' for how this is used."
      :link-in-context-regexp denote-md-link-in-context-regexp)
     (markdown-toml
      :extension ".md"
+     :get-file-type-function denote-get-file-type-markdown-toml
      :front-matter denote-toml-front-matter
      :title-key-regexp "^title\\s-*="
      :title-value-function denote-format-string-for-md-front-matter
@@ -2366,6 +2387,7 @@ Consult the `denote-file-types' for how this is used."
      :link-in-context-regexp denote-md-link-in-context-regexp)
     (text
      :extension ".txt"
+     :get-file-type-function nil
      :front-matter denote-text-front-matter
      :title-key-regexp "^title\\s-*:"
      :title-value-function denote-format-string-for-org-front-matter
@@ -2395,6 +2417,12 @@ PROPERTY-LIST is a plist that consists of the following elements:
 
 - `:extension' is a string with the file extension including the
   period.
+
+- `:get-file-type-function' a function with one parameter, a given file,
+  that reads the file contents and returns the file type as a symbol or
+  nil.  If there is no function, Denote will fall back to a search for a
+  title in the front matter (per `:title-key-regexp', which is described
+  below).
 
 - `:date-function' is a function that can format a date.  See the
   functions `denote-date-iso-8601', `denote-date-rfc3339', and
@@ -2473,6 +2501,8 @@ this list for new note creation.  The default is `org'.")
    (alist-get file-type denote-file-types)
    :title-value-function))
 
+;; NOTE 2026-04-23: This is used in the `denote--define-retrieve-front-matter-from-content'.
+;; I could not find it with a search, which made me think it was not being used.
 (defun denote--title-value-reverse-function (file-type)
   "Convert front matter title to the title string, per FILE-TYPE."
   (plist-get
@@ -2914,9 +2944,8 @@ If FILES is not given, use all text files as returned by
       (let* ((backlinks-by-file-type (denote--get-files-by-file-type backlinks)))
         (dolist (file-type file-types)
           (when-let* ((current-backlinks (gethash file-type backlinks-by-file-type))
-                      (format-parts (split-string
-                                     (denote--link-retrieval-format file-type)
-                                     "%VALUE%")) ; Should give two parts
+                      (type (denote--link-retrieval-format file-type))
+                      (format-parts (split-string type "%VALUE%")) ; Should give two parts
                       (query-simple (concat
                                      (regexp-quote (nth 0 format-parts))
                                      (regexp-quote identifier)
@@ -3892,25 +3921,28 @@ See the format of `denote-file-types'."
 
 (defun denote-file-type (file)
   "Use the file extension to detect the file type of FILE.
+Do so in accordance with `denote-file-types'.
 
-If more than one file type correspond to this file extension, use the
-first file type for which the :title-key-regexp in `denote-file-types'
-matches in the file.
+If more than one file type correspond to this file extension, return the
+first file type whose `:get-file-type-function' returns non-nil.  If
+`:get-file-type-function' is nil rely on the `:title-key-regexp' and
+return the first matching file type.
 
-Return nil if the file type is not recognized."
+Return nil if FILE is not recognized."
   (when-let* ((extension (denote-get-file-extension-sans-encryption file))
               (types (denote--file-types-with-extension extension))
               (length (length types)))
     (cond
-     ((= length 1)
-      (caar types))
-     ((car (seq-find
-            (lambda (type)
-              (ignore-errors
-                (denote--regexp-in-file-p (plist-get (cdr type) :title-key-regexp) file)))
-            types)))
-     ;; If the user has picked something like `markdown-toml' and this
-     ;; is an ".md" file, we can fall back to this.
+     ((when-let* ((_ (> length 1))
+                  (found (seq-find
+                          (lambda (type)
+                            (let ((properties (cdr type)))
+                              (if-let* ((file-type-fn (plist-get properties :get-file-type-function)))
+                                  (funcall file-type-fn file)
+                                (ignore-errors
+                                  (denote--regexp-in-file-p (plist-get properties :title-key-regexp) file)))))
+                          types)))
+        (car found)))
      ((and (> length 1)
            (memq denote-file-type (mapcar #'car types)))
       denote-file-type)

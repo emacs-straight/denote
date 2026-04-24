@@ -5841,6 +5841,15 @@ there will be no corresponding prompt.
 :CUSTOM_ID: h:9b32bf7d-1569-4495-801c-8835f022d72e
 :END:
 
+#+findex: denote-file-type
++ Function ~denote-file-type~ :: Use the file extension to detect the
+  file type of FILE. Do so in accordance with ~denote-file-types~. If
+  more than one file type correspond to this file extension, return
+  the first file type whose =:get-file-type-function= returns non-nil.
+  If =:get-file-type-function= is nil rely on the ~:title-key-regexp~
+  and return the first matching file type. Return nil if FILE is not
+  recognized. [ Revised as part of {{{development-version}}}. ]
+
 #+vindex: denote-get-identifier-function
 + Variable ~denote-get-identifier-function~ :: The function to
   generate an identifier as a non-empty string. The function takes two
@@ -6110,6 +6119,18 @@ there will be no corresponding prompt.
   matter =KEYWORDS= for org file type.  =KEYWORDS= is a list of
   strings.  Consult the ~denote-file-types~ for how this is used.
 
+#+findex: denote-get-file-type-markdown-yaml
++ Function ~denote-get-file-type-markdown-yaml~ :: Return
+  =markdown-yaml= if FILE has YAML front matter. YAML front matter
+  starts with =---= on the first line. Consult the ~denote-file-types~
+  for how this is used. [ Part of {{{development-version}}}. ]
+
+#+findex: denote-get-file-type-markdown-toml
++ Function ~denote-get-file-type-markdown-toml~ :: Return
+  =markdown-toml= if FILE has TOML front matter. Consult the
+  ~denote-file-types~ for how this is used. TOML front matter starts
+  with =+++= on the first line. [ Part of {{{development-version}}}. ]
+
 #+vindex: denote-file-types
 + Variable ~denote-file-types~ :: Alist of ~denote-file-type~ and
   their format properties.
@@ -6123,46 +6144,52 @@ there will be no corresponding prompt.
   1. =:extension= is a string with the file extension including the
      period.
 
-  2. =:date-function= is a function that can format a date.  See the
+  2. =:get-file-type-function= a function with one parameter, a given
+     file, that reads the file contents and returns the file type as a
+     symbol or nil. If there is no function, Denote will fall back to
+     a search for a title in the front matter (per =:title-key-regexp=,
+     which is described below). [ Part of {{{development-version}}}. ]
+
+  3. =:date-function= is a function that can format a date.  See the
      functions ~denote--date-iso-8601~, ~denote--date-rfc3339~, and
      ~denote--date-org-timestamp~.
 
-  3. =:front-matter= is either a string passed to ~format~ or a
+  4. =:front-matter= is either a string passed to ~format~ or a
      variable holding such a string.  The ~format~ function accepts
      four arguments, which come from ~denote~ in this order: =TITLE=,
      =DATE=, =KEYWORDS=, =IDENTIFIER=.  Read the docstring of
      ~format~ on how to reorder arguments.
 
-  4. =:title-key-regexp= is a regular expression that is used to
+  5. =:title-key-regexp= is a regular expression that is used to
      retrieve the title line in a file.  The first line matching this
      regexp is considered the title line.
 
-  5. =:title-value-function= is the function used to format the raw
+  6. =:title-value-function= is the function used to format the raw
      title string for inclusion in the front matter (e.g. to surround
      it with quotes).  Use the ~identity~ function if no further
      processing is required.
 
-  6. =:title-value-reverse-function= is the function used to retrieve
+  7. =:title-value-reverse-function= is the function used to retrieve
      the raw title string from the front matter.  It performs the
      reverse of =:title-value-function=.
 
-  7. =:keywords-key-regexp= is a regular expression used to retrieve
+  8. =:keywords-key-regexp= is a regular expression used to retrieve
      the keywords' line in the file.  The first line matching this
      regexp is considered the keywords' line.
 
-  8. =:keywords-value-function= is the function used to format the
+  9. =:keywords-value-function= is the function used to format the
      keywords' list of strings as a single string, with appropriate
      delimiters, for inclusion in the front matter.
 
-  9. =:keywords-value-reverse-function= is the function used to retrieve
-     the keywords' value from the front matter.  It performs the reverse
-     of the =:keywords-value-function=.
+  10. =:keywords-value-reverse-function= is the function used to retrieve
+      the keywords' value from the front matter.  It performs the reverse
+      of the =:keywords-value-function=.
 
-  10. =:link= is a string, or variable holding a string, that
+  11. =:link= is a string, or variable holding a string, that
       specifies the format of a link.  See the variables
       ~denote-org-link-format~, ~denote-md-link-format~.
 
-  11. =:link-in-context-regexp= is a regular expression that is used
+  12. =:link-in-context-regexp= is a regular expression that is used
       to match the aforementioned link format.  See the variables
       ~denote-org-link-in-context-regexp~, ~denote-md-link-in-context-regexp~.
 
@@ -7025,10 +7052,10 @@ Denote is meant to be a collective effort.  Every bit of help matters.
   (VicZz), Viktor Haag, Vineet C. Kulkarni, Wade Mealing, Wilf, Yi
   Liu, Ypot, 82Kang, atanasj, azegas, babusri, bdillahu,
   coherentstate, doolio, duli, drcxd, elge70, elliottw, fingerknight,
-  hpgisler, hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
-  mentalisttraceur, mjkalyan, oatmealm, Pratik-Mishra-4979, pRot0ta1p,
-  rbenit68, relict007, sarcom-sar, sienic, skissue, sundar bp,
-  wuzhihao, yetanotherfossman, zadca123
+  GuutBoy, hpgisler, hyperfocus1337,johkneisl, jtpavlock, juh,
+  leafarbelm, mentalisttraceur, mjkalyan, oatmealm,
+  Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007, sarcom-sar,
+  sienic, skissue, sundar bp, wuzhihao, yetanotherfossman, zadca123
 
 Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
