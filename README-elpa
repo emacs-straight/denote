@@ -2,14 +2,14 @@
                  DENOTE: SIMPLE NOTES WITH AN EFFICIENT
                            FILE-NAMING SCHEME
 
-                          Protesilaos Stavrou
+                              Protesilaos
                           info@protesilaos.com
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-This manual, written by Protesilaos Stavrou, describes the customization
-options for the Emacs package called `denote' (or `denote.el'), and
-provides every other piece of information pertinent to it.
+This manual, written by Protesilaos, describes the customization options
+for the Emacs package called `denote' (or `denote.el'), and provides
+every other piece of information pertinent to it.
 
 The documentation furnished herein corresponds to stable version 4.1.0,
 released on 2025-10-17.  Any reference to a newer feature which does not
@@ -7162,7 +7162,7 @@ section 21.13
   │ Even if that material is free software, we need to know about it.]
   │ 
   │ Copied a few snippets from the same files I edited.  Their author,
-  │ Protesilaos Stavrou, has already assigned copyright to the Free Software
+  │ Protesilaos, has already assigned copyright to the Free Software
   │ Foundation.
   │ 
   │ [Do you have an employer who might have a basis to claim to own
@@ -7775,7 +7775,7 @@ section 21.13
   Denote is meant to be a collective effort.  Every bit of help matters.
 
   Author/maintainer
-        Protesilaos Stavrou.
+        Protesilaos.
 
   Contributions to code or the manual
         Abdul-Lateef Haji-Ali, Abin Simon, Adam Růžička, Alan Schmitt,
