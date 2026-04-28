@@ -4640,6 +4640,85 @@ and does not feature all the functionality that would make it a valid
 replacement of other incremental reading tools. However, work is
 underway to make it feature-complete.
 
+** Use the ~denote-journal-capture~ package
+:PROPERTIES:
+:CUSTOM_ID: h:0938f36c-92f7-4183-936d-96695b871987
+:END:
+
+The ~denote-journal-capture~ by Samuel W. Flint extends the
+~denote-journal~ package to work with the ~org-capture~ mechanism:
+
+- [[#h:4a6d92dd-19eb-4fcc-a7b5-05ce04da3a92][Use the ~denote-journal~ package which was formerly =denote-journal-extras.el=]].
+- [[#h:656c70cd-cf9a-4471-a0b5-4f0aaf60f881][Create note using Org capture]].
+
+The ~denote-journal-capture~ documentation covers the technicalities:
+<https://git.sr.ht/~swflint/denote-journal-capture>.
+
+** Use the ~denote-agenda~ package
+:PROPERTIES:
+:CUSTOM_ID: h:9838f36c-92f7-4183-936d-96695b871987
+:END:
+
+The ~denote-agenda~ package by Samuel W. Flint makes it easier to make
+the ~org-agenda~ work with Denote files. The package provides various
+ways to include files in the agenda, such as to pull in journal
+entries from the current and future days. The package also defines
+function to filter the files, such as to exclude those that match a
+given regular expression.
+
+Read more from the package's documentation:
+<https://git.sr.ht/~swflint/denote-agenda>.
+
+** Use the ~denote-project-notes~ package
+:PROPERTIES:
+:CUSTOM_ID: h:5d249c01-71ca-4583-959b-0a3368c30433
+:END:
+
+The ~denote-project-notes~ by Samuel W. Flint makes it possible to
+associate a =project.el= project with Denote files. The idea is to add
+directory-local variables to a project so that it can recognise note
+files therein. ~denote-project-notes~ defines commands to display
+project notes on the side.
+
+Learn about the technicalities on the package's webpage:
+<https://git.sr.ht/~swflint/denote-project-notes>.
+
+** Use the ~denote-regexp~ package
+:PROPERTIES:
+:CUSTOM_ID: h:1e3d1714-e444-4852-bf31-9059880e28b8
+:END:
+
+The ~denote-regexp~ package by Samuel W. Flint defines utilities to
+write regular expressions that work with the Denote file-naming scheme
+in light of the user option ~denote-file-name-components-order~
+([[#h:dc8c40e0-233a-4991-9ad3-2cf5f05ef1cd][Change the order of file name components]]). The idea is to make it
+easier to perform complex queries like:
+
+#+begin_example emacs-lisp
+(denote-regexp :keywords '(or "agenda" (and "project" "inprogress")))
+#+end_example
+
+The regular expressions produced by ~denote-regexp~ can be used
+anywhere, such as in a Dired buffer to mark the matching files, in Org
+dynamic blocks, with the ~denote-add-links~ command, and more:
+
+- [[#h:9fe01e63-f34f-4479-8713-f162a5ca865e][Display filtered and sorted files with ~denote-sort-dired~ or ~denote-dired~]].
+- [[#h:8b542c50-dcc9-4bca-8037-a36599b22779][Use Org dynamic blocks]].
+- [[#h:9bec2c83-36ca-4951-aefc-7187c5463f90][Insert links to all files matching a query in their file name]].
+
+The ~denote-regexp~ documentation covers the technicalities:
+<https://git.sr.ht/~swflint/denote-regexp>.
+
+** Use the ~denote-sections~ package
+:PROPERTIES:
+:CUSTOM_ID: h:fa3c89c8-32f7-4224-bf31-edf7404a3e46
+:END:
+
+The ~denote-sections~ package by Samuel W. Flint is meant to provide a
+sidebar that can display useful information about Denote files. As of
+this writing (2026-04-27 22:47 +0300), the sidebar has one section for
+backlinks. Learn more here: <https://git.sr.ht/~swflint/denote-sections>.
+
 * Extending Denote
 :PROPERTIES:
 :CUSTOM_ID: h:8ed2bb6f-b5be-4711-82e9-8bee5bb06ece

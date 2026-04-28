@@ -140,6 +140,11 @@ Table of Contents
 .. 11. Use the `denote-review' package
 .. 12. Use the `denote-zettel-interface' package
 .. 13. Use the `mir' package for incremental reading
+.. 14. Use the `denote-journal-capture' package
+.. 15. Use the `denote-agenda' package
+.. 16. Use the `denote-project-notes' package
+.. 17. Use the `denote-regexp' package
+.. 18. Use the `denote-sections' package
 21. Extending Denote
 .. 1. Define a custom file type to automatically encrypt new notes
 .. 2. Access the data of the latest note
@@ -5338,6 +5343,100 @@ section 8.4
 
 
 [mir package] <https://github.com/gvalson/mir.el>
+
+
+20.14 Use the `denote-journal-capture' package
+──────────────────────────────────────────────
+
+  The `denote-journal-capture' by Samuel W. Flint extends the
+  `denote-journal' package to work with the `org-capture' mechanism:
+
+  • [Use the `denote-journal' package which was formerly
+    `denote-journal-extras.el'].
+  • [Create note using Org capture].
+
+  The `denote-journal-capture' documentation covers the technicalities:
+  <https://git.sr.ht/~swflint/denote-journal-capture>.
+
+
+[Use the `denote-journal' package which was formerly
+`denote-journal-extras.el'] See section 20.4
+
+[Create note using Org capture] See section 6.2
+
+
+20.15 Use the `denote-agenda' package
+─────────────────────────────────────
+
+  The `denote-agenda' package by Samuel W. Flint makes it easier to make
+  the `org-agenda' work with Denote files. The package provides various
+  ways to include files in the agenda, such as to pull in journal
+  entries from the current and future days. The package also defines
+  function to filter the files, such as to exclude those that match a
+  given regular expression.
+
+  Read more from the package’s documentation:
+  <https://git.sr.ht/~swflint/denote-agenda>.
+
+
+20.16 Use the `denote-project-notes' package
+────────────────────────────────────────────
+
+  The `denote-project-notes' by Samuel W. Flint makes it possible to
+  associate a `project.el' project with Denote files. The idea is to add
+  directory-local variables to a project so that it can recognise note
+  files therein. `denote-project-notes' defines commands to display
+  project notes on the side.
+
+  Learn about the technicalities on the package’s webpage:
+  <https://git.sr.ht/~swflint/denote-project-notes>.
+
+
+20.17 Use the `denote-regexp' package
+─────────────────────────────────────
+
+  The `denote-regexp' package by Samuel W. Flint defines utilities to
+  write regular expressions that work with the Denote file-naming scheme
+  in light of the user option `denote-file-name-components-order'
+  ([Change the order of file name components]). The idea is to make it
+  easier to perform complex queries like:
+
+  ┌────
+  │ (denote-regexp :keywords '(or "agenda" (and "project" "inprogress")))
+  └────
+
+  The regular expressions produced by `denote-regexp' can be used
+  anywhere, such as in a Dired buffer to mark the matching files, in Org
+  dynamic blocks, with the `denote-add-links' command, and more:
+
+  • [Display filtered and sorted files with `denote-sort-dired' or
+    `denote-dired'].
+  • [Use Org dynamic blocks].
+  • [Insert links to all files matching a query in their file name].
+
+  The `denote-regexp' documentation covers the technicalities:
+  <https://git.sr.ht/~swflint/denote-regexp>.
+
+
+[Change the order of file name components] See section 8.1
+
+[Display filtered and sorted files with `denote-sort-dired' or
+`denote-dired'] See section 16
+
+[Use Org dynamic blocks] See section 15
+
+[Insert links to all files matching a query in their file name] See
+section 10.4
+
+
+20.18 Use the `denote-sections' package
+───────────────────────────────────────
+
+  The `denote-sections' package by Samuel W. Flint is meant to provide a
+  sidebar that can display useful information about Denote files. As of
+  this writing (2026-04-27 22:47 +0300), the sidebar has one section for
+  backlinks. Learn more here:
+  <https://git.sr.ht/~swflint/denote-sections>.
 
 
 21 Extending Denote
