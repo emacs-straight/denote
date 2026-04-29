@@ -145,6 +145,7 @@ Table of Contents
 .. 16. Use the `denote-project-notes' package
 .. 17. Use the `denote-regexp' package
 .. 18. Use the `denote-sections' package
+.. 19. Use the `denote-wordcloud' package
 21. Extending Denote
 .. 1. Define a custom file type to automatically encrypt new notes
 .. 2. Access the data of the latest note
@@ -5348,7 +5349,7 @@ section 8.4
 20.14 Use the `denote-journal-capture' package
 ──────────────────────────────────────────────
 
-  The `denote-journal-capture' by Samuel W. Flint extends the
+  The `denote-journal-capture' package by Samuel W. Flint extends the
   `denote-journal' package to work with the `org-capture' mechanism:
 
   • [Use the `denote-journal' package which was formerly
@@ -5372,7 +5373,7 @@ section 8.4
   the `org-agenda' work with Denote files. The package provides various
   ways to include files in the agenda, such as to pull in journal
   entries from the current and future days. The package also defines
-  function to filter the files, such as to exclude those that match a
+  functions to filter the files, such as to exclude those that match a
   given regular expression.
 
   Read more from the package’s documentation:
@@ -5437,6 +5438,20 @@ section 10.4
   this writing (2026-04-27 22:47 +0300), the sidebar has one section for
   backlinks. Learn more here:
   <https://git.sr.ht/~swflint/denote-sections>.
+
+
+20.19 Use the `denote-wordcloud' package
+────────────────────────────────────────
+
+  The `denote-wordcloud' package by Alexander Kuzmin presents a “word
+  cloud” for keywords in Denote files. Each keyword includes a count for
+  the number of times it is used. More frequently used keywords have a
+  larger font size. The word cloud is interactive: clicking on a keyword
+  opens a `denote-dired' buffer that matches all files with that
+  keyword.
+
+  The documentation of the package also includes a demonstration:
+  <https://codeberg.org/treflip/denote-wordcloud>.
 
 
 21 Extending Denote
@@ -7896,7 +7911,8 @@ section 21.13
         Dutrieux, Zhenxu Xu, alvmts, arsaber101, bplubell, bryanrinders,
         dulikiles, eum3l, experimental-code-86, ezchi, gnuhack, gvalson,
         jarofromel, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
-        maxbrieiev, mentalisttraceur, pmenair, relict007, skissue.
+        maxbrieiev, mentalisttraceur, nescias, pmenair, relict007,
+        skissue.
 
   Ideas and/or user feedback
         Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
