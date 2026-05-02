@@ -146,6 +146,7 @@ Table of Contents
 .. 17. Use the `denote-regexp' package
 .. 18. Use the `denote-sections' package
 .. 19. Use the `denote-wordcloud' package
+.. 20. Use the `denote-lint' package
 21. Extending Denote
 .. 1. Define a custom file type to automatically encrypt new notes
 .. 2. Access the data of the latest note
@@ -5452,6 +5453,17 @@ section 10.4
 
   The documentation of the package also includes a demonstration:
   <https://codeberg.org/treflip/denote-wordcloud>.
+
+
+20.20 Use the `denote-lint' package
+───────────────────────────────────
+
+  The `denote-lint' package by Peter Smith provides facilities that
+  check all Denote files for correctness. This is about the consistency
+  between file name and front matter, the validity of links, and
+  related. The package defines multiple warning levels, each with its
+  own semantics. Learn more here:
+  <https://github.com/psmith1303/denote-lint>.
 
 
 21 Extending Denote
