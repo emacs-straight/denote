@@ -3086,11 +3086,11 @@ which case it is not added to the base file name."
 
 Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
 TEMPLATE, and SIGNATURE should be valid for note creation."
-  (let* ((path (denote-format-file-name
-                directory id keywords title (denote--file-extension file-type) signature))
-         ;; NOTE 2025-08-02: Is it safe to assume that an
-         ;; existing+empty file is good for us to use?  Otherwise, we
-         ;; should have a `y-or-n-p' prompt here.
+  (let* ((extension (denote--file-extension file-type))
+         (path (denote-format-file-name directory id keywords title extension signature))
+         ;; TODO 2025-08-02: Is it safe to assume that an existing and
+         ;; empty file is good for us to use?  Otherwise, we should
+         ;; have a `y-or-n-p' prompt here.
          (buffer (if (and (file-regular-p path) (not (denote--file-empty-p path)))
                      (user-error "A file named `%s' already exists and is not empty" path)
                    (find-file path)))
@@ -3107,7 +3107,8 @@ TEMPLATE, and SIGNATURE should be valid for note creation."
   "Return non-nil if DIRECTORY is in variable `denote-directory'."
   (seq-some
    (lambda (d)
-     (string-prefix-p d (expand-file-name directory)))
+     (or (string-prefix-p d (file-name-as-directory (expand-file-name directory)))
+         (string-prefix-p (file-name-as-directory (expand-file-name directory)) d)))
    (denote-directories)))
 
 (defun denote--valid-file-type (filetype)
@@ -3118,12 +3119,13 @@ returned."
                ((stringp filetype) (intern filetype))
                ((symbolp filetype) filetype)
                (t (error "The `%s' is neither a string nor a symbol" filetype)))))
-    (cond ((memq type (denote--file-type-keys))
-           type)
-          ((null denote-file-types)
-           (user-error "At least one file type must be defined in `denote-file-types' to create a note"))
-          (t
-           (caar denote-file-types)))))
+    (cond
+     ((memq type (denote--file-type-keys))
+      type)
+     ((null denote-file-types)
+      (user-error "At least one file type must be defined in `denote-file-types' to create a note"))
+     (t
+      (caar denote-file-types)))))
 
 (defun denote--date-add-current-time (date)
   "Add current time to DATE, if necessary.
@@ -3152,15 +3154,16 @@ A valid DATE is a value that can be parsed by either
 if DATE is a value they do not recognise.
 
 If DATE is nil or an empty string, return nil."
-  (cond ((null date)
-         nil)
-        ((and (stringp date) (string-empty-p date))
-         nil)
-        ((and (or (numberp date) (listp date))
-              (decode-time date))
-         date)
-        (t ; non-empty strings (e.g. "2024-01-01", "2024-01-01 12:00", etc.)
-         (date-to-time (denote--date-add-current-time date)))))
+  (cond
+   ((null date)
+    nil)
+   ((and (stringp date) (string-empty-p date))
+    nil)
+   ((and (or (numberp date) (listp date))
+         (decode-time date))
+    date)
+   (t ; non-empty strings (e.g. "2024-01-01", "2024-01-01 12:00", etc.)
+    (date-to-time (denote--date-add-current-time date)))))
 
 (define-obsolete-function-alias
   'denote--id-to-date
