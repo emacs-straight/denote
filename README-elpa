@@ -11,11 +11,11 @@ This manual, written by Protesilaos, describes the customization options
 for the Emacs package called `denote' (or `denote.el'), and provides
 every other piece of information pertinent to it.
 
-The documentation furnished herein corresponds to stable version 4.1.0,
-released on 2025-10-17.  Any reference to a newer feature which does not
+The documentation furnished herein corresponds to stable version 4.2.0,
+released on 2026-05-20.  Any reference to a newer feature which does not
 yet form part of the latest tagged commit, is explicitly marked as such.
 
-Current development target is 4.2.0-dev.
+Current development target is 4.3.0-dev.
 
 ⁃ Package name (GNU ELPA): `denote'
 ⁃ Official manual: <https://protesilaos.com/emacs/denote>
@@ -1305,8 +1305,7 @@ time] See section 8.5.2
   that corresponds to the `TITLE', `KEYWORDS', `SUBDIRECTORY', `DATE',
   `TEMPLATE', and `SIGNATURE' arguments. The prompts are those used by
   the standard `denote' command and all of its utility commands ([Points
-  of entry]).  [ The `SIGNATURE' was missing in previous versions and is
-  now part of 4.2.0-dev. ]
+  of entry]).
 
   When returning the contents that fill in the Org capture template, the
   sequence is as follows: front matter, `TEMPLATE', and then the value
@@ -1847,9 +1846,6 @@ See section 20.5
   The user option `denote-keywords-to-not-infer-regexp' omits keywords
   that match a regular expression from the list of inferred keywords.
 
-  [ The `denote-excluded-keywords-regexp' is an obsolete alias for
-    `denote-keywords-to-not-infer-regexp' as part of 4.2.0-dev. ]
-
   Keywords are inferred from file names and provided at relevant prompts
   as completion candidates when the user option `denote-infer-keywords'
   is non-nil.
@@ -1882,10 +1878,10 @@ See section 20.5
   │ (setq denote-known-keywords (list "politics" "economics" "emacs" "philosophy"))
   └────
 
-  [ As part of 4.2.0-dev, setting `denote-infer-keywords' to `nil' also
-    makes the `denote-keywords-prompt' demand that the input matches one
-    of the keywords in `denote-known-keywords'. In previous versions,
-    the prompt would accept arbitrary text. ]
+  Setting `denote-infer-keywords' to `nil' also makes the
+  `denote-keywords-prompt' demand that the input matches one of the
+  keywords in `denote-known-keywords'. In previous versions, the prompt
+  would accept arbitrary text.
 
 
 [Exclude certain keywords from being inferred] See section 6.10
@@ -3455,11 +3451,6 @@ section 8.4
   This is how it looks for Org mode (when `denote-file-type' is set to
   the `org' symbol, which is the default):
 
-  [ The `org' symbol is made the default as of 4.2.0-dev.  Previous
-    versions were also defaulting to Org, but the `denote-file-type' was
-    not explicitly set to `org', which could lead to unpredictable
-    results in certain cases. ]
-
   ┌────
   │ #+title:      This is a sample note
   │ #+date:       [2022-06-30 Thu 16:09]
@@ -3806,9 +3797,6 @@ section 10.5
   │ - link3
   └────
 
-  [ The `denote-link-to-all-files-with-regexp' is an alias for
-    `denote-add-links' as part of 4.2.0-dev. ]
-
   Each link is formatted according to the file type of the current note,
   as explained further above about the `denote-link' command.  The
   current note is excluded from the matching entries (adding a link to
@@ -4082,8 +4070,7 @@ section 10.2
   `denote-link-or-create-with-command'
         This command is the same concept as `denote-link-or-create'
         except it prompts for the specific command for creating a new
-        note ([Choose which commands to prompt for]).  [ The
-        `denote-link-or-create-with-command' is part of 4.2.0-dev. ]
+        note ([Choose which commands to prompt for]).
 
   In all of the above, an optional prefix argument (`C-u' by default)
   creates a link that consists of just the identifier.  This has the
@@ -4255,11 +4242,6 @@ backlinks?] See section 27.11
 10.14 Fontify links in non-Org buffers
 ──────────────────────────────────────
 
-  [ Revised as part of 4.2.0-dev to only target the generic
-    `text-mode'. Org mode and Markdown mode are both excluded because
-    they work with Denote links by default. This revision also inlcudes
-    the `RET' and `C-c C-o' key bindings for fontified links. ]
-
   Denote links are automatically fontified in Org mode and Markdown mode
   buffers ([Adding a single link]). This means that the given major mode
   recognises the link and applies to it the relevant properties that
@@ -4297,9 +4279,6 @@ backlinks?] See section 27.11
   For backward compatibility, the function can also take a single
   parameter, the given file. In that case, it is responsible for
   figuring out the file type in order to return the correct description.
-
-  [ The calling convention for the function with two arguments is
-    introduced as part of 4.2.0-dev. ]
 
   If the value is a string, it treats specially the following
   specifiers:
@@ -4658,12 +4637,10 @@ backlinks?] See section 27.11
 16.1 Focus the `denote-dired' buffer with `denote-dired-focus'
 ──────────────────────────────────────────────────────────────
 
-  [ This is part of 4.2.0-dev. The specifics may change. ]
-
-  The command `denote-dired-focus' (alias `denote-sort-dired-focus')
-  gives users the option to further filter an existing Dired buffer that
-  was produced by the `denote-dired' command ([Display filtered and
-  sorted files with `denote-sort-dired' or `denote-dired']).
+  The command `denote-dired-focus' gives users the option to further
+  filter an existing Dired buffer that was produced by the
+  `denote-dired' command ([Display filtered and sorted files with
+  `denote-sort-dired' or `denote-dired']).
 
   Call `denote-dired-focus' from inside such a Dired buffer to further
   limit its contents to files matching the given regular expression or
@@ -6502,9 +6479,7 @@ section 21.13
         inferrence, use optional `FILES-MATCHING-REGEXP', to extract
         keywords only from the matching files. Otherwise, do it for all
         files. Filter inferred keywords with the user option
-        `denote-keywords-to-not-infer-regexp'.  [ The
-        `denote-excluded-keywords-regexp' is an obsolete alias for
-        `denote-keywords-to-not-infer-regexp' as part of 4.2.0-dev. ]
+        `denote-keywords-to-not-infer-regexp'.
 
   Function `denote-keywords-sort'
         Sort `KEYWORDS' if `denote-sort-keywords' is non-nil.
@@ -6708,7 +6683,7 @@ section 21.13
         whose `:get-file-type-function' returns non-nil.  If
         `:get-file-type-function' is nil rely on the `:title-key-regexp'
         and return the first matching file type. Return nil if FILE is
-        not recognized. [ Revised as part of 4.2.0-dev. ]
+        not recognized.
 
   Variable `denote-get-identifier-function'
         The function to generate an identifier as a non-empty
@@ -6970,12 +6945,12 @@ section 21.13
   Function `denote-get-file-type-markdown-yaml'
         Return `markdown-yaml' if FILE has YAML front matter. YAML front
         matter starts with `---' on the first line. Consult the
-        `denote-file-types' for how this is used. [ Part of 4.2.0-dev. ]
+        `denote-file-types' for how this is used.
 
   Function `denote-get-file-type-markdown-toml'
         Return `markdown-toml' if FILE has TOML front matter. Consult
         the `denote-file-types' for how this is used. TOML front matter
-        starts with `+++' on the first line. [ Part of 4.2.0-dev. ]
+        starts with `+++' on the first line.
 
   Variable `denote-file-types'
         Alist of `denote-file-type' and their format properties.
@@ -6994,8 +6969,7 @@ section 21.13
            given file, that reads the file contents and returns the file
            type as a symbol or nil. If there is no function, Denote will
            fall back to a search for a title in the front matter (per
-           `:title-key-regexp', which is described below). [ Part of
-           4.2.0-dev. ]
+           `:title-key-regexp', which is described below).
 
         3. `:date-function' is a function that can format a date.  See
            the functions `denote--date-iso-8601',
@@ -7095,8 +7069,7 @@ section 21.13
   Function `denote-link-description-with-signature-and-title'
         Return link description for `FILE' with `FILE-TYPE'. For
         backward compatibility, `FILE-TYPE' is an optional parameter. If
-        it is `nil', then compute `FILE-TYPE' internally. [ `FILE-TYPE'
-        is added as part of 4.2.0-dev. ]
+        it is `nil', then compute `FILE-TYPE' internally.
 
         • If the region is active, use it as the description.
 

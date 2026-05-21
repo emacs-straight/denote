@@ -15,81 +15,96 @@ the manual: <https://protesilaos.com/emacs/denote>.
 Table of Contents
 ─────────────────
 
-1. Version 4.1.0 on 2025-10-17
+1. Version 4.2.0 on 2026-05-20
 
 
-1 Version 4.1.0 on 2025-10-17
+1 Version 4.2.0 on 2026-05-20
 ═════════════════════════════
 
-  The overarching theme of version `4.1.0' is that of continuing to
-  deliver on the highly hackable/flexible/powerful potential of Denote.
-  All the core functionality is the same as before and you still only
-  need a tiny configuration to use Denote productively. We are adding
-  more refinements and subtle improvements under the hood, while making
-  it even easier for advanced users/developers to piece together a
-  workflow that matches their particular needs.
+  This version brings several improvements to the core `denote' package
+  as well as all the Denote extensions I maintain. The core package is
+  stable, its feature set is rich, and the wider ecosystem of extensions
+  is growing.
 
-  Since version `4.0.0', we have moved the “Denote extras” files into
-  their own packages. I cover their changes further down after I
-  elaborate on all the changes to the core Denote package:
+  Most of the changes documented herein are of interest to experienced
+  users who may be looking for ways to refine their workflow. I
+  recommend that new users start with the basics, as I explained them in
+  the original video demonstration of Denote or as they are documented
+  in the manual’s section for newcomers:
 
-  • 
-  • 
-  • 
-
-  Note that I write all the release notes by hand. The reason is that I
-  consider this process an essential part of my role as a maintainer.
-  Taking the time to review and document everything ensures that (i) I
-  am well informed about the state of the package, (ii) I did not forget
-  anything about this development cycle, and (iii) I take another look
-  at the changes we made to ensure everything is in order.
-
-
-1.1 Overview of the new features for core Denote
-────────────────────────────────────────────────
-
-  • The user option `denote-directory' can be assigned to a list of
-    directories. The original string value is also acceptable and
-    remains the default.
-
-  • Advanced users can define a completely custom scheme for
-    identifiers. This can be as simple as automatically assigned ordinal
-    numbers to increasingly complex patterns that may also involve user
-    input.
-
-  • The command `denote-find-backlink-with-location' is like
-    `denote-find-backlink' except it also moves to the exact location of
-    the link in the corresponding file.
-
-  • All Denote buffer names share a common prefix, which is subject to
-    the user option `denote-buffer-name-prefix'. This makes it easier to
-    spot them in the buffer list.
-
-  • The command `denote-dired' (alias `denote-sort-dired') can sort
-    files by `random' and `last-modified' in addition to the methods
-    that involve Denote file name components.
-
-  • The user option `denote-query-sorting' controls how files in all
-    query buffers are sorted by default. This covers backlinks, query
-    links for file contents, and any buffer produced by the
-    `denote-grep' command. It benefits from the internal “Denote sort”
-    mechanism, which is also used by `denote-dired' and the Org dynamic
-    blocks of the `denote-org' package.
+  Webpage
+        <https://protesilaos.com/emacs/denote#h:c54bedb4-5377-4dbd-853c-5870ace6eb33>.
+  Info manual
+        With the latest `denote' package installed, evaluate `(info
+        "(denote) Getting started with Denote")'.
 
   Remember that the release notes are true only at the time of
-  publication. The single source of truth always is the official manual.
+  publication. The single source of truth is the official manual.
 
 
-1.2 Set `denote-directory' to a list of directories
-───────────────────────────────────────────────────
+1.1 Core Denote
+───────────────
 
-  The user option `denote-directory' can optionally be bound to a list
-  of file system paths, each of which represents a directory root, such
-  as `'("/home/prot/Documents/work/" "=/home/prot/Git/hut/")' (Denote
-  has always supported subdirectories, even for a singular
-  `denote-directory').
+1.1.1 Overview of the new features
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
-  When creating new files, such as with the `denote' command, the first
-  directory on the list will be selected. This can be changed by
-  modifying the `denote-prompts' user option so that it asks for a
-  directory or subdirectory thereof. Or by writing small wrapper …  …
+  • The command `denote-dired-focus' will filter the results of an
+    existing `denote-dired' buffer. Use this to narrow down the results.
+
+  • In Org files, the `denote:' link type can now be previewed using the
+    built-in `org-link-preview' command, starting with Org version
+    `9.8.0'.
+
+  • The command `denote-link-or-create-with-command' extends the
+    existing convenience functions of the “do or create note” kind.
+
+  • The `denote-file-prompt' uses completion metadata to sort by most
+    recently accessed, group by directory or file extension, and cover
+    packages that display cosmetic icons alongside completion
+    candidates.
+
+  • Denote now enforces a controlled vocabulary for keywords when
+    `denote-infer-keywords' is set to `nil', such that only the
+    `denote-known-keywords' are provided as an option at the relevant
+    prompts.
+
+  • The mechanism for integrating Denote with `org-capture' now supports
+    prompting for an signature via `denote-org-capture-with-prompts'
+    (the signature is an optional, free-form component of the Denote
+    file-naming scheme).
+
+  • Several packages that extend Denote are documented in the manual. If
+    you have a package for Denote, let me know and I will write a
+    section about it.
+
+
+1.1.2 Focus a `denote-dired' buffer with `denote-dired-focus'
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The command `denote-dired' produces a Dired listing of file names that
+  match the given regular expressions. Users can benefit from the Denote
+  file-naming scheme to, for example, include all files that have the
+  keyword `_emacs'. In the resulting Dired buffer, the new command
+  `denote-dired-focus' can then be invoked to further narrow down the
+  results, such as to only show files that have `2026' in their file
+  (with default settings, the date is part of the Denote identifier).
+
+  I implemented this feature in response to issue 693 by 82Kang:
+  <https://github.com/protesilaos/denote/issues/693>.
+
+
+1.1.3 Improvements to the file prompt
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Various Denote commands prompt for a file name: for instance,
+  `denote-link' asks which file to link to. This file prompt is now
+  augmented with completion metadata that transform how files look and
+  how the information is organised.
+
+  Before, the prompt presented full file names like:
+
+  ┌────
+  │ 20220610T043241--initial-thoughts-on-the-zettelkasten-method__notetaking.org
+  └────
+
+  …  …

@@ -5,7 +5,7 @@
 ;; Author: Protesilaos <info@protesilaos.com>
 ;; Maintainer: Protesilaos <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 4.1.3
+;; Version: 4.2.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -2046,7 +2046,7 @@ and (iv) a string, respectively."
 (defalias 'denote-dired 'denote-sort-dired
   "Alias for `denote-sort-dired' command.")
 
-(defun denote-sort-dired-focus (regexp &optional exclude-match)
+(defun denote-dired-focus (regexp &optional exclude-match)
   "Filter the current `denote-dired' buffer to include only files matching REGEXP.
 With optional EXCLUDE-MATCH as a prefix argument remove the files
 matching REGEXP from the buffer.
@@ -2054,14 +2054,16 @@ matching REGEXP from the buffer.
 This is not a new query.  It builds on top of the current `denote-dired'
 buffer's file list to operate only on those files."
   (interactive
-   (or (denote--user-error-if-not-major-mode 'dired-mode)
-       (let ((exclude-p current-prefix-arg))
-         (list
-          (denote-files-matching-regexp-prompt
-           (if exclude-p
-               "Remove files matching REGEXP in Denote Dired buffer"
-             "Show only files matching REGEXP in Denote Dired buffer"))
-          exclude-p))))
+   (if denote-sort-dired--last-files
+       (or (denote--user-error-if-not-major-mode 'dired-mode)
+           (let ((exclude-p current-prefix-arg))
+             (list
+              (denote-files-matching-regexp-prompt
+               (if exclude-p
+                   "Remove files matching REGEXP in Denote Dired buffer"
+                 "Show only files matching REGEXP in Denote Dired buffer"))
+              exclude-p)))
+     (user-error "This is not a `denote-dired' buffer")))
   (denote--user-error-if-not-major-mode 'dired-mode)
   (if-let* ((files denote-sort-dired--last-files))
       (pcase-let* ((`(,last-regexp ,component ,reverse-sort ,exclude-regexp ,_) denote-sort-dired--last-arguments))
@@ -2069,9 +2071,6 @@ buffer's file list to operate only on those files."
             (denote-sort-dired last-regexp component reverse-sort regexp files)
           (denote-sort-dired regexp component reverse-sort exclude-regexp files)))
     (user-error "No last `denote-sort-dired' results to focus on")))
-
-(defalias 'denote-dired-focus 'denote-sort-dired-focus
-  "Alias for `denote-sort-dired-focus'.")
 
 ;;;; Keywords
 
@@ -4156,14 +4155,14 @@ front matter lines."
             (next-prompt ""))
         (cond ((memq component to-remove)
                (setq next-prompt (format "\n-%s\n"
-                                         (propertize old-line 'face 'denote-faces-prompt-old-name))))
+                                         (propertize (denote-trim-whitespace old-line) 'face 'denote-faces-prompt-old-name))))
               ((memq component to-add)
                (setq next-prompt (format "\n-%s\n"
-                                         (propertize new-line 'face 'denote-faces-prompt-new-name))))
+                                         (propertize (denote-trim-whitespace new-line) 'face 'denote-faces-prompt-new-name))))
               ((memq component to-modify)
                (setq next-prompt (format "\n-%s\n-%s\n"
-                                         (propertize old-line 'face 'denote-faces-prompt-old-name)
-                                         (propertize new-line 'face 'denote-faces-prompt-new-name)))))
+                                         (propertize (denote-trim-whitespace old-line) 'face 'denote-faces-prompt-old-name)
+                                         (propertize (denote-trim-whitespace new-line) 'face 'denote-faces-prompt-new-name)))))
         (setq prompt (concat prompt next-prompt))))
     (concat prompt "?")))
 
