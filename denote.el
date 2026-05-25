@@ -5,7 +5,7 @@
 ;; Author: Protesilaos <info@protesilaos.com>
 ;; Maintainer: Protesilaos <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/denote
-;; Version: 4.2.0
+;; Version: 4.2.2
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -906,16 +906,16 @@ The note's ID is derived from the date and time of its creation.")
 (defconst denote-date-identifier-regexp "\\([0-9]\\{8\\}\\)\\(T[0-9]\\{6\\}\\)"
   "Regular expression to match `denote-date-identifier-format'.")
 
-(defconst denote-identifier-regexp "@@\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
+(defconst denote-identifier-regexp "@@\\([^.]+?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
   "Regular expression to match the IDENTIFIER field in a file name.")
 
-(defconst denote-signature-regexp "==\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
+(defconst denote-signature-regexp "==\\([^.]+?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
   "Regular expression to match the SIGNATURE field in a file name.")
 
-(defconst denote-title-regexp "--\\([^.]*?\\)\\(==.*\\|__.*\\|@@.*\\|\\..*\\)*$"
+(defconst denote-title-regexp "--\\([^.]+?\\)\\(==.*\\|__.*\\|@@.*\\|\\..*\\)*$"
   "Regular expression to match the TITLE field in a file name.")
 
-(defconst denote-keywords-regexp "__\\([^.]*?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
+(defconst denote-keywords-regexp "__\\([^.]+?\\)\\(==.*\\|--.*\\|__.*\\|@@.*\\|\\..*\\)*$"
   "Regular expression to match the KEYWORDS field in a file name.")
 
 (make-obsolete-variable
@@ -1492,9 +1492,9 @@ there.")
 
 (defun denote-file-prompt--format-identifier (file)
   "Return identifier of FILE for `denote-file-prompt-affixate'."
-  (let* ((identifier (denote-retrieve-filename-identifier file))
-         (date-or-id (or (ignore-errors (denote-id-to-date identifier)) identifier))
-         (propertized (propertize date-or-id 'face 'completions-annotations)))
+  (when-let* ((identifier (denote-retrieve-filename-identifier file))
+              (date-or-id (or (ignore-errors (denote-id-to-date identifier)) identifier))
+              (propertized (propertize date-or-id 'face 'completions-annotations)))
     (format "%s " propertized)))
 
 (defun denote-file-prompt--format-keywords-and-signature (file)
