@@ -7583,7 +7583,7 @@ Ideas and/or user feedback
      Liu, Ypot, 82Kang, atanasj, azegas, babusri, bdillahu,
      coherentstate, doolio, duli, drcxd, elge70, elliottw, fingerknight,
      GuutBoy, hpgisler, hyperfocus1337,johkneisl, jtpavlock, juh,
-     leafarbelm, mentalisttraceur, mjkalyan, oatmealm,
+     leafarbelm, mentalisttraceur, mjkalyan, oatmealm, potchie-maker,
      Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007, sarcom-sar,
      sienic, skissue, sundar bp, wuzhihao, yetanotherfossman, zadca123
 
@@ -8763,11 +8763,11 @@ Node: Speed up backlinks' or query links' buffer creation?352713
 Node: Why do I get ``Search failed with status 1'' when I search for backlinks?354089
 Node: Why do I get a double #+title in Doom Emacs?355150
 Node: Acknowledgements355871
-Node: GNU Free Documentation License359386
-Node: Indices384543
-Node: Function index384716
-Node: Variable index410146
-Node: Concept index423192
+Node: GNU Free Documentation License359401
+Node: Indices384558
+Node: Function index384731
+Node: Variable index410161
+Node: Concept index423207
 
 End Tag Table
 
