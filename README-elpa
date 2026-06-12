@@ -147,6 +147,7 @@ Table of Contents
 .. 18. Use the `denote-sections' package
 .. 19. Use the `denote-wordcloud' package
 .. 20. Use the `denote-lint' package
+.. 21. Use the `denote-paperless' package
 21. Extending Denote
 .. 1. Define a custom file type to automatically encrypt new notes
 .. 2. Access the data of the latest note
@@ -5443,6 +5444,29 @@ section 10.4
   <https://github.com/psmith1303/denote-lint>.
 
 
+20.21 Use the `denote-paperless' package
+────────────────────────────────────────
+
+  The `denote-paperless' package by Matthieu Muller allows the user to
+  easily manage administrative document files such as bills, letters,
+  taxes, etc.
+
+  The workflow it implements is heavily inspired from how
+  [Paperless-ngx] operates: giving each document a date, a type, a
+  correspondent, a title, some keywords and (optionally) an archive
+  serial number. It leverage the `SIGNATURE' component to insert these
+  new elements in the file name.
+
+  The package is designed to be used alongside Denote: manage your notes
+  with Denote and your documents with Denote Paperless.
+
+  Read more from the package’s documentation:
+  <https://codeberg.org/matthieumuller/denote-paperless>
+
+
+[Paperless-ngx] <https://docs.paperless-ngx.com/>
+
+
 21 Extending Denote
 ═══════════════════
 
@@ -7888,13 +7912,13 @@ section 21.13
         Hötzel, Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas
         Andreadis, Kristoffer Balintona, Kyle Meyer, Laurent Gatto,
         Lucas Quintana, Maikol Solis, Marc Fargas, Marco Baringer,
-        Matthew Batson, Matthew Lemon, Matto Fransen, Noboru Ota
-        (nobiot), Norwid Behrnd, Octavian, Peter Prevos, Philip
-        Kaludercic, Ryota, Samuel W. Flint, Quiliro Ordóñez, Stephen
-        R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut Benjamin,
-        Tobias Lidman-Strauss, Tomasz Hołubowicz, TomoeMami , Vedang
-        Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts,
-        arsaber101, bplubell, bryanrinders, dulikiles, eum3l,
+        Matthew Batson, Matthew Lemon, Matthieu Muller, Matto Fransen,
+        Noboru Ota (nobiot), Norwid Behrnd, Octavian, Peter Prevos,
+        Philip Kaludercic, Ryota, Samuel W.  Flint, Quiliro Ordóñez,
+        Stephen R. Kifer, Stefan Monnier, Stefan Thesing, Thibaut
+        Benjamin, Tobias Lidman-Strauss, Tomasz Hołubowicz, TomoeMami ,
+        Vedang Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu Xu,
+        alvmts, arsaber101, bplubell, bryanrinders, dulikiles, eum3l,
         experimental-code-86, ezchi, gnuhack, gvalson, jarofromel,
         leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
         mentalisttraceur, nescias, pmenair, relict007, skissue.
