@@ -5545,12 +5545,12 @@ the active region specially, is up to it."
 
 (defun denote-link--collect-identifiers (regexp)
   "Return collection of identifiers in buffer matching REGEXP."
-  (let (matches)
+  (let ((matches nil))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward regexp nil t)
         (push (match-string-no-properties 1) matches)))
-    matches))
+    (seq-uniq matches)))
 
 (make-obsolete 'denote-link--expand-identifiers nil "4.1.0")
 
@@ -5933,6 +5933,7 @@ alist, such as `denote-backlinks-display-buffer-action'."
          (dirs (denote-directories)))
     (unless xref-alist
       (error "No results to display"))
+    (setq denote-query--last-files (delete-dups (mapcar #'car xref-alist)))
     ;; Update group of each item in xref-alist
     (dolist (x xref-alist)
       (let* ((file-xref (car x)))
@@ -5961,6 +5962,7 @@ alist, such as `denote-backlinks-display-buffer-action'."
 
 DISPLAY-BUFFER-ACTION is a `display-buffer' action and concomitant
 alist, such as `denote-backlinks-display-buffer-action'."
+  (setq denote-query--last-query identifier)
   (if-let* ((xref-alist (denote-retrieve-xref-alist-for-backlinks identifier)))
       (denote--display-buffer-from-xref-alist xref-alist buffer-name display-buffer-action)
     (error "No matches for identifier `%s'" identifier)))
@@ -6037,7 +6039,7 @@ generally, any command that relies on the `denote-make-links-buffer'."
        (list (denote-query-prompt :focus)))
    denote-query-mode)
   (denote--user-error-if-not-major-mode 'denote-query-mode)
-  (denote-make-links-buffer query denote-query--last-files nil '(display-buffer-same-window))
+  (denote-make-links-buffer query denote-query--last-files (buffer-name) '(display-buffer-same-window))
   (message "Searching `%s' in files: `%S'" query denote-query--last-files))
 
 (defun denote-query--filter-files (regexp include-p)
