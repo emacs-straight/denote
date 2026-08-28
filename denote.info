@@ -510,7 +510,7 @@ File: denote.info,  Node: Getting started with Denote,  Next: Overview,  Prev: S
 *****************************
 
 At its core, Denote is a file-naming scheme (*note The file-naming
-scheme::).  It is applies to new text files that Denote creates or to
+scheme::).  It applies to new text files that Denote creates or to
 existing files of any type (videos, PDFs, images, ...).  Here is the big
 picture view on how to get started with Denote:
 
@@ -7678,29 +7678,29 @@ Contributions to code or the manual
 
 Ideas and/or user feedback
      Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
-     Griffin, Alex Hirschfeld, Alexis Purslane, Alfredo Borrás, Alp Eren
-     Kose, André Bering, Ashton Wiersdorf, Bhargav Kulkarni, Benjamin
-     Kästner, Claudio Migliorelli, Claudiu Tănăselia, Colin McLear,
-     Cosmin-Octavian C, Damien Cassou, Davi Ramos, Elias Storms,
-     Federico Stilman, Florian, Frédéric Willem Frank Ehmsen, Glenna D.,
-     Guo Yong, Hanspeter Gisler Harold Ollivier, IceAsteroid, Jack Baty,
-     Jay Rajput, Jean-Charles Bagneris, Jeff Valk, Jens Östlund, Jeremy
-     Friesen, Jonathan Sahar, Johan Bolmsjö, Jonas Großekathöfer,
-     Jousimies, Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal Modi,
-     Kevin Izevbigie, Kolmas, Lukas C.  Bossert, M.  Hadi Timachi,
-     Maikol Solis, Mark Olson, Michael Jones, Mirko Hernandez, Morten
-     Kjeldgaard, Niall Dooley, Nick Bell, Oliver Epper, Paul van Gelder,
-     Peter Prevos, Peter Smith, Riccardo Giannitrapani, Rory Molinari,
-     Samuel W.  Flint, Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan
-     Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick
-     (VicZz), Viktor Haag, Vineet C.  Kulkarni, Wade Mealing, Wilf, Yi
-     Liu, Ypot, 82Kang, atanasj, azegas, babusri, bdillahu,
-     coherentstate, doolio, duli, drcxd, elge70, elliottw, fingerknight,
-     GuutBoy, hpgisler, hyperfocus1337,johkneisl, jtpavlock, juh,
-     leafarbelm, mentalisttraceur, mjkalyan, o-rxw, oatmealm,
-     potchie-maker, Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007,
-     sarcom-sar, sienic, skissue, sundar bp, wuzhihao,
-     yetanotherfossman, zadca123
+     Griffin, Alex Hirschfeld, Alexis Purslane, Alfredo Borrás, Ali
+     Bozorgzadeh, Alp Eren Kose, André Bering, Ashton Wiersdorf, Bhargav
+     Kulkarni, Benjamin Kästner, Claudio Migliorelli, Claudiu Tănăselia,
+     Colin McLear, Cosmin-Octavian C, Damien Cassou, Davi Ramos, Elias
+     Storms, Federico Stilman, Florian, Frédéric Willem Frank Ehmsen,
+     Glenna D., Guo Yong, Hanspeter Gisler Harold Ollivier, IceAsteroid,
+     Jack Baty, Jay Rajput, Jean-Charles Bagneris, Jeff Valk, Jens
+     Östlund, Jeremy Friesen, Jonathan Sahar, Johan Bolmsjö, Jonas
+     Großekathöfer, Jousimies, Juanjo Presa, Julian Hoch, Kai von
+     Fintel, Kaushal Modi, Kevin Izevbigie, Kolmas, Lukas C.  Bossert,
+     M.  Hadi Timachi, Maikol Solis, Mark Olson, Michael Jones, Mirko
+     Hernandez, Morten Kjeldgaard, Niall Dooley, Nick Bell, Oliver
+     Epper, Paul van Gelder, Peter Prevos, Peter Smith, Riccardo
+     Giannitrapani, Rory Molinari, Samuel W.  Flint, Sergio Rey, Suhail
+     Singh, Shreyas Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck,
+     Taoufik, TJ Stankus, Vick (VicZz), Viktor Haag, Vineet C.
+     Kulkarni, Wade Mealing, Wilf, Yi Liu, Ypot, 82Kang, atanasj,
+     azegas, babusri, bdillahu, coherentstate, doolio, duli, drcxd,
+     elge70, elliottw, fingerknight, GuutBoy, hpgisler,
+     hyperfocus1337,johkneisl, jtpavlock, juh, leafarbelm,
+     mentalisttraceur, mjkalyan, o-rxw, oatmealm, potchie-maker,
+     Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007, sarcom-sar,
+     sienic, skissue, sundar bp, wuzhihao, yetanotherfossman, zadca123
 
    Special thanks to Peter Povinec who helped refine the file-naming
 scheme, which is the cornerstone of this project.
@@ -8719,173 +8719,173 @@ Node: Sample configuration13088
 Node: Get started with this sample configuration13649
 Node: More comprehensive sample configuration15335
 Node: Getting started with Denote18951
-Node: Overview21322
-Node: Points of entry25444
-Node: Standard note creation26877
-Node: The denote-directory option29346
-Node: The denote-prompts option30902
-Node: The denote-history-completion-in-prompts option35449
-Node: The denote-templates option37176
-Node: Convenience commands for note creation40632
-Ref: Write your own convenience commands44686
-Node: The denote-save-buffers option49077
-Node: The denote-kill-buffers option49708
-Node: The denote-date-prompt-use-org-read-date option51097
-Node: Create note using Org capture51844
-Node: Create note with specific prompts using Org capture54738
-Node: Create note with specific values using Org capture58859
-Node: Create a note with the region's contents62130
-Node: A custom denote-region that references the source64173
-Node: Open an existing note or create it if missing66983
-Node: Maintain separate directory silos for notes69368
-Node: Make Org export work with silos74367
-Node: Exclude certain files from file prompts76688
-Node: Exclude certain directories from all operations77575
-Node: Exclude certain keywords from being inferred78668
-Node: Create a controlled vocabulary for keywords79330
-Node: Use Denote commands from the menu bar or context menu80829
-Node: Renaming files81850
-Node: Rename a single file84425
-Node: The denote-rename-confirmations option90325
-Node: Rename a single file based on its front matter91842
-Node: Rename multiple files interactively94073
-Node: Rename multiple files at once by asking only for keywords95323
-Node: Rename multiple files based on their front matter97460
-Node: Rename a file by changing only its file type98520
-Node: Rename a file by changing only its identifier100000
-Node: Rename a file by adding or removing a title interactively100646
-Node: Rename a file by adding or removing keywords interactively102451
-Node: Rename a file by adding or removing a signature interactively104466
-Node: Find duplicate identifiers and put them in a Dired buffer106326
-Node: Faces used by rename commands109051
-Node: The file-naming scheme109552
-Node: Change the order of file name components115152
-Node: Retroactively reorder the components of Denote file names118255
-Node: Sluggification of file name components120094
-Node: User-defined sluggification of file name components122362
-Node: Custom sluggification to remove non-ASCII characters126563
-Node: Custom sluggification to remove diacterics or accented characters128692
-Node: Features of the file-naming scheme for searching or filtering130778
-Node: Define a completely custom identifier scheme132478
-Node: A custom identifier that is a simple incrementing number scheme134732
-Node: A custom identifier that is a simple string given at the prompt each time138731
-Node: A custom identifier to include the day of the week as a capital letter140776
-Node: A custom identifier without the time separator145153
-Node: A custom identifier to encode publisher data147091
-Node: Front matter152501
-Node: Change the front matter format154854
-Node: Regenerate front matter157841
-Node: Linking notes158259
-Node: Add a single direct link using a file name prompt160641
-Node: Add a direct link to a file whose contents include the given query163064
-Node: Add a query link164531
-Node: Insert links to all files matching a query in their file name166783
-Node: Insert links to all files matching a query in their contents169379
-Node: The denote-open-link-function user option170388
-Node: The denote-org-store-link-to-heading user option171216
-Node: Adding direct links to files matching contents174543
-Node: Insert links from marked files in Dired174847
-Node: Link to an existing note or create a new one176464
-Node: The backlinks' buffer180584
-Node: Writing metanotes183573
-Node: Visiting linked files via the minibuffer185299
-Node: Fontify links in non-Org buffers187142
-Node: The denote-link-description-format to format link descriptions188306
-Node: Choose which commands to prompt for190875
-Node: Fontification in Dired191790
-Node: Set the prefix of all Denote buffers194513
-Node: Automatically rename Denote file buffers195510
-Node: The denote-rename-buffer-format option196837
-Node: Use Org dynamic blocks199267
-Node: Display filtered and sorted files with denote-sort-dired or denote-dired200477
-Node: Focus the denote-dired buffer with denote-dired-focus202957
-Node: Configure what extra prompts denote-sort-dired issues204022
-Node: Define a sorting function per component206558
-Node: Sort signatures that include Luhmann-style sequences208079
-Node: Use denote-grep to search inside files210688
-Node: Interact with the links buffer212630
-Node: Control the default sort of a query buffer215545
-Node: Minibuffer histories217200
-Node: Packages that build on Denote218076
-Node: Use the consult-denote package for enhanced minibuffer interactions219655
-Node: Sequence notes220989
-Node: Use the denote-markdown package to better integrate Markdown with Denote222891
-Node: Use the denote-journal package which was formerly denote-journal-extrasel224427
-Node: Use the denote-silo package which formerly was denote-silo-extrasel225905
-Node: Use the denote-solo package227129
-Node: Use the denote-search package as a search interface228342
-Node: Use the denote-explore package to explore your notes229627
-Node: Use the citar-denote package for bibliography notes230450
-Node: Use the consult-notes package231549
-Node: Use the denote-menu package233389
-Node: Use the denote-review package234392
-Node: Use the denote-zettel-interface package235231
-Node: Use the mir package for incremental reading236241
-Node: Use the denote-journal-capture package237601
-Node: Use the denote-agenda package238407
-Node: Use the denote-project-notes package239146
-Node: Use the denote-regexp package239847
-Node: Use the denote-sections package241053
-Node: Use the denote-wordcloud package241608
-Node: Use the denote-lint package242349
-Node: Use the denote-paperless package242952
-Node: Extending Denote243889
-Node: Define a custom file type to automatically encrypt new notes245171
-Node: Access the data of the latest note247808
-Node: Create a new note in any directory248646
-Node: Find empty notes and put them in a Dired buffer249770
-Node: Automatically rename the note after saving it255636
-Node: Narrow the list of files in Dired256890
-Node: Use dired-virtual-mode for arbitrary file listings259229
-Node: Use Embark to collect minibuffer candidates263329
-Node: Search file contents264628
-Node: Bookmark the directory with the notes266439
-Node: Treat your notes as a project267797
-Node: Use the tree-based file prompt for select commands269287
-Node: Rename files with Denote in the Image Dired thumbnails buffer271334
-Node: Rename files with Denote using dired-preview274853
-Node: Avoid duplicate identifiers when exporting Denote notes277505
-Node: Export Denote notes with Org Mode278823
-Ref: Manually configure Org export279464
-Ref: Automatically store Org exports in another folder280400
-Ref: Org Mode Publishing282972
-Node: Export Denote notes with Markdown283587
-Node: Set up your workflow for daily or weekly meeting notes284256
-Node: For developers or advanced users288089
-Node: Common building blocks for developers or advanced users289785
-Node: Predefined note values for developers or advanced users296687
-Node: File path interface for developers or advanced users299467
-Node: Data retrieval interface for developers or advanced users302870
-Node: Prompt interface for developers or advanced users306567
-Node: Front matter interface for developers or advanced users312116
-Node: Link interface for developers or advanced users319699
-Node: Xref interface for developers or advanced users322639
-Node: Renaming files interface for developers or advanced users323614
-Node: Troubleshoot Denote in a pristine environment326624
-Node: Contributing328299
-Node: Wishlist of what we can do to extend Denote331309
-Node: Publications about Denote333184
-Node: Alternatives to Denote335968
-Node: Alternative implementations and further reading340560
-Node: Frequently Asked Questions342294
-Node: Why develop Denote when PACKAGE already exists?343387
-Node: Why not rely exclusively on Org?345301
-Node: Why care about Unix tools when you use Emacs?346997
-Node: Why many small files instead of few large ones?348332
-Node: Does Denote perform well at scale?350264
-Node: I add TODOs to my notes; will many files slow down the Org agenda?351390
-Node: I want to sort by last modified in Dired why won't Denote let me?353358
-Node: How do you handle the last modified case?354480
-Node: Why are some Org links opening outside Emacs?356041
-Node: Speed up backlinks' or query links' buffer creation?357909
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?359285
-Node: Why do I get a double #+title in Doom Emacs?360346
-Node: Acknowledgements361067
-Node: GNU Free Documentation License364686
-Node: Indices389843
-Node: Function index390016
-Node: Variable index415446
-Node: Concept index428492
+Node: Overview21319
+Node: Points of entry25441
+Node: Standard note creation26874
+Node: The denote-directory option29343
+Node: The denote-prompts option30899
+Node: The denote-history-completion-in-prompts option35446
+Node: The denote-templates option37173
+Node: Convenience commands for note creation40629
+Ref: Write your own convenience commands44683
+Node: The denote-save-buffers option49074
+Node: The denote-kill-buffers option49705
+Node: The denote-date-prompt-use-org-read-date option51094
+Node: Create note using Org capture51841
+Node: Create note with specific prompts using Org capture54735
+Node: Create note with specific values using Org capture58856
+Node: Create a note with the region's contents62127
+Node: A custom denote-region that references the source64170
+Node: Open an existing note or create it if missing66980
+Node: Maintain separate directory silos for notes69365
+Node: Make Org export work with silos74364
+Node: Exclude certain files from file prompts76685
+Node: Exclude certain directories from all operations77572
+Node: Exclude certain keywords from being inferred78665
+Node: Create a controlled vocabulary for keywords79327
+Node: Use Denote commands from the menu bar or context menu80826
+Node: Renaming files81847
+Node: Rename a single file84422
+Node: The denote-rename-confirmations option90322
+Node: Rename a single file based on its front matter91839
+Node: Rename multiple files interactively94070
+Node: Rename multiple files at once by asking only for keywords95320
+Node: Rename multiple files based on their front matter97457
+Node: Rename a file by changing only its file type98517
+Node: Rename a file by changing only its identifier99997
+Node: Rename a file by adding or removing a title interactively100643
+Node: Rename a file by adding or removing keywords interactively102448
+Node: Rename a file by adding or removing a signature interactively104463
+Node: Find duplicate identifiers and put them in a Dired buffer106323
+Node: Faces used by rename commands109048
+Node: The file-naming scheme109549
+Node: Change the order of file name components115149
+Node: Retroactively reorder the components of Denote file names118252
+Node: Sluggification of file name components120091
+Node: User-defined sluggification of file name components122359
+Node: Custom sluggification to remove non-ASCII characters126560
+Node: Custom sluggification to remove diacterics or accented characters128689
+Node: Features of the file-naming scheme for searching or filtering130775
+Node: Define a completely custom identifier scheme132475
+Node: A custom identifier that is a simple incrementing number scheme134729
+Node: A custom identifier that is a simple string given at the prompt each time138728
+Node: A custom identifier to include the day of the week as a capital letter140773
+Node: A custom identifier without the time separator145150
+Node: A custom identifier to encode publisher data147088
+Node: Front matter152498
+Node: Change the front matter format154851
+Node: Regenerate front matter157838
+Node: Linking notes158256
+Node: Add a single direct link using a file name prompt160638
+Node: Add a direct link to a file whose contents include the given query163061
+Node: Add a query link164528
+Node: Insert links to all files matching a query in their file name166780
+Node: Insert links to all files matching a query in their contents169376
+Node: The denote-open-link-function user option170385
+Node: The denote-org-store-link-to-heading user option171213
+Node: Adding direct links to files matching contents174540
+Node: Insert links from marked files in Dired174844
+Node: Link to an existing note or create a new one176461
+Node: The backlinks' buffer180581
+Node: Writing metanotes183570
+Node: Visiting linked files via the minibuffer185296
+Node: Fontify links in non-Org buffers187139
+Node: The denote-link-description-format to format link descriptions188303
+Node: Choose which commands to prompt for190872
+Node: Fontification in Dired191787
+Node: Set the prefix of all Denote buffers194510
+Node: Automatically rename Denote file buffers195507
+Node: The denote-rename-buffer-format option196834
+Node: Use Org dynamic blocks199264
+Node: Display filtered and sorted files with denote-sort-dired or denote-dired200474
+Node: Focus the denote-dired buffer with denote-dired-focus202954
+Node: Configure what extra prompts denote-sort-dired issues204019
+Node: Define a sorting function per component206555
+Node: Sort signatures that include Luhmann-style sequences208076
+Node: Use denote-grep to search inside files210685
+Node: Interact with the links buffer212627
+Node: Control the default sort of a query buffer215542
+Node: Minibuffer histories217197
+Node: Packages that build on Denote218073
+Node: Use the consult-denote package for enhanced minibuffer interactions219652
+Node: Sequence notes220986
+Node: Use the denote-markdown package to better integrate Markdown with Denote222888
+Node: Use the denote-journal package which was formerly denote-journal-extrasel224424
+Node: Use the denote-silo package which formerly was denote-silo-extrasel225902
+Node: Use the denote-solo package227126
+Node: Use the denote-search package as a search interface228339
+Node: Use the denote-explore package to explore your notes229624
+Node: Use the citar-denote package for bibliography notes230447
+Node: Use the consult-notes package231546
+Node: Use the denote-menu package233386
+Node: Use the denote-review package234389
+Node: Use the denote-zettel-interface package235228
+Node: Use the mir package for incremental reading236238
+Node: Use the denote-journal-capture package237598
+Node: Use the denote-agenda package238404
+Node: Use the denote-project-notes package239143
+Node: Use the denote-regexp package239844
+Node: Use the denote-sections package241050
+Node: Use the denote-wordcloud package241605
+Node: Use the denote-lint package242346
+Node: Use the denote-paperless package242949
+Node: Extending Denote243886
+Node: Define a custom file type to automatically encrypt new notes245168
+Node: Access the data of the latest note247805
+Node: Create a new note in any directory248643
+Node: Find empty notes and put them in a Dired buffer249767
+Node: Automatically rename the note after saving it255633
+Node: Narrow the list of files in Dired256887
+Node: Use dired-virtual-mode for arbitrary file listings259226
+Node: Use Embark to collect minibuffer candidates263326
+Node: Search file contents264625
+Node: Bookmark the directory with the notes266436
+Node: Treat your notes as a project267794
+Node: Use the tree-based file prompt for select commands269284
+Node: Rename files with Denote in the Image Dired thumbnails buffer271331
+Node: Rename files with Denote using dired-preview274850
+Node: Avoid duplicate identifiers when exporting Denote notes277502
+Node: Export Denote notes with Org Mode278820
+Ref: Manually configure Org export279461
+Ref: Automatically store Org exports in another folder280397
+Ref: Org Mode Publishing282969
+Node: Export Denote notes with Markdown283584
+Node: Set up your workflow for daily or weekly meeting notes284253
+Node: For developers or advanced users288086
+Node: Common building blocks for developers or advanced users289782
+Node: Predefined note values for developers or advanced users296684
+Node: File path interface for developers or advanced users299464
+Node: Data retrieval interface for developers or advanced users302867
+Node: Prompt interface for developers or advanced users306564
+Node: Front matter interface for developers or advanced users312113
+Node: Link interface for developers or advanced users319696
+Node: Xref interface for developers or advanced users322636
+Node: Renaming files interface for developers or advanced users323611
+Node: Troubleshoot Denote in a pristine environment326621
+Node: Contributing328296
+Node: Wishlist of what we can do to extend Denote331306
+Node: Publications about Denote333181
+Node: Alternatives to Denote335965
+Node: Alternative implementations and further reading340557
+Node: Frequently Asked Questions342291
+Node: Why develop Denote when PACKAGE already exists?343384
+Node: Why not rely exclusively on Org?345298
+Node: Why care about Unix tools when you use Emacs?346994
+Node: Why many small files instead of few large ones?348329
+Node: Does Denote perform well at scale?350261
+Node: I add TODOs to my notes; will many files slow down the Org agenda?351387
+Node: I want to sort by last modified in Dired why won't Denote let me?353355
+Node: How do you handle the last modified case?354477
+Node: Why are some Org links opening outside Emacs?356038
+Node: Speed up backlinks' or query links' buffer creation?357906
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?359282
+Node: Why do I get a double #+title in Doom Emacs?360343
+Node: Acknowledgements361064
+Node: GNU Free Documentation License364699
+Node: Indices389856
+Node: Function index390029
+Node: Variable index415459
+Node: Concept index428505
 
 End Tag Table
 
