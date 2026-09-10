@@ -5404,9 +5404,9 @@ commands:
 
      (defun my-denote--note-has-no-contents-p (file)
        "Return non-nil if FILE is an empty note.
-     This means that FILE conforms with `denote-file-is-note-p' and either
+     This means that FILE conforms with `denote-file-has-denoted-filename-p' and either
      has no contents or has only the front matter."
-       (and (denote-file-is-note-p file)
+       (and (denote-file-has-denoted-filename-p file)
             (or (denote--file-with-temp-buffer file
                   (re-search-forward "^$" nil t)
                   (if (re-search-forward "[^\s\t\n\r]+" nil t)
@@ -5496,7 +5496,7 @@ following sample can be used:
      Add this function to the `after-save-hook'."
        (let ((denote-rename-confirmations nil)
              (denote-save-buffers t)) ; to save again post-rename
-         (when (and buffer-file-name (denote-file-is-note-p buffer-file-name))
+         (when (and buffer-file-name (denote-file-has-denoted-filename-p buffer-file-name))
            (ignore-errors (denote-rename-file-using-front-matter buffer-file-name))
            (message "Buffer saved; Denote file renamed"))))
 
@@ -6213,11 +6213,6 @@ Variable ‘denote-keywords-regexp’
 Function ‘denote-date-identifier-p’
      Return non-nil if ‘IDENTIFIER’ string is a Denote date identifier.
 
-Function ‘denote-file-is-note-p’
-     Return non-nil if ‘FILE’ is an actual Denote note.  For our
-     purposes, a note must satisfy ‘file-regular-p’ and
-     ‘denote-filename-is-note-p’.
-
 Function ‘denote-file-has-identifier-p’
      Return non-nil if ‘FILE’ has a Denote identifier.
 
@@ -6479,9 +6474,6 @@ Variable ‘denote-get-identifier-function’
 
 Function ‘denote-get-path-by-id’
      Return absolute path of ‘ID’ string in ‘denote-directory-files’.
-
-Function ‘denote-get-identifier-at-point’
-     Return the identifier at point or ‘POINT’.
 
 Function ‘denote-extract-keywords-from-path’
      Extract keywords from ‘PATH’ and return them as a list of strings.
@@ -6823,7 +6815,7 @@ Variable ‘denote-id-only-link-in-context-regexp’
      Regexp to match an identifier-only link in its context.  The format
      of such links is ‘denote-id-only-link-format’.
 
-Function ‘denote-select-linked-file-prompt’
+Function ‘denote-select-from-files-prompt’
      Prompt for linked file among ‘FILES’.
 
 Function ‘denote-get-links’
@@ -6854,6 +6846,10 @@ Function ‘denote-link-description-with-signature-and-title’
      This function is useful as the value of the user option
      ‘denote-link-description-format’ (which can optionally be bound to
      a function).
+
+Function ‘denote-get-link-identifier-or-query-term-at-point’
+     Return the Denote identifier or query term at point or optional
+     ‘POSITION’.
 
 
 File: denote.info,  Node: Xref interface for developers or advanced users,  Next: Renaming files interface for developers or advanced users,  Prev: Link interface for developers or advanced users,  Up: For developers or advanced users
@@ -7672,9 +7668,9 @@ Contributions to code or the manual
      Benjamin, Tobias Lidman-Strauss, Tomasz Hołubowicz, TomoeMami ,
      Vedang Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts,
      arsaber101, bplubell, bryanrinders, dulikiles, eum3l,
-     experimental-code-86, ezchi, gnuhack, gvalson, jarofromel, leinfink
-     (Henrik), l-o-l-h (Lincoln), mattyonweb, maxbrieiev,
-     mentalisttraceur, nescias, pmenair, relict007, skissue.
+     experimental-code-86, ezchi, gnuhack, gvalson, jarofromel,
+     kimsaram32, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
+     maxbrieiev, mentalisttraceur, nescias, pmenair, relict007, skissue.
 
 Ideas and/or user feedback
      Abin Simon, Aditya Yadav, Alan Schmitt, Aleksandr Vityazev, Alex
@@ -8246,15 +8242,15 @@ B.1 Function index
 * denote-date-rfc3339:                   Front matter interface for developers or advanced users.
                                                               (line  41)
 * denote-directories:                    Common building blocks for developers or advanced users.
-                                                              (line 107)
+                                                              (line 102)
 * denote-directories-get-common-root:    Common building blocks for developers or advanced users.
-                                                              (line 110)
+                                                              (line 105)
 * denote-directory-files:                Common building blocks for developers or advanced users.
-                                                              (line 118)
-* denote-directory-get-files:            Common building blocks for developers or advanced users.
                                                               (line 113)
+* denote-directory-get-files:            Common building blocks for developers or advanced users.
+                                                              (line 108)
 * denote-directory-subdirectories:       Common building blocks for developers or advanced users.
-                                                              (line 135)
+                                                              (line 130)
 * denote-dired:                          Display filtered and sorted files with denote-sort-dired or denote-dired.
                                                               (line  10)
 * denote-dired-focus:                    Focus the denote-dired buffer with denote-dired-focus.
@@ -8278,23 +8274,21 @@ B.1 Function index
 * denote-dired-rename-marked-files-with-keywords: Rename multiple files at once by asking only for keywords.
                                                               (line   6)
 * denote-extract-id-from-string:         Data retrieval interface for developers or advanced users.
-                                                              (line  39)
+                                                              (line  36)
 * denote-extract-keywords-from-front-matter: Front matter interface for developers or advanced users.
                                                               (line  79)
 * denote-extract-keywords-from-path:     Data retrieval interface for developers or advanced users.
-                                                              (line  33)
+                                                              (line  30)
 * denote-file-has-denoted-filename-p:    Common building blocks for developers or advanced users.
-                                                              (line  36)
+                                                              (line  31)
 * denote-file-has-identifier-p:          Common building blocks for developers or advanced users.
-                                                              (line  33)
-* denote-file-has-signature-p:           Common building blocks for developers or advanced users.
-                                                              (line  42)
-* denote-file-has-supported-extension-p: Common building blocks for developers or advanced users.
-                                                              (line  45)
-* denote-file-is-note-p:                 Common building blocks for developers or advanced users.
                                                               (line  28)
+* denote-file-has-signature-p:           Common building blocks for developers or advanced users.
+                                                              (line  37)
+* denote-file-has-supported-extension-p: Common building blocks for developers or advanced users.
+                                                              (line  40)
 * denote-file-is-writable-and-supported-p: Common building blocks for developers or advanced users.
-                                                              (line  50)
+                                                              (line  45)
 * denote-file-name-relative-to-denote-directory: File path interface for developers or advanced users.
                                                               (line   6)
 * denote-file-prompt:                    Prompt interface for developers or advanced users.
@@ -8302,9 +8296,9 @@ B.1 Function index
 * denote-file-type:                      Data retrieval interface for developers or advanced users.
                                                               (line   6)
 * denote-file-type-extensions:           Common building blocks for developers or advanced users.
-                                                              (line  53)
+                                                              (line  48)
 * denote-file-type-extensions-with-encryption: Common building blocks for developers or advanced users.
-                                                              (line  59)
+                                                              (line  54)
 * denote-file-type-prompt:               Prompt interface for developers or advanced users.
                                                               (line  61)
 * denote-files-matching-regexp-prompt:   Prompt interface for developers or advanced users.
@@ -8334,15 +8328,15 @@ B.1 Function index
 * denote-get-backlinks:                  Link interface for developers or advanced users.
                                                               (line  42)
 * denote-get-file-extension:             Common building blocks for developers or advanced users.
-                                                              (line  63)
+                                                              (line  58)
 * denote-get-file-extension-sans-encryption: Common building blocks for developers or advanced users.
-                                                              (line  69)
+                                                              (line  64)
 * denote-get-file-type-markdown-toml:    Front matter interface for developers or advanced users.
                                                               (line  89)
 * denote-get-file-type-markdown-yaml:    Front matter interface for developers or advanced users.
                                                               (line  84)
-* denote-get-identifier-at-point:        Data retrieval interface for developers or advanced users.
-                                                              (line  30)
+* denote-get-link-identifier-or-query-term-at-point: Link interface for developers or advanced users.
+                                                              (line  66)
 * denote-get-links:                      Link interface for developers or advanced users.
                                                               (line  37)
 * denote-get-path-by-id:                 Data retrieval interface for developers or advanced users.
@@ -8354,21 +8348,21 @@ B.1 Function index
 * denote-grep-marked-dired-files:        Use denote-grep to search inside files.
                                                               (line  19)
 * denote-id-to-date:                     Common building blocks for developers or advanced users.
-                                                              (line 143)
+                                                              (line 138)
 * denote-identifier-prompt:              Prompt interface for developers or advanced users.
                                                               (line  12)
 * denote-infer-keywords-from-files:      Common building blocks for developers or advanced users.
-                                                              (line  75)
+                                                              (line  70)
 * denote-insert-link:                    Add a single direct link using a file name prompt.
                                                               (line   6)
 * denote-keywords:                       Common building blocks for developers or advanced users.
-                                                              (line  82)
+                                                              (line  77)
 * denote-keywords-combine:               Common building blocks for developers or advanced users.
-                                                              (line  96)
+                                                              (line  91)
 * denote-keywords-prompt:                Prompt interface for developers or advanced users.
                                                               (line  39)
 * denote-keywords-sort:                  Common building blocks for developers or advanced users.
-                                                              (line  92)
+                                                              (line  87)
 * denote-link:                           Add a single direct link using a file name prompt.
                                                               (line   6)
 * denote-link-after-creating:            Link to an existing note or create a new one.
@@ -8441,28 +8435,28 @@ B.1 Function index
 * denote-rename-file-using-front-matter: Rename a single file based on its front matter.
                                                               (line   6)
 * denote-retrieve-filename-identifier:   Data retrieval interface for developers or advanced users.
-                                                              (line  42)
+                                                              (line  39)
 * denote-retrieve-filename-keywords:     Data retrieval interface for developers or advanced users.
-                                                              (line  51)
+                                                              (line  48)
 * denote-retrieve-filename-signature:    Data retrieval interface for developers or advanced users.
-                                                              (line  55)
+                                                              (line  52)
 * denote-retrieve-filename-title:        Data retrieval interface for developers or advanced users.
-                                                              (line  47)
+                                                              (line  44)
 * denote-retrieve-front-matter-keywords-line: Data retrieval interface for developers or advanced users.
-                                                              (line  73)
+                                                              (line  70)
 * denote-retrieve-front-matter-keywords-value: Data retrieval interface for developers or advanced users.
-                                                              (line  69)
-* denote-retrieve-front-matter-title-line: Data retrieval interface for developers or advanced users.
                                                               (line  66)
-* denote-retrieve-front-matter-title-value: Data retrieval interface for developers or advanced users.
+* denote-retrieve-front-matter-title-line: Data retrieval interface for developers or advanced users.
                                                               (line  63)
+* denote-retrieve-front-matter-title-value: Data retrieval interface for developers or advanced users.
+                                                              (line  60)
 * denote-retrieve-title-or-filename:     Data retrieval interface for developers or advanced users.
-                                                              (line  58)
+                                                              (line  55)
 * denote-rewrite-front-matter:           Renaming files interface for developers or advanced users.
                                                               (line  26)
 * denote-rewrite-keywords:               Renaming files interface for developers or advanced users.
                                                               (line  41)
-* denote-select-linked-file-prompt:      Link interface for developers or advanced users.
+* denote-select-from-files-prompt:       Link interface for developers or advanced users.
                                                               (line  34)
 * denote-show-backlinks-buffer:          The backlinks' buffer.
                                                               (line  11)
@@ -8515,7 +8509,7 @@ B.1 Function index
 * denote-use-title:                      Predefined note values for developers or advanced users.
                                                               (line  46)
 * denote-valid-date-p:                   Common building blocks for developers or advanced users.
-                                                              (line 101)
+                                                              (line  96)
 
 
 File: denote.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
@@ -8553,7 +8547,7 @@ B.2 Variable index
 * denote-dired-directories-include-subdirectories: Fontification in Dired.
                                                                (line 28)
 * denote-encryption-file-extensions:     Common building blocks for developers or advanced users.
-                                                               (line 56)
+                                                               (line 51)
 * denote-excluded-directories-regexp:    Exclude certain directories from all operations.
                                                                (line  6)
 * denote-excluded-files-regexp:          Exclude certain files from file prompts.
@@ -8834,58 +8828,58 @@ Node: Define a custom file type to automatically encrypt new notes245168
 Node: Access the data of the latest note247805
 Node: Create a new note in any directory248643
 Node: Find empty notes and put them in a Dired buffer249767
-Node: Automatically rename the note after saving it255633
-Node: Narrow the list of files in Dired256887
-Node: Use dired-virtual-mode for arbitrary file listings259226
-Node: Use Embark to collect minibuffer candidates263326
-Node: Search file contents264625
-Node: Bookmark the directory with the notes266436
-Node: Treat your notes as a project267794
-Node: Use the tree-based file prompt for select commands269284
-Node: Rename files with Denote in the Image Dired thumbnails buffer271331
-Node: Rename files with Denote using dired-preview274850
-Node: Avoid duplicate identifiers when exporting Denote notes277502
-Node: Export Denote notes with Org Mode278820
-Ref: Manually configure Org export279461
-Ref: Automatically store Org exports in another folder280397
-Ref: Org Mode Publishing282969
-Node: Export Denote notes with Markdown283584
-Node: Set up your workflow for daily or weekly meeting notes284253
-Node: For developers or advanced users288086
-Node: Common building blocks for developers or advanced users289782
-Node: Predefined note values for developers or advanced users296684
-Node: File path interface for developers or advanced users299464
-Node: Data retrieval interface for developers or advanced users302867
-Node: Prompt interface for developers or advanced users306564
-Node: Front matter interface for developers or advanced users312113
-Node: Link interface for developers or advanced users319696
-Node: Xref interface for developers or advanced users322636
-Node: Renaming files interface for developers or advanced users323611
-Node: Troubleshoot Denote in a pristine environment326621
-Node: Contributing328296
-Node: Wishlist of what we can do to extend Denote331306
-Node: Publications about Denote333181
-Node: Alternatives to Denote335965
-Node: Alternative implementations and further reading340557
-Node: Frequently Asked Questions342291
-Node: Why develop Denote when PACKAGE already exists?343384
-Node: Why not rely exclusively on Org?345298
-Node: Why care about Unix tools when you use Emacs?346994
-Node: Why many small files instead of few large ones?348329
-Node: Does Denote perform well at scale?350261
-Node: I add TODOs to my notes; will many files slow down the Org agenda?351387
-Node: I want to sort by last modified in Dired why won't Denote let me?353355
-Node: How do you handle the last modified case?354477
-Node: Why are some Org links opening outside Emacs?356038
-Node: Speed up backlinks' or query links' buffer creation?357906
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?359282
-Node: Why do I get a double #+title in Doom Emacs?360343
-Node: Acknowledgements361064
-Node: GNU Free Documentation License364699
-Node: Indices389856
-Node: Function index390029
-Node: Variable index415459
-Node: Concept index428505
+Node: Automatically rename the note after saving it255659
+Node: Narrow the list of files in Dired256926
+Node: Use dired-virtual-mode for arbitrary file listings259265
+Node: Use Embark to collect minibuffer candidates263365
+Node: Search file contents264664
+Node: Bookmark the directory with the notes266475
+Node: Treat your notes as a project267833
+Node: Use the tree-based file prompt for select commands269323
+Node: Rename files with Denote in the Image Dired thumbnails buffer271370
+Node: Rename files with Denote using dired-preview274889
+Node: Avoid duplicate identifiers when exporting Denote notes277541
+Node: Export Denote notes with Org Mode278859
+Ref: Manually configure Org export279500
+Ref: Automatically store Org exports in another folder280436
+Ref: Org Mode Publishing283008
+Node: Export Denote notes with Markdown283623
+Node: Set up your workflow for daily or weekly meeting notes284292
+Node: For developers or advanced users288125
+Node: Common building blocks for developers or advanced users289821
+Node: Predefined note values for developers or advanced users296518
+Node: File path interface for developers or advanced users299298
+Node: Data retrieval interface for developers or advanced users302701
+Node: Prompt interface for developers or advanced users306299
+Node: Front matter interface for developers or advanced users311848
+Node: Link interface for developers or advanced users319431
+Node: Xref interface for developers or advanced users322526
+Node: Renaming files interface for developers or advanced users323501
+Node: Troubleshoot Denote in a pristine environment326511
+Node: Contributing328186
+Node: Wishlist of what we can do to extend Denote331196
+Node: Publications about Denote333071
+Node: Alternatives to Denote335855
+Node: Alternative implementations and further reading340447
+Node: Frequently Asked Questions342181
+Node: Why develop Denote when PACKAGE already exists?343274
+Node: Why not rely exclusively on Org?345188
+Node: Why care about Unix tools when you use Emacs?346884
+Node: Why many small files instead of few large ones?348219
+Node: Does Denote perform well at scale?350151
+Node: I add TODOs to my notes; will many files slow down the Org agenda?351277
+Node: I want to sort by last modified in Dired why won't Denote let me?353245
+Node: How do you handle the last modified case?354367
+Node: Why are some Org links opening outside Emacs?355928
+Node: Speed up backlinks' or query links' buffer creation?357796
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?359172
+Node: Why do I get a double #+title in Doom Emacs?360233
+Node: Acknowledgements360954
+Node: GNU Free Documentation License364601
+Node: Indices389758
+Node: Function index389931
+Node: Variable index415192
+Node: Concept index428238
 
 End Tag Table
 
