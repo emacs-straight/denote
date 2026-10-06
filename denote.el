@@ -1475,24 +1475,34 @@ something like .org even if the actual file extension is
         (substring extension 0 (match-beginning 0))
       extension)))
 
+(defun denote--get-path-by-id-pick-likely-authoritative-file (files)
+  "Return like authoritative file among FILES for `denote-get-path-by-id'.
+Prefer the file that is specified by the value of the variable
+`denote-file-type', falling back to Org, and then to other known file
+types."
+  (seq-find
+   (lambda (file)
+     (let ((file-extension (denote-get-file-extension-sans-encryption file)))
+       (and (denote-file-has-supported-extension-p file)
+            (or (string= (denote--file-extension denote-file-type) file-extension)
+                (string= ".org" file-extension)
+                (member file-extension (denote-file-type-extensions))))))
+   files))
+
 (defun denote-get-path-by-id (id)
-  "Return absolute path of ID string in `denote-directory-files'."
-  (let ((files
-         (seq-filter
-          (lambda (file)
-            (string= id (denote-retrieve-filename-identifier file)))
-          (denote-directory-files nil nil nil nil :has-identifier))))
+  "Return absolute path of ID string in `denote-directory-files'.
+If there are multiple files with ID, assume that they are exports of an
+underlying file.  In such a case, prefer the file that is specified by
+the value of the variable `denote-file-type', falling back to Org, and
+then to other known file types."
+  (when-let* ((files
+               (seq-filter
+                (lambda (file)
+                  (string= id (denote-retrieve-filename-identifier file)))
+                (denote-directory-files nil nil nil nil :has-identifier))))
     (if (length< files 2)
         (car files)
-      (seq-find
-       (lambda (file)
-         (let ((file-extension (denote-get-file-extension-sans-encryption file)))
-           (and (denote-file-has-supported-extension-p file)
-                (or (string= (denote--file-extension denote-file-type)
-                             file-extension)
-                    (string= ".org" file-extension)
-                    (member file-extension (denote-file-type-extensions))))))
-       files))))
+      (denote--get-path-by-id-pick-likely-authoritative-file files))))
 
 (defun denote-get-relative-path-by-id (id &optional directory)
   "Return relative path of ID string in `denote-directory-files'.
@@ -6769,7 +6779,7 @@ contents, not file names.  Optional ID-ONLY has the same meaning as in
                     (denote-get-completion-table file-names '(category . file))
                     nil t)))
     (if single-dir-p
-        (expand-file-name selected roots)
+        (expand-file-name selected (car roots))
       selected)))
 
 (defun denote-link--map-over-notes ()

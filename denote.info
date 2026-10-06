@@ -6555,6 +6555,10 @@ Variable ‘denote-get-identifier-function’
 
 Function ‘denote-get-path-by-id’
      Return absolute path of ‘ID’ string in ‘denote-directory-files’.
+     If there are multiple files with ID, assume that they are exports
+     of an underlying file.  In such a case, prefer the file that is
+     specified by the value of the variable ‘denote-file-type’, falling
+     back to Org, and then to other known file types.
 
 Function ‘denote-extract-keywords-from-path’
      Extract keywords from ‘PATH’ and return them as a list of strings.
@@ -7738,17 +7742,17 @@ Contributions to code or the manual
      Eduardo Grajeda, Elias Storms, Eshel Yaron, Florian, Glenna D.,
      Graham Marlow, Hilde Rhyne, Ivan Sokolov, Jack Baty, Jakub
      Szczerbowski, James Kalyan, Jean-Charles Bagneris, Jean-Philippe
-     Gagné Guay, Jeff Valk, Jianwei Hou, Joseph Turner, Jürgen Hötzel,
-     Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas Andreadis,
-     Kristoffer Balintona, Kyle Meyer, Laurent Gatto, Lucas Quintana,
-     Maikol Solis, Marc Fargas, Marco Baringer, Matthew Batson, Matthew
-     Lemon, Matthieu Muller, Matto Fransen, Michael Korat, Noboru Ota
-     (nobiot), Norwid Behrnd, Octavian, Pavlo V.  Lysov, Peter Prevos,
-     Philip Kaludercic, Ryota, Samuel W.  Flint, Quiliro Ordóñez,
-     Stephen R.  Kifer, Stefan Monnier, Stefan Thesing, Thibaut
-     Benjamin, Tobias Lidman-Strauss, Tomasz Hołubowicz, TomoeMami ,
-     Vedang Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu Xu, alvmts,
-     arsaber101, bplubell, bryanrinders, dulikiles, eum3l,
+     Gagné Guay, Jeff Valk, Jianwei Hou, João Sena, Joseph Turner,
+     Jürgen Hötzel, Kaushal Modi, Kai von Fintel, Kierin Bell, Kostas
+     Andreadis, Kristoffer Balintona, Kyle Meyer, Laurent Gatto, Lucas
+     Quintana, Maikol Solis, Marc Fargas, Marco Baringer, Matthew
+     Batson, Matthew Lemon, Matthieu Muller, Matto Fransen, Michael
+     Korat, Noboru Ota (nobiot), Norwid Behrnd, Octavian, Pavlo V.
+     Lysov, Peter Prevos, Philip Kaludercic, Ryota, Samuel W.  Flint,
+     Quiliro Ordóñez, Stephen R.  Kifer, Stefan Monnier, Stefan Thesing,
+     Thibaut Benjamin, Tobias Lidman-Strauss, Tomasz Hołubowicz,
+     TomoeMami , Vedang Manerikar, Wesley Harvey, Yann Dutrieux, Zhenxu
+     Xu, alvmts, arsaber101, bplubell, bryanrinders, dulikiles, eum3l,
      experimental-code-86, ezchi, gnuhack, gvalson, jarofromel,
      kimsaram32, leinfink (Henrik), l-o-l-h (Lincoln), mattyonweb,
      maxbrieiev, mentalisttraceur, nescias, pmenair, relict007, skissue.
@@ -8355,11 +8359,11 @@ B.1 Function index
 * denote-dired-rename-marked-files-with-keywords: Rename multiple files at once by asking only for keywords.
                                                               (line   6)
 * denote-extract-id-from-string:         Data retrieval interface for developers or advanced users.
-                                                              (line  36)
+                                                              (line  40)
 * denote-extract-keywords-from-front-matter: Front matter interface for developers or advanced users.
                                                               (line  79)
 * denote-extract-keywords-from-path:     Data retrieval interface for developers or advanced users.
-                                                              (line  30)
+                                                              (line  34)
 * denote-file-has-denoted-filename-p:    Common building blocks for developers or advanced users.
                                                               (line  31)
 * denote-file-has-identifier-p:          Common building blocks for developers or advanced users.
@@ -8516,23 +8520,23 @@ B.1 Function index
 * denote-rename-file-using-front-matter: Rename a single file based on its front matter.
                                                               (line   6)
 * denote-retrieve-filename-identifier:   Data retrieval interface for developers or advanced users.
-                                                              (line  39)
+                                                              (line  43)
 * denote-retrieve-filename-keywords:     Data retrieval interface for developers or advanced users.
-                                                              (line  48)
-* denote-retrieve-filename-signature:    Data retrieval interface for developers or advanced users.
                                                               (line  52)
+* denote-retrieve-filename-signature:    Data retrieval interface for developers or advanced users.
+                                                              (line  56)
 * denote-retrieve-filename-title:        Data retrieval interface for developers or advanced users.
-                                                              (line  44)
+                                                              (line  48)
 * denote-retrieve-front-matter-keywords-line: Data retrieval interface for developers or advanced users.
-                                                              (line  70)
+                                                              (line  74)
 * denote-retrieve-front-matter-keywords-value: Data retrieval interface for developers or advanced users.
-                                                              (line  66)
+                                                              (line  70)
 * denote-retrieve-front-matter-title-line: Data retrieval interface for developers or advanced users.
-                                                              (line  63)
+                                                              (line  67)
 * denote-retrieve-front-matter-title-value: Data retrieval interface for developers or advanced users.
-                                                              (line  60)
+                                                              (line  64)
 * denote-retrieve-title-or-filename:     Data retrieval interface for developers or advanced users.
-                                                              (line  55)
+                                                              (line  59)
 * denote-rewrite-front-matter:           Renaming files interface for developers or advanced users.
                                                               (line  26)
 * denote-rewrite-keywords:               Renaming files interface for developers or advanced users.
@@ -8932,36 +8936,36 @@ Node: Common building blocks for developers or advanced users293093
 Node: Predefined note values for developers or advanced users299790
 Node: File path interface for developers or advanced users302570
 Node: Data retrieval interface for developers or advanced users305973
-Node: Prompt interface for developers or advanced users309571
-Node: Front matter interface for developers or advanced users315120
-Node: Link interface for developers or advanced users322703
-Node: Xref interface for developers or advanced users325798
-Node: Renaming files interface for developers or advanced users326773
-Node: Troubleshoot Denote in a pristine environment329783
-Node: Contributing331458
-Node: Wishlist of what we can do to extend Denote334468
-Node: Publications about Denote336343
-Node: Alternatives to Denote339127
-Node: Alternative implementations and further reading343719
-Node: Frequently Asked Questions345453
-Node: Why develop Denote when PACKAGE already exists?346546
-Node: Why not rely exclusively on Org?348460
-Node: Why care about Unix tools when you use Emacs?350156
-Node: Why many small files instead of few large ones?351491
-Node: Does Denote perform well at scale?353423
-Node: I add TODOs to my notes; will many files slow down the Org agenda?354549
-Node: I want to sort by last modified in Dired why won't Denote let me?356517
-Node: How do you handle the last modified case?357639
-Node: Why are some Org links opening outside Emacs?359200
-Node: Speed up backlinks' or query links' buffer creation?361068
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?362444
-Node: Why do I get a double #+title in Doom Emacs?363505
-Node: Acknowledgements364226
-Node: GNU Free Documentation License367873
-Node: Indices393030
-Node: Function index393203
-Node: Variable index418464
-Node: Concept index431510
+Node: Prompt interface for developers or advanced users309841
+Node: Front matter interface for developers or advanced users315390
+Node: Link interface for developers or advanced users322973
+Node: Xref interface for developers or advanced users326068
+Node: Renaming files interface for developers or advanced users327043
+Node: Troubleshoot Denote in a pristine environment330053
+Node: Contributing331728
+Node: Wishlist of what we can do to extend Denote334738
+Node: Publications about Denote336613
+Node: Alternatives to Denote339397
+Node: Alternative implementations and further reading343989
+Node: Frequently Asked Questions345723
+Node: Why develop Denote when PACKAGE already exists?346816
+Node: Why not rely exclusively on Org?348730
+Node: Why care about Unix tools when you use Emacs?350426
+Node: Why many small files instead of few large ones?351761
+Node: Does Denote perform well at scale?353693
+Node: I add TODOs to my notes; will many files slow down the Org agenda?354819
+Node: I want to sort by last modified in Dired why won't Denote let me?356787
+Node: How do you handle the last modified case?357909
+Node: Why are some Org links opening outside Emacs?359470
+Node: Speed up backlinks' or query links' buffer creation?361338
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?362714
+Node: Why do I get a double #+title in Doom Emacs?363775
+Node: Acknowledgements364496
+Node: GNU Free Documentation License368154
+Node: Indices393311
+Node: Function index393484
+Node: Variable index418745
+Node: Concept index431791
 
 End Tag Table
 
