@@ -1445,8 +1445,6 @@ whatever matches `denote-excluded-directories-regexp'."
              (denote--exclude-directory-regexp-p rel))))
      (denote--directory-all-files-recursively))))
 
-;; TODO 2023-01-24: Perhaps there is a good reason to make this a user
-;; option, but I am keeping it as a generic variable for now.
 (defvar denote-encryption-file-extensions '(".gpg" ".age")
   "List of strings specifying file extensions for encryption.")
 
@@ -1540,12 +1538,39 @@ the title prompt of `denote-open-or-create' and related commands.")
 Only ever `let' bind this, otherwise the restriction will always be
 there.")
 
+;; TODO 2026-10-11: Review all `denote-retrieve-filename-title' calls
+;; and related to determine where it makes sense to keep them as they
+;; are and where to call their respective variable.
+(defvar denote-get-title-function #'denote-retrieve-filename-title
+  "Function to return the Denote file title.
+The function is called with one argument, the file path, and should
+return the title as a string.
+
+Package developers can set this variable to a function that does what
+they need, such as to read from a cache or database.")
+
+(defvar denote-get-signature-function #'denote-retrieve-filename-signature
+  "Function to return the Denote file signature.
+The function is called with one argument, the file path, and should
+return the signature as a string.
+
+Package developers can set this variable to a function that does what
+they need, such as to read from a cache or database.")
+
+(defvar denote-get-keywords-function #'denote-retrieve-filename-keywords
+  "Function to return the Denote file keywords.
+The function is called with one argument, the file path, and should
+return the keywords as a list of strings
+
+Package developers can set this variable to a function that does what
+they need, such as to read from a cache or database.")
+
 (defun denote-file-prompt-group (file transform)
   "Retun group of FILE if TRANSFORM is non-nil, per `completion-metadata'."
   (cond
    ;; FIXME 2025-12-16: Why do we not get highlights of matched
    ;; visible words?  It works if I just return FILE.
-   (transform (or (denote-retrieve-filename-title file) file))
+   (transform (or (funcall denote-get-title-function file) file))
    ((file-name-directory file))
    ((file-name-extension file))
    (t "Other files")))
@@ -1559,8 +1584,8 @@ there.")
 
 (defun denote-file-prompt--format-keywords-and-signature (file)
   "Return keywords and signature of FILE for `denote-file-prompt-affixate'."
-  (let ((keywords (denote-retrieve-filename-keywords file))
-        (signature (denote-retrieve-filename-signature file)))
+  (let ((keywords (funcall denote-get-keywords-function file))
+        (signature (funcall denote-get-signature-function file)))
     (when-let* ((combined (cond
                            ((and keywords signature) (concat "=" signature "  " keywords))
                            (keywords)
@@ -1588,10 +1613,10 @@ Use the identifier as a prefix and the keywords as a suffix."
 
 (defvar denote-file-prompt-extra-metadata
   (list
-   ;; NOTE 2025-12-15: If we use the `file' category, then we are
-   ;; subject to the `completion-category-overrides'.  This is a
-   ;; problem because the user will want to, for example, sort
-   ;; directories before files, but then we cannot have our sort here.
+   ;; If we use the `file' category, then we are subject to the
+   ;; `completion-category-overrides'.  This is a problem because the
+   ;; user will want to, for example, sort directories before files,
+   ;; but then we cannot have our sort here.
    (cons 'category 'denote-file)
    (cons 'group-function #'denote-file-prompt-group)
    (cons 'affixation-function #'denote-file-prompt-affixate)
@@ -1654,14 +1679,14 @@ Return the absolute path to the matching file."
          (absolute-file (if single-dir-p
                             (expand-file-name input default-directory)
                           input)))
-    ;; NOTE: This block is executed when no-require-match is t. It is useful
+    ;; This block is executed when no-require-match is t. It is useful
     ;; for commands such as `denote-open-or-create' or similar.
     (unless (file-exists-p absolute-file)
       (setq denote-file-prompt-latest-input input)
       (setq denote-file-history (delete input denote-file-history)))
-    ;; NOTE: We must always return an absolute path, even if it does not
-    ;; exist, because callers expect one.  They handle a non-existent file
-    ;; appropriately.
+    ;; We must always return an absolute path, even if it does not
+    ;; exist, because callers expect one.  They handle a non-existent
+    ;; file appropriately.
     absolute-file))
 
 (defun denote-format-buffer-name (string &optional special)
@@ -1765,10 +1790,6 @@ minibuffer prompt that asks for a reverse sort or not."
   :package-version '(denote . "3.1.0")
   :group 'denote-sort)
 
-;; NOTE 2023-12-04: We can have compound sorting algorithms such as
-;; title+signature, but I want to keep this simple for the time being.
-;; Let us first hear from users to understand if there is a real need
-;; for such a feature.
 (defmacro denote-sort--define-lessp (component)
   "Define function to sort by COMPONENT."
   (let ((retrieve-fn (intern (format "denote-retrieve-filename-%s" component)))
@@ -1787,8 +1808,6 @@ The `%s' performs the comparison."
           ((and (not one-empty-p) two-empty-p) one)
           (t (funcall (or ,comparison-fn denote-sort-comparison-fallback-function) one two)))))))
 
-;; TODO 2023-12-04: Subject to the above NOTE, we can also sort by
-;; directory and by file length.
 (denote-sort--define-lessp identifier)
 (denote-sort--define-lessp title)
 (denote-sort--define-lessp keywords)
@@ -1813,9 +1832,9 @@ The `%s' performs the comparison."
          (attributes2 (file-attributes file2))
          (mod-time2-raw (file-attribute-modification-time attributes2))
          (mod-time2-seconds (time-to-seconds mod-time2-raw)))
-    ;; NOTE 2025-06-23: We normally sort using a "less" approach, but
-    ;; here we want to capture the semantics of "last modified"
-    ;; without relying on a reverse sort.
+    ;; We normally sort using a "less" approach, but here we want to
+    ;; capture the semantics of "last modified" without relying on a
+    ;; reverse sort.
     (> mod-time1-seconds mod-time2-seconds)))
 
 ;;;###autoload
@@ -1936,8 +1955,6 @@ OMIT-CURRENT have been applied."
 
 (defun denote-sort-exclude-files-prompt ()
   "Prompt for regular expression of files to exclude."
-  ;; TODO 2024-12-03: Maybe use `read-regexp'?  We do not use it
-  ;; elsewhere, so maybe this is fine.
   (let ((default (car denote-sort-exclude-files-history)))
     (read-string
      (format-prompt "Exclude files matching REGEXP" default)
@@ -2089,7 +2106,7 @@ and (iv) a string, respectively."
                 (dired-buffer (dired (cons directory matched-files))))
           (with-current-buffer dired-buffer
             (rename-buffer buffer-name :unique)
-            ;; NOTE 2026-04-06: I am adding the `denote-sort-dired--last-arguments' because the previous implementation
+            ;; I am adding the `denote-sort-dired--last-arguments' because the previous implementation
             ;; was not updating the existing Dired buffer after a subsequent `denote-sort-dired' call.
             (let ((last-arguments (list regexp component reverse-sort exclude-regexp files)))
               (cond
@@ -2152,6 +2169,16 @@ Also see `denote-retrieve-filename-keywords'."
   'denote-infer-keywords-from-files
   "4.0.0")
 
+(defun denote--infer-keywords-from-files-filter (keywords)
+  "Remove KEYWORDS that match `denote-keywords-to-not-infer-regexp'."
+  (if-let* ((regexp denote-keywords-to-not-infer-regexp)
+            (_ (stringp regexp)))
+      (seq-remove
+       (lambda (keyword)
+         (string-match-p denote-keywords-to-not-infer-regexp keyword))
+       keywords)
+    keywords))
+
 (defun denote-infer-keywords-from-files (&optional files-matching-regexp)
   "Return list of keywords in `denote-directory-files'.
 With optional FILES-MATCHING-REGEXP, only extract keywords from the
@@ -2161,12 +2188,7 @@ Keep any duplicates.  Users who do not want duplicates should refer to
 the functions `denote-keywords'."
   (when-let* ((files (denote-directory-files files-matching-regexp))
               (keywords (mapcan #'denote-extract-keywords-from-path files)))
-    (if-let* ((regexp denote-keywords-to-not-infer-regexp))
-        (seq-remove
-         (lambda (k)
-           (string-match-p regexp k))
-         keywords)
-      keywords)))
+    (denote--infer-keywords-from-files-filter keywords)))
 
 (defvar denote-infer-keywords-from-files-function #'denote-infer-keywords-from-files
   "Function to return keywords found in files for `denote-keywords'.
@@ -2570,7 +2592,7 @@ this list for new note creation.  The default is `org'.")
    (alist-get file-type denote-file-types)
    :title-value-function))
 
-;; NOTE 2026-04-23: This is used in the `denote--define-retrieve-front-matter-from-content'.
+;; This is used in the `denote--define-retrieve-front-matter-from-content'.
 ;; I could not find it with a search, which made me think it was not being used.
 (defun denote--title-value-reverse-function (file-type)
   "Convert front matter title to the title string, per FILE-TYPE."
@@ -2750,8 +2772,6 @@ To create a new one from a date, refer to the function referred by
           ((string-match denote-identifier-regexp filename)
            (match-string-no-properties 1 filename)))))
 
-;; TODO 2023-12-08: Maybe we can only use
-;; `denote-retrieve-filename-identifier' and remove this function.
 (defun denote-retrieve-filename-identifier-with-error (file)
   "Extract identifier from FILE name, if present, else signal an error."
   (or (denote-retrieve-filename-identifier file)
@@ -3172,9 +3192,6 @@ Arguments TITLE, KEYWORDS, DATE, ID, DIRECTORY, FILE-TYPE,
 TEMPLATE, and SIGNATURE should be valid for note creation."
   (let* ((extension (denote--file-extension file-type))
          (path (denote-format-file-name directory id keywords title extension signature))
-         ;; TODO 2025-08-02: Is it safe to assume that an existing and
-         ;; empty file is good for us to use?  Otherwise, we should
-         ;; have a `y-or-n-p' prompt here.
          (buffer (if (and (file-regular-p path) (not (denote--file-empty-p path)))
                      (user-error "A file named `%s' already exists and is not empty" path)
                    (find-file path)))
@@ -3694,10 +3711,10 @@ When called from Lisp, all arguments are optional.
 Use PROMPT, HISTORY, INITIAL-VALUE, and DEFAULT-VALUE as arguments for
 the given minibuffer prompt."
   `(if (denote--prompt-with-completion-p ,fn)
-       ;; NOTE 2023-10-27: By default SPC performs completion in the
-       ;; minibuffer.  We do not want that, as the user should be able to
-       ;; input an arbitrary string, while still performing completion
-       ;; against their input history.
+       ;; By default SPC performs completion in the minibuffer.  We do
+       ;; not want that, as the user should be able to input an
+       ;; arbitrary string, while still performing completion against
+       ;; their input history.
        (minibuffer-with-setup-hook
            (lambda ()
              (use-local-map
@@ -4128,10 +4145,10 @@ If a buffer is visiting the file, its name is updated."
       (cond
        ((derived-mode-p 'dired-mode)
         (dired-rename-file old-name new-name nil))
-       ;; NOTE 2024-02-25: The `vc-rename-file' requires the file to be
-       ;; saved, but our convention is to not save the buffer after
-       ;; changing front matter unless we absolutely have to (allows
-       ;; users to do `diff-buffer-with-file', for example).
+       ;; The `vc-rename-file' requires the file to be saved, but our
+       ;; convention is to not save the buffer after changing front
+       ;; matter unless we absolutely have to (allows users to do
+       ;; `diff-buffer-with-file', for example).
        ((and denote-save-buffers (not (buffer-modified-p)) (vc-backend old-name))
         (vc-rename-file old-name new-name))
        (t
@@ -4443,8 +4460,6 @@ If `denote-rename-confirmations' does not contain
        (format "Add new front matter to %s?"
                (propertize (file-name-nondirectory file) 'face 'denote-faces-prompt-new-name)))))
 
-;; NOTE 2023-10-20: We do not need a user option for this, though it
-;; can be useful to have it as a variable.
 (defvar denote-rename-max-mini-window-height 0.33
   "How much to enlarge `max-mini-window-height' for renaming operations.")
 
@@ -5454,9 +5469,9 @@ See the `:link' property of `denote-file-types'."
    (cond
     ((or id-only (null description) (string-empty-p description))
      denote-id-only-link-format)
-    ;; NOTE 2024-05-20: If there is no file type, we want to use the
-    ;; Org format because it is still a usable link with the help of
-    ;; the command `org-open-at-point-global'.
+    ;; If there is no file type, we want to use the Org format because
+    ;; it is still a usable link with the help of the command
+    ;; `org-open-at-point-global'.
     ((null file-type)
      (denote--link-format 'org))
     (t
@@ -5465,8 +5480,7 @@ See the `:link' property of `denote-file-types'."
    description))
 
 ;; NOTE 2025-11-23: The only reason I have &optional is because I want
-;; it to be backward compatible.  We used to have a single FILE
-;; parameter.
+;; it to be backward compatible.  We used to have a single FILE parameter.
 (defun denote-link-description-with-signature-and-title (file &optional file-type)
   "Return link description for FILE with FILE-TYPE.
 For backward compatibility, FILE-TYPE is an optional parameter.  If it
@@ -5530,6 +5544,9 @@ argument.  In that case, the function takes care to find the TYPE on its
 own to return the appropriate description."
   (cond
    ((functionp denote-link-description-format)
+    ;; FIXME 2026-10-11: Remove backward-compatibility check for
+    ;; `denote-get-link-description' arguments some time in 2027.
+    ;;
     ;; NOTE 2025-11-23: `denote-link-description-format' used to
     ;; accept a function with a single parameter.  Now we expect two
     ;; arguments, but must be backward compatible.
@@ -6201,9 +6218,9 @@ When called from Lisp, COMPONENT has the same meaning as in the function
 ;; TODO 2026-04-06: I need to review `denote-grep' and all its
 ;; ancillary functions.
 
-;; NOTE 2025-12-12: Unlike `denote-query-links-display-buffer-action'
-;; we want `denote-grep' to behave like `denote-dired', whereby
-;; `dired' normally works in the current window.
+;; Unlike `denote-query-links-display-buffer-action' we want
+;; `denote-grep' to behave like `denote-dired', whereby `dired'
+;; normally works in the current window.
 (defcustom denote-grep-display-buffer-action
   '((display-buffer-same-window)
     (mode . denote-query-mode))
@@ -6424,7 +6441,7 @@ non-nil value."
 (defconst denote-query-link-types '(query-contents query-filenames)
   "Types of query links.")
 
-;; NOTE 2025-03-27: Should we expose a user option for this?  And/or
+;; TODO 2025-03-27: Should we expose a user option for this?  And/or
 ;; should we add a DESCRIPTION parameter to `denote--format-query-link'?
 ;;
 ;; What would make for a good default description in that scenario?
@@ -6495,10 +6512,10 @@ search for."
     (funcall denote-query-links-buffer-function query nil nil denote-query-links-display-buffer-action))
    ((string-prefix-p "query-filenames:" query)
     (setq query (replace-regexp-in-string "query-filenames:" "" query))
-    ;; NOTE 2025-03-27: I do not think we need to add another
-    ;; parameter to `denote-sort-dired' for handling the
-    ;; `display-buffer'.  This is a special case, but we can always
-    ;; change it later if the need arises.
+    ;; I do not think we need to add another parameter to
+    ;; `denote-sort-dired' for handling the `display-buffer'.  This is
+    ;; a special case, but we can always change it later if the need
+    ;; arises.
     ;;
     ;; Here we handle the buffer and window state to make it behave
     ;; like the Xref buffer.  Otherwise, Dired does not reuse its
@@ -6520,10 +6537,10 @@ search for."
 
 (make-obsolete 'denote-link--find-file-at-button nil "4.0.0")
 
-;; NOTE 2025-12-12: The `markdown-follow-link-functions' assumes that
-;; the link of a specific format, but this is not good enough for us
-;; because of the query links we support.  I think it is okay to
-;; ignore LINK and just act on the link at point.
+;; The `markdown-follow-link-functions' assumes that the link is of a
+;; specific format, but this is not good enough for us because of the
+;; query links we support.  I think it is safe to ignore LINK and just
+;; act on the link at point.
 (defun denote-link-markdown-follow (_link)
   "Function for to act on Markdown link at point.
 To be assigned to `markdown-follow-link-functions'."
@@ -6717,14 +6734,13 @@ therefrom)."
                        '(url . denote--get-link-file-path-at-point)
                        thing-at-point-provider-alist)))
         (font-lock-update))
-    ;; NOTE 2026-01-02: If we do not set the value here, then it is
-    ;; toggled on/off even though the above `if' never reaches its
-    ;; THEN branch.
+    ;; If we do not set the value here, then it is toggled on/off even
+    ;; though the above `if' never reaches its THEN branch.
     (setq denote-fontify-links-mode nil)
-    ;; NOTE 2026-01-02: In interactive use, we get a message that the
-    ;; mode is disabled if we call it in non-supported buffers.  I
-    ;; tried to `let' bind the `inhibit-message' but that did not
-    ;; work.  So I am doing this instead...
+    ;; In interactive use, we get a message that the mode is disabled
+    ;; if we call it in non-supported buffers.  I tried to `let' bind
+    ;; the `inhibit-message' but that did not work.  So I am doing
+    ;; this instead...
     (when (called-interactively-p 'interactive)
       (message "`denote-fontify-links-mode' works only in plain text buffers inside the `denote-directory'"))))
 
@@ -6792,6 +6808,8 @@ Also see `denote-link-to-all-files-with-contents'."
   "Alias for `denote-add-links'.")
 
 ;;;;; Link to file with matching contents
+
+;; TODO 2026-10-11: Is `denote-link-to-file-with-contents' and related covered by `denote-data'?
 
 ;;;###autoload
 (defun denote-link-to-file-with-contents (query &optional id-only)
@@ -6900,10 +6918,7 @@ This command is meant to be used from a Dired buffer."
                   (user-error "The target file's type is not recognized by Denote"))
                 (when (y-or-n-p (format "Create links at point in `%s'?" buffer))
                   (denote-link--insert-links files (denote-filetype-heuristics buffer-file-name) id-only)
-                  (message "Added links to `%s'; displaying it now"
-                           ;; TODO 2024-12-26: Do we need our face here?  I think
-                           ;; not, but let me keep a note of it.
-                           (propertize (format "%s" buffer) 'face 'success))))))
+                  (message "Added links to `%s'; displaying it now" (propertize (format "%s" buffer) 'face 'success))))))
     (if-let* ((window (get-buffer-window buffer))
               ((window-live-p window)))
         (with-selected-window window (funcall body))
@@ -7286,9 +7301,6 @@ Consult the manual for template samples."
     (denote--keywords-add-to-history keywords)
     (concat front-matter template-string denote-org-capture-specifiers)))
 
-;; TODO 2023-12-02: Maybe simplify `denote-org-capture-with-prompts'
-;; by passing a single PROMPTS that is the same value as `denote-prompts'?
-
 ;;;###autoload
 (defun denote-org-capture-with-prompts (&optional title keywords subdirectory date template signature)
   "Like `denote-org-capture' but with optional prompt parameters.
@@ -7417,8 +7429,7 @@ buffer will be used, if available."
                           (cons ?T (or (denote-retrieve-filename-title file) ""))
                           (cons ?b (if should-show-backlink-indicator denote-rename-buffer-backlinks-indicator ""))
                           (cons ?i (or (denote-retrieve-filename-identifier file) ""))
-                          ;; TODO 2025-04-03: Maybe we can have something like `denote-date-format' here,
-                          ;; but I think we are okay with a hardcoded value.
+                          ;; Maybe we can have something like `denote-date-format' here, but I think we are okay with a hardcoded value.
                           (cons ?I (or (when-let* ((id (denote-retrieve-filename-identifier file))
                                                    (_ (denote-date-identifier-p id)))
                                          (format-time-string "%A, %e %B %Y" (date-to-time (denote-id-to-date id))))
@@ -7486,7 +7497,7 @@ visited again in a new buffer (files are visited with the command
   (identifier nil :documentation "The file IDENTIFIER." :type string)
   (signature nil :documentation "The file SIGNATURE." :type string)
   (title nil :documentation "The file TITLE." :type string)
-  (keywords nil :documentation "The file KEYWORDS as a list of strings." :type list)
+  (keywords nil :documentation "The file KEYWORDS as a string." :type string)
   (path nil :documentation "The file PATH." :type string)
   ;; From file contents
   (forelinks nil :documentation "The FORELINKS as a list of identifiers as strings." :type list)
@@ -7549,10 +7560,11 @@ Do so by using the `denote-data--content-fns'."
 
 (defun denote-data-write-entry (file)
   "Write data about FILE to `denote-data'."
-  (when-let* ((identifier (denote-retrieve-filename-identifier file)))
+  (when-let* ((_ (file-exists-p file))
+              (identifier (denote-retrieve-filename-identifier file)))
     (let* ((title (denote-retrieve-filename-title file))
            (signature (denote-retrieve-filename-signature file))
-           (keywords (denote-retrieve-filename-keywords-as-list file))
+           (keywords (denote-retrieve-filename-keywords file))
            (data (denote-data--get-contents file))
            (contents-title (alist-get 'title data))
            (forelinks (alist-get 'forelinks data))
@@ -7711,13 +7723,13 @@ before."
 
 ;;;;; The `denote-data-mode'
 
-;; NOTE 2026-10-09: I wrote `denote-data--maphash-with-file-exists-p'
-;; to HOPEFULLY circumvent the problem of how to handle changes to
-;; files outside of Emacs.  Basically, if the file does not exist the
-;; moment we read the cache, then we remove it.  This practically
-;; means that if we do something like `denote-backlinks' we will only
-;; see valid results.  Maybe there are some cases I am not even
-;; thinking of here, in which case I am happy to revise this.
+;; I wrote `denote-data--maphash-with-file-exists-p' to HOPEFULLY
+;; circumvent the problem of how to handle changes to files outside of
+;; Emacs.  Basically, if the file does not exist the moment we read
+;; the cache, then we remove it.  This practically means that if we do
+;; something like `denote-backlinks' we will only see valid results.
+;; Maybe there are some cases I am not even thinking of here, in which
+;; case I am happy to revise this.
 ;;
 ;; TODO 2026-09-25: What about a rename that changes the identifier?
 ;; Maybe a `before-save-hook' for that case?
@@ -7757,18 +7769,14 @@ Include `denote-get-buffer-file-names'."
       (push path files))
     files))
 
-(defun denote-data-get-keywords (&optional files-matching-regexp)
+(defun denote-data-get-keywords-all (&optional files-matching-regexp)
   "Return keywords found in files, optionally FILES-MATCHING-REGEXP.
 Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
   (let ((keywords nil))
     (denote-data--maphash-with-file-exists-p
       (when-let* ((file-keywords (denote-data-entry-keywords value))
-                  (final-keywords (if denote-keywords-to-not-infer-regexp
-                                      (seq-remove
-                                       (lambda (k)
-                                         (string-match-p denote-keywords-to-not-infer-regexp k))
-                                       file-keywords)
-                                    file-keywords)))
+                  (file-keywords-list (split-string file-keywords "_" :omit-nulls))
+                  (final-keywords (denote--infer-keywords-from-files-filter file-keywords-list)))
         (if files-matching-regexp
             (when (string-match-p files-matching-regexp path)
               (push final-keywords keywords))
@@ -7776,7 +7784,10 @@ Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
     (flatten-list keywords)))
 
 ;; TODO 2026-10-05: We need to deal with the scenario where one
-;; identifier is shared by multiple files.
+;; identifier is shared by multiple files.  This can happen, for
+;; example, if the Org file is exported to an HTML file which is
+;; stored in the same directory.  The exported file has the same name
+;; as the original except for a different file type extension.
 (defun denote-data-get-path (identifier)
   "Return file path of IDENTIFIER."
   (when-let* ((entry (denote-data-get identifier))
@@ -7786,21 +7797,44 @@ Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
       (remhash identifier denote-data)
       nil)))
 
+;; This is because the original function is called with a FILE
+;; argument, as in `denote-get-backlinks-as-files-function'.  Maybe
+;; long-term we should change everything to expect an IDENTIFIER
+;; instead.
+(defun denote-data--resolve-file-identifier (arg)
+  "Return ARG identifier if it is a file, else return ARG."
+  (if (file-exists-p (expand-file-name arg))
+      (denote-retrieve-filename-identifier arg)
+    arg))
+
 (defun denote-data-get-backlinks-files-only (identifier)
   "Return list of FILES that link to file with IDENTIFIER.
 Also see `denote-data-get-backlinks'."
-  ;; NOTE 2026-10-10: The `when' is because this will be called with a
-  ;; FILE argument, per `denote-get-backlinks-as-files-function'.
-  ;; Maybe long-term we should change everything to expect an
-  ;; IDENTIFIER instead.
-  (when (file-exists-p (expand-file-name identifier))
-    (setq identifier (denote-retrieve-filename-identifier identifier)))
-  (let ((files nil))
+  (let ((id (denote-data--resolve-file-identifier identifier))
+        (files nil))
     (denote-data--maphash-with-file-exists-p
       (when-let* ((forelinks (denote-data-entry-forelinks value))
-                  (_ (member identifier forelinks)))
+                  (_ (member id forelinks)))
         (push path files)))
     files))
+
+(defun denote-data-get-title (identifier)
+  "Return title of file with IDENTIFIER."
+  (when-let* ((id (denote-data--resolve-file-identifier identifier))
+              (entry (denote-data-get id)))
+    (denote-data-entry-title entry)))
+
+(defun denote-data-get-signature (identifier)
+  "Return signature of file with IDENTIFIER."
+  (when-let* ((id (denote-data--resolve-file-identifier identifier))
+              (entry (denote-data-get id)))
+    (denote-data-entry-signature entry)))
+
+(defun denote-data-get-keywords (identifier)
+  "Return keywords of file with IDENTIFIER as a string."
+  (when-let* ((id (denote-data--resolve-file-identifier identifier))
+              (entry (denote-data-get id)))
+    (denote-data-entry-keywords entry)))
 
 (defun denote-data-get-backlinks (identifier)
   "Return an xref alist of backlinks for IDENTIFIER.
@@ -7809,40 +7843,16 @@ Also see `denote-data-get-backlinks-files-only'."
     (let ((backlinks-by-file-type (denote--get-files-by-file-type backlinks)))
       (denote--make-xref-alist identifier backlinks-by-file-type))))
 
-(defvar denote-directory-files-get-function--original nil
-  "Original function bound to `denote-directory-files-get-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-infer-keywords-from-files-function--original nil
-  "Original function bound to `denote-infer-keywords-from-files-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-get-path-by-id-function--original nil
-  "Original function bound to `denote-get-path-by-id-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-get-identifiers-function--original nil
-  "Original function bound to `denote-get-identifiers-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-retrieve-xref-alist-for-backlinks-function--original nil
-  "Original function bound to `denote-retrieve-xref-alist-for-backlinks-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-get-backlinks-as-files-function--original nil
-  "Original function bound to `denote-get-backlinks-as-files-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
-
-(defvar denote-file-has-backlinks-function--original nil
-  "Original function bound to `denote-file-has-backlinks-function'.
-The `denote-data-mode' sets this variable in order to capture the user's
-last known preference.")
+(defvar denote-directory-files-get-function--original nil)
+(defvar denote-file-has-backlinks-function--original nil)
+(defvar denote-get-backlinks-as-files-function--original nil)
+(defvar denote-get-identifiers-function--original nil)
+(defvar denote-get-keywords-function--original nil)
+(defvar denote-get-path-by-id-function--original nil)
+(defvar denote-get-signature-function--original nil)
+(defvar denote-get-title-function--original nil)
+(defvar denote-infer-keywords-from-files-function--original nil)
+(defvar denote-retrieve-xref-alist-for-backlinks-function--original nil)
 
 ;;;###autoload
 (define-minor-mode denote-data-mode
@@ -7853,29 +7863,41 @@ last known preference.")
   (if denote-data-mode
       (progn
         (denote-data--write-all-asynchronous)
+
         (setq denote-directory-files-get-function--original denote-directory-files-get-function)
-        (setq denote-infer-keywords-from-files-function--original denote-infer-keywords-from-files-function)
-        (setq denote-get-path-by-id-function--original denote-get-path-by-id-function)
-        (setq denote-get-identifiers-function--original denote-get-identifiers-function)
-        (setq denote-retrieve-xref-alist-for-backlinks-function--original denote-retrieve-xref-alist-for-backlinks-function)
-        (setq denote-get-backlinks-as-files-function--original denote-get-backlinks-as-files-function)
         (setq denote-file-has-backlinks-function--original denote-file-has-backlinks-function)
+        (setq denote-get-backlinks-as-files-function--original denote-get-backlinks-as-files-function)
+        (setq denote-get-identifiers-function--original denote-get-identifiers-function)
+        (setq denote-get-keywords-function--original denote-get-keywords-function)
+        (setq denote-get-path-by-id-function--original denote-get-path-by-id-function)
+        (setq denote-get-signature-function--original denote-get-signature-function)
+        (setq denote-get-title-function--original denote-get-title-function)
+        (setq denote-infer-keywords-from-files-function--original denote-infer-keywords-from-files-function)
+        (setq denote-retrieve-xref-alist-for-backlinks-function--original denote-retrieve-xref-alist-for-backlinks-function)
+
         (setq denote-directory-files-get-function #'denote-data-get-files)
-        (setq denote-infer-keywords-from-files-function #'denote-data-get-keywords)
-        (setq denote-get-path-by-id-function #'denote-data-get-path)
-        (setq denote-get-identifiers-function #'denote-data-get-identifiers)
-        (setq denote-retrieve-xref-alist-for-backlinks-function #'denote-data-get-backlinks)
-        (setq denote-get-backlinks-as-files-function #'denote-data-get-backlinks-files-only)
         (setq denote-file-has-backlinks-function #'denote-data-get-backlinks-files-only)
+        (setq denote-get-backlinks-as-files-function #'denote-data-get-backlinks-files-only)
+        (setq denote-get-identifiers-function #'denote-data-get-identifiers)
+        (setq denote-get-keywords-function #'denote-data-get-keywords)
+        (setq denote-get-path-by-id-function #'denote-data-get-path)
+        (setq denote-get-signature-function #'denote-data-get-signature)
+        (setq denote-get-title-function #'denote-data-get-title)
+        (setq denote-infer-keywords-from-files-function #'denote-data-get-keywords-all)
+        (setq denote-retrieve-xref-alist-for-backlinks-function #'denote-data-get-backlinks)
         ;; TODO 2026-10-09: Could this be a problem for `save-some-buffers'?
         (add-hook 'after-save-hook #'denote-data-update))
     (setq denote-directory-files-get-function denote-directory-files-get-function--original)
-    (setq denote-infer-keywords-from-files-function denote-infer-keywords-from-files-function--original)
-    (setq denote-get-path-by-id-function denote-get-path-by-id-function--original)
-    (setq denote-get-identifiers-function denote-get-identifiers-function--original)
-    (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
-    (setq denote-get-backlinks-as-files-function denote-get-backlinks-as-files-function--original)
     (setq denote-file-has-backlinks-function denote-file-has-backlinks-function--original)
+    (setq denote-get-backlinks-as-files-function denote-get-backlinks-as-files-function--original)
+    (setq denote-get-identifiers-function denote-get-identifiers-function--original)
+    (setq denote-get-keywords-function denote-get-keywords-function--original)
+    (setq denote-get-path-by-id-function denote-get-path-by-id-function--original)
+    (setq denote-get-signature-function denote-get-signature-function--original)
+    (setq denote-get-title-function denote-get-title-function--original)
+    (setq denote-infer-keywords-from-files-function denote-infer-keywords-from-files-function--original)
+    (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
+
     (setq denote-data--write-all-called-p nil)
     (remove-hook 'after-save-hook #'denote-data-update)))
 
