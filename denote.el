@@ -4359,7 +4359,8 @@ matter values if appropriate.
 If `denote-rename-confirmations' contains `rewrite-front-matter',
 prompt to confirm the rewriting of the front matter."
   (let* ((front-matter (denote--front-matter file-type))
-         (file-content (with-current-buffer (find-file-noselect file) (buffer-string)))
+         (buffer (find-file-noselect file))
+         (file-content (with-current-buffer buffer (buffer-string)))
          (components-in-template (denote--get-front-matter-components-order front-matter file-type))
          (components-in-file (denote--get-front-matter-components-order file-content file-type))
          (components-to-add '())
@@ -4389,7 +4390,7 @@ prompt to confirm the rewriting of the front matter."
                (or components-to-add components-to-remove components-to-modify))
       (when-let* ((final-components (denote--get-final-components-for-rewrite
                                      components-in-file components-in-template components-to-add)))
-        (with-current-buffer (find-file-noselect file)
+        (with-current-buffer buffer
           (when (or (not (memq 'rewrite-front-matter denote-rename-confirmations))
                     (y-or-n-p (denote--get-front-matter-rewrite-prompt
                                final-components
@@ -4479,6 +4480,19 @@ The purpose of this variable is to be `let' bound to nil by a caller of
 the command `denote-rename-file' or related.  This will have the effect
 of not rewriting the file's front matter.")
 
+(defvar denote--after-rename-functions nil
+  "Abnormal hook for `denote--rename-file'.
+Each function is called with the following arguments: OLD-IDENTIFIER,
+IDENTIFIER, TITLE, KEYWORDS, SIGNATURE, NEW-NAME (the path).")
+
+(defvar denote-file-has-backlinks-function #'denote-file-has-backlinks-p
+  "Function to test if a file has backlinks.
+The function is called with one argument, the file path, and should
+return either nil or nil-nil.
+
+Package developers can set this variable to a function that does what
+they need, such as to read from a cache or database.")
+
 (defun denote--rename-file (file title keywords signature date identifier)
   "Rename FILE according to the other parameters.
 Parameters TITLE, KEYWORDS, SIGNATURE, DATE, and IDENTIFIER are as
@@ -4515,7 +4529,8 @@ Respect `denote-rename-confirmations', `denote-save-buffers' and
                        identifier))
          (identifier (cond ((string-empty-p identifier) identifier)
                            ((string= old-identifier identifier) identifier)
-                           ((and (not (string-empty-p old-identifier)) (denote--file-has-backlinks-p file))
+                           ((and (not (string-empty-p old-identifier))
+                                 (funcall denote-file-has-backlinks-function file))
                             (user-error "The identifier cannot be modified: that will break existing links"))
                            (t (funcall denote-get-identifier-function identifier nil))))
          (new-name (denote-format-file-name directory identifier keywords title extension signature))
@@ -4547,6 +4562,7 @@ Respect `denote-rename-confirmations', `denote-save-buffers' and
            (cons 'id identifier)
            (cons 'file-type file-type)
            (cons 'template "")))
+    (run-hook-with-args 'denote--after-rename-functions old-identifier identifier title keywords signature new-name)
     (run-hooks 'denote-after-rename-file-hook)
     new-name))
 
@@ -5593,6 +5609,12 @@ own to return the appropriate description."
   'denote-get-link-description
   "4.0.0")
 
+(defvar denote--link-file-no-exist-functions nil
+  "Abnormal hook called from `denote-link'.
+It is called when `denote-link' tried to link to a file that fails
+`file-exist-p'.  Functions are called with one argument, the file path,
+as a string.")
+
 ;;;###autoload
 (defun denote-link (file file-type description &optional id-only)
   "Create link to FILE note in variable `denote-directory' with DESCRIPTION.
@@ -5627,6 +5649,7 @@ the active region specially, is up to it."
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
+    (run-hook-with-args 'denote--link-file-no-exist-functions file)
     (user-error "The linked file does not exist"))
   (denote--delete-active-region-content)
   (insert (denote-format-link file description file-type id-only)))
@@ -5695,7 +5718,7 @@ of `denote-directory-files'.
 
 Also see `denote-get-backlinks'."
   (when-let* ((current-file (or file (buffer-file-name)))
-              ((denote-file-has-supported-extension-p current-file))
+              (_ (denote-file-has-supported-extension-p current-file))
               (file-type (denote-filetype-heuristics current-file))
               (regexp (denote--link-in-context-regexp file-type))
               (files (or files (denote-directory-files nil nil nil nil :has-identifier)))
@@ -5721,6 +5744,9 @@ Also see `denote-find-backlink'."
   (when-let* ((links (or (denote-get-links)
                          (user-error "No links found")))
               (selected (denote-select-from-files-prompt links "Select among LINKS")))
+    (unless (file-exists-p selected)
+      (run-hook-with-args 'denote--link-file-no-exist-functions selected)
+      (user-error "The linked file does not exist"))
     (find-file selected)))
 
 ;;;###autoload
@@ -6367,18 +6393,11 @@ Also see `denote-get-links'."
   'denote-file-has-backlinks-p
   "4.3.0")
 
-(defvar denote-file-has-backlinks-function #'denote-file-has-backlinks-p
-  "Function to test if a file has backlinks.
-The function is called with one argument, the file path, and should
-return either nil or nil-nil.
-
-Package developers can set this variable to a function that does what
-they need, such as to read from a cache or database.")
-
 (defun denote-file-has-backlinks-p (file)
   "Return non-nil if FILE has backlinks."
   (when-let* ((id (denote-retrieve-filename-identifier file))
-              (files (denote-directory-files nil :omit-current :text-only)))
+              (files (denote-directory-files nil :omit-current :text-only))
+              (_ (file-exists-p file)))
     (catch 'has-backlinks
       (dolist (file files)
         (with-temp-buffer
@@ -6402,6 +6421,9 @@ Alo see `denote-find-link'."
               (links (or (funcall denote-get-backlinks-as-files-function current-file)
                          (user-error "No backlinks found")))
               (selected (denote-select-from-files-prompt links "Select among BACKLINKS")))
+    (unless (file-exists-p selected)
+      (run-hook-with-args 'denote--link-file-no-exist-functions selected)
+      (user-error "The linked file does not exist"))
     (find-file selected)))
 
 ;;;###autoload
@@ -7491,17 +7513,17 @@ visited again in a new buffer (files are visited with the command
 
 ;;;; The cache with `denote-data'
 
+;; TODO 2026-10-12: Maybe we can leverage the `file-attribute-modification-time'
+;; to do this sort of thing: check files for newer modified time and
+;; only then update the cache.
 (cl-defstruct (denote-data-entry (:constructor denote-data-entry-create))
   "Data structure of a Denote file."
-  ;; From file name
   (identifier nil :documentation "The file IDENTIFIER." :type string)
   (signature nil :documentation "The file SIGNATURE." :type string)
   (title nil :documentation "The file TITLE." :type string)
   (keywords nil :documentation "The file KEYWORDS as a string." :type string)
   (path nil :documentation "The file PATH." :type string)
-  ;; From file contents
-  (forelinks nil :documentation "The FORELINKS as a list of identifiers as strings." :type list)
-  (text nil :documentation "The file TEXT." :type string))
+  (links nil :documentation "The LINKS as a list of identifiers (strings)." :type list))
 
 (defvar denote-data (make-hash-table :test #'equal)
   "List of `denote-data-entry' elements.")
@@ -7510,8 +7532,7 @@ visited again in a new buffer (files are visited with the command
 
 (defvar denote-data--content-fns
   '((title . denote-data--get-contents-title)
-    (forelinks . denote-data--get-contents-forelinks)
-    (text . denote-data--get-contents-text))
+    (links . denote-data--get-contents-links))
   "List of entries to read data from a file for `denote-data--get-contents'.
 Each element is a cons cell of the form (SYMBOL . FUNCTION), where
 SYMBOL corresponds to a slot in `denote-data-entry' and thus describes
@@ -7527,22 +7548,16 @@ Do it when FILE-SUPPORTED-P is non-nil."
                 (_ (re-search-forward regexp nil t 1)))
       (funcall value-fn (buffer-substring-no-properties (point) (line-end-position))))))
 
-(defun denote-data--get-contents-forelinks (file-supported-p _identifier file-type)
+(defun denote-data--get-contents-links (file-supported-p _identifier file-type)
   "Return denote: links of FILE-TYPE for `denote-data--get-contents'.
 Do it when FILE-SUPPORTED-P is non-nil."
   (when file-supported-p
     (goto-char (point-min))
-    (let ((forelinks nil))
+    (let ((links nil))
       (when-let* ((regexp (denote--link-in-context-regexp file-type)))
         (while (re-search-forward regexp nil t)
-          (push (match-string 1) forelinks))
-        (seq-uniq forelinks)))))
-
-(defun denote-data--get-contents-text (file-supported-p _identifier _file-type)
-  "Return `buffer-string' for `denote-data--get-contents'.
-Do it when FILE-SUPPORTED-P is non-nil."
-  (when file-supported-p
-    (buffer-string)))
+          (push (match-string 1) links))
+        (seq-uniq links)))))
 
 (defun denote-data--get-contents (file)
   "Read FILE contents and return relevant `denote-data'.
@@ -7567,15 +7582,13 @@ Do so by using the `denote-data--content-fns'."
            (keywords (denote-retrieve-filename-keywords file))
            (data (denote-data--get-contents file))
            (contents-title (alist-get 'title data))
-           (forelinks (alist-get 'forelinks data))
-           (text (alist-get 'text data))
+           (links (alist-get 'links data))
            (slots (list :identifier identifier
                         :title (or contents-title title)
                         :signature signature
                         :keywords keywords
                         :path file
-                        :forelinks forelinks
-                        :text text))
+                        :links links))
            (entry (apply 'denote-data-entry-create slots)))
       (puthash identifier entry denote-data))))
 
@@ -7628,8 +7641,7 @@ already called."
 (denote-data--define-entry-set title)
 (denote-data--define-entry-set keywords)
 (denote-data--define-entry-set path)
-(denote-data--define-entry-set forelinks)
-(denote-data--define-entry-set text)
+(denote-data--define-entry-set links)
 
 (defun denote-data-modify (slot new-value identifier)
   "Modify the SLOT with NEW-VALUE of file with IDENTIFIER in `denote-data'."
@@ -7640,14 +7652,38 @@ already called."
       (:keywords (denote-data-entry-set-keywords entry new-value))
       (:title (denote-data-entry-set-title entry new-value))
       (:path (denote-data-entry-set-path entry new-value))
-      (:forelinks (denote-data-entry-set-forelinks entry new-value))
-      (:text (denote-data-entry-set-text entry new-value)))))
+      (:links (denote-data-entry-set-links entry new-value)))))
 
+;; TODO 2026-10-12: Maybe it makes sense to use modified time here,
+;; subject to storing it, of course.
 (defun denote-data-update ()
   "Update the current Denote file entry in `denote-data'.
 Use this as part of `after-save-hook' or related.  Otherwise use
 `denote-data-write-entry'."
   (denote-data-write-entry buffer-file-name))
+
+(defun denote-data--remove-file (file)
+  "Remove FILE from `denote-data'.
+FILE may be a file path or the identifier."
+  (let ((id (denote-retrieve-filename-identifier file)))
+    (remhash id denote-data)
+    (message "Removed file with identifier `%s' from `denote-data'" id)))
+
+(defun denote-data--post-rename-update (old-identifier identifier title keywords signature new-name)
+  "Function to add to `denote--after-rename-functions'.
+The arguments OLD-IDENTIFIER, IDENTIFIER, TITLE, KEYWORDS, SIGNATURE,
+NEW-NAME have the meaning of that hook."
+  (remhash old-identifier denote-data)
+  (let* ((data (denote-data--get-contents new-name))
+         (links (alist-get 'links data))
+         (slots (list :identifier identifier
+                      :title title
+                      :signature signature
+                      :keywords (denote-keywords-combine keywords)
+                      :path new-name
+                      :links links))
+         (entry (apply 'denote-data-entry-create slots)))
+    (puthash identifier entry denote-data)))
 
 ;;;;; The asynchronous call to build the `denote-data'
 
@@ -7704,13 +7740,16 @@ before."
   (when (or force (null denote-data--write-all-called-p))
     (let* ((buffer-output (denote-data--write-all-asynchronous-get-buffer " *denote-data*"))
            (buffer-error (denote-data--write-all-asynchronous-get-buffer " *denote-data-error*"))
-           (denote-source-file (or (locate-file "denote.el" load-path)
+           (denote-source-file (or (locate-library "denote")
                                    (error "File denote.el is not in the `load-path'")))
            (progress-pipe (make-pipe-process
                            :name "denote-data-progress-pipe"
                            :buffer buffer-error
                            :filter #'denote-data--write-all-asynchronous-progress-pipe-filter))
            (emacs-binary (expand-file-name invocation-name invocation-directory))
+           ;; TODO 2026-10-12: Doing it this way means that we load
+           ;; the default Denote settings.  Whereas, we need to load
+           ;; all of the relevant user options, such as `denote-directory'.
            (command (list emacs-binary "--batch" "-l" denote-source-file "--eval"
                           "(progn (denote-data-write-all) (prin1 denote-data))"))
            (process (make-process
@@ -7723,30 +7762,6 @@ before."
 
 ;;;;; The `denote-data-mode'
 
-;; I wrote `denote-data--maphash-with-file-exists-p' to HOPEFULLY
-;; circumvent the problem of how to handle changes to files outside of
-;; Emacs.  Basically, if the file does not exist the moment we read
-;; the cache, then we remove it.  This practically means that if we do
-;; something like `denote-backlinks' we will only see valid results.
-;; Maybe there are some cases I am not even thinking of here, in which
-;; case I am happy to revise this.
-;;
-;; TODO 2026-09-25: What about a rename that changes the identifier?
-;; Maybe a `before-save-hook' for that case?
-(defmacro denote-data--maphash-with-file-exists-p (&rest body)
-  "Evaluate BODY in `maphash' over `denote-data'.
-Do it to remove the relevant key from `denote-data' if its value no
-longer has a path that conforms with `file-exists-p'."
-  (declare (indent 0))
-  `(maphash
-    (lambda (key value)
-      (if-let* ((path (denote-data-entry-path value))
-                (_ (file-exists-p path)))
-          (progn ,@body)
-        (remhash key denote-data)
-        nil))
-    denote-data))
-
 (defun denote-data-get-identifiers ()
   "Return all identifiers as a hash-table.
 Include `denote-get-buffer-file-names'."
@@ -7755,8 +7770,10 @@ Include `denote-get-buffer-file-names'."
          (buffer-identifiers (mapcar #'denote-retrieve-filename-identifier buffer-file-names))
          (cached-identifiers nil)
          (all-identifiers nil))
-    (denote-data--maphash-with-file-exists-p
-      (push key cached-identifiers))
+    (maphash
+     (lambda (key _value)
+       (push key cached-identifiers))
+     denote-data)
     (setq all-identifiers (seq-uniq (append buffer-identifiers cached-identifiers)))
     (dolist (identifier all-identifiers)
       (puthash identifier t table))
@@ -7765,22 +7782,28 @@ Include `denote-get-buffer-file-names'."
 (defun denote-data-get-files ()
   "Return list of files in `denote-data'."
   (let ((files nil))
-    (denote-data--maphash-with-file-exists-p
-      (push path files))
+    (maphash
+     (lambda (_key value)
+       (when-let* ((path (denote-data-entry-path value)))
+         (push path files)))
+     denote-data)
     files))
 
 (defun denote-data-get-keywords-all (&optional files-matching-regexp)
   "Return keywords found in files, optionally FILES-MATCHING-REGEXP.
 Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
   (let ((keywords nil))
-    (denote-data--maphash-with-file-exists-p
-      (when-let* ((file-keywords (denote-data-entry-keywords value))
-                  (file-keywords-list (split-string file-keywords "_" :omit-nulls))
-                  (final-keywords (denote--infer-keywords-from-files-filter file-keywords-list)))
-        (if files-matching-regexp
-            (when (string-match-p files-matching-regexp path)
-              (push final-keywords keywords))
-          (push final-keywords keywords))))
+    (maphash
+     (lambda (_key value)
+       (when-let* ((path (denote-data-entry-path value))
+                   (file-keywords (denote-data-entry-keywords value))
+                   (file-keywords-list (split-string file-keywords "_" :omit-nulls))
+                   (final-keywords (denote--infer-keywords-from-files-filter file-keywords-list)))
+         (if files-matching-regexp
+             (when (string-match-p files-matching-regexp path)
+               (push final-keywords keywords))
+           (push final-keywords keywords))))
+     denote-data)
     (flatten-list keywords)))
 
 ;; TODO 2026-10-05: We need to deal with the scenario where one
@@ -7792,10 +7815,7 @@ Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
   "Return file path of IDENTIFIER."
   (when-let* ((entry (denote-data-get identifier))
               (path (denote-data-entry-path entry)))
-    (if (file-exists-p path)
-        path
-      (remhash identifier denote-data)
-      nil)))
+    path))
 
 ;; This is because the original function is called with a FILE
 ;; argument, as in `denote-get-backlinks-as-files-function'.  Maybe
@@ -7812,10 +7832,13 @@ Respect `denote-keywords-to-not-infer-regexp' and do not remove any duplicates."
 Also see `denote-data-get-backlinks'."
   (let ((id (denote-data--resolve-file-identifier identifier))
         (files nil))
-    (denote-data--maphash-with-file-exists-p
-      (when-let* ((forelinks (denote-data-entry-forelinks value))
-                  (_ (member id forelinks)))
-        (push path files)))
+    (maphash
+     (lambda (_key value)
+       (when-let* ((path (denote-data-entry-path value))
+                   (links (denote-data-entry-links value))
+                   (_ (member id links)))
+         (push path files)))
+     denote-data)
     files))
 
 (defun denote-data-get-title (identifier)
@@ -7886,7 +7909,16 @@ Also see `denote-data-get-backlinks-files-only'."
         (setq denote-infer-keywords-from-files-function #'denote-data-get-keywords-all)
         (setq denote-retrieve-xref-alist-for-backlinks-function #'denote-data-get-backlinks)
         ;; TODO 2026-10-09: Could this be a problem for `save-some-buffers'?
-        (add-hook 'after-save-hook #'denote-data-update))
+        ;;
+        ;; TODO 2026-10-12: I actually think now that the
+        ;; `after-save-hook' is the wrong approach.  We should do the
+        ;; equivalent of the abnormal hooks for the `denote' command.
+        ;; I do have the suspicion that `after-save-hook' will be a
+        ;; problem under certain conditions.  Plus, I want to keep
+        ;; this self-contained.
+        (add-hook 'after-save-hook #'denote-data-update)
+        (add-hook 'denote--link-file-no-exist-functions #'denote-data--remove-file)
+        (add-hook 'denote--after-rename-functions #'denote-data--post-rename-update))
     (setq denote-directory-files-get-function denote-directory-files-get-function--original)
     (setq denote-file-has-backlinks-function denote-file-has-backlinks-function--original)
     (setq denote-get-backlinks-as-files-function denote-get-backlinks-as-files-function--original)
@@ -7899,7 +7931,9 @@ Also see `denote-data-get-backlinks-files-only'."
     (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
 
     (setq denote-data--write-all-called-p nil)
-    (remove-hook 'after-save-hook #'denote-data-update)))
+    (remove-hook 'after-save-hook #'denote-data-update)
+    (remove-hook 'denote--link-file-no-exist-functions #'denote-data--remove-file)
+    (remove-hook 'denote--after-rename-functions #'denote-data--post-rename-update)))
 
 (provide 'denote)
 ;;; denote.el ends here
