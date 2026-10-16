@@ -889,6 +889,22 @@ If the region is active, its text is used as the link's description."
   :package-version '(denote . "4.0.0")
   :group 'denote)
 
+(defcustom denote-fancy-file-prompt t
+  "Control whether to use a fancy file prompt.
+When the value is nil, the file prompt shows file names exactly as they
+are.  Whereas a non-nil value transforms file names to make their
+components more apparent and to change their style accordingly.
+
+This is relevant for `denote-link', `denote-open-or-create', and other
+such commands that may prompt for a file.
+
+The exact style of the fancy prompt is handled by the variable
+`denote-file-prompt-extra-metadata'.  Though that is only meant to be
+redefined by experienced users."
+  :type 'boolean
+  :package-version '(denote . "4.3.0")
+  :group 'denote)
+
 ;;;; Main variables
 
 ;; For character classes, evaluate: (info "(elisp) Char Classes")
@@ -1649,7 +1665,10 @@ With optional NO-REQUIRE-MATCH, accept the given input as-is.
 With optional HAS-IDENTIFIER, only show candidates that have an
 identifier.
 
-Return the absolute path to the matching file."
+Return the absolute path to the matching file.
+
+Present the completion candidates in accordance with the user option
+`denote-fancy-file-prompt'."
   (let* ((roots (denote-directories))
          (single-dir-p (null (cdr roots)))
          ;; Some external program may use `default-directory' with the
@@ -1673,7 +1692,9 @@ Return the absolute path to the matching file."
                            (propertize default-directory 'face 'denote-faces-prompt-current-name))))
          (input (completing-read
                  prompt
-                 (apply 'denote-get-completion-table relative-files denote-file-prompt-extra-metadata)
+                 (if denote-fancy-file-prompt
+                     (apply 'denote-get-completion-table relative-files denote-file-prompt-extra-metadata)
+                   relative-files)
                  nil (unless no-require-match t)
                  nil 'denote-file-history))
          (absolute-file (if single-dir-p
@@ -3295,13 +3316,13 @@ If DATE is nil or an empty string, return nil."
   (delq nil
         (mapcar
          (lambda (buffer)
-           (when (and (buffer-live-p buffer)
-                      buffer-file-name
-                      (denote-file-is-in-denote-directory-p buffer-file-name)
-                      (denote-file-has-supported-extension-p buffer-file-name)
-                      (denote-file-has-denoted-filename-p buffer-file-name)
-                      (denote-file-has-identifier-p buffer-file-name))
-             buffer-file-name))
+           (when-let* (((buffer-live-p buffer))
+                       (file (buffer-file-name buffer))
+                       (_ (denote-file-is-in-denote-directory-p file))
+                       (_ (denote-file-has-supported-extension-p file))
+                       (_ (denote-file-has-denoted-filename-p file))
+                       (_ (denote-file-has-identifier-p file)))
+             file))
          (buffer-list))))
 
 (define-obsolete-function-alias
@@ -3638,6 +3659,11 @@ instead of that of the parameter."
          (signature (or signature "")))
     (list title keywords file-type directory date identifier template signature)))
 
+(defvar denote-new-note-functions nil
+  "Abnormal hook to be called by `denote'.
+Each function is called with the following arguments: IDENTIFIER,
+SIGNATURE, TITLE, KEYWORDS, NOTE-PATH.")
+
 ;;;###autoload
 (defun denote (&optional title keywords file-type directory date template signature identifier)
   "Create a new note with the appropriate metadata and file name.
@@ -3696,6 +3722,7 @@ When called from Lisp, all arguments are optional.
            (cons 'id identifier)
            (cons 'file-type file-type)
            (cons 'template template)))
+    (run-hook-with-args 'denote-new-note-functions identifier signature title keywords note-path)
     (run-hooks 'denote-after-new-note-hook)
     (denote--handle-save-and-kill-buffer 'creation note-path nil)
     note-path))
@@ -4480,7 +4507,7 @@ The purpose of this variable is to be `let' bound to nil by a caller of
 the command `denote-rename-file' or related.  This will have the effect
 of not rewriting the file's front matter.")
 
-(defvar denote--after-rename-functions nil
+(defvar denote-after-rename-functions nil
   "Abnormal hook for `denote--rename-file'.
 Each function is called with the following arguments: OLD-IDENTIFIER,
 IDENTIFIER, TITLE, KEYWORDS, SIGNATURE, NEW-NAME (the path).")
@@ -4562,7 +4589,7 @@ Respect `denote-rename-confirmations', `denote-save-buffers' and
            (cons 'id identifier)
            (cons 'file-type file-type)
            (cons 'template "")))
-    (run-hook-with-args 'denote--after-rename-functions old-identifier identifier title keywords signature new-name)
+    (run-hook-with-args 'denote-after-rename-functions old-identifier identifier title keywords signature new-name)
     (run-hooks 'denote-after-rename-file-hook)
     new-name))
 
@@ -5609,7 +5636,7 @@ own to return the appropriate description."
   'denote-get-link-description
   "4.0.0")
 
-(defvar denote--link-file-no-exist-functions nil
+(defvar denote-link-file-no-exist-functions nil
   "Abnormal hook called from `denote-link'.
 It is called when `denote-link' tried to link to a file that fails
 `file-exist-p'.  Functions are called with one argument, the file path,
@@ -5649,7 +5676,7 @@ the active region specially, is up to it."
               (and buffer-file-name (denote-file-has-supported-extension-p buffer-file-name)))
     (user-error "The current file type is not recognized by Denote"))
   (unless (file-exists-p file)
-    (run-hook-with-args 'denote--link-file-no-exist-functions file)
+    (run-hook-with-args 'denote-link-file-no-exist-functions file)
     (user-error "The linked file does not exist"))
   (denote--delete-active-region-content)
   (insert (denote-format-link file description file-type id-only)))
@@ -5698,7 +5725,9 @@ the generic one."
                        files))
          (selected (completing-read
                     (format-prompt (or prompt-text "Select file among files") nil)
-                    (apply 'denote-get-completion-table file-names denote-file-prompt-extra-metadata)
+                    (if denote-fancy-file-prompt
+                        (apply 'denote-get-completion-table file-names denote-file-prompt-extra-metadata)
+                      file-names)
                     nil t nil 'denote-link-find-file-history)))
     (if single-dir-p
         (expand-file-name selected (car roots))
@@ -5745,7 +5774,7 @@ Also see `denote-find-backlink'."
                          (user-error "No links found")))
               (selected (denote-select-from-files-prompt links "Select among LINKS")))
     (unless (file-exists-p selected)
-      (run-hook-with-args 'denote--link-file-no-exist-functions selected)
+      (run-hook-with-args 'denote-link-file-no-exist-functions selected)
       (user-error "The linked file does not exist"))
     (find-file selected)))
 
@@ -6422,7 +6451,7 @@ Alo see `denote-find-link'."
                          (user-error "No backlinks found")))
               (selected (denote-select-from-files-prompt links "Select among BACKLINKS")))
     (unless (file-exists-p selected)
-      (run-hook-with-args 'denote--link-file-no-exist-functions selected)
+      (run-hook-with-args 'denote-link-file-no-exist-functions selected)
       (user-error "The linked file does not exist"))
     (find-file selected)))
 
@@ -7559,15 +7588,20 @@ Do it when FILE-SUPPORTED-P is non-nil."
           (push (match-string 1) links))
         (seq-uniq links)))))
 
-(defun denote-data--get-contents (file)
+(defun denote-data--get-contents (file file-contents)
   "Read FILE contents and return relevant `denote-data'.
+With optional FILE-CONTENTS, use those outright instead of reading from
+FILE.
+
 Do so by using the `denote-data--content-fns'."
   (let ((file-supported-p (denote-file-is-writable-and-supported-p file))
         (identifier (denote-retrieve-filename-identifier file))
         (file-type (denote-filetype-heuristics file))
         (data nil))
     (with-temp-buffer
-      (insert-file-contents file)
+      (if file-contents
+          (insert file-contents)
+        (insert-file-contents file))
       (pcase-dolist (`(,slot . ,fn) denote-data--content-fns)
         (when-let* ((return (funcall fn file-supported-p identifier file-type)))
           (push (cons slot return) data))))
@@ -7580,7 +7614,7 @@ Do so by using the `denote-data--content-fns'."
     (let* ((title (denote-retrieve-filename-title file))
            (signature (denote-retrieve-filename-signature file))
            (keywords (denote-retrieve-filename-keywords file))
-           (data (denote-data--get-contents file))
+           (data (denote-data--get-contents file nil))
            (contents-title (alist-get 'title data))
            (links (alist-get 'links data))
            (slots (list :identifier identifier
@@ -7662,19 +7696,37 @@ Use this as part of `after-save-hook' or related.  Otherwise use
 `denote-data-write-entry'."
   (denote-data-write-entry buffer-file-name))
 
-(defun denote-data--remove-file (file)
+(defun denote-data-add-file (identifier signature title keywords note-path)
+  "Add file to `denote-data'.
+IDENTIFIER, SIGNATURE, TITLE, KEYWORDS, NOTE-PATH are those documented
+in `denote-new-note-functions'."
+  (let* ((buffer (get-file-buffer note-path))
+         (buffer-contents (with-current-buffer buffer
+                            (buffer-string)))
+         (data (denote-data--get-contents note-path buffer-contents))
+         (links (alist-get 'links data))
+         (slots (list :identifier identifier
+                      :title title
+                      :signature signature
+                      :keywords (denote-keywords-combine keywords)
+                      :path note-path
+                      :links links))
+         (entry (apply 'denote-data-entry-create slots)))
+    (puthash identifier entry denote-data)))
+
+(defun denote-data-remove-file (file)
   "Remove FILE from `denote-data'.
 FILE may be a file path or the identifier."
   (let ((id (denote-retrieve-filename-identifier file)))
     (remhash id denote-data)
     (message "Removed file with identifier `%s' from `denote-data'" id)))
 
-(defun denote-data--post-rename-update (old-identifier identifier title keywords signature new-name)
-  "Function to add to `denote--after-rename-functions'.
+(defun denote-data-post-rename-update (old-identifier identifier title keywords signature new-name)
+  "Function to add to `denote-after-rename-functions'.
 The arguments OLD-IDENTIFIER, IDENTIFIER, TITLE, KEYWORDS, SIGNATURE,
 NEW-NAME have the meaning of that hook."
   (remhash old-identifier denote-data)
-  (let* ((data (denote-data--get-contents new-name))
+  (let* ((data (denote-data--get-contents new-name nil))
          (links (alist-get 'links data))
          (slots (list :identifier identifier
                       :title title
@@ -7733,6 +7785,42 @@ Filter Functions'."
       (erase-buffer))
     buffer))
 
+;; TODO 2026-10-15: Maybe tweak the formatting here, but the point is
+;; that it works.
+;;
+;; TODO 2026-10-15: Double-check that the configuration here is
+;; exhaustive.  We want to capture EVERYTHING.  Specifically, we might
+;; need to think about options to extend this, such as
+;; `denote-journal-directory', and so on.  Maybe the best approach is
+;; to have some kind of arrangement whereby packages/users add
+;; arbitrary things for us to include in the cache's configuration.
+;; This could be as simple as adding an OPTIONS parameter which is an
+;; alist of cons cells of the form (USER-OPTION . VALUE) and then we
+;; take care to run the formatting here.  That would have to be called
+;; before `denote-data-mode' or the cache would need to be rebuilt
+;; accordingly.
+(defun denote-data--get-user-configuration ()
+  "Return user configuration for `denote-data--write-all-asynchronous'."
+  (let ((format-fn (lambda (symbol)
+                     (let ((value (symbol-value symbol)))
+                       (format "%s %s%S\n"
+                               symbol
+                               (if (and value
+                                        (or (listp value)
+                                            (symbolp value)))
+                                   "'"
+                                 "")
+                               value)))))
+    (concat "(setq "
+            (funcall format-fn 'denote-directory)
+            (funcall format-fn 'denote-file-name-components-order)
+            (funcall format-fn 'denote-file-type)
+            (funcall format-fn 'denote-excluded-directories-regexp)
+            (funcall format-fn 'denote-keywords-to-not-infer-regexp)
+            (funcall format-fn 'denote-excluded-files-regexp)
+            (funcall format-fn 'denote-file-name-slug-functions)
+            ")")))
+
 (defun denote-data--write-all-asynchronous (&optional force)
   "Call `denote-data-write-all' in a separate process.
 With optional FORCE run the process again even if it was already called
@@ -7747,11 +7835,9 @@ before."
                            :buffer buffer-error
                            :filter #'denote-data--write-all-asynchronous-progress-pipe-filter))
            (emacs-binary (expand-file-name invocation-name invocation-directory))
-           ;; TODO 2026-10-12: Doing it this way means that we load
-           ;; the default Denote settings.  Whereas, we need to load
-           ;; all of the relevant user options, such as `denote-directory'.
+           (user-options (denote-data--get-user-configuration))
            (command (list emacs-binary "--batch" "-l" denote-source-file "--eval"
-                          "(progn (denote-data-write-all) (prin1 denote-data))"))
+                          (format "(progn %s (denote-data-write-all) (prin1 denote-data))" user-options)))
            (process (make-process
                      :name "denote-data"
                      :buffer buffer-output
@@ -7908,17 +7994,10 @@ Also see `denote-data-get-backlinks-files-only'."
         (setq denote-get-title-function #'denote-data-get-title)
         (setq denote-infer-keywords-from-files-function #'denote-data-get-keywords-all)
         (setq denote-retrieve-xref-alist-for-backlinks-function #'denote-data-get-backlinks)
-        ;; TODO 2026-10-09: Could this be a problem for `save-some-buffers'?
-        ;;
-        ;; TODO 2026-10-12: I actually think now that the
-        ;; `after-save-hook' is the wrong approach.  We should do the
-        ;; equivalent of the abnormal hooks for the `denote' command.
-        ;; I do have the suspicion that `after-save-hook' will be a
-        ;; problem under certain conditions.  Plus, I want to keep
-        ;; this self-contained.
-        (add-hook 'after-save-hook #'denote-data-update)
-        (add-hook 'denote--link-file-no-exist-functions #'denote-data--remove-file)
-        (add-hook 'denote--after-rename-functions #'denote-data--post-rename-update))
+
+        (add-hook 'denote-new-note-functions #'denote-data-add-file)
+        (add-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
+        (add-hook 'denote-after-rename-functions #'denote-data-post-rename-update))
     (setq denote-directory-files-get-function denote-directory-files-get-function--original)
     (setq denote-file-has-backlinks-function denote-file-has-backlinks-function--original)
     (setq denote-get-backlinks-as-files-function denote-get-backlinks-as-files-function--original)
@@ -7931,9 +8010,9 @@ Also see `denote-data-get-backlinks-files-only'."
     (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
 
     (setq denote-data--write-all-called-p nil)
-    (remove-hook 'after-save-hook #'denote-data-update)
-    (remove-hook 'denote--link-file-no-exist-functions #'denote-data--remove-file)
-    (remove-hook 'denote--after-rename-functions #'denote-data--post-rename-update)))
+    (remove-hook 'denote-new-note-functions #'denote-data-add-file)
+    (remove-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
+    (remove-hook 'denote-after-rename-functions #'denote-data-post-rename-update)))
 
 (provide 'denote)
 ;;; denote.el ends here
