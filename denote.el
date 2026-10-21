@@ -7583,6 +7583,9 @@ Do it when FILE-SUPPORTED-P is non-nil."
           (push (match-string 1) links))
         (seq-uniq links)))))
 
+;; FIXME 2026-10-20: This should not try to open encrypted files.  It
+;; is okay for a single file, but it is a problem if it needs to index
+;; lots of them and requests the password each time.
 (defun denote-data--get-contents (file file-contents)
   "Read FILE contents and return relevant `denote-data'.
 With optional FILE-CONTENTS, use those outright instead of reading from
@@ -7685,13 +7688,12 @@ already called."
       (:path (denote-data-entry-set-path entry new-value))
       (:links (denote-data-entry-set-links entry new-value)))))
 
-;; TODO 2026-10-12: Maybe it makes sense to use modified time here,
-;; subject to storing it, of course.
 (defun denote-data-update ()
   "Update the current Denote file entry in `denote-data'.
 Use this as part of `after-save-hook' or related.  Otherwise use
 `denote-data-write-entry'."
-  (denote-data-write-entry buffer-file-name))
+  (when (denote-file-has-denoted-filename-p buffer-file-name)
+    (denote-data-write-entry buffer-file-name)))
 
 (defun denote-data-add-file (identifier signature title keywords note-path)
   "Add file to `denote-data'.
@@ -7992,8 +7994,8 @@ Also see `denote-data-get-backlinks-files-only'."
         (setq denote-infer-keywords-from-files-function #'denote-data-get-keywords-all)
         (setq denote-retrieve-xref-alist-for-backlinks-function #'denote-data-get-backlinks)
 
+        (add-hook 'after-save-hook #'denote-data-update)
         (add-hook 'denote-new-note-functions #'denote-data-add-file)
-        ;; TODO 2026-10-16: We need the same for new links.
         (add-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
         (add-hook 'denote-after-rename-functions #'denote-data-post-rename-update))
     (setq denote-directory-files-get-function denote-directory-files-get-function--original)
@@ -8008,6 +8010,7 @@ Also see `denote-data-get-backlinks-files-only'."
     (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
 
     (setq denote-data--write-all-called-p nil)
+    (remove-hook 'after-save-hook #'denote-data-update)
     (remove-hook 'denote-new-note-functions #'denote-data-add-file)
     (remove-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
     (remove-hook 'denote-after-rename-functions #'denote-data-post-rename-update)))
