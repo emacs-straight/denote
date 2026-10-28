@@ -4449,7 +4449,7 @@ prompt to confirm the rewriting of the front matter."
 
 ;;;;; The renaming commands and their prompts
 
-(defun denote--rename-dired-file-or-current-file-prompt ()
+(defun denote--rename-dired-file-or-current-file-or-prompt ()
   "Return Dired file at point or the current file, else prompt for one.
 Throw error if FILE is not regular, else return FILE."
   (or (dired-get-filename nil t)
@@ -4736,7 +4736,7 @@ file-naming scheme.
 For a version of this command that works with multiple files
 one-by-one, use `denote-dired-rename-files'."
   (interactive
-   (pcase-let* ((file (denote--rename-dired-file-or-current-file-prompt))
+   (pcase-let* ((file (denote--rename-dired-file-or-current-file-or-prompt))
                 (`(,title ,keywords ,signature ,date ,identifier)
                  (denote--rename-get-file-info-from-prompts-or-existing file)))
      (list file title keywords signature date identifier)))
@@ -5065,7 +5065,7 @@ Construct the file name in accordance with the user option
 `denote-file-name-components-order'."
   (interactive
    (list
-    (denote--rename-dired-file-or-current-file-prompt)
+    (denote--rename-dired-file-or-current-file-or-prompt)
     (denote--valid-file-type (or (denote-file-type-prompt) denote-file-type))))
   (let* ((initial-state (if (find-buffer-visiting file) 'visited 'not-visited))
          (dir (file-name-directory file))
@@ -7550,7 +7550,7 @@ visited again in a new buffer (files are visited with the command
   (links nil :documentation "The LINKS as a list of identifiers (strings)." :type list))
 
 (defvar denote-data (make-hash-table :test #'equal)
-  "List of `denote-data-entry' elements.")
+  "The hash-table of `denote-data-entry' elements.")
 
 ;;;;; Prepare the cache
 
@@ -7862,12 +7862,8 @@ Include `denote-get-buffer-file-names'."
   (let* ((table (make-hash-table :test #'equal))
          (buffer-file-names (denote-get-buffer-file-names))
          (buffer-identifiers (mapcar #'denote-retrieve-filename-identifier buffer-file-names))
-         (cached-identifiers nil)
+         (cached-identifiers (hash-table-keys denote-data))
          (all-identifiers nil))
-    (maphash
-     (lambda (key _value)
-       (push key cached-identifiers))
-     denote-data)
     (setq all-identifiers (seq-uniq (append buffer-identifiers cached-identifiers)))
     (dolist (identifier all-identifiers)
       (puthash identifier t table))
@@ -8007,7 +8003,6 @@ Also see `denote-data-get-backlinks-files-only'."
         (add-hook 'denote-new-note-functions #'denote-data-add-file)
         (add-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
         (add-hook 'denote-after-rename-functions #'denote-data-post-rename-update))
-    ;; TODO 2026-10-26: Do we need `clrhash' here?
     (setq denote-directory-files-get-function denote-directory-files-get-function--original)
     (setq denote-file-has-backlinks-function denote-file-has-backlinks-function--original)
     (setq denote-get-backlinks-as-files-function denote-get-backlinks-as-files-function--original)
@@ -8020,6 +8015,13 @@ Also see `denote-data-get-backlinks-files-only'."
     (setq denote-retrieve-xref-alist-for-backlinks-function denote-retrieve-xref-alist-for-backlinks-function--original)
 
     (setq denote-data--write-all-called-p nil)
+    ;; NOTE 2026-10-27: If I do the following, then I get confusing
+    ;; output from `hash-table-keys' and `hash-table-size'.  The
+    ;; former returns nil, which is what I expect, but the latter
+    ;; returns the length that the hash-table had.  Indeed, if I check
+    ;; the Help buffer it still shows #<hash-table equal 0/N...>.
+    ;; I guess this is normal, so I will keep it this way for now.
+    (setq denote-data (clrhash denote-data))
     (remove-hook 'after-save-hook #'denote-data-update)
     (remove-hook 'denote-new-note-functions #'denote-data-add-file)
     (remove-hook 'denote-link-file-no-exist-functions #'denote-data-remove-file)
