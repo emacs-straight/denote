@@ -7802,17 +7802,17 @@ Ideas and/or user feedback
      Juanjo Presa, Julian Hoch, Kai von Fintel, Kaushal Modi, Kevin
      Izevbigie, Kolmas, Lukas C.  Bossert, M.  Hadi Timachi, Maikol
      Solis, Mark Olson, Michael Jones, Mirko Hernandez, Morten
-     Kjeldgaard, Niall Dooley, Nick Bell, Oliver Epper, Paul van Gelder,
-     Peter Prevos, Peter Smith, Riccardo Giannitrapani, Rory Molinari,
-     Samuel W.  Flint, Sergio Rey, Suhail Singh, Shreyas Ragavan, Stefan
-     Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ Stankus, Vick
-     (VicZz), Viktor Haag, Vineet C.  Kulkarni, Wade Mealing, Wilf, Yi
-     Liu, Ypot, 82Kang, atanasj, azegas, babusri, bdillahu,
-     coherentstate, doolio, duli, drcxd, elge70, elliottw, fingerknight,
-     GuutBoy, hayata, hpgisler, hyperfocus1337,johkneisl, jtpavlock,
-     juh, leafarbelm, mentalisttraceur, mjkalyan, o-rxw, oatmealm,
-     potchie-maker, Pratik-Mishra-4979, pRot0ta1p, rbenit68, relict007,
-     sarcom-sar, sienic, skissue, sundar bp, wuzhihao,
+     Kjeldgaard, Niall Dooley, Nick Bell, Nicola Gnecco, Oliver Epper,
+     Paul van Gelder, Peter Prevos, Peter Smith, Riccardo Giannitrapani,
+     Rory Molinari, Samuel W.  Flint, Sergio Rey, Suhail Singh, Shreyas
+     Ragavan, Stefan Thesing, Summer Emacs, Sven Seebeck, Taoufik, TJ
+     Stankus, Vick (VicZz), Viktor Haag, Vineet C.  Kulkarni, Wade
+     Mealing, Wilf, Yi Liu, Ypot, 82Kang, atanasj, azegas, babusri,
+     bdillahu, coherentstate, doolio, duli, drcxd, elge70, elliottw,
+     fingerknight, GuutBoy, hayata, hpgisler, hyperfocus1337,johkneisl,
+     jtpavlock, juh, leafarbelm, mentalisttraceur, mjkalyan, o-rxw,
+     oatmealm, potchie-maker, Pratik-Mishra-4979, pRot0ta1p, rbenit68,
+     relict007, sarcom-sar, sienic, skissue, sundar bp, wuzhihao,
      yetanotherfossman, zadca123
 
    Special thanks to Peter Povinec who helped refine the file-naming
@@ -8998,11 +8998,11 @@ Node: Speed up backlinks' or query links' buffer creation?362797
 Node: Why do I get ``Search failed with status 1'' when I search for backlinks?364173
 Node: Why do I get a double #+title in Doom Emacs?365234
 Node: Acknowledgements365955
-Node: GNU Free Documentation License369657
-Node: Indices394814
-Node: Function index394987
-Node: Variable index420248
-Node: Concept index433598
+Node: GNU Free Documentation License369672
+Node: Indices394829
+Node: Function index395002
+Node: Variable index420263
+Node: Concept index433613
 
 End Tag Table
 
