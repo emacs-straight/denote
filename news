@@ -15,96 +15,91 @@ the manual: <https://protesilaos.com/emacs/denote>.
 Table of Contents
 ─────────────────
 
-1. Version 4.2.0 on 2026-05-20
+1. Version 4.3.0 on 2026-11-19
 
 
-1 Version 4.2.0 on 2026-05-20
+1 Version 4.3.0 on 2026-11-19
 ═════════════════════════════
 
-  This version brings several improvements to the core `denote' package
-  as well as all the Denote extensions I maintain. The core package is
-  stable, its feature set is rich, and the wider ecosystem of extensions
-  is growing.
+  This version introduces quality-of-life improvements as well as a
+  series of abstractions that empower developers to change how Denote
+  retrieves its data. Concretely, developers can write an optional cache
+  or database for Denote.
 
-  Most of the changes documented herein are of interest to experienced
-  users who may be looking for ways to refine their workflow. I
-  recommend that new users start with the basics, as I explained them in
-  the original video demonstration of Denote or as they are documented
-  in the manual’s section for newcomers:
+  I am developing `denote-data', which is an in-memory cache. Its job is
+  to make certain operations faster. The package is still in
+  development, though I hope to have an initial release within the next
+  weeks: <https://github.com/protesilaos/denote-data>.
 
-  Webpage
-        <https://protesilaos.com/emacs/denote#h:c54bedb4-5377-4dbd-853c-5870ace6eb33>.
-  Info manual
-        With the latest `denote' package installed, evaluate `(info
-        "(denote) Getting started with Denote")'.
-
-  Remember that the release notes are true only at the time of
-  publication. The single source of truth is the official manual.
+  Once `denote-data' is ready, users will be able to experiment with
+  another package that will be made public soon. That one will provide a
+  much-requested feature. But I will write more about it when the time
+  is right.
 
 
-1.1 Core Denote
-───────────────
+1.1 AI policy changes
+─────────────────────
 
-1.1.1 Overview of the new features
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  I have added `AGENTS.md' and `CLAUDE.md' to denote.git. I copied those
+  files from the emacs.git repository. They instruct AI agents to not
+  write patches or comments for the Denote source code. Users can still
+  use whatever program they want, though they are expected to prepare
+  their own code or bug reports.
 
-  • The command `denote-dired-focus' will filter the results of an
-    existing `denote-dired' buffer. Use this to narrow down the results.
+  I am doing this because Denote is legally part of Emacs: I have
+  assigned copyright to the Free Software Foundation. The GNU project as
+  a whole is waiting for legal advice on how to handle AI-generated
+  contributions. I agree with the current GNU position and will adapt
+  accordingly.
 
-  • In Org files, the `denote:' link type can now be previewed using the
-    built-in `org-link-preview' command, starting with Org version
-    `9.8.0'.
-
-  • The command `denote-link-or-create-with-command' extends the
-    existing convenience functions of the “do or create note” kind.
-
-  • The `denote-file-prompt' uses completion metadata to sort by most
-    recently accessed, group by directory or file extension, and cover
-    packages that display cosmetic icons alongside completion
-    candidates.
-
-  • Denote now enforces a controlled vocabulary for keywords when
-    `denote-infer-keywords' is set to `nil', such that only the
-    `denote-known-keywords' are provided as an option at the relevant
-    prompts.
-
-  • The mechanism for integrating Denote with `org-capture' now supports
-    prompting for an signature via `denote-org-capture-with-prompts'
-    (the signature is an optional, free-form component of the Denote
-    file-naming scheme).
-
-  • Several packages that extend Denote are documented in the manual. If
-    you have a package for Denote, let me know and I will write a
-    section about it.
+  In addition to that, I prefer to write even these release notes by
+  hand even if nobody will read them. They give me an opportunity to
+  review the entire package. I go through the commit logs and check back
+  on the diffs. Then I know what is the state of the project and what
+  may be done next.
 
 
-1.1.2 Focus a `denote-dired' buffer with `denote-dired-focus'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+1.2 Abstractions for a cache or a database
+──────────────────────────────────────────
 
-  The command `denote-dired' produces a Dired listing of file names that
-  match the given regular expressions. Users can benefit from the Denote
-  file-naming scheme to, for example, include all files that have the
-  keyword `_emacs'. In the resulting Dired buffer, the new command
-  `denote-dired-focus' can then be invoked to further narrow down the
-  results, such as to only show files that have `2026' in their file
-  (with default settings, the date is part of the Denote identifier).
+  I have introduced several variables and hooks that allow developers to
+  affect how Denote retrieves its data. Existing users will not notice
+  any difference. This is relevant for those who plan to write relevant
+  packages. Users will have to opt in to whatever new functionality.
 
-  I implemented this feature in response to issue 693 by 82Kang:
-  <https://github.com/protesilaos/denote/issues/693>.
+  The manual describes all the technicalities:
+
+  Web page
+        <https://protesilaos.com/emacs/denote#h:175b3b5f-4490-4cb0-81d7-26652cf08e79>.
+  Info node
+        Evaluate `(info "(denote) Abstractions for a cache or
+        database")'.
+
+  I did this in response to issue 724 by kimsaram32, with participation
+  from Aaron Jensen, relict007, Samuel W. Flint, mentalisttraceur, Mirko
+  Hernandez: <https://github.com/protesilaos/denote/issues/724>.
 
 
-1.1.3 Improvements to the file prompt
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+1.3 Disable the “fancy” file prompt
+───────────────────────────────────
 
-  Various Denote commands prompt for a file name: for instance,
-  `denote-link' asks which file to link to. This file prompt is now
-  augmented with completion metadata that transform how files look and
-  how the information is organised.
+  By default, Denote’s file prompt reformats file names. A Denote-style
+  file name is split into columns so that its components are easier to
+  read. Users who prefer to see the actual file names can now set the
+  user option `denote-fancy-file-prompt' to a `nil' value.
 
-  Before, the prompt presented full file names like:
+  I did this in response to issue 732 by Honza Pokorný:
+  <https://github.com/protesilaos/denote/issues/732>.
 
-  ┌────
-  │ 20220610T043241--initial-thoughts-on-the-zettelkasten-method__notetaking.org
-  └────
+  Note that in addition to this user option advanced users can also
+  change the relevant completion metadata. Check the variable
+  `denote-file-prompt-extra-metadata' and the functions mentioned
+  therein.
 
-  …  …
+
+1.4 Extra backslashes in query links now result in an error
+───────────────────────────────────────────────────────────
+
+  Denote supports direct links to files as well as “query links”. Those
+  look like links but actually produce a buffer with files that match …
+  …
