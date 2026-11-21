@@ -6352,7 +6352,7 @@ Denote fetches the relevant data.
 ‘denote-get-keywords-function’
      Function to return the Denote file keywords.  The function is
      called with one argument, the file path, and should return the
-     keywords as a list of strings or ‘nil’.
+     keywords as a single string or ‘nil’.
 ‘denote-get-path-by-id-function’
      Function to return file path corresponding to an identifier.  The
      function is called with one argument, the identifier.  The
@@ -9074,40 +9074,40 @@ Node: Export Denote notes with Markdown289443
 Node: Set up your workflow for daily or weekly meeting notes290112
 Node: For developers or advanced users293945
 Node: Abstractions for a cache or database295710
-Node: Common building blocks for developers or advanced users299902
-Node: Predefined note values for developers or advanced users306656
-Node: File path interface for developers or advanced users309436
-Node: Data retrieval interface for developers or advanced users312839
-Node: Prompt interface for developers or advanced users316707
-Node: Front matter interface for developers or advanced users322368
-Node: Link interface for developers or advanced users329951
-Node: Xref interface for developers or advanced users333046
-Node: Renaming files interface for developers or advanced users334021
-Node: Troubleshoot Denote in a pristine environment337033
-Node: Contributing338708
-Node: Wishlist of what we can do to extend Denote341718
-Node: Publications about Denote343593
-Node: Alternatives to Denote346377
-Node: Alternative implementations and further reading350969
-Node: Frequently Asked Questions352703
-Node: Why develop Denote when PACKAGE already exists?353796
-Node: Why not rely exclusively on Org?355710
-Node: Why care about Unix tools when you use Emacs?357406
-Node: Why many small files instead of few large ones?358741
-Node: Does Denote perform well at scale?360673
-Node: I add TODOs to my notes; will many files slow down the Org agenda?361799
-Node: I want to sort by last modified in Dired why won't Denote let me?363767
-Node: How do you handle the last modified case?364889
-Node: Why are some Org links opening outside Emacs?366450
-Node: Speed up backlinks' or query links' buffer creation?368318
-Node: Why do I get ``Search failed with status 1'' when I search for backlinks?369694
-Node: Why do I get a double #+title in Doom Emacs?370755
-Node: Acknowledgements371476
-Node: GNU Free Documentation License375202
-Node: Indices400359
-Node: Function index400532
-Node: Variable index425793
-Node: Concept index439143
+Node: Common building blocks for developers or advanced users299900
+Node: Predefined note values for developers or advanced users306654
+Node: File path interface for developers or advanced users309434
+Node: Data retrieval interface for developers or advanced users312837
+Node: Prompt interface for developers or advanced users316705
+Node: Front matter interface for developers or advanced users322366
+Node: Link interface for developers or advanced users329949
+Node: Xref interface for developers or advanced users333044
+Node: Renaming files interface for developers or advanced users334019
+Node: Troubleshoot Denote in a pristine environment337031
+Node: Contributing338706
+Node: Wishlist of what we can do to extend Denote341716
+Node: Publications about Denote343591
+Node: Alternatives to Denote346375
+Node: Alternative implementations and further reading350967
+Node: Frequently Asked Questions352701
+Node: Why develop Denote when PACKAGE already exists?353794
+Node: Why not rely exclusively on Org?355708
+Node: Why care about Unix tools when you use Emacs?357404
+Node: Why many small files instead of few large ones?358739
+Node: Does Denote perform well at scale?360671
+Node: I add TODOs to my notes; will many files slow down the Org agenda?361797
+Node: I want to sort by last modified in Dired why won't Denote let me?363765
+Node: How do you handle the last modified case?364887
+Node: Why are some Org links opening outside Emacs?366448
+Node: Speed up backlinks' or query links' buffer creation?368316
+Node: Why do I get ``Search failed with status 1'' when I search for backlinks?369692
+Node: Why do I get a double #+title in Doom Emacs?370753
+Node: Acknowledgements371474
+Node: GNU Free Documentation License375200
+Node: Indices400357
+Node: Function index400530
+Node: Variable index425791
+Node: Concept index439141
 
 End Tag Table
 
